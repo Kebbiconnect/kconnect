@@ -83,15 +83,24 @@ WSGI_APPLICATION = 'KPN.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-TURSO_DATABASE_URL = "kpntursodb-kpntursodb.aws-eu-west-1.turso.io"
-TURSO_AUTH_TOKEN = config('TURSO_AUTH_TOKEN')
+USE_TURSO = config('USE_TURSO', default=False, cast=bool)
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'libsql.db.backends.sqlite3',
-        'NAME': f"libsql://{TURSO_DATABASE_URL}?authToken={TURSO_AUTH_TOKEN}",
+if USE_TURSO:
+    TURSO_DATABASE_URL = "kpntursodb-kpntursodb.aws-eu-west-1.turso.io"
+    TURSO_AUTH_TOKEN = config('TURSO_AUTH_TOKEN')
+    DATABASES = {
+        'default': {
+            'ENGINE': 'libsql.db.backends.sqlite3',
+            'NAME': f"libsql://{TURSO_DATABASE_URL}?authToken={TURSO_AUTH_TOKEN}",
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
