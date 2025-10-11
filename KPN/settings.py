@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +22,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--l18i910ohi552++odr*0w6@#ar(hsiyw9*w_4vmdvbbb0=+)6'
+SECRET_KEY = config('SESSION_SECRET', default='django-insecure--l18i910ohi552++odr*0w6@#ar(hsiyw9*w_4vmdvbbb0=+)6')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,6 +39,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    # KPN Apps
+    'core',
+    'staff',
+    'leadership',
+    'campaigns',
+    'donations',
+    'media',
+    'events',
 ]
 
 MIDDLEWARE = [
@@ -72,10 +83,13 @@ WSGI_APPLICATION = 'KPN.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+TURSO_DATABASE_URL = "kpntursodb-kpntursodb.aws-eu-west-1.turso.io"
+TURSO_AUTH_TOKEN = config('TURSO_AUTH_TOKEN')
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'libsql.db.backends.sqlite3',
+        'NAME': f"libsql://{TURSO_DATABASE_URL}?authToken={TURSO_AUTH_TOKEN}",
     }
 }
 
@@ -104,7 +118,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Lagos'
 
 USE_I18N = True
 
@@ -115,8 +129,21 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Custom User Model
+AUTH_USER_MODEL = 'staff.User'
+
+# Login URLs
+LOGIN_URL = 'staff:login'
+LOGIN_REDIRECT_URL = 'staff:dashboard'
+LOGOUT_REDIRECT_URL = 'core:home'
