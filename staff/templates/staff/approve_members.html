@@ -9,6 +9,49 @@
         <p class="text-gray-600 dark:text-gray-400">Review and approve member applications</p>
     </div>
     
+    {% if user.role == 'STATE' %}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+        <h3 class="text-lg font-semibold mb-4">Filter by Jurisdiction</h3>
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-medium mb-2">Zone</label>
+                <select name="zone" class="w-full p-2 border rounded dark:bg-gray-700">
+                    <option value="">All Zones</option>
+                    {% for zone in zones %}
+                    <option value="{{ zone.id }}" {% if zone_filter == zone.id|stringformat:"s" %}selected{% endif %}>{{ zone.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-2">LGA</label>
+                <select name="lga" class="w-full p-2 border rounded dark:bg-gray-700">
+                    <option value="">All LGAs</option>
+                    {% for lga in lgas %}
+                    <option value="{{ lga.id }}" {% if lga_filter == lga.id|stringformat:"s" %}selected{% endif %}>{{ lga.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-2">Ward</label>
+                <select name="ward" class="w-full p-2 border rounded dark:bg-gray-700">
+                    <option value="">All Wards</option>
+                    {% for ward in wards %}
+                    <option value="{{ ward.id }}" {% if ward_filter == ward.id|stringformat:"s" %}selected{% endif %}>{{ ward.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="md:col-span-3">
+                <button type="submit" class="bg-kpn-green text-white px-6 py-2 rounded hover:bg-green-600 transition">
+                    <i class="fas fa-filter mr-2"></i> Apply Filters
+                </button>
+                <a href="{% url 'staff:approve_members' %}" class="ml-2 bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 transition inline-block">
+                    <i class="fas fa-redo mr-2"></i> Reset
+                </a>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+    
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
         <div class="overflow-x-auto">
             <table class="w-full">

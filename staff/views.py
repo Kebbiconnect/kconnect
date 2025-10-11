@@ -359,21 +359,50 @@ def president_dashboard(request):
 def approve_members(request):
     if request.user.role == 'STATE':
         pending_users = User.objects.filter(status='PENDING').order_by('-created_at')
+        
+        zone_filter = request.GET.get('zone')
+        lga_filter = request.GET.get('lga')
+        ward_filter = request.GET.get('ward')
+        
+        if zone_filter:
+            pending_users = pending_users.filter(zone_id=zone_filter)
+        if lga_filter:
+            pending_users = pending_users.filter(lga_id=lga_filter)
+        if ward_filter:
+            pending_users = pending_users.filter(ward_id=ward_filter)
+        
+        zones = Zone.objects.all()
+        lgas = LGA.objects.all()
+        wards = Ward.objects.all()
+        
     elif request.user.role == 'ZONAL':
         pending_users = User.objects.filter(
             status='PENDING',
             zone=request.user.zone
         ).order_by('-created_at')
+        zones = lgas = wards = None
+        zone_filter = lga_filter = ward_filter = None
+        
     elif request.user.role == 'LGA':
         pending_users = User.objects.filter(
             status='PENDING',
             lga=request.user.lga
         ).order_by('-created_at')
+        zones = lgas = wards = None
+        zone_filter = lga_filter = ward_filter = None
     else:
         pending_users = User.objects.none()
+        zones = lgas = wards = None
+        zone_filter = lga_filter = ward_filter = None
     
     context = {
         'pending_users': pending_users,
+        'zones': zones,
+        'lgas': lgas,
+        'wards': wards,
+        'zone_filter': zone_filter,
+        'lga_filter': lga_filter,
+        'ward_filter': ward_filter,
     }
     
     return render(request, 'staff/approve_members.html', context)
