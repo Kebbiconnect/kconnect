@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" :class="{ 'dark': darkMode }">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kebbi Progressive Network (KPN){% endblock %}</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'kpn-green': '#28a745',
+                        'kpn-blue': '#0066cc',
+                        'kpn-dark': '#1a1a1a',
+                        'kpn-gray': '#f4f4f4',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-white dark:bg-kpn-dark text-gray-900 dark:text-gray-100 transition-colors duration-200">
+    
+    <!-- Navigation -->
+    <nav class="bg-white dark:bg-gray-900 shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="{% url 'core:home' %}" class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-kpn-green rounded-full flex items-center justify-center">
+                            <span class="text-white text-xl font-bold">K</span>
+                        </div>
+                        <span class="text-xl font-bold text-kpn-green">KPN</span>
+                    </a>
+                </div>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="{% url 'core:home' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">Home</a>
+                    <a href="{% url 'core:about' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">About</a>
+                    <a href="{% url 'core:leadership' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">Leadership</a>
+                    <a href="{% url 'core:campaigns' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">News</a>
+                    <a href="{% url 'core:gallery' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">Gallery</a>
+                    <a href="{% url 'core:contact' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">Contact</a>
+                    
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'staff:dashboard' %}" class="bg-kpn-green text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">Dashboard</a>
+                        <a href="{% url 'staff:logout' %}" class="text-gray-700 dark:text-gray-300 hover:text-red-500 transition">Logout</a>
+                    {% else %}
+                        <a href="{% url 'staff:login' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">Login</a>
+                        <a href="{% url 'staff:register' %}" class="bg-kpn-green text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">Join Us</a>
+                    {% endif %}
+                    
+                    <!-- Dark Mode Toggle -->
+                    <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" 
+                            class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:inline"></i>
+                    </button>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center space-x-2">
+                    <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" 
+                            class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:inline"></i>
+                    </button>
+                    <button @click="mobileMenu = !mobileMenu" class="p-2" x-data="{ mobileMenu: false }">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div x-show="mobileMenu" x-cloak class="md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700" x-data="{ mobileMenu: false }">
+            <div class="px-4 py-2 space-y-2">
+                <a href="{% url 'core:home' %}" class="block py-2 text-gray-700 dark:text-gray-300">Home</a>
+                <a href="{% url 'core:about' %}" class="block py-2 text-gray-700 dark:text-gray-300">About</a>
+                <a href="{% url 'core:leadership' %}" class="block py-2 text-gray-700 dark:text-gray-300">Leadership</a>
+                <a href="{% url 'core:campaigns' %}" class="block py-2 text-gray-700 dark:text-gray-300">News</a>
+                <a href="{% url 'core:gallery' %}" class="block py-2 text-gray-700 dark:text-gray-300">Gallery</a>
+                <a href="{% url 'core:contact' %}" class="block py-2 text-gray-700 dark:text-gray-300">Contact</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'staff:dashboard' %}" class="block py-2 text-kpn-green font-semibold">Dashboard</a>
+                    <a href="{% url 'staff:logout' %}" class="block py-2 text-red-500">Logout</a>
+                {% else %}
+                    <a href="{% url 'staff:login' %}" class="block py-2 text-gray-700 dark:text-gray-300">Login</a>
+                    <a href="{% url 'staff:register' %}" class="block py-2 bg-kpn-green text-white rounded-lg text-center">Join Us</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        {% for message in messages %}
+        <div class="{% if message.tags == 'error' %}bg-red-100 border-red-400 text-red-700{% elif message.tags == 'success' %}bg-green-100 border-green-400 text-green-700{% else %}bg-blue-100 border-blue-400 text-blue-700{% endif %} border px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline">{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 dark:bg-black text-white mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- About Section -->
+                <div class="col-span-1 md:col-span-2">
+                    <h3 class="text-xl font-bold text-kpn-green mb-4">Kebbi Progressive Network</h3>
+                    <p class="text-gray-400 mb-4">One Voice, One Change</p>
+                    <p class="text-sm text-gray-400">A youth-led movement for civic awareness, digital empowerment, and advocacy across Kebbi State, Nigeria.</p>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="{% url 'core:about' %}" class="text-gray-400 hover:text-kpn-green transition">About Us</a></li>
+                        <li><a href="{% url 'core:leadership' %}" class="text-gray-400 hover:text-kpn-green transition">Leadership</a></li>
+                        <li><a href="{% url 'core:faq' %}" class="text-gray-400 hover:text-kpn-green transition">FAQ</a></li>
+                        <li><a href="{% url 'core:code_of_conduct' %}" class="text-gray-400 hover:text-kpn-green transition">Code of Conduct</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Connect -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Connect</h4>
+                    <div class="flex space-x-4 text-2xl">
+                        <a href="https://www.facebook.com/kpnkebbi" target="_blank" class="text-gray-400 hover:text-blue-500 transition"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-blue-400 transition"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-pink-500 transition"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
+                <p>&copy; {% now "Y" %} Kebbi Progressive Network. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

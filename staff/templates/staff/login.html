@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+        <h1 class="text-3xl font-bold mb-6 text-center">Login</h1>
+        
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">Username</label>
+                <input type="text" name="username" required class="w-full p-3 border rounded dark:bg-gray-700">
+            </div>
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">Password</label>
+                <input type="password" name="password" required class="w-full p-3 border rounded dark:bg-gray-700">
+            </div>
+            <button type="submit" class="w-full bg-kpn-green text-white py-3 rounded-lg hover:bg-green-600 transition mb-4">Login</button>
+            
+            <div class="text-center">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Don't have an account? <a href="{% url 'staff:register' %}" class="text-kpn-green hover:text-kpn-blue">Register here</a>
+                </p>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

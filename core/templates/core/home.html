@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Kebbi Progressive Network{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-gradient-to-r from-kpn-green to-kpn-blue text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6">Kebbi Progressive Network</h1>
+            <p class="text-xl md:text-2xl mb-4 italic">"One Voice, One Change"</p>
+            <p class="text-lg md:text-xl mb-8 max-w-3xl mx-auto">
+                A youth-led movement for civic awareness, digital empowerment, and advocacy across Kebbi State, Nigeria.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="{% url 'staff:register' %}" class="bg-white text-kpn-green px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">Join Us Today</a>
+                <a href="{% url 'core:about' %}" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-kpn-green transition">Learn More</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-16 bg-gray-100 dark:bg-gray-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+                <div class="text-4xl font-bold text-kpn-green mb-2">3</div>
+                <div class="text-gray-600 dark:text-gray-400">Zones</div>
+            </div>
+            <div>
+                <div class="text-4xl font-bold text-kpn-green mb-2">21</div>
+                <div class="text-gray-600 dark:text-gray-400">LGAs</div>
+            </div>
+            <div>
+                <div class="text-4xl font-bold text-kpn-green mb-2">225</div>
+                <div class="text-gray-600 dark:text-gray-400">Wards</div>
+            </div>
+            <div>
+                <div class="text-4xl font-bold text-kpn-green mb-2">41</div>
+                <div class="text-gray-600 dark:text-gray-400">Leadership Roles</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Campaigns -->
+{% if featured_campaigns %}
+<section class="py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold mb-8 text-center">Featured Campaigns</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {% for campaign in featured_campaigns %}
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+                {% if campaign.featured_image %}
+                <img src="{{ campaign.featured_image.url }}" alt="{{ campaign.title }}" class="w-full h-48 object-cover">
+                {% else %}
+                <div class="w-full h-48 bg-kpn-green flex items-center justify-center">
+                    <i class="fas fa-bullhorn text-white text-5xl"></i>
+                </div>
+                {% endif %}
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold mb-2">{{ campaign.title }}</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">{{ campaign.content|truncatewords:20|safe }}</p>
+                    <a href="{% url 'core:campaign_detail' campaign.slug %}" class="text-kpn-green hover:text-kpn-blue font-semibold">Read More <i class="fas fa-arrow-right ml-1"></i></a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Latest News -->
+{% if latest_news %}
+<section class="py-16 bg-gray-100 dark:bg-gray-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-bold">Latest News</h2>
+            <a href="{% url 'core:campaigns' %}" class="text-kpn-green hover:text-kpn-blue font-semibold">View All <i class="fas fa-arrow-right ml-1"></i></a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for news in latest_news %}
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-6 hover:shadow-lg transition">
+                <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    <i class="far fa-calendar mr-2"></i>
+                    {{ news.published_at|date:"M d, Y" }}
+                </div>
+                <h3 class="text-lg font-semibold mb-2">{{ news.title|truncatewords:10 }}</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-3">{{ news.content|truncatewords:15|safe }}</p>
+                <a href="{% url 'core:campaign_detail' news.slug %}" class="text-kpn-green hover:text-kpn-blue font-semibold text-sm">Read More</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Call to Action -->
+<section class="py-16 bg-kpn-green text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl font-bold mb-4">Ready to Make a Difference?</h2>
+        <p class="text-xl mb-8">Join Kebbi Progressive Network and be part of the change.</p>
+        <a href="{% url 'staff:register' %}" class="bg-white text-kpn-green px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition inline-block">Get Started</a>
+    </div>
+</section>
+{% endblock %}

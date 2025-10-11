@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Gallery - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-4xl font-bold mb-8">Media Gallery</h1>
+    
+    <div class="flex justify-center gap-4 mb-8">
+        <a href="?type=all" class="px-6 py-2 rounded {% if selected_type == 'all' %}bg-kpn-green text-white{% else %}bg-gray-200 dark:bg-gray-700{% endif %}">All</a>
+        <a href="?type=PHOTO" class="px-6 py-2 rounded {% if selected_type == 'PHOTO' %}bg-kpn-green text-white{% else %}bg-gray-200 dark:bg-gray-700{% endif %}">Photos</a>
+        <a href="?type=VIDEO" class="px-6 py-2 rounded {% if selected_type == 'VIDEO' %}bg-kpn-green text-white{% else %}bg-gray-200 dark:bg-gray-700{% endif %}">Videos</a>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% for item in media_items %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+            {% if item.media_type == 'PHOTO' %}
+            <img src="{{ item.file.url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
+            {% else %}
+            <video controls class="w-full h-64">
+                <source src="{{ item.file.url }}" type="video/mp4">
+            </video>
+            {% endif %}
+            <div class="p-4">
+                <h3 class="font-semibold">{{ item.title }}</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ item.description|truncatewords:10 }}</p>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12">
+            <p class="text-gray-600 dark:text-gray-400">No media items available yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

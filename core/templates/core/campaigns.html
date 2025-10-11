@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}News & Campaigns - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-4xl font-bold mb-8">News & Campaigns</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for campaign in campaigns %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden hover:shadow-xl transition">
+            {% if campaign.featured_image %}
+            <img src="{{ campaign.featured_image.url }}" alt="{{ campaign.title }}" class="w-full h-48 object-cover">
+            {% else %}
+            <div class="w-full h-48 bg-gradient-to-r from-kpn-green to-kpn-blue flex items-center justify-center">
+                <i class="fas fa-bullhorn text-white text-5xl"></i>
+            </div>
+            {% endif %}
+            <div class="p-6">
+                <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    <i class="far fa-calendar mr-1"></i> {{ campaign.published_at|date:"M d, Y" }}
+                </div>
+                <h3 class="text-xl font-semibold mb-2">{{ campaign.title }}</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ campaign.content|truncatewords:20|safe }}</p>
+                <a href="{% url 'core:campaign_detail' campaign.slug %}" class="text-kpn-green hover:text-kpn-blue font-semibold">Read More <i class="fas fa-arrow-right ml-1"></i></a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12">
+            <p class="text-gray-600 dark:text-gray-400">No campaigns available yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

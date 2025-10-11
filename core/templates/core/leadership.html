@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Leadership - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-4xl font-bold mb-8">KPN Leadership</h1>
+    
+    <!-- Filters -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-medium mb-2">Zone</label>
+                <select name="zone" class="w-full p-2 border rounded dark:bg-gray-700">
+                    <option value="">All Zones</option>
+                    {% for zone in zones %}
+                    <option value="{{ zone.id }}" {% if selected_zone == zone.id|stringformat:"s" %}selected{% endif %}>{{ zone.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-2">LGA</label>
+                <select name="lga" class="w-full p-2 border rounded dark:bg-gray-700">
+                    <option value="">All LGAs</option>
+                    {% for lga in lgas %}
+                    <option value="{{ lga.id }}" {% if selected_lga == lga.id|stringformat:"s" %}selected{% endif %}>{{ lga.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="w-full bg-kpn-green text-white px-6 py-2 rounded hover:bg-green-600">Filter</button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Leaders Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for leader in leaders %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center">
+            {% if leader.photo %}
+            <img src="{{ leader.photo.url }}" alt="{{ leader.get_full_name }}" class="w-24 h-24 rounded-full mx-auto mb-4 object-cover">
+            {% else %}
+            <div class="w-24 h-24 rounded-full bg-kpn-green mx-auto mb-4 flex items-center justify-center">
+                <span class="text-white text-3xl font-bold">{{ leader.first_name.0 }}{{ leader.last_name.0 }}</span>
+            </div>
+            {% endif %}
+            <h3 class="text-xl font-semibold mb-1">{{ leader.get_full_name }}</h3>
+            <p class="text-kpn-green font-medium mb-2">{{ leader.role_definition.title }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ leader.get_jurisdiction }}</p>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12">
+            <p class="text-gray-600 dark:text-gray-400">No leaders found.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

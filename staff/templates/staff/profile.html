@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-4xl font-bold mb-8">My Profile</h1>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="flex justify-center mb-6">
+                {% if user.photo %}
+                <img src="{{ user.photo.url }}" alt="{{ user.get_full_name }}" class="w-32 h-32 rounded-full object-cover">
+                {% else %}
+                <div class="w-32 h-32 rounded-full bg-kpn-green flex items-center justify-center">
+                    <span class="text-white text-5xl font-bold">{{ user.first_name.0 }}{{ user.last_name.0 }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">Profile Photo</label>
+                <input type="file" name="photo" accept="image/*" class="w-full p-3 border rounded dark:bg-gray-700">
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2">First Name</label>
+                    <input type="text" name="first_name" value="{{ user.first_name }}" required class="w-full p-3 border rounded dark:bg-gray-700">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Last Name</label>
+                    <input type="text" name="last_name" value="{{ user.last_name }}" required class="w-full p-3 border rounded dark:bg-gray-700">
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Email</label>
+                    <input type="email" name="email" value="{{ user.email }}" required class="w-full p-3 border rounded dark:bg-gray-700">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Phone</label>
+                    <input type="tel" name="phone" value="{{ user.phone }}" required class="w-full p-3 border rounded dark:bg-gray-700">
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">Bio</label>
+                <textarea name="bio" rows="4" class="w-full p-3 border rounded dark:bg-gray-700">{{ user.bio }}</textarea>
+            </div>
+            
+            <button type="submit" class="w-full bg-kpn-green text-white py-3 rounded-lg hover:bg-green-600 transition">Update Profile</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

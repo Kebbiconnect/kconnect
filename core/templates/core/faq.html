@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}FAQ - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-4xl font-bold mb-8 text-center">Frequently Asked Questions</h1>
+    
+    <div class="space-y-4" x-data="{ open: null }">
+        {% for faq in faqs %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+            <button @click="open = open === {{ forloop.counter }} ? null : {{ forloop.counter }}" 
+                    class="w-full text-left p-6 flex justify-between items-center">
+                <h3 class="text-lg font-semibold">{{ faq.question }}</h3>
+                <i class="fas fa-chevron-down transition-transform" :class="{ 'rotate-180': open === {{ forloop.counter }} }"></i>
+            </button>
+            <div x-show="open === {{ forloop.counter }}" x-cloak class="p-6 pt-0">
+                <p class="text-gray-600 dark:text-gray-400">{{ faq.answer }}</p>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center text-gray-600 dark:text-gray-400">No FAQs available yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
