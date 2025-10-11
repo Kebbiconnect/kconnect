@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Zonal Coordinator Dashboard - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold">Zonal Coordinator Dashboard</h1>
+        <p class="text-gray-600 dark:text-gray-400">Supervise all LGAs in {{ user.zone.name }} Zone</p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">LGAs in Zone</p>
+                    <p class="text-3xl font-bold text-kpn-blue">{{ lgas_in_zone }}</p>
+                </div>
+                <i class="fas fa-map-marked-alt text-4xl text-kpn-blue"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Members in Zone</p>
+                    <p class="text-3xl font-bold text-kpn-green">{{ members_in_zone }}</p>
+                </div>
+                <i class="fas fa-users text-4xl text-kpn-green"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
+            <div class="space-y-3">
+                <a href="#" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
+                    <i class="fas fa-eye mr-2"></i> View Zone Overview
+                </a>
+                <a href="{% url 'staff:manage_staff' %}" class="block p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
+                    <i class="fas fa-users-cog mr-2"></i> Manage Zone Staff
+                </a>
+                <a href="{% url 'staff:view_reports' %}" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
+                    <i class="fas fa-chart-bar mr-2"></i> Review LGA Reports
+                </a>
+                <a href="#" class="block p-3 bg-yellow-50 dark:bg-yellow-900 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-800 transition">
+                    <i class="fas fa-file-upload mr-2"></i> Submit Zonal Report
+                </a>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-xl font-semibold mb-4">My Responsibilities</h3>
+            <ul class="space-y-2 text-sm">
+                <li class="flex items-start">
+                    <i class="fas fa-check text-kpn-green mt-1 mr-2"></i>
+                    <span>Supervise all LGAs within {{ user.zone.name }} Zone</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-check text-kpn-green mt-1 mr-2"></i>
+                    <span>Review reports from LGA Coordinators</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-check text-kpn-green mt-1 mr-2"></i>
+                    <span>Oversee regional mobilization and discipline</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-check text-kpn-green mt-1 mr-2"></i>
+                    <span>Submit consolidated reports to State Supervisor</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

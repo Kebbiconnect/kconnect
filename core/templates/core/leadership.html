@@ -4,15 +4,16 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <h1 class="text-4xl font-bold mb-8">KPN Leadership</h1>
+    <h1 class="text-4xl font-bold mb-4">KPN Leadership</h1>
+    <p class="text-gray-600 dark:text-gray-400 mb-8">Meet the leaders driving change across Kebbi State</p>
     
     <!-- Filters -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
-        <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
                 <label class="block text-sm font-medium mb-2">Zone</label>
                 <select name="zone" class="w-full p-2 border rounded dark:bg-gray-700">
-                    <option value="">All Zones</option>
+                    <option value="">State Executive & Zonal</option>
                     {% for zone in zones %}
                     <option value="{{ zone.id }}" {% if selected_zone == zone.id|stringformat:"s" %}selected{% endif %}>{{ zone.name }}</option>
                     {% endfor %}
@@ -21,36 +22,70 @@
             <div>
                 <label class="block text-sm font-medium mb-2">LGA</label>
                 <select name="lga" class="w-full p-2 border rounded dark:bg-gray-700">
-                    <option value="">All LGAs</option>
+                    <option value="">Select LGA</option>
                     {% for lga in lgas %}
                     <option value="{{ lga.id }}" {% if selected_lga == lga.id|stringformat:"s" %}selected{% endif %}>{{ lga.name }}</option>
                     {% endfor %}
                 </select>
             </div>
+            <div>
+                <label class="block text-sm font-medium mb-2">Ward</label>
+                <select name="ward" class="w-full p-2 border rounded dark:bg-gray-700">
+                    <option value="">Select Ward</option>
+                    {% for ward in wards %}
+                    <option value="{{ ward.id }}" {% if selected_ward == ward.id|stringformat:"s" %}selected{% endif %}>{{ ward.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
             <div class="flex items-end">
-                <button type="submit" class="w-full bg-kpn-green text-white px-6 py-2 rounded hover:bg-green-600">Filter</button>
+                <button type="submit" class="w-full bg-kpn-green text-white px-6 py-2 rounded hover:bg-green-600 transition">Filter</button>
             </div>
         </form>
     </div>
     
-    <!-- Leaders Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for leader in leaders %}
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center">
-            {% if leader.photo %}
-            <img src="{{ leader.photo.url }}" alt="{{ leader.get_full_name }}" class="w-24 h-24 rounded-full mx-auto mb-4 object-cover">
+    <!-- Leadership Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        {% for position in leadership_positions %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
+            {% if position.vacant %}
+                <div class="w-24 h-24 rounded-full bg-gray-300 dark:bg-gray-600 mx-auto mb-3 flex items-center justify-center">
+                    <i class="fas fa-user-slash text-3xl text-gray-500 dark:text-gray-400"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-1 text-gray-500 dark:text-gray-400">Vacant</h3>
+                <p class="text-sm text-kpn-green font-medium mb-1">{{ position.role.title }}</p>
+                {% if position.zone %}
+                <p class="text-xs text-gray-600 dark:text-gray-400">{{ position.zone.name }}</p>
+                {% elif position.lga %}
+                <p class="text-xs text-gray-600 dark:text-gray-400">{{ position.lga.name }}</p>
+                {% elif position.ward %}
+                <p class="text-xs text-gray-600 dark:text-gray-400">{{ position.ward.name }}</p>
+                {% else %}
+                <p class="text-xs text-gray-600 dark:text-gray-400">Kebbi State</p>
+                {% endif %}
             {% else %}
-            <div class="w-24 h-24 rounded-full bg-kpn-green mx-auto mb-4 flex items-center justify-center">
-                <span class="text-white text-3xl font-bold">{{ leader.first_name.0 }}{{ leader.last_name.0 }}</span>
-            </div>
+                {% if position.holder.photo %}
+                <img src="{{ position.holder.photo.url }}" alt="{{ position.holder.get_full_name }}" class="w-24 h-24 rounded-full mx-auto mb-3 object-cover border-4 border-kpn-green">
+                {% else %}
+                <div class="w-24 h-24 rounded-full bg-kpn-green mx-auto mb-3 flex items-center justify-center">
+                    <span class="text-white text-2xl font-bold">{{ position.holder.first_name.0 }}{{ position.holder.last_name.0 }}</span>
+                </div>
+                {% endif %}
+                <h3 class="text-lg font-semibold mb-1">{{ position.holder.get_full_name }}</h3>
+                <p class="text-sm text-kpn-green font-medium mb-1">{{ position.role.title }}</p>
+                {% if position.zone %}
+                <p class="text-xs text-gray-600 dark:text-gray-400">{{ position.zone.name }}</p>
+                {% elif position.lga %}
+                <p class="text-xs text-gray-600 dark:text-gray-400">{{ position.lga.name }}</p>
+                {% elif position.ward %}
+                <p class="text-xs text-gray-600 dark:text-gray-400">{{ position.ward.name }}</p>
+                {% else %}
+                <p class="text-xs text-gray-600 dark:text-gray-400">Kebbi State</p>
+                {% endif %}
             {% endif %}
-            <h3 class="text-xl font-semibold mb-1">{{ leader.get_full_name }}</h3>
-            <p class="text-kpn-green font-medium mb-2">{{ leader.role_definition.title }}</p>
-            <p class="text-sm text-gray-600 dark:text-gray-400">{{ leader.get_jurisdiction }}</p>
         </div>
         {% empty %}
         <div class="col-span-full text-center py-12">
-            <p class="text-gray-600 dark:text-gray-400">No leaders found.</p>
+            <p class="text-gray-600 dark:text-gray-400">No leadership positions found. Please try different filters.</p>
         </div>
         {% endfor %}
     </div>

@@ -23,21 +23,71 @@ def leadership(request):
     lga_filter = request.GET.get('lga')
     ward_filter = request.GET.get('ward')
     
-    leaders = User.objects.filter(status='APPROVED').exclude(role='GENERAL')
+    from leadership.models import RoleDefinition
     
-    if zone_filter:
-        leaders = leaders.filter(zone_id=zone_filter)
-    if lga_filter:
-        leaders = leaders.filter(lga_id=lga_filter)
-    if ward_filter:
-        leaders = leaders.filter(ward_id=ward_filter)
+    leadership_positions = []
+    
+    if not zone_filter and not lga_filter and not ward_filter:
+        state_roles = RoleDefinition.objects.filter(tier='STATE').order_by('seat_number')
+        for role in state_roles:
+            holder = User.objects.filter(role_definition=role, status='APPROVED').first()
+            leadership_positions.append({
+                'role': role,
+                'holder': holder,
+                'vacant': holder is None
+            })
+        
+        zones = Zone.objects.all()
+        for zone in zones:
+            zonal_roles = RoleDefinition.objects.filter(tier='ZONAL').order_by('seat_number')
+            for role in zonal_roles:
+                holder = User.objects.filter(role_definition=role, zone=zone, status='APPROVED').first()
+                leadership_positions.append({
+                    'role': role,
+                    'holder': holder,
+                    'zone': zone,
+                    'vacant': holder is None
+                })
+    elif zone_filter:
+        zone = Zone.objects.get(id=zone_filter)
+        zonal_roles = RoleDefinition.objects.filter(tier='ZONAL').order_by('seat_number')
+        for role in zonal_roles:
+            holder = User.objects.filter(role_definition=role, zone=zone, status='APPROVED').first()
+            leadership_positions.append({
+                'role': role,
+                'holder': holder,
+                'zone': zone,
+                'vacant': holder is None
+            })
+    elif lga_filter:
+        lga = LGA.objects.get(id=lga_filter)
+        lga_roles = RoleDefinition.objects.filter(tier='LGA').order_by('seat_number')
+        for role in lga_roles:
+            holder = User.objects.filter(role_definition=role, lga=lga, status='APPROVED').first()
+            leadership_positions.append({
+                'role': role,
+                'holder': holder,
+                'lga': lga,
+                'vacant': holder is None
+            })
+    elif ward_filter:
+        ward = Ward.objects.get(id=ward_filter)
+        ward_roles = RoleDefinition.objects.filter(tier='WARD').order_by('seat_number')
+        for role in ward_roles:
+            holder = User.objects.filter(role_definition=role, ward=ward, status='APPROVED').first()
+            leadership_positions.append({
+                'role': role,
+                'holder': holder,
+                'ward': ward,
+                'vacant': holder is None
+            })
     
     zones = Zone.objects.all()
     lgas = LGA.objects.all()
     wards = Ward.objects.all()
     
     context = {
-        'leaders': leaders,
+        'leadership_positions': leadership_positions,
         'zones': zones,
         'lgas': lgas,
         'wards': wards,

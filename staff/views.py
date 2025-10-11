@@ -149,6 +149,10 @@ def register(request):
             facebook_verified=facebook_verified
         )
         
+        if request.FILES.get('photo'):
+            user.photo = request.FILES['photo']
+            user.save()
+        
         if status == 'APPROVED':
             login(request, user)
             messages.success(request, 'Registration successful! Welcome to KPN.')
