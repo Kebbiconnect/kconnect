@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Media Gallery{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-4">Media Gallery</h1>
+        <p class="lead">View photos and videos from our activities and events across Kebbi State</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs nav-justified mb-4" id="mediaTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="photos-tab" data-bs-toggle="tab" data-bs-target="#photos" type="button" role="tab">
+                    <i class="fas fa-camera"></i> Photos ({{ photos|length }})
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="videos-tab" data-bs-toggle="tab" data-bs-target="#videos" type="button" role="tab">
+                    <i class="fas fa-video"></i> Videos ({{ videos|length }})
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="mediaTabContent">
+            <!-- Photos Tab -->
+            <div class="tab-pane fade show active" id="photos" role="tabpanel" aria-labelledby="photos-tab">
+                {% if photos %}
+                    <div class="row g-4">
+                        {% for photo in photos %}
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <div class="card h-100 shadow-sm">
+                                <img src="{{ url_for('static', filename=photo.file_path) }}" 
+                                     class="card-img-top" 
+                                     alt="{{ photo.title }}"
+                                     style="height: 200px; object-fit: cover; cursor: pointer;"
+                                     data-bs-toggle="modal" 
+                                     data-bs-target="#photoModal{{ photo.id }}">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ photo.title }}</h6>
+                                    {% if photo.description %}
+                                        <p class="card-text small text-muted">{{ photo.description[:80] }}...</p>
+                                    {% endif %}
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i> {{ photo.created_at.strftime('%B %d, %Y') }}
+                                        <br>
+                                        <i class="fas fa-user"></i> {{ photo.uploaded_by.full_name }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Photo Modal -->
+                        <div class="modal fade" id="photoModal{{ photo.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">{{ photo.title }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <img src="{{ url_for('static', filename=photo.file_path) }}" 
+                                             class="img-fluid" 
+                                             alt="{{ photo.title }}">
+                                        {% if photo.description %}
+                                            <p class="mt-3">{{ photo.description }}</p>
+                                        {% endif %}
+                                        <p class="text-muted">
+                                            <small>
+                                                Uploaded by {{ photo.uploaded_by.full_name }} on {{ photo.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                            </small>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-camera fa-4x text-muted mb-3"></i>
+                        <h4 class="text-muted">No Photos Available</h4>
+                        <p class="text-muted">Check back later for photos from our activities and events.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Videos Tab -->
+            <div class="tab-pane fade" id="videos" role="tabpanel" aria-labelledby="videos-tab">
+                {% if videos %}
+                    <div class="row g-4">
+                        {% for video in videos %}
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card h-100 shadow-sm">
+                                <div class="position-relative">
+                                    <video class="card-img-top" style="height: 200px; object-fit: cover;" controls>
+                                        <source src="{{ url_for('static', filename=video.file_path) }}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                    <div class="position-absolute top-50 start-50 translate-middle">
+                                        <i class="fas fa-play-circle fa-3x text-white" style="text-shadow: 0 0 10px rgba(0,0,0,0.5);"></i>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ video.title }}</h6>
+                                    {% if video.description %}
+                                        <p class="card-text small text-muted">{{ video.description[:100] }}...</p>
+                                    {% endif %}
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i> {{ video.created_at.strftime('%B %d, %Y') }}
+                                        <br>
+                                        <i class="fas fa-user"></i> {{ video.uploaded_by.full_name }}
+                                    </small>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-sm btn-kpn-primary" data-bs-toggle="modal" data-bs-target="#videoModal{{ video.id }}">
+                                        <i class="fas fa-expand"></i> View Full Size
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Video Modal -->
+                        <div class="modal fade" id="videoModal{{ video.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-xl">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">{{ video.title }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <video class="w-100" controls>
+                                            <source src="{{ url_for('static', filename=video.file_path) }}" type="video/mp4">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                        {% if video.description %}
+                                            <p class="mt-3">{{ video.description }}</p>
+                                        {% endif %}
+                                        <p class="text-muted">
+                                            <small>
+                                                Uploaded by {{ video.uploaded_by.full_name }} on {{ video.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                            </small>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-video fa-4x text-muted mb-3"></i>
+                        <h4 class="text-muted">No Videos Available</h4>
+                        <p class="text-muted">Check back later for videos from our activities and events.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Upload Call-to-Action (for staff) -->
+        {% if current_user.is_authenticated and current_user.role_type.value in ['admin', 'executive'] %}
+        <div class="text-center mt-5">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="text-kpn-green">Share Your Media</h5>
+                    <p class="mb-3">Upload photos and videos from KPN activities to share with our community.</p>
+                    <a href="{{ url_for('media.upload') }}" class="btn btn-kpn-primary">
+                        <i class="fas fa-upload"></i> Upload Media
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

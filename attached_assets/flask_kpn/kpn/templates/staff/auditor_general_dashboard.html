@@ -1,0 +1,409 @@
+{% extends "base.html" %}
+
+{% block title %}Auditor General Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Personalized Greeting -->
+    <div class="greeting-container">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-hand-wave greeting-icon"></i>
+            <p class="greeting-text" id="personalized-greeting"></p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-kpn-green mb-0">
+                <i class="fas fa-search-dollar"></i> Auditor General Dashboard
+            </h2>
+            <p class="text-muted">Financial & Compliance Oversight - {{ current_user.full_name }}</p>
+            <p class="small text-info"><i class="fas fa-balance-scale"></i> <strong>Audit Authority</strong> - Full Compliance & Financial Oversight</p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="badge bg-info fs-6">AUDITOR GENERAL</span>
+            <a href="{{ url_for('staff.logout') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Financial Oversight Metrics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-info text-white leadership-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title mb-1">{{ total_donations or 0 }}</h3>
+                            <p class="card-text mb-0">Active Accounts</p>
+                            <small class="opacity-75">Financial Oversight</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-piggy-bank fa-3x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark bg-opacity-25">
+                    <small><i class="fas fa-chart-line"></i> +{{ recent_donations or 0 }} recent registrations</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-success text-white leadership-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title mb-1">{{ compliance_metrics.member_approval_rate or 0 }}%</h3>
+                            <p class="card-text mb-0">Approval Rate</p>
+                            <small class="opacity-75">Member Compliance</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-3x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark bg-opacity-25">
+                    <small><i class="fas fa-users"></i> {{ approved_members or 0 }}/{{ total_users or 0 }} members approved</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-warning text-white leadership-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title mb-1">{{ active_disciplinary or 0 }}</h3>
+                            <p class="card-text mb-0">Active Cases</p>
+                            <small class="opacity-75">Disciplinary Oversight</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exclamation-triangle fa-3x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark bg-opacity-25">
+                    <small><i class="fas fa-gavel"></i> {{ compliance_metrics.disciplinary_resolution_rate or 0 }}% resolution rate</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-primary text-white leadership-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title mb-1">{{ compliance_metrics.zones_above_target or 0 }}/3</h3>
+                            <p class="card-text mb-0">Zones Compliant</p>
+                            <small class="opacity-75">Target: 80%+</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-map-marked-alt fa-3x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark bg-opacity-25">
+                    <small><i class="fas fa-thumbs-up"></i> Geographic compliance monitoring</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance Summary -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clipboard-check text-info"></i> Compliance Overview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Member Compliance</h6>
+                            <div class="progress mb-3" style="height: 25px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ compliance_metrics.member_approval_rate or 0 }}%"
+                                     aria-valuenow="{{ compliance_metrics.member_approval_rate or 0 }}" aria-valuemin="0" aria-valuemax="100">
+                                    {{ compliance_metrics.member_approval_rate or 0 }}%
+                                </div>
+                            </div>
+                            
+                            <h6 class="text-muted">Campaign Publication Rate</h6>
+                            <div class="progress mb-3" style="height: 25px;">
+                                <div class="progress-bar bg-info" role="progressbar" 
+                                     style="width: {{ compliance_metrics.campaign_publication_rate or 0 }}%"
+                                     aria-valuenow="{{ compliance_metrics.campaign_publication_rate or 0 }}" aria-valuemin="0" aria-valuemax="100">
+                                    {{ compliance_metrics.campaign_publication_rate or 0 }}%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Disciplinary Resolution</h6>
+                            <div class="progress mb-3" style="height: 25px;">
+                                <div class="progress-bar bg-warning" role="progressbar" 
+                                     style="width: {{ compliance_metrics.disciplinary_resolution_rate or 0 }}%"
+                                     aria-valuenow="{{ compliance_metrics.disciplinary_resolution_rate or 0 }}" aria-valuemin="0" aria-valuemax="100">
+                                    {{ compliance_metrics.disciplinary_resolution_rate or 0 }}%
+                                </div>
+                            </div>
+                            
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="border rounded p-2">
+                                        <h6 class="text-success mb-0">{{ approved_members or 0 }}</h6>
+                                        <small class="text-muted">Approved</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="border rounded p-2">
+                                        <h6 class="text-warning mb-0">{{ pending_approvals or 0 }}</h6>
+                                        <small class="text-muted">Pending</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="border rounded p-2">
+                                        <h6 class="text-danger mb-0">{{ rejected_users or 0 }}</h6>
+                                        <small class="text-muted">Rejected</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie text-primary"></i> Role Distribution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for role, count in role_audit.items() %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-capitalize">{{ role.replace('_', ' ') }}</span>
+                        <span class="badge bg-light text-dark">{{ count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zone Compliance Details -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-map text-success"></i> Zone Compliance Analysis
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Zone</th>
+                                    <th>Total LGAs</th>
+                                    <th>Approved Members</th>
+                                    <th>Compliance Rate</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for zone in zone_audit %}
+                                <tr>
+                                    <td><strong>{{ zone.name }}</strong></td>
+                                    <td>{{ zone.total_lgas }}</td>
+                                    <td>{{ zone.approved_users }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            {% if zone.compliance_rate >= 80 %}
+                                                <div class="progress-bar bg-success" role="progressbar" 
+                                                     style="width: {{ zone.compliance_rate }}%">
+                                                    {{ zone.compliance_rate|round(1) }}%
+                                                </div>
+                                            {% elif zone.compliance_rate >= 60 %}
+                                                <div class="progress-bar bg-warning" role="progressbar" 
+                                                     style="width: {{ zone.compliance_rate }}%">
+                                                    {{ zone.compliance_rate|round(1) }}%
+                                                </div>
+                                            {% else %}
+                                                <div class="progress-bar bg-danger" role="progressbar" 
+                                                     style="width: {{ zone.compliance_rate }}%">
+                                                    {{ zone.compliance_rate|round(1) }}%
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if zone.compliance_rate >= 80 %}
+                                            <span class="badge bg-success">Compliant</span>
+                                        {% elif zone.compliance_rate >= 60 %}
+                                            <span class="badge bg-warning">Moderate</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Below Target</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Audit Activities -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history text-secondary"></i> Recent Audit Trail
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_activities %}
+                        <div class="timeline">
+                            {% for activity in recent_activities[:10] %}
+                            <div class="timeline-item mb-3 pb-3 border-bottom">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        {% if activity.type == 'registration' %}
+                                            <i class="fas fa-user-plus text-success"></i>
+                                        {% elif activity.type == 'disciplinary' %}
+                                            <i class="fas fa-gavel text-warning"></i>
+                                        {% else %}
+                                            <i class="fas fa-info-circle text-info"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <p class="mb-1">{{ activity.description }}</p>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock"></i> {{ activity.timestamp.strftime('%B %d, %Y at %I:%M %p') }}
+                                            {% if activity.status %}
+                                                - <span class="badge badge-sm bg-secondary">{{ activity.status.title() }}</span>
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No recent audit activities found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tasks text-info"></i> Audit Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-muted">Financial Accounts</h6>
+                        <div class="d-flex justify-content-between">
+                            <span>Active:</span>
+                            <strong class="text-success">{{ total_donations or 0 }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Inactive:</span>
+                            <strong class="text-muted">{{ inactive_donations or 0 }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-muted">Campaign Oversight</h6>
+                        <div class="d-flex justify-content-between">
+                            <span>Total:</span>
+                            <strong>{{ total_campaigns or 0 }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Published:</span>
+                            <strong class="text-success">{{ published_campaigns or 0 }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-muted">Events Monitoring</h6>
+                        <div class="d-flex justify-content-between">
+                            <span>Total Events:</span>
+                            <strong>{{ total_events or 0 }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Recent:</span>
+                            <strong class="text-info">{{ recent_events or 0 }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="border-top pt-3">
+                        <h6 class="text-muted">Overall Assessment</h6>
+                        {% if compliance_metrics.member_approval_rate >= 80 and compliance_metrics.zones_above_target >= 2 %}
+                            <span class="badge bg-success p-2">
+                                <i class="fas fa-thumbs-up"></i> Excellent Compliance
+                            </span>
+                        {% elif compliance_metrics.member_approval_rate >= 60 %}
+                            <span class="badge bg-warning p-2">
+                                <i class="fas fa-exclamation-triangle"></i> Needs Improvement
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger p-2">
+                                <i class="fas fa-times"></i> Critical Issues
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.leadership-card {
+    border: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.leadership-card:hover {
+    transform: translateY(-2px);
+}
+
+.bg-gradient-kpn-green {
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.timeline-item {
+    position: relative;
+}
+
+.progress {
+    border-radius: 10px;
+}
+
+.badge-sm {
+    font-size: 0.7em;
+}
+</style>
+
+<script>
+// Initialize personalized greeting
+document.addEventListener('DOMContentLoaded', function() {
+    const userName = {{ current_user.full_name|tojson }};
+    const roleTitle = {{ "Auditor General"|tojson }};
+    const taskReminder = {{ "please review compliance metrics and audit reports"|tojson }};
+    
+    initializeGreeting(userName, roleTitle, taskReminder);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Create Event{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card shadow">
+                <div class="card-header bg-kpn-green text-white">
+                    <h4 class="mb-0"><i class="fas fa-calendar-plus"></i> Create New Event</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">Event Title</label>
+                                    <input type="text" class="form-control" id="title" name="title" required 
+                                           placeholder="Enter event title...">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="scope" class="form-label">Event Scope</label>
+                                    <select class="form-select" id="scope" name="scope" required onchange="updateScopeFields()">
+                                        <option value="">Select scope...</option>
+                                        <option value="state">State-wide</option>
+                                        <option value="zone">Zonal</option>
+                                        <option value="lga">LGA</option>
+                                        <option value="ward">Ward</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Event Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4" 
+                                    placeholder="Describe the event details..."></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="event_date" class="form-label">Event Date & Time</label>
+                                    <input type="datetime-local" class="form-control" id="event_date" name="event_date" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="meeting_type" class="form-label">Meeting Type</label>
+                                    <select class="form-select" id="meeting_type" name="meeting_type" onchange="updateMeetingFields()" required>
+                                        <option value="in_person">In-Person</option>
+                                        <option value="zoom">Zoom Meeting</option>
+                                        <option value="whatsapp">WhatsApp Group</option>
+                                        <option value="hybrid">Hybrid (In-Person + Online)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12" id="location-field">
+                                <div class="mb-3">
+                                    <label for="location" class="form-label">Location</label>
+                                    <input type="text" class="form-control" id="location" name="location" 
+                                           placeholder="Event venue or location...">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Online Meeting Fields -->
+                        <div id="online-meeting-fields" style="display: none;">
+                            <div class="card mb-3 border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0"><i class="fas fa-video"></i> Online Meeting Details</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-12" id="meeting-url-field">
+                                            <div class="mb-3">
+                                                <label for="meeting_url" class="form-label">Meeting Link</label>
+                                                <input type="url" class="form-control" id="meeting_url" name="meeting_url" 
+                                                       placeholder="https://zoom.us/j/... or WhatsApp group invite link">
+                                                <div class="form-text">Paste the Zoom meeting link or WhatsApp group invite link</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row" id="zoom-specific-fields" style="display: none;">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="meeting_id" class="form-label">Meeting ID</label>
+                                                <input type="text" class="form-control" id="meeting_id" name="meeting_id" 
+                                                       placeholder="123 456 7890">
+                                                <div class="form-text">Optional: Zoom meeting ID for easier access</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="meeting_password" class="form-label">Meeting Password</label>
+                                                <input type="text" class="form-control" id="meeting_password" name="meeting_password" 
+                                                       placeholder="Optional password">
+                                                <div class="form-text">Optional: Password if required</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Scope-specific fields (hidden by default) -->
+                        <div id="scope-fields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-4" id="zone-field" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="zone_id" class="form-label">Zone</label>
+                                        <select class="form-select" id="zone_id" name="zone_id" onchange="loadLGAs()">
+                                            <option value="">Select zone...</option>
+                                            {% for zone in zones %}
+                                            <option value="{{ zone.id }}">{{ zone.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4" id="lga-field" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="lga_id" class="form-label">LGA</label>
+                                        <select class="form-select" id="lga_id" name="lga_id" onchange="loadWards()">
+                                            <option value="">Select LGA...</option>
+                                            <!-- LGA options will be populated dynamically -->
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4" id="ward-field" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="ward_id" class="form-label">Ward</label>
+                                        <select class="form-select" id="ward_id" name="ward_id">
+                                            <option value="">Select ward...</option>
+                                            <!-- Ward options will be populated dynamically -->
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('events.manage') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-kpn-primary">
+                                <i class="fas fa-save"></i> Create Event
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateScopeFields() {
+    const scope = document.getElementById('scope').value;
+    const scopeFields = document.getElementById('scope-fields');
+    const zoneField = document.getElementById('zone-field');
+    const lgaField = document.getElementById('lga-field');
+    const wardField = document.getElementById('ward-field');
+    
+    // Hide all fields first
+    scopeFields.style.display = 'none';
+    zoneField.style.display = 'none';
+    lgaField.style.display = 'none';
+    wardField.style.display = 'none';
+    
+    if (scope && scope !== 'state') {
+        scopeFields.style.display = 'block';
+        
+        if (scope === 'zone' || scope === 'lga' || scope === 'ward') {
+            zoneField.style.display = 'block';
+        }
+        if (scope === 'lga' || scope === 'ward') {
+            lgaField.style.display = 'block';
+        }
+        if (scope === 'ward') {
+            wardField.style.display = 'block';
+        }
+    }
+}
+
+function updateMeetingFields() {
+    const meetingType = document.getElementById('meeting_type').value;
+    const onlineMeetingFields = document.getElementById('online-meeting-fields');
+    const zoomSpecificFields = document.getElementById('zoom-specific-fields');
+    const locationField = document.getElementById('location-field');
+    const locationInput = document.getElementById('location');
+    
+    // Update location field label and requirements
+    const locationLabel = locationField.querySelector('label');
+    
+    if (meetingType === 'in_person') {
+        // Hide online meeting fields
+        onlineMeetingFields.style.display = 'none';
+        locationInput.required = true;
+        locationLabel.textContent = 'Location';
+        locationInput.placeholder = 'Event venue or location...';
+    } else if (meetingType === 'zoom' || meetingType === 'whatsapp') {
+        // Show online meeting fields
+        onlineMeetingFields.style.display = 'block';
+        locationInput.required = false;
+        locationLabel.textContent = 'Location (Optional)';
+        locationInput.placeholder = 'Optional physical backup location...';
+        
+        // Show/hide Zoom-specific fields
+        if (meetingType === 'zoom') {
+            zoomSpecificFields.style.display = 'block';
+            document.getElementById('meeting_url').placeholder = 'https://zoom.us/j/1234567890';
+        } else {
+            zoomSpecificFields.style.display = 'none';
+            document.getElementById('meeting_url').placeholder = 'WhatsApp group invite link';
+        }
+    } else if (meetingType === 'hybrid') {
+        // Show online meeting fields and require location
+        onlineMeetingFields.style.display = 'block';
+        zoomSpecificFields.style.display = 'block';
+        locationInput.required = true;
+        locationLabel.textContent = 'Physical Location';
+        locationInput.placeholder = 'Primary venue for in-person attendees...';
+        document.getElementById('meeting_url').placeholder = 'Online meeting link for virtual attendees';
+    }
+}
+
+// Load LGAs based on selected zone
+function loadLGAs() {
+    const zoneId = document.getElementById('zone_id').value;
+    const lgaSelect = document.getElementById('lga_id');
+    const wardSelect = document.getElementById('ward_id');
+    
+    // Reset LGA and ward dropdowns
+    lgaSelect.innerHTML = '<option value="">Select LGA...</option>';
+    wardSelect.innerHTML = '<option value="">Select ward...</option>';
+    
+    if (zoneId) {
+        fetch(`/events/api/lgas/${zoneId}`)
+            .then(response => response.json())
+            .then(lgas => {
+                lgas.forEach(lga => {
+                    const option = document.createElement('option');
+                    option.value = lga.id;
+                    option.textContent = lga.name;
+                    lgaSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading LGAs:', error);
+            });
+    }
+}
+
+// Load wards based on selected LGA
+function loadWards() {
+    const lgaId = document.getElementById('lga_id').value;
+    const wardSelect = document.getElementById('ward_id');
+    
+    // Reset ward dropdown
+    wardSelect.innerHTML = '<option value="">Select ward...</option>';
+    
+    if (lgaId) {
+        fetch(`/events/api/wards/${lgaId}`)
+            .then(response => response.json())
+            .then(wards => {
+                wards.forEach(ward => {
+                    const option = document.createElement('option');
+                    option.value = ward.id;
+                    option.textContent = ward.name;
+                    wardSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading wards:', error);
+            });
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateMeetingFields();
+});
+</script>
+{% endblock %}

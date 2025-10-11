@@ -1,124 +1,225 @@
 {% extends 'base.html' %}
 
-{% block title %}Register - KPN{% endblock %}
+{% block title %}Join KPN - Register{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
-        <h1 class="text-3xl font-bold mb-6 text-center">Join KPN</h1>
-        
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                    <label class="block text-sm font-medium mb-2">First Name</label>
-                    <input type="text" name="first_name" required class="w-full p-3 border rounded dark:bg-gray-700">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+        <div class="bg-kpn-green text-white px-6 py-6 rounded-t-lg text-center">
+            <h3 class="text-2xl md:text-3xl font-bold mb-2">
+                <i class="fas fa-user-plus"></i> Join Kebbi Progressive Network
+            </h3>
+            <p class="text-lg">One Voice, One Change</p>
+        </div>
+        <div class="p-6 md:p-8">
+            <form method="POST" enctype="multipart/form-data" id="registrationForm">
+                {% csrf_token %}
+                
+                <!-- Personal Information -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="first_name" class="block text-sm font-semibold mb-2">
+                            <i class="fas fa-user"></i> First Name *
+                        </label>
+                        <input type="text" class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent" id="first_name" name="first_name" required>
+                    </div>
+                    <div>
+                        <label for="last_name" class="block text-sm font-semibold mb-2">
+                            <i class="fas fa-user"></i> Last Name *
+                        </label>
+                        <input type="text" class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent" id="last_name" name="last_name" required>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">Last Name</label>
-                    <input type="text" name="last_name" required class="w-full p-3 border rounded dark:bg-gray-700">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="username" class="block text-sm font-semibold mb-2">
+                            <i class="fas fa-at"></i> Username *
+                        </label>
+                        <input type="text" class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent" id="username" name="username" required>
+                        <small class="text-gray-500 dark:text-gray-400">This will be your login username</small>
+                    </div>
+                    <div>
+                        <label for="email" class="block text-sm font-semibold mb-2">
+                            <i class="fas fa-envelope"></i> Email Address *
+                        </label>
+                        <input type="email" class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent" id="email" name="email" required>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                    <label class="block text-sm font-medium mb-2">Username</label>
-                    <input type="text" name="username" required class="w-full p-3 border rounded dark:bg-gray-700">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="phone" class="block text-sm font-semibold mb-2">
+                            <i class="fas fa-phone"></i> Phone Number *
+                        </label>
+                        <input type="tel" class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent" id="phone" name="phone" required>
+                    </div>
+                    <div>
+                        <label for="photo" class="block text-sm font-semibold mb-2">
+                            <i class="fas fa-camera"></i> Profile Photo
+                        </label>
+                        <input type="file" class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent" id="photo" name="photo" accept="image/*">
+                        <small class="text-gray-500 dark:text-gray-400">Recommended for profile</small>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">Email</label>
-                    <input type="email" name="email" required class="w-full p-3 border rounded dark:bg-gray-700">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="password1" class="block text-sm font-semibold mb-2">
+                            <i class="fas fa-lock"></i> Password *
+                        </label>
+                        <input type="password" class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent" id="password1" name="password1" required>
+                    </div>
+                    <div>
+                        <label for="password2" class="block text-sm font-semibold mb-2">
+                            <i class="fas fa-lock"></i> Confirm Password *
+                        </label>
+                        <input type="password" class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent" id="password2" name="password2" required>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="mb-6">
-                <label class="block text-sm font-medium mb-2">Phone Number</label>
-                <input type="tel" name="phone" required class="w-full p-3 border rounded dark:bg-gray-700">
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                    <label class="block text-sm font-medium mb-2">Password</label>
-                    <input type="password" name="password1" required class="w-full p-3 border rounded dark:bg-gray-700">
+                
+                <!-- Location Selection -->
+                <div class="mt-8 mb-6">
+                    <h5 class="text-xl font-bold text-kpn-green mb-4">
+                        <i class="fas fa-map-marker-alt"></i> Location Assignment
+                    </h5>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label for="zone" class="block text-sm font-semibold mb-2">Zone *</label>
+                            <select class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent" id="zone" name="zone" required>
+                                <option value="">Select Zone</option>
+                                {% for zone in zones %}
+                                <option value="{{ zone.id }}">{{ zone.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="lga" class="block text-sm font-semibold mb-2">LGA *</label>
+                            <select class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent" id="lga" name="lga" required>
+                                <option value="">Select Zone first</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="ward" class="block text-sm font-semibold mb-2">Ward *</label>
+                            <select class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent" id="ward" name="ward">
+                                <option value="">Select LGA first</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">Confirm Password</label>
-                    <input type="password" name="password2" required class="w-full p-3 border rounded dark:bg-gray-700">
+                
+                <!-- Role Selection -->
+                <div class="mt-8 mb-6">
+                    <h5 class="text-xl font-bold text-kpn-green mb-4">
+                        <i class="fas fa-user-tie"></i> Leadership Interest
+                    </h5>
+                    <div class="mb-4">
+                        <div class="flex items-center mb-3">
+                            <input class="mr-3 h-4 w-4 text-kpn-green focus:ring-kpn-green" type="radio" name="role_type" id="general_member" 
+                                   value="GENERAL_MEMBER" checked>
+                            <label class="font-medium" for="general_member">
+                                <strong>General Member</strong> - Support KPN activities and receive updates
+                            </label>
+                        </div>
+                        <div class="flex items-center">
+                            <input class="mr-3 h-4 w-4 text-kpn-green focus:ring-kpn-green" type="radio" name="role_type" id="leadership_role" 
+                                   value="LEADERSHIP">
+                            <label class="font-medium" for="leadership_role">
+                                <strong>Apply for Leadership Position</strong> - Take active role in KPN leadership
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="leadership_options" class="hidden">
+                        <div class="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-4">
+                            <p class="text-sm text-blue-800 dark:text-blue-200">
+                                <i class="fas fa-info-circle"></i> Select your location first, then choose from available leadership positions in your area.
+                            </p>
+                        </div>
+                        <div>
+                            <label for="role_definition" class="block text-sm font-semibold mb-2">Available Leadership Positions</label>
+                            <select class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent" id="role_definition" name="role_definition">
+                                <option value="">Select your location first</option>
+                            </select>
+                            <p id="role-message" class="text-sm mt-2"></p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="mb-6">
-                <label class="block text-sm font-medium mb-2">Bio (Optional)</label>
-                <textarea name="bio" rows="3" class="w-full p-3 border rounded dark:bg-gray-700"></textarea>
-            </div>
-            
-            <div class="mb-6">
-                <label class="block text-sm font-medium mb-2">Profile Photo (Optional)</label>
-                <input type="file" name="photo" accept="image/*" class="w-full p-3 border rounded dark:bg-gray-700">
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Upload a profile picture for your account.</p>
-            </div>
-            
-            <h3 class="text-xl font-semibold mb-4">Location Information</h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div>
-                    <label class="block text-sm font-medium mb-2">Zone *</label>
-                    <select id="zone" name="zone" required class="w-full p-3 border rounded dark:bg-gray-700">
-                        <option value="">Select Zone</option>
-                        {% for zone in zones %}
-                        <option value="{{ zone.id }}">{{ zone.name }}</option>
-                        {% endfor %}
-                    </select>
+                
+                <!-- Bio -->
+                <div class="mb-6">
+                    <label for="bio" class="block text-sm font-semibold mb-2">
+                        <i class="fas fa-info-circle"></i> Brief Biography (Optional)
+                    </label>
+                    <textarea class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent" id="bio" name="bio" rows="3" 
+                              placeholder="Tell us about yourself, your experience, and why you want to join KPN..."></textarea>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">LGA *</label>
-                    <select id="lga" name="lga" required class="w-full p-3 border rounded dark:bg-gray-700">
-                        <option value="">Select LGA</option>
-                    </select>
+                
+                <!-- Facebook Verification -->
+                <div class="mb-6 bg-blue-50 dark:bg-blue-900 border-2 border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                    <div class="flex items-start">
+                        <input type="checkbox" id="facebook_verified" name="facebook_verified" class="mr-3 mt-1 h-4 w-4 text-kpn-green focus:ring-kpn-green" required>
+                        <label for="facebook_verified" class="text-sm">
+                            <strong>I confirm that I have followed the official KPN Facebook page at 
+                            <a href="https://www.facebook.com/kpnkebbi" target="_blank" class="text-kpn-blue hover:underline font-bold">facebook.com/kpnkebbi</a></strong>
+                            <br>
+                            <span class="text-gray-600 dark:text-gray-400">(This is required for registration and must be followed to complete your account setup)</span>
+                        </label>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">Ward (Optional)</label>
-                    <select id="ward" name="ward" class="w-full p-3 border rounded dark:bg-gray-700">
-                        <option value="">Select Ward</option>
-                    </select>
+                
+                <!-- Terms -->
+                <div class="mb-6">
+                    <div class="flex items-start">
+                        <input class="mr-3 mt-1 h-4 w-4 text-kpn-green focus:ring-kpn-green" type="checkbox" id="agree_terms" required>
+                        <label for="agree_terms" class="text-sm">
+                            I agree to the <a href="{% url 'core:code_of_conduct' %}" target="_blank" class="text-kpn-blue hover:underline font-semibold">KPN Code of Conduct</a> 
+                            and understand my responsibilities as a member.
+                        </label>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="mb-6">
-                <label class="block text-sm font-medium mb-2">Apply for Leadership Role (Optional)</label>
-                <select id="role_definition" name="role_definition" class="w-full p-3 border rounded dark:bg-gray-700">
-                    <option value="">General Member (No Leadership Role)</option>
-                </select>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Note: Leadership applications require approval.</p>
-                <p id="role-message" class="text-sm mt-2"></p>
-            </div>
-            
-            <div class="mb-6 bg-blue-50 dark:bg-blue-900 p-4 rounded">
-                <label class="flex items-start">
-                    <input type="checkbox" name="facebook_verified" class="mt-1 mr-3" required>
-                    <span class="text-sm">
-                        I confirm that I have followed the official KPN Facebook page at 
-                        <a href="https://www.facebook.com/kpnkebbi" target="_blank" class="text-kpn-blue hover:underline font-semibold">facebook.com/kpnkebbi</a>
-                        (This is required for registration)
-                    </span>
-                </label>
-            </div>
-            
-            <button type="submit" class="w-full bg-kpn-green text-white py-3 rounded-lg hover:bg-green-600 transition">Register</button>
-            
-            <div class="text-center mt-4">
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                    Already have an account? <a href="{% url 'staff:login' %}" class="text-kpn-green hover:text-kpn-blue">Login here</a>
-                </p>
-            </div>
-        </form>
+                
+                <div class="mt-6">
+                    <button type="submit" class="w-full bg-kpn-green text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-green-600 transition">
+                        <i class="fas fa-user-plus"></i> Register with KPN
+                    </button>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        Already have an account? <a href="{% url 'staff:login' %}" class="text-kpn-green hover:text-kpn-blue font-semibold">Login here</a>
+                    </p>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+// Toggle leadership options
+const generalMemberRadio = document.getElementById('general_member');
+const leadershipRadio = document.getElementById('leadership_role');
+const leadershipOptions = document.getElementById('leadership_options');
+
+function toggleRoleSelection() {
+    if (leadershipRadio.checked) {
+        leadershipOptions.classList.remove('hidden');
+        leadershipOptions.classList.add('block', 'animate-fadeIn');
+        // Refresh available roles when switching to leadership
+        checkVacantRoles();
+    } else {
+        leadershipOptions.classList.add('hidden');
+        leadershipOptions.classList.remove('block');
+        document.getElementById('role_definition').value = '';
+    }
+}
+
+generalMemberRadio.addEventListener('change', toggleRoleSelection);
+leadershipRadio.addEventListener('change', toggleRoleSelection);
+
+// Cascading dropdowns for location
 const zoneSelect = document.getElementById('zone');
 const lgaSelect = document.getElementById('lga');
 const wardSelect = document.getElementById('ward');
@@ -128,17 +229,21 @@ const roleMessage = document.getElementById('role-message');
 zoneSelect.addEventListener('change', async function() {
     const zoneId = this.value;
     
-    lgaSelect.innerHTML = '<option value="">Select LGA</option>';
-    wardSelect.innerHTML = '<option value="">Select Ward</option>';
-    roleSelect.innerHTML = '<option value="">General Member (No Leadership Role)</option>';
+    lgaSelect.innerHTML = '<option value="">Loading...</option>';
+    wardSelect.innerHTML = '<option value="">Select LGA first</option>';
+    roleSelect.innerHTML = '<option value="">Select location first</option>';
     roleMessage.textContent = '';
     
-    if (!zoneId) return;
+    if (!zoneId) {
+        lgaSelect.innerHTML = '<option value="">Select Zone first</option>';
+        return;
+    }
     
     try {
         const response = await fetch(`/account/api/get-lgas/?zone_id=${zoneId}`);
         const data = await response.json();
         
+        lgaSelect.innerHTML = '<option value="">Select LGA</option>';
         data.lgas.forEach(lga => {
             const option = document.createElement('option');
             option.value = lga.id;
@@ -146,25 +251,33 @@ zoneSelect.addEventListener('change', async function() {
             lgaSelect.appendChild(option);
         });
         
-        checkVacantRoles();
+        // Check vacant roles when zone changes
+        if (leadershipRadio.checked) {
+            checkVacantRoles();
+        }
     } catch (error) {
         console.error('Error fetching LGAs:', error);
+        lgaSelect.innerHTML = '<option value="">Error loading LGAs</option>';
     }
 });
 
 lgaSelect.addEventListener('change', async function() {
     const lgaId = this.value;
     
-    wardSelect.innerHTML = '<option value="">Select Ward</option>';
-    roleSelect.innerHTML = '<option value="">General Member (No Leadership Role)</option>';
+    wardSelect.innerHTML = '<option value="">Loading...</option>';
+    roleSelect.innerHTML = '<option value="">Select location first</option>';
     roleMessage.textContent = '';
     
-    if (!lgaId) return;
+    if (!lgaId) {
+        wardSelect.innerHTML = '<option value="">Select LGA first</option>';
+        return;
+    }
     
     try {
         const response = await fetch(`/account/api/get-wards/?lga_id=${lgaId}`);
         const data = await response.json();
         
+        wardSelect.innerHTML = '<option value="">Select Ward (Optional)</option>';
         data.wards.forEach(ward => {
             const option = document.createElement('option');
             option.value = ward.id;
@@ -172,13 +285,21 @@ lgaSelect.addEventListener('change', async function() {
             wardSelect.appendChild(option);
         });
         
-        checkVacantRoles();
+        // Check vacant roles when LGA changes
+        if (leadershipRadio.checked) {
+            checkVacantRoles();
+        }
     } catch (error) {
         console.error('Error fetching wards:', error);
+        wardSelect.innerHTML = '<option value="">Error loading wards</option>';
     }
 });
 
-wardSelect.addEventListener('change', checkVacantRoles);
+wardSelect.addEventListener('change', function() {
+    if (leadershipRadio.checked) {
+        checkVacantRoles();
+    }
+});
 
 async function checkVacantRoles() {
     const zoneId = zoneSelect.value;
@@ -186,10 +307,13 @@ async function checkVacantRoles() {
     const wardId = wardSelect.value;
     
     if (!zoneId || !lgaId) {
+        roleSelect.innerHTML = '<option value="">Please select Zone and LGA first</option>';
+        roleMessage.textContent = '';
+        roleMessage.className = 'text-sm mt-2 text-gray-600 dark:text-gray-400';
         return;
     }
     
-    roleSelect.innerHTML = '<option value="">General Member (No Leadership Role)</option>';
+    roleSelect.innerHTML = '<option value="">Loading available positions...</option>';
     roleMessage.textContent = 'Checking available positions...';
     roleMessage.className = 'text-sm mt-2 text-blue-600 dark:text-blue-400';
     
@@ -201,9 +325,11 @@ async function checkVacantRoles() {
         const data = await response.json();
         
         if (data.vacant_roles.length === 0) {
+            roleSelect.innerHTML = '<option value="">No vacant positions available</option>';
             roleMessage.textContent = 'No vacant leadership positions available in this location. You can register as a General Member.';
             roleMessage.className = 'text-sm mt-2 text-orange-600 dark:text-orange-400';
         } else {
+            roleSelect.innerHTML = '<option value="">Select a position</option>';
             data.vacant_roles.forEach(role => {
                 const option = document.createElement('option');
                 option.value = role.id;
@@ -212,13 +338,27 @@ async function checkVacantRoles() {
             });
             
             roleMessage.textContent = `${data.vacant_roles.length} vacant leadership position(s) available in this location.`;
-            roleMessage.className = 'text-sm mt-2 text-green-600 dark:text-green-400';
+            roleMessage.className = 'text-sm mt-2 text-green-600 dark:text-green-400 font-semibold';
         }
     } catch (error) {
         console.error('Error checking vacant roles:', error);
+        roleSelect.innerHTML = '<option value="">Error loading positions</option>';
         roleMessage.textContent = 'Error checking vacant roles. Please try again.';
         roleMessage.className = 'text-sm mt-2 text-red-600 dark:text-red-400';
     }
 }
+
+// Add fade-in animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+`;
+document.head.appendChild(style);
 </script>
 {% endblock %}

@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}WhatsApp Messages Generated - KPN{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-kpn-green mb-0">
+                <i class="fab fa-whatsapp"></i> WhatsApp Messages Generated
+            </h2>
+            <p class="text-muted">{{ total_recipients }} WhatsApp messages ready to send</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-success" onclick="openAllWhatsApp()">
+                <i class="fab fa-whatsapp"></i> Send All Messages
+            </button>
+            <a href="{{ url_for('messages.bulk_whatsapp') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> Back to Compose
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5><i class="fas fa-info-circle"></i> Message Summary</h5>
+                            <p><strong>Title:</strong> {{ message_title }}</p>
+                            <p><strong>Content Preview:</strong> {{ message_body[:100] }}{% if message_body|length > 100 %}...{% endif %}</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h3 class="text-success">{{ total_recipients }}</h3>
+                            <p class="text-muted">Recipients Ready</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h6 class="alert-heading"><i class="fas fa-lightbulb"></i> How to Send Messages</h6>
+                <p class="mb-2">Click "Send All Messages" above to open all WhatsApp conversations at once, or use individual "Send" buttons below.</p>
+                <ul class="mb-0">
+                    <li>Each click will open a new WhatsApp conversation</li>
+                    <li>The message will be pre-filled - just click Send in WhatsApp</li>
+                    <li>You can customize each message individually if needed</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recipients List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-list"></i> Recipients</h5>
+                    <div>
+                        <input type="text" class="form-control form-control-sm" placeholder="Search recipients..." 
+                               style="width: 200px;" onkeyup="filterRecipients()" id="recipientSearch">
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="5%">#</th>
+                                    <th width="25%">Name</th>
+                                    <th width="20%">Role</th>
+                                    <th width="15%">Zone/Location</th>
+                                    <th width="15%">Phone</th>
+                                    <th width="10%">Status</th>
+                                    <th width="10%">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contact in bulk_urls %}
+                                <tr class="recipient-row" 
+                                    data-name="{{ contact.name|lower }}" 
+                                    data-role="{{ contact.role|lower }}"
+                                    data-zone="{{ contact.zone|lower }}">
+                                    <td>{{ loop.index }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-success rounded-circle me-2 d-flex align-items-center justify-content-center text-white" 
+                                                 style="width: 30px; height: 30px; font-size: 12px;">
+                                                {{ contact.name[:2].upper() }}
+                                            </div>
+                                            <strong>{{ contact.name }}</strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ contact.role.replace('_', ' ')|title }}</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ contact.zone }}</small>
+                                    </td>
+                                    <td>
+                                        <code class="small">{{ contact.phone[:3] }}***{{ contact.phone[-2:] if contact.phone|length > 5 else '***' }}</code>
+                                        <button class="btn btn-sm btn-link p-0 ms-1" onclick="revealPhone(this, '{{ contact.phone }}')" title="Reveal full number">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success" id="status-{{ loop.index }}">Ready</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-success btn-sm" 
+                                                onclick="sendWhatsAppMessage('{{ contact.whatsapp_url }}', {{ loop.index }})"
+                                                id="send-{{ loop.index }}">
+                                            <i class="fab fa-whatsapp"></i> Send
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Preview Modal -->
+    <div class="modal fade" id="messagePreviewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fab fa-whatsapp"></i> Message Preview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body">
+                            <pre id="messageContent" style="white-space: pre-wrap; font-family: inherit;"></pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let sentCount = 0;
+
+function sendWhatsAppMessage(whatsappUrl, index) {
+    // Open WhatsApp
+    window.open(whatsappUrl, '_blank');
+    
+    // Update status
+    const statusElement = document.getElementById('status-' + index);
+    const sendButton = document.getElementById('send-' + index);
+    
+    statusElement.textContent = 'Sent';
+    statusElement.className = 'badge bg-primary';
+    
+    sendButton.disabled = true;
+    sendButton.innerHTML = '<i class="fas fa-check"></i> Sent';
+    sendButton.className = 'btn btn-outline-success btn-sm';
+    
+    sentCount++;
+    
+    // Show completion message when all are sent
+    if (sentCount === {{ total_recipients }}) {
+        setTimeout(() => {
+            showCompletionMessage();
+        }, 1000);
+    }
+}
+
+function openAllWhatsApp() {
+    const confirmMessage = `This will open {{ total_recipients }} WhatsApp conversations. Continue?`;
+    
+    if (confirm(confirmMessage)) {
+        {% for contact in bulk_urls %}
+            setTimeout(() => {
+                sendWhatsAppMessage('{{ contact.whatsapp_url }}', {{ loop.index }});
+            }, {{ (loop.index - 1) * 1000 }}); // 1 second delay between each
+        {% endfor %}
+    }
+}
+
+function filterRecipients() {
+    const searchTerm = document.getElementById('recipientSearch').value.toLowerCase();
+    const rows = document.querySelectorAll('.recipient-row');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const name = row.dataset.name || '';
+        const role = row.dataset.role || '';
+        const zone = row.dataset.zone || '';
+        
+        if (name.includes(searchTerm) || role.includes(searchTerm) || zone.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function showCompletionMessage() {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+    alertDiv.innerHTML = `
+        <i class="fas fa-check-circle"></i> All WhatsApp messages have been opened!
+        <p class="mb-0">Don't forget to click "Send" in each WhatsApp conversation.</p>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.row'));
+}
+
+function previewMessage() {
+    const messageContent = `📢 KPN ANNOUNCEMENT
+
+{{ message_title }}
+
+{{ message_body }}
+
+---
+From: {{ current_user.full_name }} ({{ current_user.role_type.value.replace('_', ' ')|title if current_user.role_type else 'KPN Member' }})
+Kebbi Progressive Network (KPN)`;
+    
+    document.getElementById('messageContent').textContent = messageContent;
+    new bootstrap.Modal(document.getElementById('messagePreviewModal')).show();
+}
+
+// Add preview button to header
+document.addEventListener('DOMContentLoaded', function() {
+    const headerButtons = document.querySelector('.d-flex.gap-2');
+    const previewButton = document.createElement('button');
+    previewButton.className = 'btn btn-outline-info';
+    previewButton.innerHTML = '<i class="fas fa-eye"></i> Preview Message';
+    previewButton.onclick = previewMessage;
+    headerButtons.insertBefore(previewButton, headerButtons.firstChild);
+});
+
+function revealPhone(button, fullPhone) {
+    const codeElement = button.parentElement.querySelector('code');
+    codeElement.textContent = fullPhone;
+    button.style.display = 'none';
+}
+</script>
+
+<style>
+.text-kpn-green {
+    color: #4CAF50 !important;
+}
+
+.bg-kpn-green {
+    background-color: #4CAF50 !important;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+}
+
+code {
+    font-size: 0.8em;
+}
+</style>
+{% endblock %}

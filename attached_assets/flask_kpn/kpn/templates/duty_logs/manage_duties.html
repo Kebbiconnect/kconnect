@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Duties{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-kpn-green">
+                    <i class="fas fa-clipboard-list"></i> Manage All Duties
+                </h2>
+                <a href="{{ url_for('duty_logs.create_duty') }}" class="btn btn-kpn-primary">
+                    <i class="fas fa-plus"></i> Create New Duty
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Summary -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-list fa-2x text-info mb-2"></i>
+                    <h3 class="text-info">{{ duties|length }}</h3>
+                    <p class="mb-0">Total Duties</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                    <h3 class="text-success">{{ duties|selectattr('completion_status', 'equalto', 'completed')|list|length }}</h3>
+                    <p class="mb-0">Completed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                    <h3 class="text-warning">{{ duties|selectattr('completion_status', 'equalto', 'pending')|list|length }}</h3>
+                    <p class="mb-0">Pending</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                    <h3 class="text-danger">{{ duties|selectattr('completion_status', 'equalto', 'overdue')|list|length }}</h3>
+                    <p class="mb-0">Overdue</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filter Options -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <select class="form-select" id="statusFilter">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+                <option value="overdue">Overdue</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <input type="text" class="form-control" id="assigneeFilter" placeholder="Filter by assignee name...">
+        </div>
+        <div class="col-md-4">
+            <input type="text" class="form-control" id="dutyFilter" placeholder="Filter by duty description...">
+        </div>
+    </div>
+    
+    <!-- Duties List -->
+    {% if duties %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-kpn-green text-white">
+                    <h5 class="mb-0"><i class="fas fa-tasks"></i> All Duty Assignments</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="dutiesTable">
+                            <thead>
+                                <tr>
+                                    <th>Assignee</th>
+                                    <th>Duty Description</th>
+                                    <th>Assigned Date</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for duty in duties %}
+                                <tr data-status="{{ duty.completion_status }}" 
+                                    data-assignee="{{ duty.user.full_name|lower }}"
+                                    data-description="{{ duty.duty_description|lower }}">
+                                    <td>
+                                        <strong>{{ duty.user.full_name }}</strong><br>
+                                        <small class="text-muted">{{ duty.user.role_type.value|title }}</small>
+                                        {% if duty.user.zone or duty.user.lga %}
+                                        <br><small class="text-muted">
+                                            {% if duty.user.zone %}{{ duty.user.zone.name }}{% endif %}
+                                            {% if duty.user.lga %} - {{ duty.user.lga.name }}{% endif %}
+                                        </small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ duty.duty_description[:100] }}
+                                        {% if duty.duty_description|length > 100 %}...{% endif %}
+                                    </td>
+                                    <td>{{ duty.created_at.strftime('%b %d, %Y') }}</td>
+                                    <td>
+                                        {% if duty.due_date %}
+                                            {{ duty.due_date.strftime('%b %d, %Y') }}
+                                        {% else %}
+                                            <span class="text-muted">No due date</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if duty.completion_status == 'completed' %}
+                                            <span class="badge bg-success">Completed</span>
+                                            {% if duty.completed_date %}
+                                            <br><small class="text-muted">{{ duty.completed_date.strftime('%b %d') }}</small>
+                                            {% endif %}
+                                        {% elif duty.completion_status == 'overdue' %}
+                                            <span class="badge bg-danger">Overdue</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-info" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#dutyModal"
+                                                    data-duty-id="{{ duty.id }}"
+                                                    data-duty-description="{{ duty.duty_description }}"
+                                                    data-assignee="{{ duty.user.full_name }}"
+                                                    data-status="{{ duty.completion_status }}"
+                                                    data-created="{{ duty.created_at.strftime('%B %d, %Y') }}"
+                                                    data-due="{{ duty.due_date.strftime('%B %d, %Y') if duty.due_date else 'None' }}"
+                                                    data-completed="{{ duty.completed_date.strftime('%B %d, %Y') if duty.completed_date else 'None' }}">
+                                                <i class="fas fa-eye"></i> View
+                                            </button>
+                                            {% if duty.completion_status != 'completed' %}
+                                            <form method="POST" action="{{ url_for('duty_logs.complete_duty', duty_id=duty.id) }}" style="display: inline;">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="btn btn-outline-success btn-sm" 
+                                                        onclick="return confirm('Mark this duty as completed?')">
+                                                    <i class="fas fa-check"></i> Complete
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-clipboard-check fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Duties Found</h4>
+                    <p class="text-muted">No duty assignments have been created yet.</p>
+                    <a href="{{ url_for('duty_logs.create_duty') }}" class="btn btn-kpn-primary">
+                        <i class="fas fa-plus"></i> Create First Duty
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Duty Details Modal -->
+<div class="modal fade" id="dutyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Duty Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Assignee:</strong> <span id="modalAssignee"></span></p>
+                        <p><strong>Status:</strong> <span id="modalStatus"></span></p>
+                        <p><strong>Created:</strong> <span id="modalCreated"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Due Date:</strong> <span id="modalDue"></span></p>
+                        <p><strong>Completed:</strong> <span id="modalCompleted"></span></p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <p><strong>Description:</strong></p>
+                        <div class="border rounded p-3 bg-light">
+                            <span id="modalDescription"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const statusFilter = document.getElementById('statusFilter');
+    const assigneeFilter = document.getElementById('assigneeFilter');
+    const dutyFilter = document.getElementById('dutyFilter');
+    const table = document.getElementById('dutiesTable');
+    
+    function filterTable() {
+        if (!table) return;
+        
+        const statusValue = statusFilter.value.toLowerCase();
+        const assigneeValue = assigneeFilter.value.toLowerCase();
+        const dutyValue = dutyFilter.value.toLowerCase();
+        const rows = table.querySelectorAll('tbody tr');
+        
+        rows.forEach(row => {
+            const status = row.dataset.status;
+            const assignee = row.dataset.assignee;
+            const description = row.dataset.description;
+            
+            const statusMatch = !statusValue || status.includes(statusValue);
+            const assigneeMatch = !assigneeValue || assignee.includes(assigneeValue);
+            const dutyMatch = !dutyValue || description.includes(dutyValue);
+            
+            row.style.display = statusMatch && assigneeMatch && dutyMatch ? '' : 'none';
+        });
+    }
+    
+    statusFilter.addEventListener('change', filterTable);
+    assigneeFilter.addEventListener('input', filterTable);
+    dutyFilter.addEventListener('input', filterTable);
+    
+    // Modal functionality
+    const dutyModal = document.getElementById('dutyModal');
+    if (dutyModal) {
+        dutyModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            
+            document.getElementById('modalAssignee').textContent = button.dataset.assignee;
+            document.getElementById('modalStatus').textContent = button.dataset.status;
+            document.getElementById('modalCreated').textContent = button.dataset.created;
+            document.getElementById('modalDue').textContent = button.dataset.due;
+            document.getElementById('modalCompleted').textContent = button.dataset.completed;
+            document.getElementById('modalDescription').textContent = button.dataset.dutyDescription;
+        });
+    }
+});
+</script>
+{% endblock %}

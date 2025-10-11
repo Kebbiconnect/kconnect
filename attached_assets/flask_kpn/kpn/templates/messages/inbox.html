@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Messages - Inbox{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-kpn-green mb-0">
+                <i class="fas fa-inbox"></i> Inbox
+                {% if unread_count > 0 %}
+                <span class="badge bg-danger">{{ unread_count }}</span>
+                {% endif %}
+            </h2>
+            <p class="text-muted">Your received messages</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('messages.compose') }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Compose Message
+            </a>
+            {% if current_user.role_type.value in ['executive', 'auditor_general', 'zonal_coordinator'] %}
+            <a href="{{ url_for('messages.bulk_whatsapp') }}" class="btn btn-success">
+                <i class="fab fa-whatsapp"></i> Bulk WhatsApp
+            </a>
+            {% endif %}
+            <a href="{{ url_for('messages.sent') }}" class="btn btn-outline-primary">
+                <i class="fas fa-paper-plane"></i> Sent Messages
+            </a>
+        </div>
+    </div>
+
+    <!-- Messages List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-kpn-green text-white">
+                    <h5 class="mb-0"><i class="fas fa-envelope"></i> Received Messages</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if messages %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="5%">Status</th>
+                                    <th width="20%">From</th>
+                                    <th width="35%">Subject</th>
+                                    <th width="25%">Preview</th>
+                                    <th width="10%">Priority</th>
+                                    <th width="5%">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for message in messages %}
+                                <tr class="{% if not message.is_read %}table-warning{% endif %}">
+                                    <td>
+                                        {% if message.is_read %}
+                                        <i class="fas fa-envelope-open text-muted" title="Read"></i>
+                                        {% else %}
+                                        <i class="fas fa-envelope text-primary" title="Unread"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if message.sender.photo %}
+                                            <img src="{{ url_for('static', filename=message.sender.photo) }}" 
+                                                 class="rounded-circle me-2" width="32" height="32" alt="Profile">
+                                            {% else %}
+                                            <div class="bg-kpn-green rounded-circle me-2 d-flex align-items-center justify-content-center" 
+                                                 style="width: 32px; height: 32px;">
+                                                <i class="fas fa-user text-white small"></i>
+                                            </div>
+                                            {% endif %}
+                                            <div>
+                                                <div class="fw-bold">{{ message.sender.full_name }}</div>
+                                                <small class="text-muted">{{ message.sender.role_type.value|title|replace('_', ' ') }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('messages.view_message', message_id=message.id) }}" 
+                                           class="text-decoration-none text-dark">
+                                            <strong>{{ message.subject }}</strong>
+                                        </a>
+                                        <br>
+                                        <small class="text-muted">{{ message.get_formatted_date() }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="text-muted">{{ message.get_excerpt(80) }}</div>
+                                    </td>
+                                    <td>
+                                        {% if message.priority == 'urgent' %}
+                                        <span class="badge bg-danger">Urgent</span>
+                                        {% elif message.priority == 'high' %}
+                                        <span class="badge bg-warning">High</span>
+                                        {% elif message.priority == 'low' %}
+                                        <span class="badge bg-secondary">Low</span>
+                                        {% else %}
+                                        <span class="badge bg-primary">Normal</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                    type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ url_for('messages.view_message', message_id=message.id) }}">
+                                                        <i class="fas fa-eye"></i> View
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ url_for('messages.reply', message_id=message.id) }}">
+                                                        <i class="fas fa-reply"></i> Reply
+                                                    </a>
+                                                </li>
+                                                {% if message.sender.phone %}
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item text-success" 
+                                                       href="{{ url_for('messages.whatsapp_direct', user_id=message.sender.id, subject=message.subject, body='Re: ' ~ message.subject) }}"
+                                                       target="_blank">
+                                                        <i class="fab fa-whatsapp"></i> WhatsApp Reply
+                                                    </a>
+                                                </li>
+                                                {% endif %}
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <form method="POST" action="{{ url_for('messages.delete_message', message_id=message.id) }}" 
+                                                          class="d-inline" onsubmit="return confirm('Archive this message?');">
+                                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                                        <button type="submit" class="dropdown-item text-danger">
+                                                            <i class="fas fa-archive"></i> Archive
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No messages yet</h4>
+                        <p class="text-muted">Your inbox is empty. When you receive messages, they'll appear here.</p>
+                        <a href="{{ url_for('messages.compose') }}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Send Your First Message
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Styles -->
+<style>
+.text-kpn-green {
+    color: #4CAF50 !important;
+}
+
+.bg-kpn-green {
+    background-color: #4CAF50 !important;
+}
+
+.table-warning {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.15s ease-in-out;
+}
+</style>
+{% endblock %}

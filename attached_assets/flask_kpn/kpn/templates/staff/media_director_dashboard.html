@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}Media Director Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4 media-director-theme">
+    <!-- Personalized Greeting -->
+    <div class="greeting-container">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-hand-wave greeting-icon"></i>
+            <p class="greeting-text" id="personalized-greeting"></p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-dark mb-0">
+                <i class="fas fa-video"></i> Media Director Dashboard
+            </h2>
+            <p class="text-muted">Media & Publicity Management - {{ current_user.full_name }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="badge bg-info fs-6">MEDIA DIRECTOR</span>
+            <a href="{{ url_for('staff.logout') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Media Management Tools -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-camera"></i> Media Management Tools</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('media.manage') }}" class="btn btn-info w-100 p-3">
+                                <i class="fas fa-photo-video fa-2x mb-2"></i><br>
+                                <strong>Media Gallery</strong><br>
+                                <small>Manage Photos & Videos</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('media.upload') }}" class="btn btn-outline-success w-100 p-3">
+                                <i class="fas fa-upload fa-2x mb-2"></i><br>
+                                <strong>Upload Media</strong><br>
+                                <small>Add New Content</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('campaigns.manage') }}" class="btn btn-outline-primary w-100 p-3">
+                                <i class="fas fa-bullhorn fa-2x mb-2"></i><br>
+                                <strong>Campaign Media</strong><br>
+                                <small>{{ active_campaigns }} Active</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('core.media_gallery') }}" class="btn btn-outline-warning w-100 p-3">
+                                <i class="fas fa-eye fa-2x mb-2"></i><br>
+                                <strong>Public Gallery</strong><br>
+                                <small>View Public Content</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Media Statistics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ total_media }}</h4>
+                            <p class="card-text">Total Media Files</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-photo-video fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ public_media }}</h4>
+                            <p class="card-text">Public Content</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-globe fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ recent_media }}</h4>
+                            <p class="card-text">Recent Uploads</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-upload fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ active_campaigns }}</h4>
+                            <p class="card-text">Active Campaigns</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-bullhorn fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Recent Campaigns -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-bullhorn"></i> Recent Campaigns</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Campaign Title</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for campaign in recent_campaigns %}
+                                <tr>
+                                    <td class="fw-bold">{{ campaign.title }}</td>
+                                    <td>
+                                        {% if campaign.published %}
+                                        <span class="badge bg-success">Published</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Draft</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ campaign.created_at.strftime('%m/%d/%y') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('campaigns.view_campaign', campaign_id=campaign.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No campaigns found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Media Performance -->
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Media Performance Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <h3 class="text-info">{{ total_media }}</h3>
+                            <p class="text-muted">Total Media Items</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h3 class="text-success">{{ public_media }}</h3>
+                            <p class="text-muted">Public Content</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h3 class="text-warning">{{ recent_media }}</h3>
+                            <p class="text-muted">Recent Uploads (30 days)</p>
+                        </div>
+                    </div>
+                    <div class="progress mt-3" style="height: 25px;">
+                        <div class="progress-bar bg-info" style="width: {{ (public_media / total_media * 100) if total_media > 0 else 0 }}%">
+                            {{ "%.1f"|format((public_media / total_media * 100) if total_media > 0 else 0) }}% Public
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Media Director Profile -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="fas fa-video"></i> Media Director</h6>
+                </div>
+                <div class="card-body text-center">
+                    {% if current_user.photo %}
+                    <img src="{{ url_for('static', filename=current_user.photo) }}" 
+                         class="rounded-circle mb-3" width="80" height="80" alt="Profile">
+                    {% else %}
+                    <div class="bg-info rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                         style="width: 80px; height: 80px;">
+                        <i class="fas fa-user fa-2x text-white"></i>
+                    </div>
+                    {% endif %}
+                    <h6>{{ current_user.full_name }}</h6>
+                    <p class="text-muted mb-2">{{ current_user.role_title }}</p>
+                    <p class="small text-muted">{{ current_user.email }}</p>
+                    <a href="{{ url_for('staff.edit_profile') }}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('media.upload') }}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Upload New Media
+                        </a>
+                        <a href="{{ url_for('campaigns.create') }}" class="btn btn-primary">
+                            <i class="fas fa-bullhorn"></i> Create Campaign
+                        </a>
+                        <a href="{{ url_for('core.media_gallery') }}" class="btn btn-info">
+                            <i class="fas fa-gallery"></i> View Gallery
+                        </a>
+                        <a href="{{ url_for('media.manage') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-cog"></i> Manage All Media
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Styles -->
+<style>
+.bg-gradient-success { background: linear-gradient(45deg, #28a745, #1e7e34); }
+.bg-gradient-warning { background: linear-gradient(45deg, #ffc107, #d39e00); }
+.bg-gradient-info { background: linear-gradient(45deg, #17a2b8, #117a8b); }
+.bg-gradient-primary { background: linear-gradient(45deg, #007bff, #0056b3); }
+
+.greeting-container {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.greeting-icon {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+    animation: wave 2s ease-in-out infinite;
+}
+
+@keyframes wave {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(20deg); }
+    75% { transform: rotate(-10deg); }
+}
+</style>
+
+<!-- Scripts -->
+<script>
+// Initialize personalized greeting
+document.addEventListener('DOMContentLoaded', function() {
+    const userName = {{ current_user.full_name|tojson }};
+    const roleTitle = {{ "Media Director"|tojson }};
+    const taskReminder = {{ "manage media content and publicity campaigns"|tojson }};
+    
+    initializeGreeting(userName, roleTitle, taskReminder);
+});
+</script>
+{% endblock %}

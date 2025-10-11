@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Reply to Message{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-kpn-green mb-0">
+                <i class="fas fa-reply"></i> Reply to Message
+            </h2>
+            <p class="text-muted">Responding to: {{ original_message.subject }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('messages.view_message', message_id=original_message.id) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Message
+            </a>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Original Message Display -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-envelope-open"></i> Original Message from {{ original_message.sender.full_name }}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        {% if original_message.sender.photo %}
+                        <img src="{{ url_for('static', filename=original_message.sender.photo) }}" 
+                             class="rounded-circle me-3" width="40" height="40" alt="Profile">
+                        {% else %}
+                        <div class="bg-kpn-green rounded-circle me-3 d-flex align-items-center justify-content-center" 
+                             style="width: 40px; height: 40px;">
+                            <i class="fas fa-user text-white small"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <div class="fw-bold">{{ original_message.sender.full_name }}</div>
+                            <small class="text-muted">{{ original_message.get_formatted_date() }}</small>
+                        </div>
+                    </div>
+                    <div class="border-start border-3 border-kpn-green ps-3">
+                        <strong>{{ original_message.subject }}</strong>
+                        <p class="mt-2 mb-0">{{ original_message.body|nl2br|safe }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reply Form -->
+            <div class="card shadow">
+                <div class="card-header bg-kpn-green text-white">
+                    <h5 class="mb-0"><i class="fas fa-reply"></i> Your Reply</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        
+                        <!-- Recipient Display -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-user"></i> To
+                            </label>
+                            <div class="form-control-plaintext border rounded p-2 bg-light">
+                                <div class="d-flex align-items-center">
+                                    {% if original_message.sender.photo %}
+                                    <img src="{{ url_for('static', filename=original_message.sender.photo) }}" 
+                                         class="rounded-circle me-2" width="32" height="32" alt="Profile">
+                                    {% else %}
+                                    <div class="bg-kpn-green rounded-circle me-2 d-flex align-items-center justify-content-center" 
+                                         style="width: 32px; height: 32px;">
+                                        <i class="fas fa-user text-white small"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="fw-bold">{{ original_message.sender.full_name }}</div>
+                                        <small class="text-muted">{{ original_message.sender.role_type.value|title|replace('_', ' ') }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subject Display -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-tag"></i> Subject
+                            </label>
+                            <div class="form-control-plaintext border rounded p-2 bg-light">
+                                <strong>
+                                    {% if original_message.subject.startswith('Re:') %}
+                                    {{ original_message.subject }}
+                                    {% else %}
+                                    Re: {{ original_message.subject }}
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        </div>
+
+                        <!-- Priority Selection -->
+                        <div class="mb-3">
+                            <label for="priority" class="form-label">
+                                <i class="fas fa-flag"></i> Priority
+                            </label>
+                            <select class="form-select" id="priority" name="priority">
+                                <option value="low">Low Priority</option>
+                                <option value="normal" selected>Normal Priority</option>
+                                <option value="high">High Priority</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+
+                        <!-- Reply Message -->
+                        <div class="mb-4">
+                            <label for="body" class="form-label">
+                                <i class="fas fa-comment"></i> Your Reply <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" id="body" name="body" rows="8" 
+                                      placeholder="Type your reply here..." required></textarea>
+                            <small class="form-text text-muted">Be clear and respectful in your response</small>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('messages.view_message', message_id=original_message.id) }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-reply"></i> Send Reply
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Styles -->
+<style>
+.text-kpn-green {
+    color: #4CAF50 !important;
+}
+
+.bg-kpn-green {
+    background-color: #4CAF50 !important;
+}
+
+.border-kpn-green {
+    border-color: #4CAF50 !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.15s ease-in-out;
+}
+</style>
+
+<!-- JavaScript -->
+<script>
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const body = document.getElementById('body').value.trim();
+    
+    if (!body) {
+        e.preventDefault();
+        alert('Reply message is required!');
+        document.getElementById('body').focus();
+        return false;
+    }
+});
+
+// Character counter for reply body
+document.getElementById('body').addEventListener('input', function() {
+    const maxLength = 2000;
+    const currentLength = this.value.length;
+    
+    if (!document.getElementById('char-counter')) {
+        const counter = document.createElement('small');
+        counter.id = 'char-counter';
+        counter.className = 'form-text text-muted';
+        this.parentNode.appendChild(counter);
+    }
+    
+    const counter = document.getElementById('char-counter');
+    counter.textContent = `${currentLength}/${maxLength} characters`;
+    
+    if (currentLength > maxLength * 0.9) {
+        counter.className = 'form-text text-warning';
+    } else {
+        counter.className = 'form-text text-muted';
+    }
+});
+</script>
+{% endblock %}

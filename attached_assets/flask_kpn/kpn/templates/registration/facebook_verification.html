@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Facebook Verification{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-kpn-blue text-white text-center">
+                    <h4 class="mb-0">
+                        <i class="fab fa-facebook-f"></i> Facebook Verification Required
+                    </h4>
+                    <p class="mb-0 small">Final step to complete your KPN registration</p>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="fab fa-facebook-f fa-4x text-primary mb-3"></i>
+                        <h5>Welcome {{ user.full_name }}!</h5>
+                        <p class="text-muted">
+                            To complete your registration with Kebbi Progressive Network, 
+                            you must follow our official Facebook page.
+                        </p>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Why is this required?</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Ensures all members are connected to our official communication channel</li>
+                            <li>Helps us verify authentic registrations</li>
+                            <li>Keeps you updated with KPN activities and announcements</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="steps-container">
+                        <h6 class="text-kpn-green">Follow these steps:</h6>
+                        <ol>
+                            <li>Click the "Follow KPN Page" button below</li>
+                            <li>Log in to Facebook (if not already logged in)</li>
+                            <li>Like/Follow the Kebbi Progressive Network page</li>
+                            <li>Return here and click "Verify Facebook"</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="d-grid gap-3 mt-4">
+                        <a href="https://www.facebook.com/kpn.kebbi" target="_blank" 
+                           class="btn btn-primary btn-lg">
+                            <i class="fab fa-facebook-f"></i> Follow KPN Page
+                        </a>
+                        
+                        <button type="button" class="btn btn-success btn-lg" 
+                                onclick="startFacebookVerification()">
+                            <i class="fas fa-check-circle"></i> Verify Facebook
+                        </button>
+                    </div>
+                    
+                    <div id="verification-status" class="mt-3" style="display: none;"></div>
+                    
+                    <div class="text-center mt-4">
+                        <p class="small text-muted">
+                            <i class="fas fa-lock"></i> 
+                            Your Facebook information is used only for verification purposes
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Facebook SDK -->
+<div id="fb-root"></div>
+<script async defer crossorigin="anonymous" 
+        src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v18.0&appId={{ facebook_app_id }}"></script>
+
+<script>
+let facebookInitialized = false;
+
+window.fbAsyncInit = function() {
+    FB.init({
+        appId: '{{ facebook_app_id }}',
+        cookie: true,
+        xfbml: true,
+        version: 'v18.0'
+    });
+    facebookInitialized = true;
+};
+
+function startFacebookVerification() {
+    if (!facebookInitialized) {
+        showStatus('error', 'Facebook is still loading. Please wait a moment and try again.');
+        return;
+    }
+    
+    showStatus('info', 'Checking Facebook login status...');
+    
+    FB.getLoginStatus(function(response) {
+        if (response.status === 'connected') {
+            // User is logged in and authorized
+            verifyPageFollow(response.authResponse);
+        } else {
+            // User needs to log in
+            FB.login(function(loginResponse) {
+                if (loginResponse.status === 'connected') {
+                    verifyPageFollow(loginResponse.authResponse);
+                } else {
+                    showStatus('error', 'Facebook login was cancelled or failed.');
+                }
+            }, {scope: 'public_profile,email'});
+        }
+    });
+}
+
+function verifyPageFollow(authResponse) {
+    showStatus('info', 'Verifying Facebook page follow...');
+    
+    // Send verification data to server
+    fetch('/register/verify-facebook', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            facebook_user_id: authResponse.userID,
+            access_token: authResponse.accessToken
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showStatus('success', data.message);
+            if (data.approved) {
+                setTimeout(() => {
+                    window.location.href = '/staff/login?registered=1';
+                }, 3000);
+            } else {
+                setTimeout(() => {
+                    window.location.href = '/?registration_pending=1';
+                }, 3000);
+            }
+        } else {
+            showStatus('error', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Verification error:', error);
+        showStatus('error', 'An error occurred during verification. Please try again.');
+    });
+}
+
+function showStatus(type, message) {
+    const statusDiv = document.getElementById('verification-status');
+    const alertClass = type === 'success' ? 'alert-success' : 
+                     type === 'error' ? 'alert-danger' : 'alert-info';
+    
+    statusDiv.innerHTML = `
+        <div class="alert ${alertClass} alert-dismissible fade show">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 
+                              type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    statusDiv.style.display = 'block';
+}
+</script>
+{% endblock %}

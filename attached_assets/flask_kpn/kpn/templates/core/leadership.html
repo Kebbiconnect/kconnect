@@ -1,0 +1,566 @@
+{% extends "base.html" %}
+
+{% block title %}Leadership{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-4">Our Leadership</h1>
+        <p class="lead">Meet the dedicated leaders driving positive change across Kebbi State</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <!-- Prayer-like Leadership Formation -->
+        {% if leaders %}
+        <div class="mb-5">
+            <h2 class="text-kpn-green text-center mb-4">KPN Leadership Council</h2>
+            <p class="text-center text-muted mb-5">Our dedicated leaders working together in unity across Kebbi State</p>
+            
+            <!-- Leadership Prayer Formation -->
+            <div class="leadership-formation">
+                <!-- State Coordinator - Front Center (Imam position) -->
+                {% set state_coordinator = leaders | selectattr('role_type.value', 'equalto', 'admin') | selectattr('role_title', 'equalto', 'State Coordinator') | list | first %}
+                {% if state_coordinator %}
+                <div class="imam-position text-center mb-5">
+                    <div class="leader-circle-container mx-auto">
+                        <div class="leader-circle imam-circle">
+                            {% if state_coordinator.photo %}
+                                <img src="{{ url_for('static', filename=state_coordinator.photo) }}" 
+                                     class="leader-image" alt="{{ state_coordinator.full_name }}">
+                            {% else %}
+                                <div class="leader-placeholder bg-gradient-danger">
+                                    <i class="fas fa-crown fa-3x text-white"></i>
+                                </div>
+                            {% endif %}
+                            <!-- Role Crown -->
+                            <div class="leader-crown">
+                                <i class="fas fa-crown text-warning"></i>
+                            </div>
+                        </div>
+                        <div class="leader-info mt-3">
+                            <h5 class="fw-bold text-danger mb-1">{{ state_coordinator.full_name }}</h5>
+                            <p class="text-danger fw-semibold mb-1">{{ state_coordinator.role_title }}</p>
+                            {% if state_coordinator.get_location_hierarchy() %}
+                                <p class="small text-muted mb-0">
+                                    <i class="fas fa-map-marker-alt me-1"></i>{{ state_coordinator.get_location_hierarchy() }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- First Row - Executives (19 leaders) -->
+                {% set executives = leaders | selectattr('role_type.value', 'equalto', 'executive') | list %}
+                {% if executives %}
+                <div class="prayer-row mb-4">
+                    <h6 class="text-center text-muted mb-3">Executive Council</h6>
+                    <div class="row justify-content-center g-3">
+                        {% for executive in executives %}
+                        <div class="col-auto">
+                            <div class="leader-circle-container">
+                                <div class="leader-circle executive-circle">
+                                    {% if executive.photo %}
+                                        <img src="{{ url_for('static', filename=executive.photo) }}" 
+                                             class="leader-image" alt="{{ executive.full_name }}">
+                                    {% else %}
+                                        <div class="leader-placeholder bg-gradient-primary">
+                                            <i class="fas fa-user fa-2x text-white"></i>
+                                        </div>
+                                    {% endif %}
+                                    <!-- Role Badge -->
+                                    <div class="leader-badge bg-primary">
+                                        <i class="fas fa-star text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="leader-info mt-2">
+                                    <h6 class="fw-bold mb-0 small">{{ executive.full_name }}</h6>
+                                    <p class="text-primary small fw-semibold mb-0">{{ executive.role_title }}</p>
+                                    {% if executive.get_location_hierarchy() %}
+                                        <p class="tiny text-muted mb-0">{{ executive.get_location_hierarchy() }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Second Row - Zonal Coordinators -->
+                {% set zonal_coordinators = leaders | selectattr('role_type.value', 'equalto', 'zonal_coordinator') | list %}
+                {% if zonal_coordinators %}
+                <div class="prayer-row mb-4">
+                    <h6 class="text-center text-muted mb-3">Zonal Coordinators</h6>
+                    <div class="row justify-content-center g-3">
+                        {% for coordinator in zonal_coordinators %}
+                        <div class="col-auto">
+                            <div class="leader-circle-container">
+                                <div class="leader-circle zonal-circle">
+                                    {% if coordinator.photo %}
+                                        <img src="{{ url_for('static', filename=coordinator.photo) }}" 
+                                             class="leader-image" alt="{{ coordinator.full_name }}">
+                                    {% else %}
+                                        <div class="leader-placeholder bg-gradient-success">
+                                            <i class="fas fa-user fa-2x text-white"></i>
+                                        </div>
+                                    {% endif %}
+                                    <!-- Role Badge -->
+                                    <div class="leader-badge bg-success">
+                                        <i class="fas fa-map text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="leader-info mt-2">
+                                    <h6 class="fw-bold mb-0 small">{{ coordinator.full_name }}</h6>
+                                    <p class="text-success small fw-semibold mb-0">{{ coordinator.role_title }}</p>
+                                    {% if coordinator.get_location_hierarchy() %}
+                                        <p class="tiny text-muted mb-0">{{ coordinator.get_location_hierarchy() }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Third Row - LGA and Ward Leaders -->
+                {% set lga_ward_leaders = leaders | rejectattr('role_type.value', 'equalto', 'admin') | rejectattr('role_type.value', 'equalto', 'executive') | rejectattr('role_type.value', 'equalto', 'zonal_coordinator') | list %}
+                {% if lga_ward_leaders %}
+                <div class="prayer-row mb-4">
+                    <h6 class="text-center text-muted mb-3">Local Government & Ward Leaders</h6>
+                    <div class="row justify-content-center g-3">
+                        {% for leader in lga_ward_leaders %}
+                        <div class="col-auto">
+                            <div class="leader-circle-container">
+                                <div class="leader-circle local-circle">
+                                    {% if leader.photo %}
+                                        <img src="{{ url_for('static', filename=leader.photo) }}" 
+                                             class="leader-image" alt="{{ leader.full_name }}">
+                                    {% else %}
+                                        <div class="leader-placeholder {% if leader.role_type.value == 'lga_leader' %}bg-gradient-info{% else %}bg-gradient-warning{% endif %}">
+                                            <i class="fas fa-user fa-2x text-white"></i>
+                                        </div>
+                                    {% endif %}
+                                    <!-- Role Badge -->
+                                    <div class="leader-badge {% if leader.role_type.value == 'lga_leader' %}bg-info{% else %}bg-warning{% endif %}">
+                                        <i class="fas fa-home text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="leader-info mt-2">
+                                    <h6 class="fw-bold mb-0 small">{{ leader.full_name }}</h6>
+                                    <p class="small fw-semibold mb-0 {% if leader.role_type.value == 'lga_leader' %}text-info{% else %}text-warning{% endif %}">
+                                        {{ leader.role_title }}
+                                    </p>
+                                    {% if leader.get_location_hierarchy() %}
+                                        <p class="tiny text-muted mb-0">{{ leader.get_location_hierarchy() }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Advanced Filter Section -->
+        <div class="mb-4">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <h5 class="card-title text-center mb-3">
+                        <i class="fas fa-filter text-kpn-green me-2"></i>
+                        Filter Leadership by Location
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-8 mx-auto">
+                            <form method="GET" class="row g-3" id="leadershipFilterForm">
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-semibold">Zone</label>
+                                    <select name="zone" id="zone_filter" class="form-select form-select-sm" onchange="loadLGAsForFilter()">
+                                        <option value="">All Zones</option>
+                                        {% for zone in zones %}
+                                            <option value="{{ zone.id }}" {% if request.args.get('zone') == zone.id|string %}selected{% endif %}>
+                                                {{ zone.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-semibold">LGA</label>
+                                    <select name="lga" id="lga_filter" class="form-select form-select-sm" onchange="loadWardsForFilter()">
+                                        <option value="">All LGAs</option>
+                                        {% for lga in lgas %}
+                                            <option value="{{ lga.id }}" {% if request.args.get('lga') == lga.id|string %}selected{% endif %}>
+                                                {{ lga.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-semibold">Ward</label>
+                                    <select name="ward" id="ward_filter" class="form-select form-select-sm">
+                                        <option value="">All Wards</option>
+                                        {% for ward in wards %}
+                                            <option value="{{ ward.id }}" {% if request.args.get('ward') == ward.id|string %}selected{% endif %}>
+                                                {{ ward.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-kpn-primary btn-sm w-100">
+                                        <i class="fas fa-search me-1"></i> Apply Filter
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="mt-5">
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <div class="card bg-kpn-green text-white">
+                        <div class="card-body">
+                            <i class="fas fa-crown fa-2x mb-2"></i>
+                            <h4>{{ executives|length }}</h4>
+                            <p class="mb-0">State Executives</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-kpn-blue text-white">
+                        <div class="card-body">
+                            <i class="fas fa-map-marked-alt fa-2x mb-2"></i>
+                            <h4>3</h4>
+                            <p class="mb-0">Zones Covered</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <i class="fas fa-building fa-2x mb-2"></i>
+                            <h4>21</h4>
+                            <p class="mb-0">LGAs Covered</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body">
+                            <i class="fas fa-home fa-2x mb-2"></i>
+                            <h4>225</h4>
+                            <p class="mb-0">Wards Covered</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leadership Call to Action -->
+        <div class="text-center mt-5">
+            <div class="card border-0 shadow-sm bg-gradient" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                <div class="card-body py-4">
+                    <h5 class="card-title text-kpn-green mb-3">
+                        <i class="fas fa-handshake me-2"></i>
+                        Join Our Leadership Team
+                    </h5>
+                    <p class="text-muted mb-3">
+                        Leadership formation includes State Coordinator, 19 Executives, 3 Zonal Coordinators, and 7 rotating coordinators (updated daily).
+                    </p>
+                    <a href="{{ url_for('core.join') }}" class="btn btn-kpn-primary btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Become a Leader
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Custom CSS for Prayer Formation Layout -->
+<style>
+.leadership-formation {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 50%, #f8f9fa 100%);
+    border-radius: 20px;
+    padding: 3rem 1rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.leadership-formation::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--kpn-green, #2d5016), var(--kpn-blue, #1e3a8a));
+    border-radius: 2px;
+}
+
+/* Imam Position (State Coordinator) */
+.imam-position {
+    position: relative;
+    z-index: 10;
+}
+
+.imam-circle {
+    width: 140px;
+    height: 140px;
+    border: 4px solid #dc3545;
+    box-shadow: 0 0 20px rgba(220, 53, 69, 0.3), 0 0 40px rgba(220, 53, 69, 0.1);
+}
+
+/* Prayer Rows */
+.prayer-row {
+    position: relative;
+}
+
+.prayer-row::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,0,0,0.1), transparent);
+}
+
+/* Leader Circles */
+.leader-circle-container {
+    position: relative;
+    margin: 0 auto;
+    max-width: 120px;
+    text-align: center;
+}
+
+.leader-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    margin: 0 auto;
+    border: 3px solid;
+    transition: all 0.3s ease;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.leader-circle:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.executive-circle {
+    border-color: #007bff;
+}
+
+.executive-circle:hover {
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+}
+
+.zonal-circle {
+    border-color: #28a745;
+}
+
+.zonal-circle:hover {
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.local-circle {
+    border-color: #17a2b8;
+}
+
+.local-circle:hover {
+    box-shadow: 0 8px 25px rgba(23, 162, 184, 0.3);
+}
+
+.leader-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.leader-circle:hover .leader-image {
+    transform: scale(1.1);
+}
+
+.leader-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #6c757d, #495057);
+}
+
+/* Gradient backgrounds */
+.bg-gradient-danger { background: linear-gradient(135deg, #dc3545, #c82333); }
+.bg-gradient-primary { background: linear-gradient(135deg, #007bff, #0056b3); }
+.bg-gradient-success { background: linear-gradient(135deg, #28a745, #1e7e34); }
+.bg-gradient-info { background: linear-gradient(135deg, #17a2b8, #117a8b); }
+.bg-gradient-warning { background: linear-gradient(135deg, #ffc107, #d39e00); }
+
+/* Leader Badges and Crown */
+.leader-crown {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    animation: crown-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes crown-glow {
+    0% { box-shadow: 0 2px 10px rgba(255, 193, 7, 0.5); }
+    100% { box-shadow: 0 2px 20px rgba(255, 193, 7, 0.8); }
+}
+
+.leader-badge {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    font-size: 0.7rem;
+}
+
+/* Leader Info */
+.leader-info {
+    min-height: 80px;
+    padding: 0 5px;
+}
+
+.leader-info h5,
+.leader-info h6 {
+    line-height: 1.2;
+}
+
+.tiny {
+    font-size: 0.7rem;
+    line-height: 1.1;
+}
+
+.small {
+    font-size: 0.8rem;
+    line-height: 1.2;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .leadership-formation {
+        padding: 2rem 0.5rem;
+    }
+    
+    .imam-circle {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .leader-circle {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .leader-info {
+        min-height: 70px;
+    }
+}
+
+@media (max-width: 576px) {
+    .prayer-row .row {
+        justify-content: center;
+    }
+    
+    .prayer-row .col-auto {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+
+<script>
+// Dynamic filtering functions for leadership page
+function loadLGAsForFilter() {
+    const zoneId = document.getElementById('zone_filter').value;
+    const lgaSelect = document.getElementById('lga_filter');
+    const wardSelect = document.getElementById('ward_filter');
+    
+    lgaSelect.innerHTML = '<option value="">Loading...</option>';
+    wardSelect.innerHTML = '<option value="">Select LGA first</option>';
+    
+    if (zoneId) {
+        fetch(`/register/api/lgas/${zoneId}`)
+            .then(response => response.json())
+            .then(lgas => {
+                lgaSelect.innerHTML = '<option value="">All LGAs</option>';
+                lgas.forEach(lga => {
+                    const option = document.createElement('option');
+                    option.value = lga.id;
+                    option.textContent = lga.name;
+                    lgaSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading LGAs:', error);
+                lgaSelect.innerHTML = '<option value="">Error loading LGAs</option>';
+            });
+    } else {
+        lgaSelect.innerHTML = '<option value="">All LGAs</option>';
+        wardSelect.innerHTML = '<option value="">All Wards</option>';
+    }
+}
+
+function loadWardsForFilter() {
+    const lgaId = document.getElementById('lga_filter').value;
+    const wardSelect = document.getElementById('ward_filter');
+    
+    wardSelect.innerHTML = '<option value="">Loading...</option>';
+    
+    if (lgaId) {
+        fetch(`/register/api/wards/${lgaId}`)
+            .then(response => response.json())
+            .then(wards => {
+                wardSelect.innerHTML = '<option value="">All Wards</option>';
+                wards.forEach(ward => {
+                    const option = document.createElement('option');
+                    option.value = ward.id;
+                    option.textContent = ward.name;
+                    wardSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading wards:', error);
+                wardSelect.innerHTML = '<option value="">Error loading wards</option>';
+            });
+    } else {
+        wardSelect.innerHTML = '<option value="">All Wards</option>';
+    }
+}
+</script>
+
+{% endblock %}

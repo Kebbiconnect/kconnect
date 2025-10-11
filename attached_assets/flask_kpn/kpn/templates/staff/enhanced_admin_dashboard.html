@@ -1,0 +1,614 @@
+{% extends "base.html" %}
+
+{% block title %}System Administrator Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-gradient-dark text-white">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="mb-0">
+                                <i class="fas fa-shield-alt"></i> System Administrator Control Center
+                            </h2>
+                            <p class="mb-0">Complete oversight and management of KPN state operations</p>
+                            <small class="text-light">{{ current_user.full_name }} - Last login: {{ current_user.last_login.strftime('%B %d, %Y at %I:%M %p') if current_user.last_login else 'First login' }}</small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a href="{{ url_for('staff.edit_profile') }}" class="btn btn-outline-light btn-sm">
+                                    <i class="fas fa-user-edit"></i> Profile
+                                </a>
+                                <a href="{{ url_for('staff.logout') }}" class="btn btn-outline-light btn-sm">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Performance Indicators -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card bg-gradient-primary text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ total_users }}</h3>
+                    <small>Total Users</small>
+                    <div class="mt-2">
+                        <small><i class="fas fa-arrow-up"></i> +{{ new_members_this_month }} this month</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-gradient-success text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-check fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ total_members }}</h3>
+                    <small>Active Members</small>
+                    <div class="mt-2">
+                        <small>{{ ((total_members / total_users) * 100)|round(1) if total_users > 0 else 0 }}% approved</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-gradient-warning text-dark h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-clock fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ pending_approvals }}</h3>
+                    <small>Pending Approvals</small>
+                    <div class="mt-2">
+                        <small>Requires attention</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-gradient-info text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-bullhorn fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ active_campaigns }}</h3>
+                    <small>Active Campaigns</small>
+                    <div class="mt-2">
+                        <small>Running statewide</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-gradient-secondary text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ upcoming_events }}</h3>
+                    <small>Scheduled Events</small>
+                    <div class="mt-2">
+                        <small>This month</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-gradient-danger text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-2x mb-2"></i>
+                    <h3 class="mb-0">{{ zones|length }}</h3>
+                    <small>Active Zones</small>
+                    <div class="mt-2">
+                        <small>Across the state</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Content -->
+    <div class="row">
+        <!-- Left Column - Analytics and Management -->
+        <div class="col-lg-8">
+            <!-- Role Distribution Chart -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-kpn-green text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Membership Distribution by Role</h5>
+                    <span class="badge bg-light text-dark">{{ total_members }} Active</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for role, count in role_stats.items() %}
+                        {% if count > 0 %}
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex justify-content-between align-items-center p-2 border rounded">
+                                <div>
+                                    <span class="fw-bold">{{ role.replace('_', ' ')|title }}</span><br>
+                                    <small class="text-muted">{{ count }} member{{ 's' if count != 1 else '' }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-primary">{{ ((count / total_members) * 100)|round(1) if total_members > 0 else 0 }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zone Performance Overview -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="mb-0"><i class="fas fa-map-marked-alt"></i> Zone Performance Dashboard</h5>
+                        <button class="btn btn-outline-light btn-sm" onclick="exportZoneData()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control form-control-sm" id="zoneSearchInput" 
+                                   placeholder="Search zones by name or status..." 
+                                   onkeyup="filterZones()">
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select form-select-sm" id="performanceFilter" onchange="filterZones()">
+                                <option value="">All Performance Levels</option>
+                                <option value="excellent">Excellent (80%+)</option>
+                                <option value="good">Good (60-79%)</option>
+                                <option value="needs_attention">Needs Attention (&lt;60%)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-light btn-sm w-100" onclick="clearZoneFilters()">
+                                <i class="fas fa-times"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Zone</th>
+                                    <th>Members</th>
+                                    <th>LGAs</th>
+                                    <th>Performance</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for zone in zones %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ zone.name }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ zone.users }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ zone.lgas }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-{% if zone.performance >= 80 %}success{% elif zone.performance >= 60 %}warning{% else %}danger{% endif %}" 
+                                                 style="width: {{ zone.performance }}%"></div>
+                                        </div>
+                                        <small class="text-muted">{{ zone.performance|round(0) }}%</small>
+                                    </td>
+                                    <td>
+                                        {% if zone.performance >= 80 %}
+                                        <span class="badge bg-success">Excellent</span>
+                                        {% elif zone.performance >= 60 %}
+                                        <span class="badge bg-warning">Good</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Needs Attention</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary btn-sm" onclick="viewZoneDetails({{ zone.id }})" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-outline-success btn-sm" onclick="messageZone({{ zone.id }})" title="Send Message">
+                                                <i class="fas fa-envelope"></i>
+                                            </button>
+                                            <button class="btn btn-outline-success btn-sm" onclick="whatsappZone({{ zone.id }})" title="WhatsApp Broadcast">
+                                                <i class="fab fa-whatsapp"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Growth Analytics -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> Membership Growth Trends</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for month_data in monthly_data %}
+                        <div class="col-md-2 mb-3 text-center">
+                            <div class="border rounded p-2">
+                                <div class="text-muted small">{{ month_data.month[:3] }}</div>
+                                <div class="fw-bold text-primary">{{ month_data.users }}</div>
+                                <div class="progress mt-1" style="height: 4px;">
+                                    <div class="progress-bar bg-success" 
+                                         style="width: {{ (month_data.users / 20 * 100)|round(0) if monthly_data else 0 }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Management Tools -->
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-tools"></i> Administrative Tools</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('leadership.approvals') }}" class="btn btn-outline-primary w-100 p-3">
+                                <i class="fas fa-user-check fa-2x mb-2"></i><br>
+                                <strong>Member Approvals</strong><br>
+                                <small>{{ pending_approvals }} pending</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('campaigns.manage') }}" class="btn btn-outline-success w-100 p-3">
+                                <i class="fas fa-bullhorn fa-2x mb-2"></i><br>
+                                <strong>Campaign Management</strong><br>
+                                <small>Oversee all campaigns</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('events.manage') }}" class="btn btn-outline-info w-100 p-3">
+                                <i class="fas fa-calendar-alt fa-2x mb-2"></i><br>
+                                <strong>Event Management</strong><br>
+                                <small>Schedule & monitor</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('duty_logs.manage_duties') }}" class="btn btn-outline-warning w-100 p-3">
+                                <i class="fas fa-tasks fa-2x mb-2"></i><br>
+                                <strong>Duty Management</strong><br>
+                                <small>Assign & track</small>
+                            </a>
+                        </div>
+                        {% if current_user.role_type.value in ['executive', 'auditor_general', 'zonal_coordinator'] %}
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('messages.bulk_whatsapp') }}" class="btn btn-outline-success w-100 p-3">
+                                <i class="fab fa-whatsapp fa-2x mb-2"></i><br>
+                                <strong>WhatsApp Messaging</strong><br>
+                                <small>Bulk communications</small>
+                            </a>
+                        </div>
+                        {% endif %}
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('media.manage') }}" class="btn btn-outline-secondary w-100 p-3">
+                                <i class="fas fa-photo-video fa-2x mb-2"></i><br>
+                                <strong>Media Library</strong><br>
+                                <small>Manage uploads</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('donations.manage') }}" class="btn btn-outline-dark w-100 p-3">
+                                <i class="fas fa-university fa-2x mb-2"></i><br>
+                                <strong>Financial Management</strong><br>
+                                <small>Bank & donations</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-outline-danger w-100 p-3" onclick="openSystemSettings()">
+                                <i class="fas fa-cogs fa-2x mb-2"></i><br>
+                                <strong>System Settings</strong><br>
+                                <small>Advanced config</small>
+                            </button>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-outline-info w-100 p-3" onclick="generateReport()">
+                                <i class="fas fa-file-alt fa-2x mb-2"></i><br>
+                                <strong>Generate Report</strong><br>
+                                <small>Analytics export</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Activity Feed and Quick Actions -->
+        <div class="col-lg-4">
+            <!-- Critical Alerts -->
+            <div class="card shadow mb-4 border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="fas fa-exclamation-triangle"></i> System Alerts</h6>
+                </div>
+                <div class="card-body">
+                    {% if pending_approvals > 0 %}
+                    <div class="alert alert-warning alert-sm mb-2">
+                        <i class="fas fa-user-clock"></i> {{ pending_approvals }} member(s) awaiting approval
+                        <a href="{{ url_for('leadership.approvals') }}" class="btn btn-outline-warning btn-sm float-end">Review</a>
+                    </div>
+                    {% endif %}
+                    
+                    {% if zones|selectattr('performance', 'lt', 60)|list|length > 0 %}
+                    <div class="alert alert-danger alert-sm mb-2">
+                        <i class="fas fa-chart-line"></i> {{ zones|selectattr('performance', 'lt', 60)|list|length }} zone(s) underperforming
+                        <button class="btn btn-outline-danger btn-sm float-end" onclick="viewUnderperformingZones()">Details</button>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="alert alert-info alert-sm mb-0">
+                        <i class="fas fa-info-circle"></i> System running optimally
+                        <small class="d-block">Last backup: Today 3:00 AM</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity Feed -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-kpn-green text-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="fas fa-stream"></i> Recent System Activity</h6>
+                    <button class="btn btn-outline-light btn-sm" onclick="refreshActivity()">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush" style="max-height: 300px; overflow-y: auto;">
+                        {% for activity in recent_activities[:10] %}
+                        <div class="list-group-item border-0">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold small">{{ activity.description }}</div>
+                                    <small class="text-muted">{{ activity.user.full_name }} - {{ activity.created_at.strftime('%b %d, %H:%M') }}</small>
+                                </div>
+                                <span class="badge bg-{% if activity.type == 'registration' %}success{% else %}primary{% endif %} rounded-pill">
+                                    {{ activity.type }}
+                                </span>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="list-group-item text-center text-muted border-0">
+                            <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                            No recent activity
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Approvals Quick Access -->
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="fas fa-user-plus"></i> Pending Approvals ({{ pending_users|length }})</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        {% for user in pending_users[:5] %}
+                        <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                            <div class="flex-grow-1">
+                                <div class="fw-bold">{{ user.full_name }}</div>
+                                <small class="text-muted">{{ user.role_type.value.replace('_', ' ')|title }}</small><br>
+                                <small class="text-muted">{{ user.get_location_hierarchy() }}</small>
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-success btn-sm" onclick="approveUser({{ user.id }})">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="rejectUser({{ user.id }})">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center text-muted p-3">
+                            <i class="fas fa-check-circle fa-2x mb-2"></i><br>
+                            All caught up!
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if pending_users|length > 5 %}
+                    <div class="card-footer text-center">
+                        <a href="{{ url_for('leadership.approvals') }}" class="btn btn-primary btn-sm">
+                            View All {{ pending_users|length }} Pending
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Styles -->
+<style>
+.bg-gradient-dark { background: linear-gradient(45deg, #2c3e50, #3498db); }
+.bg-gradient-primary { background: linear-gradient(45deg, #3498db, #2980b9); }
+.bg-gradient-success { background: linear-gradient(45deg, #27ae60, #2ecc71); }
+.bg-gradient-warning { background: linear-gradient(45deg, #f39c12, #e67e22); }
+.bg-gradient-info { background: linear-gradient(45deg, #3498db, #17a2b8); }
+.bg-gradient-secondary { background: linear-gradient(45deg, #95a5a6, #7f8c8d); }
+.bg-gradient-danger { background: linear-gradient(45deg, #e74c3c, #c0392b); }
+
+.bg-kpn-green { background-color: #4CAF50 !important; }
+.text-kpn-green { color: #4CAF50 !important; }
+
+.card { 
+    transition: transform 0.2s ease; 
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.card:hover { transform: translateY(-2px); }
+
+.alert-sm { padding: 0.5rem 0.75rem; }
+
+.progress { background-color: rgba(255,255,255,0.2); }
+
+.btn-group-sm > .btn { padding: 0.25rem 0.5rem; }
+
+.table th { border-top: none; font-weight: 600; }
+</style>
+
+<!-- JavaScript Functions -->
+<script>
+function viewZoneDetails(zoneId) {
+    // Implement zone details modal or redirect
+    alert('View details for zone ID: ' + zoneId);
+}
+
+function messageZone(zoneId) {
+    // Implement messaging functionality
+    alert('Send message to zone ID: ' + zoneId);
+}
+
+function exportZoneData() {
+    // Implement data export
+    alert('Exporting zone performance data...');
+}
+
+function whatsappZone(zoneId) {
+    // Create WhatsApp broadcast for zone members
+    const message = `📢 KPN Zone Communication\n\n[Your message here]\n\n---\nFrom: KPN Admin\nKebbi Progressive Network`;
+    const encodedMessage = encodeURIComponent(message);
+    
+    // Open WhatsApp with pre-filled message
+    window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+}
+
+function openSystemSettings() {
+    // Implement system settings modal
+    alert('Opening system settings...');
+}
+
+function generateReport() {
+    // Implement report generation
+    alert('Generating analytics report...');
+}
+
+function refreshActivity() {
+    // Implement activity refresh
+    location.reload();
+}
+
+function viewUnderperformingZones() {
+    // Implement underperforming zones view
+    alert('Showing underperforming zones...');
+}
+
+function approveUser(userId) {
+    if (confirm('Approve this user?')) {
+        // Implement user approval
+        window.location.href = '/leadership/approve/' + userId;
+    }
+}
+
+function rejectUser(userId) {
+    if (confirm('Reject this user?')) {
+        // Implement user rejection
+        window.location.href = '/leadership/reject/' + userId;
+    }
+}
+
+// Zone search and filter functionality
+function filterZones() {
+    const searchTerm = document.getElementById('zoneSearchInput').value.toLowerCase();
+    const performanceFilter = document.getElementById('performanceFilter').value;
+    
+    // Get all zone table rows
+    const zoneRows = document.querySelectorAll('table tbody tr');
+    let visibleCount = 0;
+    
+    zoneRows.forEach(row => {
+        const zoneNameElement = row.querySelector('td:first-child strong');
+        const statusBadge = row.querySelector('td:nth-child(5) .badge');
+        const performanceText = row.querySelector('td:nth-child(4) .text-muted');
+        
+        const zoneName = zoneNameElement ? zoneNameElement.textContent.toLowerCase() : '';
+        const status = statusBadge ? statusBadge.textContent.toLowerCase() : '';
+        const performanceText_value = performanceText ? performanceText.textContent : '';
+        const performanceValue = performanceText_value ? parseFloat(performanceText_value.replace('%', '')) : 0;
+        
+        let shouldShow = true;
+        
+        // Check search term (zone name or status)
+        if (searchTerm && !zoneName.includes(searchTerm) && !status.includes(searchTerm)) {
+            shouldShow = false;
+        }
+        
+        // Check performance filter
+        if (performanceFilter) {
+            if (performanceFilter === 'excellent' && performanceValue < 80) {
+                shouldShow = false;
+            } else if (performanceFilter === 'good' && (performanceValue < 60 || performanceValue >= 80)) {
+                shouldShow = false;
+            } else if (performanceFilter === 'needs_attention' && performanceValue >= 60) {
+                shouldShow = false;
+            }
+        }
+        
+        if (shouldShow) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Show/hide no results message
+    let noResultsMessage = document.getElementById('noZoneResultsMessage');
+    if (visibleCount === 0) {
+        if (!noResultsMessage) {
+            noResultsMessage = document.createElement('tr');
+            noResultsMessage.id = 'noZoneResultsMessage';
+            noResultsMessage.innerHTML = `
+                <td colspan="6" class="text-center py-4">
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-search"></i> No zones found matching your search criteria.
+                        <br><small>Try adjusting your search terms or filters.</small>
+                    </div>
+                </td>
+            `;
+            document.querySelector('table tbody').appendChild(noResultsMessage);
+        }
+        noResultsMessage.style.display = '';
+    } else if (noResultsMessage) {
+        noResultsMessage.style.display = 'none';
+    }
+}
+
+function clearZoneFilters() {
+    document.getElementById('zoneSearchInput').value = '';
+    document.getElementById('performanceFilter').value = '';
+    
+    // Remove no results message
+    const noResultsMessage = document.getElementById('noZoneResultsMessage');
+    if (noResultsMessage) {
+        noResultsMessage.style.display = 'none';
+    }
+    
+    // Reset all rows visibility
+    const zoneRows = document.querySelectorAll('table tbody tr');
+    zoneRows.forEach(row => {
+        if (row.id !== 'noZoneResultsMessage') {
+            row.style.display = '';
+        }
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,771 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Personalized Greeting -->
+    <div class="greeting-container">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-hand-wave greeting-icon"></i>
+            <p class="greeting-text" id="personalized-greeting"></p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-kpn-green mb-0">
+                <i class="fas fa-crown"></i> Admin Dashboard
+            </h2>
+            <p class="text-muted">Leading Kebbi Progressive Network - {{ current_user.full_name }}</p>
+            <p class="small text-success"><i class="fas fa-shield-alt"></i> <strong>Executive Authority</strong> - Full Leadership Access</p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="badge bg-kpn-green fs-6">STATE COORDINATOR</span>
+            <a href="{{ url_for('staff.logout') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Executive Leadership Metrics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-kpn-green text-white leadership-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title mb-1">{{ total_members or 0 }}</h3>
+                            <p class="card-text mb-0">State Members</p>
+                            <small class="opacity-75">Under Your Leadership</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-3x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark bg-opacity-25">
+                    <small><i class="fas fa-trending-up"></i> +{{ new_members_this_month or 0 }} this month</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-warning text-white leadership-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title mb-1">{{ pending_approvals or 0 }}</h3>
+                            <p class="card-text mb-0">Awaiting Decision</p>
+                            <small class="opacity-75">Leadership Approval Required</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-gavel fa-3x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark bg-opacity-25">
+                    <small><i class="fas fa-clock"></i> Requires immediate attention</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-success text-white leadership-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title mb-1">{{ active_campaigns or 0 }}</h3>
+                            <p class="card-text mb-0">Active Campaigns</p>
+                            <small class="opacity-75">Strategic Initiatives</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-rocket fa-3x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark bg-opacity-25">
+                    <small><i class="fas fa-chart-line"></i> Driving state progress</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-info text-white leadership-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title mb-1">{{ upcoming_events or 0 }}</h3>
+                            <p class="card-text mb-0">Scheduled Events</p>
+                            <small class="opacity-75">Executive Calendar</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-calendar fa-3x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark bg-opacity-25">
+                    <small><i class="fas fa-calendar-check"></i> Leadership engagements</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Executive Command Center -->
+            <div class="card shadow-lg mb-4 executive-card">
+                <div class="card-header bg-gradient-kpn-green text-white">
+                    <h5 class="mb-0"><i class="fas fa-crown"></i> Executive Command Center</h5>
+                    <small class="opacity-75">Strategic Leadership Actions</small>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <a href="{{ url_for('leadership.approvals') }}" class="btn btn-executive-primary w-100 p-3">
+                                <i class="fas fa-user-shield fa-2x mb-2"></i><br>
+                                <strong>Leadership Approvals</strong><br>
+                                <small class="text-muted">Grant/Deny Membership Access</small>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ url_for('campaigns.create') }}" class="btn btn-executive-success w-100 p-3">
+                                <i class="fas fa-bullhorn fa-2x mb-2"></i><br>
+                                <strong>Launch Campaign</strong><br>
+                                <small class="text-muted">Strategic State Initiatives</small>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ url_for('events.create') }}" class="btn btn-executive-info w-100 p-3">
+                                <i class="fas fa-calendar-alt fa-2x mb-2"></i><br>
+                                <strong>Executive Events</strong><br>
+                                <small class="text-muted">Schedule Leadership Meetings</small>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ url_for('duty_logs.create_duty') }}" class="btn btn-executive-warning w-100 p-3">
+                                <i class="fas fa-clipboard-list fa-2x mb-2"></i><br>
+                                <strong>Delegate Duties</strong><br>
+                                <small class="text-muted">Assign Executive Tasks</small>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ url_for('media.upload') }}" class="btn btn-executive-secondary w-100 p-3">
+                                <i class="fas fa-photo-video fa-2x mb-2"></i><br>
+                                <strong>Media & Communications</strong><br>
+                                <small class="text-muted">Official State Content</small>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ url_for('donations.add') }}" class="btn btn-executive-dark w-100 p-3">
+                                <i class="fas fa-university fa-2x mb-2"></i><br>
+                                <strong>Financial Oversight</strong><br>
+                                <small class="text-muted">State Financial Management</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zone Overview -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-gradient-kpn-green text-white">
+                    <h5 class="mb-0"><i class="fas fa-map"></i> Zones Overview</h5>
+                    <small class="opacity-75">Administrative Zone Management & Communication</small>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for zone in zones %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-kpn-green">
+                                <div class="card-body text-center p-3">
+                                    <h6 class="text-kpn-green mb-2">{{ zone.name }}</h6>
+                                    <div class="row text-center mb-2">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">LGAs</small>
+                                            <strong class="text-primary">{{ zone.lgas }}</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Members</small>
+                                            <strong class="text-kpn-green">{{ zone.users }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="progress progress-sm mb-2">
+                                        <div class="progress-bar bg-kpn-green" style="width: {{ zone.performance or 0 }}%" title="Zone Performance: {{ zone.performance or 0 }}%"></div>
+                                    </div>
+                                    <div class="btn-group btn-group-sm w-100">
+                                        <button class="btn btn-outline-kpn-primary btn-sm" 
+                                                onclick="viewZoneDetails({{ zone.id }})">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                        <button class="btn btn-outline-kpn-primary btn-sm" 
+                                                onclick="sendZoneMessage({{ zone.id }})">
+                                            <i class="fas fa-envelope"></i> Message
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center mt-3">
+                        <button class="btn btn-kpn-primary" onclick="sendBulkZoneMessage()">
+                            <i class="fas fa-broadcast-tower"></i> Message All Zones
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activities -->
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-clock"></i> Recent Activities</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Activity</th>
+                                    <th>User</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activity in recent_activities %}
+                                <tr>
+                                    <td>{{ activity.description }}</td>
+                                    <td>{{ activity.user.full_name }}</td>
+                                    <td>{{ activity.created_at.strftime('%m/%d %H:%M') }}</td>
+                                    <td>
+                                        <button class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No recent activities</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- State Coordinator Profile -->
+            <div class="card shadow-lg mb-4 executive-profile-card">
+                <div class="card-header bg-gradient-kpn-green text-white text-center">
+                    <h6 class="mb-0"><i class="fas fa-crown"></i> State Coordinator</h6>
+                    <small class="opacity-75">Executive Authority</small>
+                </div>
+                <div class="card-body text-center p-4">
+                    {% if current_user.photo %}
+                    <div class="position-relative d-inline-block mb-3">
+                        <img src="{{ url_for('static', filename=current_user.photo) }}" 
+                             class="rounded-circle executive-avatar" width="100" height="100" alt="Profile">
+                        <div class="executive-badge">
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="position-relative d-inline-block mb-3">
+                        <div class="bg-gradient-kpn-green rounded-circle mx-auto d-flex align-items-center justify-content-center executive-avatar" 
+                             style="width: 100px; height: 100px;">
+                            <i class="fas fa-user fa-3x text-white"></i>
+                        </div>
+                        <div class="executive-badge">
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <h5 class="text-kpn-green mb-1">{{ current_user.full_name }}</h5>
+                    <p class="text-primary fw-bold mb-2">{{ current_user.role_title or 'State Coordinator' }}</p>
+                    <p class="small text-muted mb-1">{{ current_user.email }}</p>
+                    {% if current_user.get_location_hierarchy() %}
+                    <p class="small text-success mb-3"><i class="fas fa-map-marker-alt"></i> {{ current_user.get_location_hierarchy() }}</p>
+                    {% endif %}
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('staff.edit_profile') }}" class="btn btn-outline-kpn-primary">
+                            <i class="fas fa-edit"></i> Edit Profile
+                        </a>
+                        <small class="text-muted mt-2">Executive Level Access Granted</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Approvals -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-warning text-white">
+                    <h6 class="mb-0"><i class="fas fa-user-clock"></i> Pending Approvals</h6>
+                </div>
+                <div class="card-body">
+                    {% for user in pending_users %}
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                        <div>
+                            <small class="fw-bold">{{ user.full_name }}</small><br>
+                            <small class="text-muted">{{ user.role_type.value|title }}</small>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-success btn-sm" 
+                                    onclick="approveUser({{ user.id }})">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" 
+                                    onclick="rejectUser({{ user.id }})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No pending approvals</p>
+                    {% endfor %}
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('leadership.approvals') }}" class="btn btn-kpn-primary btn-sm">
+                            View All <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Status -->
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="fas fa-server"></i> System Status</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Database:</span>
+                            <span class="badge bg-success">Online</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Total Storage:</span>
+                            <span class="text-muted">85%</span>
+                        </div>
+                        <div class="progress progress-sm">
+                            <div class="progress-bar bg-warning" style="width: 85%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Active Sessions:</span>
+                            <span class="text-muted">{{ active_sessions or 12 }}</span>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-chart-line"></i> View Analytics
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Executive Styles -->
+<style>
+:root {
+    --kpn-green: #28a745;
+    --kpn-blue: #007bff;
+    --executive-gold: #ffd700;
+}
+
+.bg-gradient-kpn-green {
+    background: linear-gradient(135deg, var(--kpn-green) 0%, #20c997 100%);
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.bg-gradient-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #6610f2 100%);
+}
+
+.leadership-card {
+    border: none;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.leadership-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.executive-card {
+    border: 2px solid var(--kpn-green);
+    border-radius: 15px;
+}
+
+.executive-profile-card {
+    border: 2px solid var(--executive-gold);
+    border-radius: 15px;
+}
+
+.executive-avatar {
+    border: 4px solid var(--executive-gold);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.executive-badge {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--executive-gold);
+}
+
+.btn-executive-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+}
+
+.btn-executive-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+}
+
+.btn-executive-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+}
+
+.btn-executive-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #d39e00 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+}
+
+.btn-executive-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+}
+
+.btn-executive-dark {
+    background: linear-gradient(135deg, #343a40 0%, #212529 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+}
+
+.btn-executive-primary:hover,
+.btn-executive-success:hover,
+.btn-executive-info:hover,
+.btn-executive-warning:hover,
+.btn-executive-secondary:hover,
+.btn-executive-dark:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    color: white;
+}
+
+.border-kpn-green {
+    border-color: var(--kpn-green) !important;
+}
+
+.progress-sm {
+    height: 0.5rem;
+}
+
+.card {
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.opacity-75 {
+    opacity: 0.75;
+}
+
+.text-kpn-green {
+    color: var(--kpn-green) !important;
+}
+
+.btn-outline-kpn-primary {
+    color: var(--kpn-green);
+    border-color: var(--kpn-green);
+}
+
+.btn-outline-kpn-primary:hover {
+    background-color: var(--kpn-green);
+    border-color: var(--kpn-green);
+    color: white;
+}
+
+/* Font Awesome Free icons - no custom overrides needed */
+</style>
+
+<!-- Scripts -->
+<script>
+function viewZoneDetails(zoneId) {
+    // Implement zone details view
+    alert('Zone details functionality to be implemented');
+}
+
+function sendZoneMessage(zoneId) {
+    // Implement zone messaging
+    alert('Zone messaging functionality to be implemented');
+}
+
+function approveUser(userId) {
+    if (confirm('Approve this user?')) {
+        // Implement user approval
+        fetch('/leadership/approve_user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({user_id: userId})
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+
+function rejectUser(userId) {
+    if (confirm('Reject this user?')) {
+        // Implement user rejection
+        fetch('/leadership/reject_user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({user_id: userId})
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+}
+
+// Zone Management Functions
+function viewZoneDetails(zoneId) {
+    // Create a simple modal to display zone details
+    const modalHtml = `
+        <div class="modal fade" id="zoneDetailsModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-kpn-green text-white">
+                        <h5 class="modal-title">Zone Details</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center">
+                            <div class="spinner-border text-kpn-green" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading zone details...</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('zoneDetailsModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('zoneDetailsModal'));
+    modal.show();
+    
+    // Fetch real zone details from server
+    fetch(`/staff/zones/${zoneId}/details`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                document.querySelector('#zoneDetailsModal .modal-body').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i> ${data.error}
+                    </div>
+                `;
+                return;
+            }
+            
+            document.querySelector('#zoneDetailsModal .modal-body').innerHTML = `
+                <h6 class="text-kpn-green">${data.name} Zone Details</h6>
+                <p><strong>Description:</strong> ${data.description}</p>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card border-primary">
+                            <div class="card-body text-center p-2">
+                                <h6 class="text-primary mb-1">${data.total_lgas}</h6>
+                                <small class="text-muted">LGAs</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-success">
+                            <div class="card-body text-center p-2">
+                                <h6 class="text-success mb-1">${data.total_users}</h6>
+                                <small class="text-muted">Users</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h6 class="text-kpn-green">Zone Coordinator</h6>
+                <p><strong>Name:</strong> ${data.coordinator.name}</p>
+                ${data.coordinator.email ? `<p><strong>Email:</strong> ${data.coordinator.email}</p>` : ''}
+                ${data.coordinator.phone ? `<p><strong>Phone:</strong> ${data.coordinator.phone}</p>` : ''}
+                
+                <h6 class="text-kpn-green mt-3">LGAs in Zone</h6>
+                <div class="list-group">
+                    ${data.lgas.map(lga => `
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${lga.name}</strong><br>
+                                <small class="text-muted">Coordinator: ${lga.coordinator}</small>
+                            </div>
+                            <span class="badge bg-primary">${lga.users_count} users</span>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <hr>
+                <div class="text-center">
+                    <a href="/staff/zones/${zoneId}/manage" class="btn btn-kpn-primary btn-sm me-2">
+                        <i class="fas fa-cog"></i> Manage Zone
+                    </a>
+                    <a href="/staff/zones/${zoneId}/reports" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-chart-bar"></i> View Reports
+                    </a>
+                </div>
+            `;
+        })
+        .catch(error => {
+            console.error('Error fetching zone details:', error);
+            document.querySelector('#zoneDetailsModal .modal-body').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> Error loading zone details. Please try again.
+                </div>
+            `;
+        });
+}
+
+function sendZoneMessage(zoneId) {
+    // Open message composer for specific zone
+    const message = prompt('Enter message to send to zone members:');
+    if (message && message.trim()) {
+        if (confirm(`Send message to all members in this zone?`)) {
+            // Implement zone messaging
+            fetch('/messages/send-zone-message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    zone_id: zoneId,
+                    message: message.trim()
+                })
+            }).then(response => {
+                if (response.ok) {
+                    alert('Message sent successfully to zone members!');
+                } else {
+                    alert('Failed to send message. Please try again.');
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+                alert('Error sending message. Please try again.');
+            });
+        }
+    }
+}
+
+function sendBulkZoneMessage() {
+    // Send message to all zones
+    const message = prompt('Enter message to send to ALL zone members:');
+    if (message && message.trim()) {
+        if (confirm(`Send message to ALL zone members across the state?`)) {
+            // Implement bulk zone messaging
+            fetch('/messages/send-bulk-zone-message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    message: message.trim()
+                })
+            }).then(response => {
+                if (response.ok) {
+                    alert('Message sent successfully to all zone members!');
+                } else {
+                    alert('Failed to send message. Please try again.');
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+                alert('Error sending message. Please try again.');
+            });
+        }
+    }
+}
+
+// Initialize personalized greeting
+document.addEventListener('DOMContentLoaded', function() {
+    const userName = {{ current_user.full_name|tojson }};
+    const roleTitle = {{ "State Coordinator"|tojson }};
+    const taskReminder = {{ "please review pending approvals and leadership matters"|tojson }};
+    
+    initializeGreeting(userName, roleTitle, taskReminder);
+});
+</script>
+{% endblock %}

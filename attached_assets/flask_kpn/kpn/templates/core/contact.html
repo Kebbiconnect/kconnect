@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Us{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-4">Contact Us</h1>
+        <p class="lead">Get in touch with the Kebbi Progressive Network for partnerships, inquiries, and support</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow">
+                    <div class="card-header bg-kpn-green text-white">
+                        <h5 class="mb-0"><i class="fas fa-paper-plane"></i> Send us a Message</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" id="contactForm">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="name" class="form-label">Full Name *</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="email" class="form-label">Email Address *</label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone">
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="subject" class="form-label">Subject *</label>
+                                    <select class="form-select" id="subject" name="subject" required>
+                                        <option value="">Select Subject</option>
+                                        <option value="partnership">Partnership Inquiry</option>
+                                        <option value="membership">Membership Question</option>
+                                        <option value="events">Event Collaboration</option>
+                                        <option value="media">Media & Press</option>
+                                        <option value="support">Technical Support</option>
+                                        <option value="feedback">Feedback & Suggestions</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <label for="location" class="form-label">Your Location</label>
+                                    <input type="text" class="form-control" id="location" name="location" placeholder="City, LGA, State">
+                                </div>
+                                
+                                <div class="col-12">
+                                    <label for="message" class="form-label">Message *</label>
+                                    <textarea class="form-control" id="message" name="message" rows="5" required 
+                                              placeholder="Please provide details about your inquiry or message..."></textarea>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="newsletter" name="newsletter">
+                                        <label class="form-check-label" for="newsletter">
+                                            Subscribe to our newsletter for updates
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-kpn-primary btn-lg">
+                                    <i class="fas fa-paper-plane"></i> Send Message
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Contact Information -->
+                <div class="card mb-4">
+                    <div class="card-header bg-kpn-blue text-white">
+                        <h6 class="mb-0"><i class="fas fa-info-circle"></i> Contact Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="contact-item mb-3">
+                            <h6 class="text-kpn-green">
+                                <i class="fab fa-facebook-f"></i> Social Media
+                            </h6>
+                            <p class="mb-1">
+                                <a href="https://www.facebook.com/kpn.kebbi" target="_blank" class="text-decoration-none">
+                                    Facebook: @kpn.kebbi
+                                </a>
+                            </p>
+                        </div>
+                        
+                        <div class="contact-item mb-3">
+                            <h6 class="text-kpn-green">
+                                <i class="fas fa-envelope"></i> Email
+                            </h6>
+                            <p class="mb-1">
+                                <a href="mailto:kpnkebbi@hotmail.com" class="text-decoration-none">
+                                    kpnkebbi@hotmail.com
+                                </a>
+                            </p>
+                            <p class="mb-0">
+                                <a href="mailto:kpn.kebbi@gmail.com" class="text-decoration-none">
+                                    kpn.kebbi@gmail.com
+                                </a>
+                            </p>
+                        </div>
+                        
+                        <div class="contact-item mb-3">
+                            <h6 class="text-kpn-green">
+                                <i class="fas fa-phone"></i> Phone
+                            </h6>
+                            <p class="mb-0">
+                                <a href="tel:+2342022919562" class="text-decoration-none">
+                                    +234 202 291 9562
+                                </a>
+                            </p>
+                        </div>
+                        
+                        <div class="contact-item mb-3">
+                            <h6 class="text-kpn-green">
+                                <i class="fas fa-map-marker-alt"></i> Coverage Area
+                            </h6>
+                            <p class="mb-0">Kebbi State, Nigeria</p>
+                            <small class="text-muted">All 21 LGAs and 225 Wards</small>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <h6 class="text-kpn-green">
+                                <i class="fas fa-clock"></i> Response Time
+                            </h6>
+                            <p class="mb-0">We typically respond within 24-48 hours</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="fas fa-link"></i> Quick Links</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <a href="{{ url_for('core.join') }}" class="text-decoration-none">
+                                    <i class="fas fa-user-plus"></i> Join Our Network
+                                </a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="{{ url_for('core.leadership') }}" class="text-decoration-none">
+                                    <i class="fas fa-users"></i> Meet Our Leaders
+                                </a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="{{ url_for('core.support') }}" class="text-decoration-none">
+                                    <i class="fas fa-donate"></i> Support Our Cause
+                                </a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="{{ url_for('core.faq') }}" class="text-decoration-none">
+                                    <i class="fas fa-question-circle"></i> Frequently Asked Questions
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Office Hours -->
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0"><i class="fas fa-business-time"></i> Availability</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="small mb-2"><strong>Online Support:</strong></p>
+                        <ul class="small list-unstyled mb-3">
+                            <li>Monday - Friday: 8:00 AM - 6:00 PM</li>
+                            <li>Saturday: 9:00 AM - 4:00 PM</li>
+                            <li>Sunday: Emergency only</li>
+                        </ul>
+                        <p class="small mb-2"><strong>Social Media:</strong></p>
+                        <p class="small mb-0">Follow our Facebook page for real-time updates and community discussions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Leadership Contact Section -->
+        <div class="mt-5">
+            <h3 class="text-kpn-green text-center mb-4">Direct Leadership Contact</h3>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-crown fa-3x text-kpn-green mb-3"></i>
+                            <h6>State Coordinator</h6>
+                            <p class="mb-2">For state-level inquiries and partnerships</p>
+                            <small class="text-muted">Available through official channels</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-bullhorn fa-3x text-kpn-blue mb-3"></i>
+                            <h6>Media & Publicity</h6>
+                            <p class="mb-2">For media inquiries and press releases</p>
+                            <small class="text-muted">Contact via our official Facebook page</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-heart fa-3x text-success mb-3"></i>
+                            <h6>Women Leader</h6>
+                            <p class="mb-2">For women's empowerment programs</p>
+                            <small class="text-muted">Available through our network</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

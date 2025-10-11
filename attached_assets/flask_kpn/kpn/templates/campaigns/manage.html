@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Campaigns{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-kpn-green">
+            <i class="fas fa-bullhorn"></i> Manage Campaigns
+        </h2>
+        <a href="{{ url_for('campaigns.create') }}" class="btn btn-kpn-primary">
+            <i class="fas fa-plus"></i> New Campaign
+        </a>
+    </div>
+    
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Title</th>
+                            <th>Author</th>
+                            <th>Status</th>
+                            <th>Featured</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for campaign in campaigns %}
+                        <tr>
+                            <td>
+                                <strong>{{ campaign.title }}</strong>
+                                <br>
+                                <small class="text-muted">{{ campaign.content[:100] }}...</small>
+                            </td>
+                            <td>{{ campaign.author.full_name }}</td>
+                            <td>
+                                {% if campaign.published %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-eye"></i> Published
+                                </span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-eye-slash"></i> Draft
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if campaign.featured %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-star"></i> Featured
+                                </span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small>{{ campaign.created_at.strftime('%m/%d/%Y') }}</small>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('campaigns.view_campaign', campaign_id=campaign.id) }}" 
+                                       class="btn btn-outline-primary" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button class="btn btn-outline-secondary" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" title="Delete"
+                                            onclick="confirmDelete('{{ campaign.title }}', {{ campaign.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-2x mb-3"></i>
+                                <br>
+                                No campaigns found. <a href="{{ url_for('campaigns.create') }}">Create your first campaign</a>.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(title, id) {
+    if (confirm('Are you sure you want to delete "' + title + '"?')) {
+        // Add delete functionality here
+        alert('Delete functionality not implemented yet');
+    }
+}
+</script>
+{% endblock %}

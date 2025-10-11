@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+
+{% block title %}Executive Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4 general-executive-theme">
+    <!-- Personalized Greeting -->
+    <div class="greeting-container">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-hand-wave greeting-icon"></i>
+            <p class="greeting-text" id="personalized-greeting"></p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-dark mb-0">
+                <i class="fas fa-user-tie"></i> Executive Dashboard
+            </h2>
+            <p class="text-muted">Executive Leadership - {{ current_user.full_name }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="badge bg-primary fs-6">EXECUTIVE</span>
+            <a href="{{ url_for('staff.logout') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Executive Tools -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-briefcase"></i> Executive Management Tools</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('leadership.approvals') }}" class="btn btn-primary w-100 p-3">
+                                <i class="fas fa-user-check fa-2x mb-2"></i><br>
+                                <strong>Review Members</strong><br>
+                                <small>{{ pending_approvals }} Pending</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('campaigns.create') }}" class="btn btn-outline-success w-100 p-3">
+                                <i class="fas fa-bullhorn fa-2x mb-2"></i><br>
+                                <strong>Create Campaign</strong><br>
+                                <small>Leadership Initiative</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('events.create') }}" class="btn btn-outline-info w-100 p-3">
+                                <i class="fas fa-calendar-plus fa-2x mb-2"></i><br>
+                                <strong>Schedule Event</strong><br>
+                                <small>Plan Activities</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('core.leadership') }}" class="btn btn-outline-warning w-100 p-3">
+                                <i class="fas fa-users fa-2x mb-2"></i><br>
+                                <strong>View Leadership</strong><br>
+                                <small>Organizational Chart</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Executive Statistics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ total_users }}</h4>
+                            <p class="card-text">Total Users</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ total_members }}</h4>
+                            <p class="card-text">Approved Members</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-check fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ pending_approvals }}</h4>
+                            <p class="card-text">Pending Reviews</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ active_campaigns }}</h4>
+                            <p class="card-text">Active Campaigns</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-bullhorn fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Recent Campaigns -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-bullhorn"></i> Recent Campaigns</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Campaign Title</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for campaign in recent_campaigns %}
+                                <tr>
+                                    <td class="fw-bold">{{ campaign.title }}</td>
+                                    <td>
+                                        {% if campaign.published %}
+                                        <span class="badge bg-success">Published</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Draft</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ campaign.created_at.strftime('%m/%d/%y') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('campaigns.view_campaign', campaign_id=campaign.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No campaigns found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Executive Overview -->
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Executive Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <h3 class="text-primary">{{ total_events }}</h3>
+                            <p class="text-muted">Total Events</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h3 class="text-success">{{ upcoming_events }}</h3>
+                            <p class="text-muted">Upcoming Events</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h3 class="text-warning">{{ new_members_this_month }}</h3>
+                            <p class="text-muted">New Members (30 days)</p>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h6 class="text-muted">Member Approval Rate</h6>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar bg-success" style="width: {{ (total_members / total_users * 100) if total_users > 0 else 0 }}%">
+                                {{ "%.1f"|format((total_members / total_users * 100) if total_users > 0 else 0) }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Executive Profile -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="fas fa-user-tie"></i> Executive Leader</h6>
+                </div>
+                <div class="card-body text-center">
+                    {% if current_user.photo %}
+                    <img src="{{ url_for('static', filename=current_user.photo) }}" 
+                         class="rounded-circle mb-3" width="80" height="80" alt="Profile">
+                    {% else %}
+                    <div class="bg-primary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                         style="width: 80px; height: 80px;">
+                        <i class="fas fa-user fa-2x text-white"></i>
+                    </div>
+                    {% endif %}
+                    <h6>{{ current_user.full_name }}</h6>
+                    <p class="text-muted mb-2">{{ current_user.role_title or 'Executive' }}</p>
+                    <p class="small text-muted">{{ current_user.email }}</p>
+                    <a href="{{ url_for('staff.edit_profile') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('leadership.approvals') }}" class="btn btn-primary">
+                            <i class="fas fa-user-check"></i> Review Members
+                        </a>
+                        <a href="{{ url_for('campaigns.create') }}" class="btn btn-success">
+                            <i class="fas fa-bullhorn"></i> Create Campaign
+                        </a>
+                        <a href="{{ url_for('events.create') }}" class="btn btn-info">
+                            <i class="fas fa-calendar-plus"></i> Schedule Event
+                        </a>
+                        <a href="{{ url_for('core.leadership') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-users"></i> View Leadership
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Styles -->
+<style>
+.bg-gradient-success { background: linear-gradient(45deg, #28a745, #1e7e34); }
+.bg-gradient-warning { background: linear-gradient(45deg, #ffc107, #d39e00); }
+.bg-gradient-info { background: linear-gradient(45deg, #17a2b8, #117a8b); }
+.bg-gradient-primary { background: linear-gradient(45deg, #007bff, #0056b3); }
+
+.greeting-container {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.greeting-icon {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+    animation: wave 2s ease-in-out infinite;
+}
+
+@keyframes wave {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(20deg); }
+    75% { transform: rotate(-10deg); }
+}
+</style>
+
+<!-- Scripts -->
+<script>
+// Initialize personalized greeting
+document.addEventListener('DOMContentLoaded', function() {
+    const userName = {{ current_user.full_name|tojson }};
+    const roleTitle = {{ (current_user.role_title or "Executive")|tojson }};
+    const taskReminder = {{ "coordinate leadership activities and support organizational goals"|tojson }};
+    
+    initializeGreeting(userName, roleTitle, taskReminder);
+});
+</script>
+{% endblock %}

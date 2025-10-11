@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Support Us{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-4">Support Our Cause</h1>
+        <p class="lead">Your contributions help us strengthen democracy and empower communities across Kebbi State</p>
+    </div>
+</section>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card shadow">
+                <div class="card-header bg-kpn-green text-white text-center">
+                    <h4 class="mb-0"><i class="fas fa-hand-holding-heart"></i> Bank Donation Details</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-center mb-4">
+                        Choose any of the following bank accounts to make your contribution to the Kebbi Progressive Network.
+                    </p>
+                    
+                    {% for donation in donations %}
+                    <div class="donation-card mb-4 p-4 border rounded bg-light">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="text-kpn-green mb-2">
+                                    <i class="fas fa-university"></i> {{ donation.bank_name }}
+                                </h5>
+                                <p class="mb-1">
+                                    <strong>Account Name:</strong> {{ donation.account_name }}
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Account Number:</strong> 
+                                    <span class="fw-bold text-kpn-blue">{{ donation.account_number }}</span>
+                                </p>
+                                {% if donation.description %}
+                                <p class="mb-0 text-muted">
+                                    <small>{{ donation.description }}</small>
+                                </p>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 text-md-end">
+                                <button class="btn btn-outline-kpn-primary btn-sm" 
+                                        onclick="copyToClipboard('{{ donation.account_number }}')">
+                                    <i class="fas fa-copy"></i> Copy Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                        <p>No bank details available at the moment.</p>
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="alert alert-info mt-4">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> After making your donation, please contact us with your payment reference 
+                        for proper acknowledgment and receipt.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        alert('Account number copied to clipboard!');
+    }, function(err) {
+        console.error('Could not copy text: ', err);
+    });
+}
+</script>
+{% endblock %}

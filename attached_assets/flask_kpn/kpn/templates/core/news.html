@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}News & Campaigns{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-4">News & Campaigns</h1>
+        <p class="lead">Stay updated with our latest advocacy posts, training programs, and civic education initiatives</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        {% if campaigns %}
+            <div class="row">
+                <!-- Main Content -->
+                <div class="col-lg-8">
+                    {% for campaign in campaigns %}
+                    <article class="card mb-4 shadow-sm">
+                        {% if campaign.featured_image %}
+                            <img src="{{ url_for('static', filename='uploads/' + campaign.featured_image) }}" 
+                                 class="card-img-top" 
+                                 alt="{{ campaign.title }}"
+                                 style="height: 300px; object-fit: cover;">
+                        {% endif %}
+                        
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    {% if campaign.featured %}
+                                        <span class="badge bg-kpn-green mb-2">Featured</span>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar"></i> {{ campaign.created_at.strftime('%B %d, %Y') }}
+                                </small>
+                            </div>
+                            
+                            <h2 class="card-title h4">
+                                <a href="{{ url_for('campaigns.view_campaign', campaign_id=campaign.id) }}" 
+                                   class="text-decoration-none text-kpn-green">
+                                    {{ campaign.title }}
+                                </a>
+                            </h2>
+                            
+                            <div class="card-text">
+                                {{ campaign.content[:300] }}...
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div class="author-info">
+                                    <small class="text-muted">
+                                        <i class="fas fa-user"></i> {{ campaign.author.full_name }}
+                                        {% if campaign.author.role_title %}
+                                            <span class="text-kpn-blue">- {{ campaign.author.role_title }}</span>
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <a href="{{ url_for('campaigns.view_campaign', campaign_id=campaign.id) }}" 
+                                   class="btn btn-kpn-primary btn-sm">
+                                    Read Full Article <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                    
+                    <!-- Pagination would go here -->
+                    <nav aria-label="Campaign pagination">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled">
+                                <span class="page-link">Previous</span>
+                            </li>
+                            <li class="page-item active">
+                                <span class="page-link">1</span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">Next</span>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <!-- Categories -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-kpn-green text-white">
+                            <h6 class="mb-0"><i class="fas fa-tags"></i> Categories</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled mb-0">
+                                <li><a href="#" class="text-decoration-none">Advocacy <span class="text-muted">(12)</span></a></li>
+                                <li><a href="#" class="text-decoration-none">Civic Education <span class="text-muted">(8)</span></a></li>
+                                <li><a href="#" class="text-decoration-none">Training Programs <span class="text-muted">(6)</span></a></li>
+                                <li><a href="#" class="text-decoration-none">Community Development <span class="text-muted">(15)</span></a></li>
+                                <li><a href="#" class="text-decoration-none">Youth Empowerment <span class="text-muted">(10)</span></a></li>
+                                <li><a href="#" class="text-decoration-none">Good Governance <span class="text-muted">(7)</span></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Updates -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-kpn-blue text-white">
+                            <h6 class="mb-0"><i class="fas fa-clock"></i> Recent Updates</h6>
+                        </div>
+                        <div class="card-body">
+                            {% for article in campaigns[:5] %}
+                            <div class="d-flex mb-3">
+                                <div class="flex-shrink-0">
+                                    {% if article.featured_image %}
+                                        <img src="{{ url_for('static', filename='uploads/' + article.featured_image) }}" 
+                                             alt="{{ article.title }}"
+                                             style="width: 50px; height: 50px; object-fit: cover;"
+                                             class="rounded">
+                                    {% else %}
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                             style="width: 50px; height: 50px;">
+                                            <i class="fas fa-newspaper text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">
+                                        <a href="{{ url_for('campaigns.view_campaign', campaign_id=article.id) }}" 
+                                           class="text-decoration-none text-dark">
+                                            {{ article.title[:50] }}...
+                                        </a>
+                                    </h6>
+                                    <small class="text-muted">
+                                        {{ article.created_at.strftime('%B %d') }}
+                                    </small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Follow Us -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0"><i class="fab fa-facebook-f"></i> Stay Connected</h6>
+                        </div>
+                        <div class="card-body text-center">
+                            <p>Follow our official Facebook page for real-time updates</p>
+                            <a href="https://www.facebook.com/kpn.kebbi" 
+                               target="_blank" 
+                               class="btn btn-primary">
+                                <i class="fab fa-facebook-f"></i> Follow KPN
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Newsletter Signup -->
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h6 class="mb-0"><i class="fas fa-envelope"></i> Newsletter</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="small">Get the latest KPN news and updates delivered to your inbox.</p>
+                            <form>
+                                <div class="mb-3">
+                                    <input type="email" class="form-control" placeholder="Your email address">
+                                </div>
+                                <button type="submit" class="btn btn-success btn-sm w-100">
+                                    Subscribe
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-newspaper fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No News Articles Available</h4>
+                <p class="text-muted">Check back later for the latest news and campaign updates.</p>
+                
+                {% if current_user.is_authenticated and current_user.role_type.value in ['admin', 'executive'] %}
+                <div class="mt-4">
+                    <a href="{{ url_for('campaigns.create') }}" class="btn btn-kpn-primary">
+                        <i class="fas fa-plus"></i> Create First Article
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

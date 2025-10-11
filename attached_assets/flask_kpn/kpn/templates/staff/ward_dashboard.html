@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Ward Leader Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Personalized Greeting -->
+    <div class="greeting-container">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-hand-wave greeting-icon"></i>
+            <p class="greeting-text" id="personalized-greeting"></p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-kpn-green mb-0">
+                <i class="fas fa-map-marker-alt"></i> Ward Leader Dashboard
+            </h2>
+            <p class="text-muted">{{ current_user.ward.name if current_user.ward }} Ward - {{ current_user.full_name }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="badge bg-secondary fs-6">Ward Leader</span>
+            <a href="{{ url_for('staff.logout') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Ward Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-secondary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ ward_users|length or 0 }}</h4>
+                            <p class="card-text">Ward Members</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ active_members or 0 }}</h4>
+                            <p class="card-text">Active Members</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-check fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ ward_events or 0 }}</h4>
+                            <p class="card-text">Ward Events</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-calendar fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ attendance_rate or 75 }}%</h4>
+                            <p class="card-text">Attendance Rate</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-percentage fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+    
+    <!-- Ward Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-gradient" style="background: linear-gradient(135deg, var(--kpn-blue), var(--kpn-green));">
+                <div class="card-body text-white">
+                    <h4>{{ current_user.ward.name }} Ward</h4>
+                    <p class="mb-1">{{ current_user.role_title }}: {{ current_user.full_name }}</p>
+                    <p class="mb-0">LGA: {{ current_user.ward.lga.name }} | Zone: {{ current_user.ward.lga.zone.name }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ward Staff -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-kpn-green text-white">
+                    <h5 class="mb-0"><i class="fas fa-users"></i> Ward Staff ({{ ward_users|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if ward_users %}
+                        {% for user in ward_users %}
+                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                            <div>
+                                <strong>{{ user.full_name }}</strong>
+                                <br><small class="text-muted">{{ user.role_title or user.role_type.value|title }}</small>
+                                {% if user.phone %}
+                                    <br><small class="text-muted"><i class="fas fa-phone"></i> {{ user.phone }}</small>
+                                {% endif %}
+                            </div>
+                            <div>
+                                {% if user.approval_status.value == 'approved' %}
+                                    <span class="badge bg-success">Active</span>
+                                {% elif user.approval_status.value == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center">No staff members assigned to this ward yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ward Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-tasks"></i> Ward Leader Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-primary w-100" disabled>
+                                <i class="fas fa-users"></i> Manage Members
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-info w-100" disabled>
+                                <i class="fas fa-clipboard-list"></i> Attendance Log
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-success w-100" disabled>
+                                <i class="fas fa-bullhorn"></i> Send Messages
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize personalized greeting
+document.addEventListener('DOMContentLoaded', function() {
+    const userName = {{ current_user.full_name|tojson }};
+    const roleTitle = {{ "Ward Leader"|tojson }};
+    const wardName = {{ (current_user.ward.name if current_user.ward else "your ward")|tojson }};
+    const taskReminder = `please lead ${wardName} community development and member engagement`;
+    
+    initializeGreeting(userName, roleTitle, taskReminder);
+});
+</script>
+{% endblock %}

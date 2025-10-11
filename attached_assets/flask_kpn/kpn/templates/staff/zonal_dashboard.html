@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+
+{% block title %}Zonal Coordinator Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Personalized Greeting -->
+    <div class="greeting-container">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-hand-wave greeting-icon"></i>
+            <p class="greeting-text" id="personalized-greeting"></p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-warning mb-0">
+                <i class="fas fa-map-marked-alt"></i> Zonal Coordinator Dashboard
+            </h2>
+            <p class="text-muted">{{ current_user.zone.name if current_user.zone }} Zone - {{ current_user.full_name }}</p>
+            <p class="small text-warning"><i class="fas fa-layer-group"></i> <strong>Zone Management</strong> - Regional Leadership & Coordination</p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="badge bg-warning text-dark fs-6">ZONAL COORDINATOR</span>
+            <a href="{{ url_for('staff.logout') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Zone Management Metrics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-warning text-dark zonal-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title mb-1">{{ total_lgas or 0 }}</h3>
+                            <p class="card-text mb-0">Local Governments</p>
+                            <small class="text-muted">Under Your Jurisdiction</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-map fa-3x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark bg-opacity-25">
+                    <small><i class="fas fa-cog"></i> Administrative oversight</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-success text-white zonal-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title mb-1">{{ total_members or 0 }}</h3>
+                            <p class="card-text mb-0">Zone Members</p>
+                            <small class="opacity-75">Active Party Members</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-3x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark bg-opacity-25">
+                    <small><i class="fas fa-chart-line"></i> Growing membership base</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-danger text-white zonal-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title mb-1">{{ pending_lga_approvals or 0 }}</h3>
+                            <p class="card-text mb-0">Pending Approvals</p>
+                            <small class="opacity-75">LGA Leader Applications</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-clock fa-3x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark bg-opacity-25">
+                    <small><i class="fas fa-exclamation-triangle"></i> Requires attention</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-gradient-info text-white zonal-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3 class="card-title mb-1">{{ new_members_this_month or 0 }}</h3>
+                            <p class="card-text mb-0">New This Month</p>
+                            <small class="opacity-75">Recent Registrations</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-plus fa-3x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark bg-opacity-25">
+                    <small><i class="fas fa-trending-up"></i> Growth momentum</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+    
+            <!-- Zone Management Tools -->
+            <div class="card shadow-lg mb-4 zonal-tools">
+                <div class="card-header bg-gradient-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-tools"></i> Zone Management Tools</h5>
+                    <small class="text-muted">Administrative & Coordination Functions</small>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="{{ url_for('leadership.approvals') }}" class="btn btn-zonal-warning w-100 p-3">
+                                <i class="fas fa-user-check fa-2x mb-2"></i><br>
+                                <strong>LGA Approvals</strong><br>
+                                <small class="text-light">Review Leadership Applications</small>
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{{ url_for('events.manage') }}" class="btn btn-zonal-success w-100 p-3">
+                                <i class="fas fa-calendar-plus fa-2x mb-2"></i><br>
+                                <strong>Zone Events</strong><br>
+                                <small class="text-light">Organize Regional Activities</small>
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{{ url_for('campaigns.manage') }}" class="btn btn-zonal-info w-100 p-3">
+                                <i class="fas fa-bullhorn fa-2x mb-2"></i><br>
+                                <strong>Zone Campaigns</strong><br>
+                                <small class="text-light">Coordinate Regional Campaigns</small>
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{{ url_for('duty_logs.view_duties') }}" class="btn btn-zonal-primary w-100 p-3">
+                                <i class="fas fa-clipboard-list fa-2x mb-2"></i><br>
+                                <strong>Zone Reports</strong><br>
+                                <small class="text-light">Performance & Analytics</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+    <!-- LGAs in Zone -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-gradient-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-building"></i> LGA Performance - {{ current_user.zone.name }} Zone</h5>
+                    <small class="opacity-75">Local Government Area Management</small>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for lga_data in lga_performance|sort(attribute='performance', reverse=true) %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card border-warning lga-performance-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="text-warning mb-0">{{ lga_data.name }}</h6>
+                                        <span class="badge bg-success">{{ lga_data.users }} members</span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <small class="text-muted">Performance Score</small>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-warning" role="progressbar" 
+                                                 style="width: {{ lga_data.performance }}%" 
+                                                 aria-valuenow="{{ lga_data.performance }}" 
+                                                 aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <small class="text-warning"><strong>{{ lga_data.performance|round(1) }}%</strong></small>
+                                    </div>
+                                    <div class="text-center">
+                                        {% if lga_data.performance >= 80 %}
+                                            <span class="badge bg-success"><i class="fas fa-trophy"></i> Excellent</span>
+                                        {% elif lga_data.performance >= 60 %}
+                                            <span class="badge bg-info"><i class="fas fa-thumbs-up"></i> Good</span>
+                                        {% elif lga_data.performance >= 40 %}
+                                            <span class="badge bg-warning"><i class="fas fa-chart-line"></i> Average</span>
+                                        {% else %}
+                                            <span class="badge bg-danger"><i class="fas fa-exclamation-triangle"></i> Needs Focus</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Zone Staff -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-gradient-warning text-dark">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-users"></i> Zone Staff ({{ total_members }})</h5>
+                        {% if zone_events > 0 %}
+                            <span class="badge bg-info"><i class="fas fa-calendar"></i> {{ zone_events }} Events</span>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted">Active Members in {{ current_user.zone.name }} Zone</small>
+                </div>
+                <div class="card-body">
+                    {% for user in zone_users[:10] %}
+                    <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                        <div>
+                            <strong>{{ user.full_name }}</strong>
+                            <br><small class="text-muted">{{ user.role_title or user.role_type.value|title }} - {{ user.get_location_hierarchy() }}</small>
+                        </div>
+                        <div>
+                            {% if user.approval_status.value == 'approved' %}
+                                <span class="badge bg-success">Approved</span>
+                            {% elif user.approval_status.value == 'pending' %}
+                                <span class="badge bg-warning">Pending</span>
+                            {% else %}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if zone_users|length > 10 %}
+                    <div class="text-center mt-3">
+                        <small class="text-muted">Showing 10 of {{ zone_users|length }} staff members</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+<!-- Zonal Coordinator Custom Styles -->
+<style>
+:root {
+    --zonal-primary: #ffc107;
+    --zonal-secondary: #6c757d;
+    --zonal-success: #28a745;
+    --zonal-info: #17a2b8;
+    --zonal-warning: #fd7e14;
+    --zonal-danger: #dc3545;
+}
+
+.bg-gradient-warning { 
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); 
+}
+.bg-gradient-success { 
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); 
+}
+.bg-gradient-danger { 
+    background: linear-gradient(135deg, #dc3545 0%, #bd2130 100%); 
+}
+.bg-gradient-info { 
+    background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%); 
+}
+
+.zonal-card {
+    border: none;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.zonal-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(255,193,7,0.15);
+}
+
+.zonal-tools {
+    border: 2px solid var(--zonal-warning);
+    border-radius: 15px;
+}
+
+.lga-overview {
+    border: 2px solid var(--zonal-success);
+    border-radius: 15px;
+}
+
+.btn-zonal-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    border: none;
+    color: #212529;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.btn-zonal-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.btn-zonal-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.btn-zonal-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.btn-zonal-warning:hover,
+.btn-zonal-success:hover,
+.btn-zonal-info:hover,
+.btn-zonal-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(255,193,7,0.3);
+    color: white;
+}
+
+.btn-zonal-warning:hover {
+    color: #212529;
+    box-shadow: 0 8px 20px rgba(255,193,7,0.4);
+}
+
+.text-warning {
+    color: var(--zonal-warning) !important;
+}
+
+.bg-dark.bg-opacity-25 {
+    background-color: rgba(0, 0, 0, 0.25) !important;
+}
+
+.opacity-75 {
+    opacity: 0.75;
+}
+
+.text-light {
+    color: #f8f9fa !important;
+}
+
+/* Zonal-specific enhancements */
+.zonal-card .card-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.85em;
+}
+
+.zonal-tools .card-header,
+.lga-overview .card-header {
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.badge.bg-warning {
+    color: #212529 !important;
+}
+
+.border-primary {
+    border-color: var(--zonal-warning) !important;
+}
+
+.text-primary {
+    color: var(--zonal-warning) !important;
+}
+
+/* Zone-specific card transitions */
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255,193,7,0.1);
+}
+</style>
+
+<script>
+// Initialize personalized greeting
+document.addEventListener('DOMContentLoaded', function() {
+    const userName = {{ current_user.full_name|tojson }};
+    const roleTitle = {{ "Zonal Coordinator"|tojson }};
+    const zoneName = {{ (current_user.zone.name if current_user.zone else "your zone")|tojson }};
+    const taskReminder = `please oversee ${zoneName} operations and LGA coordination`;
+    
+    initializeGreeting(userName, roleTitle, taskReminder);
+});
+</script>
+{% endblock %}

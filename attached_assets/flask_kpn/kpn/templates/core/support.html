@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Support Us{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-4">Support Our Cause</h1>
+        <p class="lead">Help us make a positive impact in Kebbi State through your generous contributions</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <!-- Introduction -->
+                <div class="text-center mb-5">
+                    <h2 class="text-kpn-green mb-3">One Voice, One Change</h2>
+                    <p class="lead">
+                        Your support enables us to continue our mission of youth mobilization, community development, 
+                        and promoting good governance across all 21 LGAs in Kebbi State.
+                    </p>
+                </div>
+                
+                <!-- What Your Support Helps -->
+                <div class="row g-4 mb-5">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-success">
+                            <div class="card-body text-center">
+                                <i class="fas fa-users fa-3x text-success mb-3"></i>
+                                <h5 class="text-kpn-green">Youth Mobilization</h5>
+                                <p>Organizing and empowering young people across all wards and LGAs in Kebbi State.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-primary">
+                            <div class="card-body text-center">
+                                <i class="fas fa-heart fa-3x text-primary mb-3"></i>
+                                <h5 class="text-kpn-green">Welfare Activities</h5>
+                                <p>Supporting vulnerable communities and providing assistance to those in need.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-warning">
+                            <div class="card-body text-center">
+                                <i class="fas fa-graduation-cap fa-3x text-warning mb-3"></i>
+                                <h5 class="text-kpn-green">Education & Training</h5>
+                                <p>Providing skill development programs and educational initiatives for citizens.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-info">
+                            <div class="card-body text-center">
+                                <i class="fas fa-balance-scale fa-3x text-info mb-3"></i>
+                                <h5 class="text-kpn-green">Good Governance</h5>
+                                <p>Advocating for transparency, accountability, and civic responsibility.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bank Details -->
+                {% if donations %}
+                <div class="mb-5">
+                    <h3 class="text-kpn-green text-center mb-4">Nigerian Bank Details for Donations</h3>
+                    <div class="row g-4">
+                        {% for donation in donations %}
+                        <div class="col-md-6">
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-kpn-green text-white text-center">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-university"></i> {{ donation.bank_name }}
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="text-center mb-3">
+                                        <h4 class="text-kpn-blue mb-1">{{ donation.account_number }}</h4>
+                                        <p class="fw-bold mb-0">{{ donation.account_name }}</p>
+                                    </div>
+                                    {% if donation.description %}
+                                        <p class="text-muted text-center small">{{ donation.description }}</p>
+                                    {% endif %}
+                                    <div class="text-center">
+                                        <button class="btn btn-outline-success btn-sm" onclick="copyToClipboard('{{ donation.account_number }}')">
+                                            <i class="fas fa-copy"></i> Copy Account Number
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="alert alert-info mt-4">
+                        <h6><i class="fas fa-info-circle"></i> Important Information:</h6>
+                        <ul class="mb-0">
+                            <li>All donations are processed offline through Nigerian banking systems</li>
+                            <li>Please include "KPN DONATION" in your transaction reference</li>
+                            <li>Contact us via our <a href="https://www.facebook.com/kpn.kebbi" target="_blank">Facebook page</a> to notify us of your donation</li>
+                            <li>All contributions support our community development initiatives</li>
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Other Ways to Support -->
+                <div class="mb-5">
+                    <h3 class="text-kpn-green text-center mb-4">Other Ways to Support KPN</h3>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="card text-center h-100">
+                                <div class="card-body">
+                                    <i class="fas fa-users fa-3x text-kpn-green mb-3"></i>
+                                    <h6>Join Our Network</h6>
+                                    <p class="small">Become a member and actively participate in our activities</p>
+                                    <a href="{{ url_for('core.join') }}" class="btn btn-kpn-primary btn-sm">Join Now</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-center h-100">
+                                <div class="card-body">
+                                    <i class="fas fa-share-alt fa-3x text-kpn-blue mb-3"></i>
+                                    <h6>Spread the Word</h6>
+                                    <p class="small">Follow and share our content on social media</p>
+                                    <a href="https://www.facebook.com/kpn.kebbi" target="_blank" class="btn btn-primary btn-sm">
+                                        <i class="fab fa-facebook-f"></i> Follow Us
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-center h-100">
+                                <div class="card-body">
+                                    <i class="fas fa-hands-helping fa-3x text-success mb-3"></i>
+                                    <h6>Volunteer</h6>
+                                    <p class="small">Contribute your time and skills to our programs</p>
+                                    <a href="{{ url_for('core.contact') }}" class="btn btn-success btn-sm">Contact Us</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Transparency -->
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h4 class="text-kpn-green text-center mb-3">Our Commitment to Transparency</h4>
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-3">
+                                <i class="fas fa-eye fa-2x text-kpn-green mb-2"></i>
+                                <h6>Transparent Operations</h6>
+                                <p class="small">All activities and expenditures are documented and accountable</p>
+                            </div>
+                            <div class="col-md-4 text-center mb-3">
+                                <i class="fas fa-chart-pie fa-2x text-kpn-blue mb-2"></i>
+                                <h6>Impact Reporting</h6>
+                                <p class="small">Regular updates on how donations are used for community benefit</p>
+                            </div>
+                            <div class="col-md-4 text-center mb-3">
+                                <i class="fas fa-handshake fa-2x text-success mb-2"></i>
+                                <h6>Community-Driven</h6>
+                                <p class="small">All decisions made with community input and participation</p>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <p class="mb-2">
+                                <strong>Follow our activities:</strong> 
+                                <a href="https://www.facebook.com/kpn.kebbi" target="_blank" class="text-decoration-none">
+                                    Facebook Page
+                                </a>
+                            </p>
+                            <p class="small text-muted mb-0">
+                                We post regular updates about our programs, activities, and the impact of community support.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact for Donations -->
+                <div class="text-center mt-5">
+                    <h4 class="text-kpn-green mb-3">Have Questions About Donations?</h4>
+                    <p class="mb-4">Contact us for more information about how your contribution can make a difference.</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{{ url_for('core.contact') }}" class="btn btn-kpn-primary">
+                            <i class="fas fa-envelope"></i> Contact Us
+                        </a>
+                        <a href="https://www.facebook.com/kpn.kebbi" target="_blank" class="btn btn-primary">
+                            <i class="fab fa-facebook-f"></i> Message Us
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Show success message
+        const btn = event.target.closest('button');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        btn.classList.remove('btn-outline-success');
+        btn.classList.add('btn-success');
+        
+        setTimeout(function() {
+            btn.innerHTML = originalText;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-success');
+        }, 2000);
+    }, function(err) {
+        console.error('Could not copy text: ', err);
+        alert('Failed to copy account number. Please copy manually: ' + text);
+    });
+}
+</script>
+{% endblock %}

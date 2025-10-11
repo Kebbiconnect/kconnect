@@ -1,0 +1,656 @@
+{% extends "base.html" %}
+
+{% block title %}Member Management - State Coordinator Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4 state-coordinator-theme">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-dark mb-0">
+                <i class="fas fa-users-cog"></i> Member Management Dashboard
+            </h2>
+            <p class="text-muted">Promote, Demote, Swap Positions & Assign Duties - {{ current_user.full_name }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="badge bg-success fs-6">STATE COORDINATOR</span>
+            <a href="{{ url_for('staff.executive_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Management Actions -->
+    <div class="row mb-4">
+        <!-- Quick Actions Card -->
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-tools"></i> Quick Management Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <button class="btn btn-success w-100 p-3" onclick="showPromoteModal()">
+                                <i class="fas fa-arrow-up fa-2x mb-2"></i><br>
+                                <strong>Promote Member</strong><br>
+                                <small>Move to higher role</small>
+                            </button>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-warning w-100 p-3" onclick="showDemoteModal()">
+                                <i class="fas fa-arrow-down fa-2x mb-2"></i><br>
+                                <strong>Demote Member</strong><br>
+                                <small>Move to lower role</small>
+                            </button>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-info w-100 p-3" onclick="showSwapModal()">
+                                <i class="fas fa-exchange-alt fa-2x mb-2"></i><br>
+                                <strong>Swap Positions</strong><br>
+                                <small>Exchange roles between two users</small>
+                            </button>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-danger w-100 p-3" onclick="showDismissModal()">
+                                <i class="fas fa-user-times fa-2x mb-2"></i><br>
+                                <strong>Dismiss Member</strong><br>
+                                <small>Remove member from organization</small>
+                            </button>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-secondary w-100 p-3" onclick="showDutyModal()">
+                                <i class="fas fa-tasks fa-2x mb-2"></i><br>
+                                <strong>Assign Duty</strong><br>
+                                <small>Assign tasks to members</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-search"></i> Search & Filter Members</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Search by Name or Email</label>
+                                <input type="text" class="form-control" id="searchInput" 
+                                       placeholder="Type to search members..." 
+                                       onkeyup="filterMembers()">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label">Filter by Role</label>
+                                <select class="form-select" id="roleFilter" onchange="filterMembers()">
+                                    <option value="">All Roles</option>
+                                    <option value="executive">Executive</option>
+                                    <option value="auditor_general">Auditor General</option>
+                                    <option value="zonal_coordinator">Zonal Coordinator</option>
+                                    <option value="lga_leader">LGA Leader</option>
+                                    <option value="ward_leader">Ward Leader</option>
+                                    <option value="general_member">General Member</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label class="form-label">Filter by Status</label>
+                                <select class="form-select" id="statusFilter" onchange="filterMembers()">
+                                    <option value="">All Statuses</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="rejected">Dismissed</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label class="form-label">&nbsp;</label>
+                                <button class="btn btn-secondary w-100" onclick="clearFilters()">
+                                    <i class="fas fa-times"></i> Clear Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Members by Role -->
+    <div class="row">
+        {% for role_key, users in users_by_role.items() %}
+        {% if users %}
+        <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="card h-100 role-card-{{ role_key.replace('_', '-') }}">
+                <div class="card-header role-header-{{ role_key.replace('_', '-') }}">
+                    <h6 class="mb-0 text-white">
+                        <i class="fas fa-user-tie"></i> 
+                        {{ role_key.replace('_', ' ').title() }}s ({{ users|length }})
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Location</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if user.photo %}
+                                            <img src="{{ url_for('static', filename=user.photo) }}" 
+                                                 class="rounded-circle me-2" width="30" height="30" alt="Profile">
+                                            {% else %}
+                                            <img src="{{ url_for('static', filename='images/default-avatar.png') }}" 
+                                                 class="rounded-circle me-2" width="30" height="30" alt="Default Profile">
+                                            {% endif %}
+                                            <div>
+                                                <small class="fw-bold">{{ user.full_name }}</small>
+                                                {% if user.approval_status.value == 'approved' %}
+                                                    <span class="badge bg-success ms-1">Approved</span>
+                                                {% elif user.approval_status.value == 'pending' %}
+                                                    <span class="badge bg-warning ms-1">Pending</span>
+                                                {% elif user.approval_status.value == 'rejected' %}
+                                                    <span class="badge bg-danger ms-1">Dismissed</span>
+                                                {% endif %}
+                                                <br>
+                                                <small class="text-muted">{{ user.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <small>
+                                            {% if user.ward %}
+                                                {{ user.ward.name }}, {{ user.lga.name }}
+                                            {% elif user.lga %}
+                                                {{ user.lga.name }}, {{ user.zone.name }}
+                                            {% elif user.zone %}
+                                                {{ user.zone.name }}
+                                            {% else %}
+                                                State Level
+                                            {% endif %}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-success btn-sm" 
+                                                    onclick="promoteUser({{ user.id }}, '{{ user.full_name }}')"
+                                                    title="Promote">
+                                                <i class="fas fa-arrow-up"></i>
+                                            </button>
+                                            <button class="btn btn-outline-warning btn-sm" 
+                                                    onclick="demoteUser({{ user.id }}, '{{ user.full_name }}')"
+                                                    title="Demote">
+                                                <i class="fas fa-arrow-down"></i>
+                                            </button>
+                                            <button class="btn btn-outline-info btn-sm" 
+                                                    onclick="selectForSwap({{ user.id }}, '{{ user.full_name }}', '{{ role_key }}')"
+                                                    title="Select for Swap">
+                                                <i class="fas fa-exchange-alt"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm" 
+                                                    onclick="dismissUser({{ user.id }}, '{{ user.full_name }}')"
+                                                    title="Dismiss Member">
+                                                <i class="fas fa-user-times"></i>
+                                            </button>
+                                            <button class="btn btn-outline-secondary btn-sm" 
+                                                    onclick="assignDuty({{ user.id }}, '{{ user.full_name }}')"
+                                                    title="Assign Duty">
+                                                <i class="fas fa-tasks"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Promote Modal -->
+<div class="modal fade" id="promoteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-arrow-up"></i> Promote Member</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to promote <strong id="promoteUserName"></strong> to the next higher role?</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> This action will automatically move the member up one level in the hierarchy.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" id="promoteForm" action="#" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-arrow-up"></i> Promote
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Demote Modal -->
+<div class="modal fade" id="demoteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title"><i class="fas fa-arrow-down"></i> Demote Member</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to demote <strong id="demoteUserName"></strong> to a lower role?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> This action will move the member down one level in the hierarchy. This action should be used carefully.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" id="demoteForm" action="#" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-arrow-down"></i> Demote
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Swap Modal -->
+<div class="modal fade" id="swapModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="fas fa-exchange-alt"></i> Swap Positions</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="swapSelection">
+                    <p>Select two members to swap their positions:</p>
+                    <div class="selected-users">
+                        <div class="alert alert-info" id="swapUser1" style="display: none;">
+                            <strong>First User:</strong> <span id="swapUser1Name"></span>
+                        </div>
+                        <div class="alert alert-info" id="swapUser2" style="display: none;">
+                            <strong>Second User:</strong> <span id="swapUser2Name"></span>
+                        </div>
+                    </div>
+                    <p class="text-muted"><small>Click the swap button next to members above to select them for position exchange.</small></p>
+                </div>
+                <div id="swapConfirm" style="display: none;">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        This will completely exchange the roles and assignments between the selected users.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary" onclick="clearSwapSelection()">Clear Selection</button>
+                <form method="POST" action="/staff/executive/swap-positions" id="swapForm" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <input type="hidden" name="user1_id" id="swapUser1Id">
+                    <input type="hidden" name="user2_id" id="swapUser2Id">
+                    <button type="submit" class="btn btn-info" id="swapSubmitBtn" disabled>
+                        <i class="fas fa-exchange-alt"></i> Swap Positions
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Duty Assignment Modal -->
+<div class="modal fade" id="dutyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title"><i class="fas fa-tasks"></i> Assign Duty</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="/staff/executive/assign-duty-to-member">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="dutyUserId" class="form-label">Select Member</label>
+                            <select class="form-select" name="user_id" id="dutyUserId" required>
+                                <option value="">Choose a member...</option>
+                                {% for role_key, users in users_by_role.items() %}
+                                    {% if users %}
+                                    <optgroup label="{{ role_key.replace('_', ' ').title() }}">
+                                        {% for user in users %}
+                                        <option value="{{ user.id }}">{{ user.full_name }} - {{ role_key.replace('_', ' ').title() }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="dutyDueDate" class="form-label">Due Date (Optional)</label>
+                            <input type="date" class="form-control" name="due_date" id="dutyDueDate">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dutyDescription" class="form-label">Duty Description</label>
+                        <textarea class="form-control" name="duty_description" id="dutyDescription" rows="4" 
+                                  placeholder="Describe the duty to be assigned..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-tasks"></i> Assign Duty
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Dismiss Modal -->
+<div class="modal fade" id="dismissModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-user-times"></i> Dismiss Member</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to dismiss <strong id="dismissUserName"></strong> from the organization?</p>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> This action will remove the member from the organization and they will lose access to all services. This action cannot be undone.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" id="dismissForm" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-user-times"></i> Dismiss Member
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Role-specific Styling -->
+<style>
+/* Admin */
+.role-card-admin { border-left: 4px solid #dc3545; }
+.role-header-admin { background: linear-gradient(45deg, #dc3545, #b21f2f); }
+
+
+/* Executive */
+.role-card-executive { border-left: 4px solid #007bff; }
+.role-header-executive { background: linear-gradient(45deg, #007bff, #0056b3); }
+
+/* Auditor General */
+.role-card-auditor-general { border-left: 4px solid #fd7e14; }
+.role-header-auditor-general { background: linear-gradient(45deg, #fd7e14, #e8590c); }
+
+/* Zonal Coordinator */
+.role-card-zonal-coordinator { border-left: 4px solid #28a745; }
+.role-header-zonal-coordinator { background: linear-gradient(45deg, #28a745, #1e7e34); }
+
+/* LGA Leader */
+.role-card-lga-leader { border-left: 4px solid #17a2b8; }
+.role-header-lga-leader { background: linear-gradient(45deg, #17a2b8, #117a8b); }
+
+/* Ward Leader */
+.role-card-ward-leader { border-left: 4px solid #ffc107; }
+.role-header-ward-leader { background: linear-gradient(45deg, #ffc107, #d39e00); }
+
+.card { 
+    transition: transform 0.2s ease, box-shadow 0.2s ease; 
+}
+
+.card:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.selected-users .alert {
+    margin-bottom: 0.5rem;
+}
+</style>
+
+<!-- Scripts -->
+<script>
+// Swap functionality
+let swapUser1 = null;
+let swapUser2 = null;
+
+function promoteUser(userId, userName) {
+    document.getElementById('promoteUserName').textContent = userName;
+    document.getElementById('promoteForm').action = '/staff/executive/promote-user/' + userId;
+    new bootstrap.Modal(document.getElementById('promoteModal')).show();
+}
+
+function demoteUser(userId, userName) {
+    document.getElementById('demoteUserName').textContent = userName;
+    document.getElementById('demoteForm').action = '/staff/executive/demote-user/' + userId;
+    new bootstrap.Modal(document.getElementById('demoteModal')).show();
+}
+
+function selectForSwap(userId, userName, roleKey) {
+    if (!swapUser1) {
+        swapUser1 = { id: userId, name: userName, role: roleKey };
+        document.getElementById('swapUser1Name').textContent = userName + ' (' + roleKey.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) + ')';
+        document.getElementById('swapUser1').style.display = 'block';
+        document.getElementById('swapUser1Id').value = userId;
+    } else if (!swapUser2 && userId !== swapUser1.id) {
+        swapUser2 = { id: userId, name: userName, role: roleKey };
+        document.getElementById('swapUser2Name').textContent = userName + ' (' + roleKey.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) + ')';
+        document.getElementById('swapUser2').style.display = 'block';
+        document.getElementById('swapUser2Id').value = userId;
+        document.getElementById('swapSubmitBtn').disabled = false;
+        document.getElementById('swapConfirm').style.display = 'block';
+    } else {
+        alert('You can only select two different users for swapping.');
+    }
+}
+
+function clearSwapSelection() {
+    swapUser1 = null;
+    swapUser2 = null;
+    document.getElementById('swapUser1').style.display = 'none';
+    document.getElementById('swapUser2').style.display = 'none';
+    document.getElementById('swapConfirm').style.display = 'none';
+    document.getElementById('swapSubmitBtn').disabled = true;
+    document.getElementById('swapUser1Id').value = '';
+    document.getElementById('swapUser2Id').value = '';
+}
+
+function assignDuty(userId, userName) {
+    document.getElementById('dutyUserId').value = userId;
+    new bootstrap.Modal(document.getElementById('dutyModal')).show();
+}
+
+function showPromoteModal() {
+    new bootstrap.Modal(document.getElementById('promoteModal')).show();
+}
+
+function showDemoteModal() {
+    new bootstrap.Modal(document.getElementById('demoteModal')).show();
+}
+
+function showSwapModal() {
+    new bootstrap.Modal(document.getElementById('swapModal')).show();
+}
+
+function showDutyModal() {
+    new bootstrap.Modal(document.getElementById('dutyModal')).show();
+}
+
+function dismissUser(userId, userName) {
+    document.getElementById('dismissUserName').textContent = userName;
+    document.getElementById('dismissForm').action = '/staff/executive/dismiss-user/' + userId;
+    new bootstrap.Modal(document.getElementById('dismissModal')).show();
+}
+
+function showDismissModal() {
+    new bootstrap.Modal(document.getElementById('dismissModal')).show();
+}
+
+// Clear swap selection when modal is closed
+document.getElementById('swapModal').addEventListener('hidden.bs.modal', function () {
+    clearSwapSelection();
+});
+
+// Search and Filter functionality
+function filterMembers() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const roleFilter = document.getElementById('roleFilter').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+    
+    // Get all role cards
+    const roleCards = document.querySelectorAll('.role-card-executive, .role-card-auditor-general, .role-card-zonal-coordinator, .role-card-lga-leader, .role-card-ward-leader, .role-card-general-member');
+    
+    let totalVisible = 0;
+    
+    roleCards.forEach(card => {
+        // Get the role from the card class
+        const cardRoleClass = Array.from(card.classList).find(cls => cls.startsWith('role-card-'));
+        const cardRole = cardRoleClass ? cardRoleClass.replace('role-card-', '').replace('-', '_') : '';
+        
+        // Check role filter
+        if (roleFilter && cardRole !== roleFilter) {
+            card.style.display = 'none';
+            return;
+        }
+        
+        // Get all rows in this card
+        const rows = card.querySelectorAll('tbody tr');
+        let visibleRows = 0;
+        
+        rows.forEach(row => {
+            const nameElement = row.querySelector('.fw-bold');
+            const emailElement = row.querySelector('.text-muted');
+            const statusBadge = row.querySelector('.badge');
+            
+            const name = nameElement ? nameElement.textContent.toLowerCase() : '';
+            const email = emailElement ? emailElement.textContent.toLowerCase() : '';
+            const status = statusBadge ? statusBadge.textContent.toLowerCase() : '';
+            
+            let shouldShow = true;
+            
+            // Check search term (name or email)
+            if (searchTerm && !name.includes(searchTerm) && !email.includes(searchTerm)) {
+                shouldShow = false;
+            }
+            
+            // Check status filter
+            if (statusFilter && !status.includes(statusFilter)) {
+                shouldShow = false;
+            }
+            
+            if (shouldShow) {
+                row.style.display = '';
+                visibleRows++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Update the count in the header
+        const headerElement = card.querySelector('.card-header h6');
+        if (headerElement) {
+            const originalText = headerElement.textContent;
+            const roleTitle = originalText.split('(')[0].trim();
+            headerElement.innerHTML = `<i class="fas fa-user-tie"></i> ${roleTitle} (${visibleRows})`;
+        }
+        
+        // Show/hide the entire card based on visible rows
+        if (visibleRows > 0) {
+            card.style.display = '';
+            totalVisible += visibleRows;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    // Show message if no results found
+    let noResultsMessage = document.getElementById('noResultsMessage');
+    if (totalVisible === 0) {
+        if (!noResultsMessage) {
+            noResultsMessage = document.createElement('div');
+            noResultsMessage.id = 'noResultsMessage';
+            noResultsMessage.className = 'col-12 text-center mt-4';
+            noResultsMessage.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-search"></i> No members found matching your search criteria.
+                    <br><small>Try adjusting your filters or search terms.</small>
+                </div>
+            `;
+            document.querySelector('.row:has(.role-card-executive, .role-card-auditor-general, .role-card-zonal-coordinator, .role-card-lga-leader, .role-card-ward-leader, .role-card-general-member)').appendChild(noResultsMessage);
+        }
+        noResultsMessage.style.display = 'block';
+    } else if (noResultsMessage) {
+        noResultsMessage.style.display = 'none';
+    }
+}
+
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('roleFilter').value = '';
+    document.getElementById('statusFilter').value = '';
+    
+    // Remove no results message
+    const noResultsMessage = document.getElementById('noResultsMessage');
+    if (noResultsMessage) {
+        noResultsMessage.style.display = 'none';
+    }
+    
+    // Reset all visible elements
+    const roleCards = document.querySelectorAll('.role-card-executive, .role-card-auditor-general, .role-card-zonal-coordinator, .role-card-lga-leader, .role-card-ward-leader, .role-card-general-member');
+    roleCards.forEach(card => {
+        card.style.display = '';
+        
+        // Reset row visibility
+        const rows = card.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            row.style.display = '';
+        });
+        
+        // Reset header count
+        const headerElement = card.querySelector('.card-header h6');
+        if (headerElement) {
+            const rows = card.querySelectorAll('tbody tr');
+            const originalText = headerElement.textContent;
+            const roleTitle = originalText.split('(')[0].trim();
+            headerElement.innerHTML = `<i class="fas fa-user-tie"></i> ${roleTitle} (${rows.length})`;
+        }
+    });
+}
+</script>
+{% endblock %}

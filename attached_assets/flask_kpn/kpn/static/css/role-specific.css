@@ -1,0 +1,206 @@
+/* Role-Specific Styling for KPN App */
+
+
+/* State Coordinator (Executive) - Green Leadership Theme */
+.state-coordinator-theme {
+    --primary-color: #28a745;
+    --secondary-color: #1e7e34;
+    --accent-color: #20c997;
+}
+
+.state-coordinator-theme .card-header {
+    background: linear-gradient(45deg, #28a745, #1e7e34) !important;
+}
+
+.state-coordinator-theme .btn-primary {
+    background: linear-gradient(45deg, #28a745, #1e7e34);
+    border: none;
+}
+
+.state-coordinator-theme .badge.bg-success {
+    background: linear-gradient(45deg, #28a745, #1e7e34) !important;
+}
+
+/* Auditor General - Orange Authority Theme */
+.auditor-general-theme {
+    --primary-color: #fd7e14;
+    --secondary-color: #e8590c;
+    --accent-color: #ffc107;
+}
+
+.auditor-general-theme .card-header {
+    background: linear-gradient(45deg, #fd7e14, #e8590c) !important;
+}
+
+/* Zonal Coordinator - Blue Zone Theme */
+.zonal-coordinator-theme {
+    --primary-color: #007bff;
+    --secondary-color: #0056b3;
+    --accent-color: #17a2b8;
+}
+
+.zonal-coordinator-theme .card-header {
+    background: linear-gradient(45deg, #007bff, #0056b3) !important;
+}
+
+/* LGA Leader - Teal Regional Theme */
+.lga-leader-theme {
+    --primary-color: #17a2b8;
+    --secondary-color: #117a8b;
+    --accent-color: #20c997;
+}
+
+.lga-leader-theme .card-header {
+    background: linear-gradient(45deg, #17a2b8, #117a8b) !important;
+}
+
+/* Ward Leader - Yellow Local Theme */
+.ward-leader-theme {
+    --primary-color: #ffc107;
+    --secondary-color: #d39e00;
+    --accent-color: #fd7e14;
+}
+
+.ward-leader-theme .card-header {
+    background: linear-gradient(45deg, #ffc107, #d39e00) !important;
+}
+
+/* Common role-specific enhancements */
+.role-specific-card {
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.role-specific-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.role-badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.role-header {
+    border-radius: 15px 15px 0 0;
+    border-bottom: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Authority level indicators */
+.authority-level-1 { /* State Coordinator */
+    border-left: 5px solid #28a745;
+}
+
+.authority-level-2 { /* Auditor General */
+    border-left: 5px solid #fd7e14;
+}
+
+.authority-level-3 { /* Zonal Coordinator */
+    border-left: 5px solid #007bff;
+}
+
+.authority-level-4 { /* LGA Leader */
+    border-left: 5px solid #17a2b8;
+}
+
+.authority-level-5 { /* Ward Leader */
+    border-left: 5px solid #ffc107;
+}
+
+
+/* Leadership coordination theme for State Coordinator */
+.leadership-coordination {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.leadership-coordination .coordination-metric {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 1rem;
+    backdrop-filter: blur(10px);
+}
+
+/* Role-specific button styles */
+.btn-role-primary {
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.btn-role-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Dashboard-specific styling */
+.dashboard-header {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6));
+    color: white;
+    padding: 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+}
+
+.dashboard-metric {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.dashboard-metric:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .role-specific-card {
+        margin-bottom: 1rem;
+    }
+    
+    .dashboard-header {
+        padding: 1rem;
+    }
+    
+    .role-badge {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+}
+
+/* Animation effects */
+@keyframes roleGlow {
+    0%, 100% { box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); }
+    50% { box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); }
+}
+
+.role-specific-card.active {
+    animation: roleGlow 2s ease-in-out infinite;
+}
+
+/* Print styles for role-specific documents */
+@media print {
+    .role-specific-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+    
+    .role-badge {
+        color: #000 !important;
+        background: #f8f9fa !important;
+    }
+}

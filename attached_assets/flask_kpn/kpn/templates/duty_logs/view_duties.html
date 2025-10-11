@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}My Duties{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-kpn-green">
+                    <i class="fas fa-tasks"></i> My Duties
+                </h2>
+                {% if current_user.role_type.value in ['admin', 'executive'] %}
+                <a href="{{ url_for('duty_logs.create_duty') }}" class="btn btn-kpn-primary">
+                    <i class="fas fa-plus"></i> Assign Duty
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-list fa-2x text-info mb-2"></i>
+                    <h3 class="text-info">{{ stats.total }}</h3>
+                    <p class="mb-0">Total Duties</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                    <h3 class="text-success">{{ stats.completed }}</h3>
+                    <p class="mb-0">Completed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                    <h3 class="text-warning">{{ stats.pending }}</h3>
+                    <p class="mb-0">Pending</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                    <h3 class="text-danger">{{ stats.overdue }}</h3>
+                    <p class="mb-0">Overdue</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Completion Rate -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h6>Completion Rate</h6>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" style="width: {{ stats.completion_rate }}%">
+                            {{ stats.completion_rate }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Duties List -->
+    {% if duties %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-kpn-green text-white">
+                    <h5 class="mb-0"><i class="fas fa-clipboard-list"></i> All Duties</h5>
+                </div>
+                <div class="card-body">
+                    {% for duty in duties %}
+                    <div class="card mb-3 
+                        {% if duty.completion_status == 'completed' %}border-success
+                        {% elif duty.completion_status == 'overdue' %}border-danger
+                        {% else %}border-warning{% endif %}">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6>{{ duty.duty_description }}</h6>
+                                    <p class="mb-1">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-plus"></i> Assigned: {{ duty.created_at.strftime('%B %d, %Y') }}
+                                        </small>
+                                    </p>
+                                    {% if duty.due_date %}
+                                    <p class="mb-1">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-times"></i> Due: {{ duty.due_date.strftime('%B %d, %Y') }}
+                                        </small>
+                                    </p>
+                                    {% endif %}
+                                    {% if duty.completed_date %}
+                                    <p class="mb-0">
+                                        <small class="text-success">
+                                            <i class="fas fa-check"></i> Completed: {{ duty.completed_date.strftime('%B %d, %Y') }}
+                                        </small>
+                                    </p>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    {% if duty.completion_status == 'completed' %}
+                                        <span class="badge bg-success">Completed</span>
+                                    {% elif duty.completion_status == 'overdue' %}
+                                        <span class="badge bg-danger">Overdue</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        <br>
+                                        <form method="POST" action="{{ url_for('duty_logs.complete_duty', duty_id=duty.id) }}" class="mt-2">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-success btn-sm" 
+                                                    onclick="return confirm('Mark this duty as completed?')">
+                                                <i class="fas fa-check"></i> Complete
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-clipboard-check fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Duties Assigned</h4>
+                    <p class="text-muted">You have no duties assigned at this time.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}View Message{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-kpn-green mb-0">
+                <i class="fas fa-envelope-open"></i> Message Details
+            </h2>
+            <p class="text-muted">{{ message.subject }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('messages.inbox') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Inbox
+            </a>
+            {% if message.recipient_id == current_user.id %}
+            <a href="{{ url_for('messages.reply', message_id=message.id) }}" class="btn btn-success">
+                <i class="fas fa-reply"></i> Reply
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Message Display -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <!-- Message Header -->
+                <div class="card-header bg-kpn-green text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">{{ message.subject }}</h5>
+                            {% if message.priority != 'normal' %}
+                            <span class="badge bg-{% if message.priority == 'urgent' %}danger{% elif message.priority == 'high' %}warning{% else %}secondary{% endif %} mt-1">
+                                {{ message.priority|title }} Priority
+                            </span>
+                            {% endif %}
+                        </div>
+                        <div class="text-end">
+                            <small>{{ message.get_formatted_date() }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sender/Recipient Info -->
+                <div class="card-body border-bottom">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-1">From:</h6>
+                            <div class="d-flex align-items-center">
+                                {% if message.sender.photo %}
+                                <img src="{{ url_for('static', filename=message.sender.photo) }}" 
+                                     class="rounded-circle me-3" width="48" height="48" alt="Profile">
+                                {% else %}
+                                <div class="bg-kpn-green rounded-circle me-3 d-flex align-items-center justify-content-center" 
+                                     style="width: 48px; height: 48px;">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <div class="fw-bold">{{ message.sender.full_name }}</div>
+                                    <small class="text-muted">{{ message.sender.role_type.value|title|replace('_', ' ') }}</small>
+                                    {% if message.sender.role_title %}
+                                    <br><small class="text-muted">{{ message.sender.role_title }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-1">To:</h6>
+                            <div class="d-flex align-items-center">
+                                {% if message.recipient.photo %}
+                                <img src="{{ url_for('static', filename=message.recipient.photo) }}" 
+                                     class="rounded-circle me-3" width="48" height="48" alt="Profile">
+                                {% else %}
+                                <div class="bg-kpn-green rounded-circle me-3 d-flex align-items-center justify-content-center" 
+                                     style="width: 48px; height: 48px;">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <div class="fw-bold">{{ message.recipient.full_name }}</div>
+                                    <small class="text-muted">{{ message.recipient.role_type.value|title|replace('_', ' ') }}</small>
+                                    {% if message.recipient.role_title %}
+                                    <br><small class="text-muted">{{ message.recipient.role_title }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message Body -->
+                <div class="card-body">
+                    <div class="message-content">
+                        {{ message.body|nl2br|safe }}
+                    </div>
+                </div>
+
+                <!-- Message Actions -->
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if message.is_read and message.recipient_id == current_user.id %}
+                            <small class="text-muted">
+                                <i class="fas fa-check-double text-primary"></i> 
+                                Read on {{ message.read_at.strftime('%B %d, %Y at %I:%M %p') if message.read_at else 'now' }}
+                            </small>
+                            {% elif not message.is_read and message.recipient_id == current_user.id %}
+                            <small class="text-warning">
+                                <i class="fas fa-envelope"></i> Unread
+                            </small>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex gap-2">
+                            <!-- WhatsApp Share -->
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="shareMessage()">
+                                <i class="fab fa-whatsapp"></i> Share via WhatsApp
+                            </button>
+                            
+                            <!-- Archive -->
+                            <form method="POST" action="{{ url_for('messages.delete_message', message_id=message.id) }}" 
+                                  class="d-inline" onsubmit="return confirm('Archive this message?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <button type="submit" class="btn btn-outline-warning btn-sm">
+                                    <i class="fas fa-archive"></i> Archive
+                                </button>
+                            </form>
+                            
+                            {% if message.recipient_id == current_user.id %}
+                            <!-- Reply -->
+                            <a href="{{ url_for('messages.reply', message_id=message.id) }}" class="btn btn-success btn-sm">
+                                <i class="fas fa-reply"></i> Reply
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Styles -->
+<style>
+.text-kpn-green {
+    color: #4CAF50 !important;
+}
+
+.bg-kpn-green {
+    background-color: #4CAF50 !important;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.message-content {
+    line-height: 1.6;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.message-content p {
+    margin-bottom: 1rem;
+}
+</style>
+
+<!-- JavaScript -->
+<script>
+// WhatsApp sharing functionality
+function shareMessage() {
+    const subject = "{{ message.subject|e }}";
+    const sender = "{{ message.sender.full_name|e }}";
+    const excerpt = "{{ message.get_excerpt(100)|e }}";
+    
+    const shareText = `Message from ${sender} via KPN:\n\nSubject: ${subject}\n\n${excerpt}\n\nJoin KPN - Building a better Kebbi State!`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+    
+    window.open(whatsappUrl, '_blank');
+}
+</script>
+{% endblock %}
