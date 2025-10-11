@@ -188,24 +188,44 @@ def dashboard(request):
     if user.role_definition:
         role_title = user.role_definition.title
         
-        if role_title == 'President':
-            return redirect('staff:president_dashboard')
-        elif role_title == 'Director of Media & Publicity':
-            return redirect('staff:media_director_dashboard')
-        elif role_title == 'Treasurer':
-            return redirect('staff:treasurer_dashboard')
-        elif role_title == 'Financial Secretary':
-            return redirect('staff:financial_secretary_dashboard')
-        elif role_title == 'Organizing Secretary':
-            return redirect('staff:organizing_secretary_dashboard')
-        elif role_title == 'General Secretary':
-            return redirect('staff:general_secretary_dashboard')
-        elif role_title == 'Zonal Coordinator':
-            return redirect('staff:zonal_coordinator_dashboard')
-        elif role_title == 'LGA Coordinator':
-            return redirect('staff:lga_coordinator_dashboard')
-        elif role_title == 'Ward Coordinator':
-            return redirect('staff:ward_coordinator_dashboard')
+        role_mapping = {
+            'President': 'president_dashboard',
+            'Vice President': 'vice_president_dashboard',
+            'General Secretary': 'general_secretary_dashboard',
+            'Assistant General Secretary': 'assistant_general_secretary_dashboard',
+            'State Supervisor': 'state_supervisor_dashboard',
+            'Legal & Ethics Adviser': 'legal_ethics_adviser_dashboard',
+            'Treasurer': 'treasurer_dashboard' if user.role == 'STATE' else 'lga_treasurer_dashboard' if user.role == 'LGA' else 'ward_treasurer_dashboard',
+            'Financial Secretary': 'financial_secretary_dashboard' if user.role == 'STATE' else 'ward_financial_secretary_dashboard',
+            'Director of Mobilization': 'director_of_mobilization_dashboard',
+            'Assistant Director of Mobilization': 'assistant_director_of_mobilization_dashboard',
+            'Organizing Secretary': 'organizing_secretary_dashboard' if user.role == 'STATE' else 'lga_organizing_secretary_dashboard' if user.role == 'LGA' else 'ward_organizing_secretary_dashboard',
+            'Assistant Organizing Secretary': 'assistant_organizing_secretary_dashboard',
+            'Auditor General': 'auditor_general_dashboard',
+            'Welfare Officer': 'welfare_officer_dashboard' if user.role == 'STATE' else 'lga_welfare_officer_dashboard',
+            'Youth Development & Empowerment Officer': 'youth_empowerment_officer_dashboard',
+            'Women Leader': 'women_leader_dashboard' if user.role == 'STATE' else 'lga_women_leader_dashboard',
+            'Assistant Women Leader': 'assistant_women_leader_dashboard',
+            'Director of Media & Publicity': 'media_director_dashboard',
+            'Assistant Director of Media & Publicity': 'assistant_media_director_dashboard',
+            'Public Relations & Community Engagement Officer': 'pr_officer_dashboard',
+            'Zonal Coordinator': 'zonal_coordinator_dashboard',
+            'Zonal Secretary': 'zonal_secretary_dashboard',
+            'Zonal Publicity Officer': 'zonal_publicity_officer_dashboard',
+            'LGA Coordinator': 'lga_coordinator_dashboard',
+            'Secretary': 'lga_secretary_dashboard' if user.role == 'LGA' else 'ward_secretary_dashboard',
+            'Publicity Officer': 'lga_publicity_officer_dashboard' if user.role == 'LGA' else 'ward_publicity_officer_dashboard',
+            'LGA Supervisor': 'lga_supervisor_dashboard',
+            'Director of Contact and Mobilization': 'lga_contact_mobilization_dashboard',
+            'LGA Adviser': 'lga_adviser_dashboard',
+            'Ward Coordinator': 'ward_coordinator_dashboard',
+            'Ward Supervisor': 'ward_supervisor_dashboard',
+            'Ward Adviser': 'ward_adviser_dashboard',
+        }
+        
+        dashboard_name = role_mapping.get(role_title)
+        if dashboard_name:
+            return redirect(f'staff:{dashboard_name}')
     
     context = {
         'user': user,
@@ -593,3 +613,338 @@ def ward_coordinator_dashboard(request):
     }
     
     return render(request, 'staff/dashboards/ward_coordinator.html', context)
+
+@specific_role_required('Vice President')
+def vice_president_dashboard(request):
+    total_members = User.objects.filter(status='APPROVED').count()
+    total_leaders = User.objects.filter(status='APPROVED').exclude(role='GENERAL').count()
+    pending_reports = Report.objects.filter(is_reviewed=False).count()
+    
+    context = {
+        'total_members': total_members,
+        'total_leaders': total_leaders,
+        'pending_reports': pending_reports,
+    }
+    
+    return render(request, 'staff/dashboards/vice_president.html', context)
+
+@specific_role_required('Assistant General Secretary')
+def assistant_general_secretary_dashboard(request):
+    context = {}
+    return render(request, 'staff/dashboards/assistant_general_secretary.html', context)
+
+@specific_role_required('State Supervisor')
+def state_supervisor_dashboard(request):
+    total_zones = Zone.objects.count()
+    total_lgas = LGA.objects.count()
+    
+    context = {
+        'total_zones': total_zones,
+        'total_lgas': total_lgas,
+    }
+    
+    return render(request, 'staff/dashboards/state_supervisor.html', context)
+
+@specific_role_required('Legal & Ethics Adviser')
+def legal_ethics_adviser_dashboard(request):
+    disciplinary_actions = DisciplinaryAction.objects.all().count()
+    pending_actions = DisciplinaryAction.objects.filter(is_approved=False).count()
+    
+    context = {
+        'disciplinary_actions': disciplinary_actions,
+        'pending_actions': pending_actions,
+    }
+    
+    return render(request, 'staff/dashboards/legal_ethics_adviser.html', context)
+
+@specific_role_required('Director of Mobilization')
+def director_of_mobilization_dashboard(request):
+    total_members = User.objects.filter(status='APPROVED').count()
+    total_zones = Zone.objects.count()
+    
+    context = {
+        'total_members': total_members,
+        'total_zones': total_zones,
+    }
+    
+    return render(request, 'staff/dashboards/director_of_mobilization.html', context)
+
+@specific_role_required('Assistant Director of Mobilization')
+def assistant_director_of_mobilization_dashboard(request):
+    total_members = User.objects.filter(status='APPROVED').count()
+    
+    context = {
+        'total_members': total_members,
+    }
+    
+    return render(request, 'staff/dashboards/assistant_director_of_mobilization.html', context)
+
+@specific_role_required('Assistant Organizing Secretary')
+def assistant_organizing_secretary_dashboard(request):
+    upcoming_events = Event.objects.filter(start_date__gte=timezone.now()).count()
+    
+    context = {
+        'upcoming_events': upcoming_events,
+    }
+    
+    return render(request, 'staff/dashboards/assistant_organizing_secretary.html', context)
+
+@specific_role_required('Auditor General')
+def auditor_general_dashboard(request):
+    from donations.models import FinancialReport
+    total_reports = FinancialReport.objects.count() if hasattr(FinancialReport, 'objects') else 0
+    
+    context = {
+        'total_reports': total_reports,
+    }
+    
+    return render(request, 'staff/dashboards/auditor_general.html', context)
+
+@specific_role_required('Welfare Officer')
+def welfare_officer_dashboard(request):
+    total_members = User.objects.filter(status='APPROVED').count()
+    
+    context = {
+        'total_members': total_members,
+    }
+    
+    return render(request, 'staff/dashboards/welfare_officer.html', context)
+
+@specific_role_required('Youth Development & Empowerment Officer')
+def youth_empowerment_officer_dashboard(request):
+    total_members = User.objects.filter(status='APPROVED').count()
+    
+    context = {
+        'total_members': total_members,
+    }
+    
+    return render(request, 'staff/dashboards/youth_empowerment_officer.html', context)
+
+@specific_role_required('Women Leader')
+def women_leader_dashboard(request):
+    if request.user.role == 'STATE':
+        total_members = User.objects.filter(status='APPROVED').count()
+    else:
+        total_members = 0
+    
+    context = {
+        'total_members': total_members,
+    }
+    
+    return render(request, 'staff/dashboards/women_leader.html', context)
+
+@specific_role_required('Assistant Women Leader')
+def assistant_women_leader_dashboard(request):
+    total_members = User.objects.filter(status='APPROVED').count()
+    
+    context = {
+        'total_members': total_members,
+    }
+    
+    return render(request, 'staff/dashboards/assistant_women_leader.html', context)
+
+@specific_role_required('Assistant Director of Media & Publicity')
+def assistant_media_director_dashboard(request):
+    pending_campaigns = Campaign.objects.filter(status='PENDING').count()
+    pending_media = MediaItem.objects.filter(status='PENDING').count()
+    
+    context = {
+        'pending_campaigns': pending_campaigns,
+        'pending_media': pending_media,
+    }
+    
+    return render(request, 'staff/dashboards/assistant_media_director.html', context)
+
+@specific_role_required('Public Relations & Community Engagement Officer')
+def pr_officer_dashboard(request):
+    published_campaigns = Campaign.objects.filter(status='PUBLISHED').count()
+    
+    context = {
+        'published_campaigns': published_campaigns,
+    }
+    
+    return render(request, 'staff/dashboards/pr_officer.html', context)
+
+@specific_role_required('Zonal Secretary')
+def zonal_secretary_dashboard(request):
+    lgas_in_zone = LGA.objects.filter(zone=request.user.zone).count() if request.user.zone else 0
+    members_in_zone = User.objects.filter(zone=request.user.zone, status='APPROVED').count() if request.user.zone else 0
+    
+    context = {
+        'lgas_in_zone': lgas_in_zone,
+        'members_in_zone': members_in_zone,
+    }
+    
+    return render(request, 'staff/dashboards/zonal_secretary.html', context)
+
+@specific_role_required('Zonal Publicity Officer')
+def zonal_publicity_officer_dashboard(request):
+    members_in_zone = User.objects.filter(zone=request.user.zone, status='APPROVED').count() if request.user.zone else 0
+    
+    context = {
+        'members_in_zone': members_in_zone,
+    }
+    
+    return render(request, 'staff/dashboards/zonal_publicity_officer.html', context)
+
+@specific_role_required('Secretary')
+def lga_secretary_dashboard(request):
+    wards_in_lga = Ward.objects.filter(lga=request.user.lga).count() if request.user.lga else 0
+    members_in_lga = User.objects.filter(lga=request.user.lga, status='APPROVED').count() if request.user.lga else 0
+    
+    context = {
+        'wards_in_lga': wards_in_lga,
+        'members_in_lga': members_in_lga,
+    }
+    
+    return render(request, 'staff/dashboards/lga_secretary.html', context)
+
+@specific_role_required('Organizing Secretary')
+def lga_organizing_secretary_dashboard(request):
+    members_in_lga = User.objects.filter(lga=request.user.lga, status='APPROVED').count() if request.user.lga else 0
+    
+    context = {
+        'members_in_lga': members_in_lga,
+    }
+    
+    return render(request, 'staff/dashboards/lga_organizing_secretary.html', context)
+
+@specific_role_required('Treasurer')
+def lga_treasurer_dashboard(request):
+    members_in_lga = User.objects.filter(lga=request.user.lga, status='APPROVED').count() if request.user.lga else 0
+    
+    context = {
+        'members_in_lga': members_in_lga,
+    }
+    
+    return render(request, 'staff/dashboards/lga_treasurer.html', context)
+
+@specific_role_required('Publicity Officer')
+def lga_publicity_officer_dashboard(request):
+    members_in_lga = User.objects.filter(lga=request.user.lga, status='APPROVED').count() if request.user.lga else 0
+    
+    context = {
+        'members_in_lga': members_in_lga,
+    }
+    
+    return render(request, 'staff/dashboards/lga_publicity_officer.html', context)
+
+@specific_role_required('LGA Supervisor')
+def lga_supervisor_dashboard(request):
+    wards_in_lga = Ward.objects.filter(lga=request.user.lga).count() if request.user.lga else 0
+    
+    context = {
+        'wards_in_lga': wards_in_lga,
+    }
+    
+    return render(request, 'staff/dashboards/lga_supervisor.html', context)
+
+@specific_role_required('Women Leader')
+def lga_women_leader_dashboard(request):
+    members_in_lga = User.objects.filter(lga=request.user.lga, status='APPROVED').count() if request.user.lga else 0
+    
+    context = {
+        'members_in_lga': members_in_lga,
+    }
+    
+    return render(request, 'staff/dashboards/lga_women_leader.html', context)
+
+@specific_role_required('Welfare Officer')
+def lga_welfare_officer_dashboard(request):
+    members_in_lga = User.objects.filter(lga=request.user.lga, status='APPROVED').count() if request.user.lga else 0
+    
+    context = {
+        'members_in_lga': members_in_lga,
+    }
+    
+    return render(request, 'staff/dashboards/lga_welfare_officer.html', context)
+
+@specific_role_required('Director of Contact and Mobilization')
+def lga_contact_mobilization_dashboard(request):
+    members_in_lga = User.objects.filter(lga=request.user.lga, status='APPROVED').count() if request.user.lga else 0
+    
+    context = {
+        'members_in_lga': members_in_lga,
+    }
+    
+    return render(request, 'staff/dashboards/lga_contact_mobilization.html', context)
+
+@specific_role_required('LGA Adviser')
+def lga_adviser_dashboard(request):
+    members_in_lga = User.objects.filter(lga=request.user.lga, status='APPROVED').count() if request.user.lga else 0
+    
+    context = {
+        'members_in_lga': members_in_lga,
+    }
+    
+    return render(request, 'staff/dashboards/lga_adviser.html', context)
+
+@specific_role_required('Secretary')
+def ward_secretary_dashboard(request):
+    members_in_ward = User.objects.filter(ward=request.user.ward, status='APPROVED').count() if request.user.ward else 0
+    
+    context = {
+        'members_in_ward': members_in_ward,
+    }
+    
+    return render(request, 'staff/dashboards/ward_secretary.html', context)
+
+@specific_role_required('Organizing Secretary')
+def ward_organizing_secretary_dashboard(request):
+    members_in_ward = User.objects.filter(ward=request.user.ward, status='APPROVED').count() if request.user.ward else 0
+    
+    context = {
+        'members_in_ward': members_in_ward,
+    }
+    
+    return render(request, 'staff/dashboards/ward_organizing_secretary.html', context)
+
+@specific_role_required('Treasurer')
+def ward_treasurer_dashboard(request):
+    members_in_ward = User.objects.filter(ward=request.user.ward, status='APPROVED').count() if request.user.ward else 0
+    
+    context = {
+        'members_in_ward': members_in_ward,
+    }
+    
+    return render(request, 'staff/dashboards/ward_treasurer.html', context)
+
+@specific_role_required('Publicity Officer')
+def ward_publicity_officer_dashboard(request):
+    members_in_ward = User.objects.filter(ward=request.user.ward, status='APPROVED').count() if request.user.ward else 0
+    
+    context = {
+        'members_in_ward': members_in_ward,
+    }
+    
+    return render(request, 'staff/dashboards/ward_publicity_officer.html', context)
+
+@specific_role_required('Financial Secretary')
+def ward_financial_secretary_dashboard(request):
+    members_in_ward = User.objects.filter(ward=request.user.ward, status='APPROVED').count() if request.user.ward else 0
+    
+    context = {
+        'members_in_ward': members_in_ward,
+    }
+    
+    return render(request, 'staff/dashboards/ward_financial_secretary.html', context)
+
+@specific_role_required('Ward Supervisor')
+def ward_supervisor_dashboard(request):
+    members_in_ward = User.objects.filter(ward=request.user.ward, status='APPROVED').count() if request.user.ward else 0
+    
+    context = {
+        'members_in_ward': members_in_ward,
+    }
+    
+    return render(request, 'staff/dashboards/ward_supervisor.html', context)
+
+@specific_role_required('Ward Adviser')
+def ward_adviser_dashboard(request):
+    members_in_ward = User.objects.filter(ward=request.user.ward, status='APPROVED').count() if request.user.ward else 0
+    
+    context = {
+        'members_in_ward': members_in_ward,
+    }
+    
+    return render(request, 'staff/dashboards/ward_adviser.html', context)

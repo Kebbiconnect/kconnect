@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Assistant Director of Media & Publicity Dashboard - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold">Assistant Director of Media & Publicity Dashboard</h1>
+        <p class="text-gray-600 dark:text-gray-400">Welcome, {{ user.get_full_name }}. Supporting media and publicity operations.</p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Pending Campaigns</p>
+                    <p class="text-3xl font-bold text-yellow-600">{{ pending_campaigns }}</p>
+                </div>
+                <i class="fas fa-newspaper text-4xl text-yellow-600"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Pending Media</p>
+                    <p class="text-3xl font-bold text-purple-600">{{ pending_media }}</p>
+                </div>
+                <i class="fas fa-photo-video text-4xl text-purple-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <a href="{% url 'staff:profile' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
+                <i class="fas fa-user mr-2"></i> My Profile
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

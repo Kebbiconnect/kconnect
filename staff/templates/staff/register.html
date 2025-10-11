@@ -95,13 +95,13 @@
                         </div>
                         <div>
                             <label for="lga" class="block text-sm font-semibold mb-2">LGA *</label>
-                            <select class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent" id="lga" name="lga" required>
+                            <select class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed" id="lga" name="lga" required disabled>
                                 <option value="">Select Zone first</option>
                             </select>
                         </div>
                         <div>
                             <label for="ward" class="block text-sm font-semibold mb-2">Ward *</label>
-                            <select class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent" id="ward" name="ward">
+                            <select class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed" id="ward" name="ward" disabled>
                                 <option value="">Select LGA first</option>
                             </select>
                         </div>
@@ -138,7 +138,7 @@
                         </div>
                         <div>
                             <label for="role_definition" class="block text-sm font-semibold mb-2">Available Leadership Positions</label>
-                            <select class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent" id="role_definition" name="role_definition">
+                            <select class="w-full px-4 py-3 border rounded-lg dark:bg-gray-700 focus:ring-2 focus:ring-kpn-green focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed" id="role_definition" name="role_definition" disabled>
                                 <option value="">Select your location first</option>
                             </select>
                             <p id="role-message" class="text-sm mt-2"></p>
@@ -180,9 +180,12 @@
                 </div>
                 
                 <div class="mt-6">
-                    <button type="submit" class="w-full bg-kpn-green text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-green-600 transition">
+                    <button type="submit" id="submitBtn" class="w-full bg-kpn-green text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-green-600 transition hidden">
                         <i class="fas fa-user-plus"></i> Register with KPN
                     </button>
+                    <div id="fbWarning" class="w-full bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-6 py-4 rounded-lg font-bold text-lg text-center">
+                        <i class="fas fa-lock"></i> Follow our Facebook page to unlock registration
+                    </div>
                 </div>
                 
                 <div class="text-center mt-4">
@@ -234,8 +237,13 @@ zoneSelect.addEventListener('change', async function() {
     roleSelect.innerHTML = '<option value="">Select location first</option>';
     roleMessage.textContent = '';
     
+    // Disable ward and role selects while zone is being processed
+    wardSelect.disabled = true;
+    roleSelect.disabled = true;
+    
     if (!zoneId) {
         lgaSelect.innerHTML = '<option value="">Select Zone first</option>';
+        lgaSelect.disabled = true;
         return;
     }
     
@@ -244,6 +252,7 @@ zoneSelect.addEventListener('change', async function() {
         const data = await response.json();
         
         lgaSelect.innerHTML = '<option value="">Select LGA</option>';
+        lgaSelect.disabled = false;
         data.lgas.forEach(lga => {
             const option = document.createElement('option');
             option.value = lga.id;
@@ -258,6 +267,7 @@ zoneSelect.addEventListener('change', async function() {
     } catch (error) {
         console.error('Error fetching LGAs:', error);
         lgaSelect.innerHTML = '<option value="">Error loading LGAs</option>';
+        lgaSelect.disabled = true;
     }
 });
 
@@ -268,8 +278,12 @@ lgaSelect.addEventListener('change', async function() {
     roleSelect.innerHTML = '<option value="">Select location first</option>';
     roleMessage.textContent = '';
     
+    // Disable role select while LGA is being processed
+    roleSelect.disabled = true;
+    
     if (!lgaId) {
         wardSelect.innerHTML = '<option value="">Select LGA first</option>';
+        wardSelect.disabled = true;
         return;
     }
     
@@ -278,6 +292,7 @@ lgaSelect.addEventListener('change', async function() {
         const data = await response.json();
         
         wardSelect.innerHTML = '<option value="">Select Ward (Optional)</option>';
+        wardSelect.disabled = false;
         data.wards.forEach(ward => {
             const option = document.createElement('option');
             option.value = ward.id;
@@ -292,6 +307,7 @@ lgaSelect.addEventListener('change', async function() {
     } catch (error) {
         console.error('Error fetching wards:', error);
         wardSelect.innerHTML = '<option value="">Error loading wards</option>';
+        wardSelect.disabled = true;
     }
 });
 
@@ -308,12 +324,14 @@ async function checkVacantRoles() {
     
     if (!zoneId || !lgaId) {
         roleSelect.innerHTML = '<option value="">Please select Zone and LGA first</option>';
+        roleSelect.disabled = true;
         roleMessage.textContent = '';
         roleMessage.className = 'text-sm mt-2 text-gray-600 dark:text-gray-400';
         return;
     }
     
     roleSelect.innerHTML = '<option value="">Loading available positions...</option>';
+    roleSelect.disabled = true;
     roleMessage.textContent = 'Checking available positions...';
     roleMessage.className = 'text-sm mt-2 text-blue-600 dark:text-blue-400';
     
@@ -326,10 +344,12 @@ async function checkVacantRoles() {
         
         if (data.vacant_roles.length === 0) {
             roleSelect.innerHTML = '<option value="">No vacant positions available</option>';
+            roleSelect.disabled = true;
             roleMessage.textContent = 'No vacant leadership positions available in this location. You can register as a General Member.';
             roleMessage.className = 'text-sm mt-2 text-orange-600 dark:text-orange-400';
         } else {
             roleSelect.innerHTML = '<option value="">Select a position</option>';
+            roleSelect.disabled = false;
             data.vacant_roles.forEach(role => {
                 const option = document.createElement('option');
                 option.value = role.id;
@@ -343,6 +363,7 @@ async function checkVacantRoles() {
     } catch (error) {
         console.error('Error checking vacant roles:', error);
         roleSelect.innerHTML = '<option value="">Error loading positions</option>';
+        roleSelect.disabled = true;
         roleMessage.textContent = 'Error checking vacant roles. Please try again.';
         roleMessage.className = 'text-sm mt-2 text-red-600 dark:text-red-400';
     }
@@ -360,5 +381,22 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Facebook verification and submit button control
+const facebookCheckbox = document.getElementById('facebook_verified');
+const submitBtn = document.getElementById('submitBtn');
+const fbWarning = document.getElementById('fbWarning');
+
+facebookCheckbox.addEventListener('change', function() {
+    if (this.checked) {
+        submitBtn.classList.remove('hidden');
+        submitBtn.classList.add('block', 'animate-fadeIn');
+        fbWarning.classList.add('hidden');
+    } else {
+        submitBtn.classList.add('hidden');
+        submitBtn.classList.remove('block');
+        fbWarning.classList.remove('hidden');
+    }
+});
 </script>
 {% endblock %}
