@@ -89,7 +89,7 @@ WSGI_APPLICATION = 'KPN.wsgi.application'
 USE_TURSO = config('USE_TURSO', default=False, cast=bool)
 
 if USE_TURSO:
-    TURSO_DATABASE_URL = "kpntursodb-kpntursodb.aws-eu-west-1.turso.io"
+    TURSO_DATABASE_URL = "kpnai-kpntursodb.aws-eu-west-1.turso.io"
     TURSO_AUTH_TOKEN = config('TURSO_AUTH_TOKEN')
     DATABASES = {
         'default': {
