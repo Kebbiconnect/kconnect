@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}President Dashboard - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold">President Dashboard</h1>
+        <p class="text-gray-600 dark:text-gray-400">Welcome, {{ user.get_full_name }}. You have full oversight of the organization.</p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Pending Approvals</p>
+                    <p class="text-3xl font-bold text-yellow-600">{{ pending_approvals }}</p>
+                </div>
+                <i class="fas fa-user-clock text-4xl text-yellow-600"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Members</p>
+                    <p class="text-3xl font-bold text-kpn-green">{{ total_members }}</p>
+                </div>
+                <i class="fas fa-users text-4xl text-kpn-green"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Leaders</p>
+                    <p class="text-3xl font-bold text-kpn-blue">{{ total_leaders }}</p>
+                </div>
+                <i class="fas fa-user-tie text-4xl text-kpn-blue"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Pending Reports</p>
+                    <p class="text-3xl font-bold text-purple-600">{{ pending_reports }}</p>
+                </div>
+                <i class="fas fa-file-alt text-4xl text-purple-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
+            <div class="space-y-3">
+                <a href="{% url 'staff:approve_members' %}" class="block p-3 bg-yellow-50 dark:bg-yellow-900 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-800 transition">
+                    <i class="fas fa-user-check mr-2"></i> Approve Member Applications
+                </a>
+                <a href="{% url 'staff:manage_staff' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
+                    <i class="fas fa-users-cog mr-2"></i> Manage All Staff
+                </a>
+                <a href="{% url 'staff:view_reports' %}" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
+                    <i class="fas fa-chart-line mr-2"></i> View Reports & Analytics
+                </a>
+                <a href="{% url 'staff:disciplinary_actions' %}" class="block p-3 bg-red-50 dark:bg-red-900 rounded-lg hover:bg-red-100 dark:hover:bg-red-800 transition">
+                    <i class="fas fa-gavel mr-2"></i> Disciplinary Actions
+                </a>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-xl font-semibold mb-4">Recent Activity</h3>
+            <div class="space-y-3">
+                {% for activity in recent_activities %}
+                <div class="flex items-start p-3 bg-gray-50 dark:bg-gray-700 rounded">
+                    <i class="fas fa-info-circle mt-1 mr-3 text-kpn-blue"></i>
+                    <div class="flex-1">
+                        <p class="text-sm">{{ activity.description }}</p>
+                        <p class="text-xs text-gray-500 mt-1">{{ activity.timestamp|timesince }} ago</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-gray-500 text-sm">No recent activity</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 class="text-xl font-semibold mb-4">Pending Member Approvals</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase">Name</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase">Role</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase">Location</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase">Applied</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    {% for applicant in pending_applicants %}
+                    <tr>
+                        <td class="px-4 py-3">{{ applicant.get_full_name }}</td>
+                        <td class="px-4 py-3">{{ applicant.role_definition.title }}</td>
+                        <td class="px-4 py-3">{{ applicant.get_jurisdiction }}</td>
+                        <td class="px-4 py-3">{{ applicant.created_at|date:"M d, Y" }}</td>
+                        <td class="px-4 py-3">
+                            <a href="{% url 'staff:review_applicant' applicant.id %}" class="text-kpn-green hover:text-kpn-blue">Review</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-4 py-3 text-center text-gray-500">No pending applications</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

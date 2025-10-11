@@ -57,8 +57,8 @@
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div>
-                    <label class="block text-sm font-medium mb-2">Zone</label>
-                    <select name="zone" required class="w-full p-3 border rounded dark:bg-gray-700">
+                    <label class="block text-sm font-medium mb-2">Zone *</label>
+                    <select id="zone" name="zone" required class="w-full p-3 border rounded dark:bg-gray-700">
                         <option value="">Select Zone</option>
                         {% for zone in zones %}
                         <option value="{{ zone.id }}">{{ zone.name }}</option>
@@ -66,42 +66,35 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-2">LGA</label>
-                    <select name="lga" required class="w-full p-3 border rounded dark:bg-gray-700">
+                    <label class="block text-sm font-medium mb-2">LGA *</label>
+                    <select id="lga" name="lga" required class="w-full p-3 border rounded dark:bg-gray-700">
                         <option value="">Select LGA</option>
-                        {% for lga in lgas %}
-                        <option value="{{ lga.id }}">{{ lga.name }}</option>
-                        {% endfor %}
                     </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-2">Ward (Optional)</label>
-                    <select name="ward" class="w-full p-3 border rounded dark:bg-gray-700">
+                    <select id="ward" name="ward" class="w-full p-3 border rounded dark:bg-gray-700">
                         <option value="">Select Ward</option>
-                        {% for ward in wards %}
-                        <option value="{{ ward.id }}">{{ ward.name }}</option>
-                        {% endfor %}
                     </select>
                 </div>
             </div>
             
             <div class="mb-6">
                 <label class="block text-sm font-medium mb-2">Apply for Leadership Role (Optional)</label>
-                <select name="role_definition" class="w-full p-3 border rounded dark:bg-gray-700">
+                <select id="role_definition" name="role_definition" class="w-full p-3 border rounded dark:bg-gray-700">
                     <option value="">General Member (No Leadership Role)</option>
-                    {% for role in role_definitions %}
-                    <option value="{{ role.id }}">{{ role.title }} ({{ role.get_tier_display }})</option>
-                    {% endfor %}
                 </select>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Note: Leadership applications require approval.</p>
+                <p id="role-message" class="text-sm mt-2"></p>
             </div>
             
             <div class="mb-6 bg-blue-50 dark:bg-blue-900 p-4 rounded">
                 <label class="flex items-start">
-                    <input type="checkbox" name="facebook_verified" class="mt-1 mr-3">
+                    <input type="checkbox" name="facebook_verified" class="mt-1 mr-3" required>
                     <span class="text-sm">
                         I confirm that I have followed the official KPN Facebook page at 
-                        <a href="https://www.facebook.com/kpnkebbi" target="_blank" class="text-kpn-blue hover:underline">facebook.com/kpnkebbi</a>
+                        <a href="https://www.facebook.com/kpnkebbi" target="_blank" class="text-kpn-blue hover:underline font-semibold">facebook.com/kpnkebbi</a>
+                        (This is required for registration)
                     </span>
                 </label>
             </div>
@@ -116,4 +109,110 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const zoneSelect = document.getElementById('zone');
+const lgaSelect = document.getElementById('lga');
+const wardSelect = document.getElementById('ward');
+const roleSelect = document.getElementById('role_definition');
+const roleMessage = document.getElementById('role-message');
+
+zoneSelect.addEventListener('change', async function() {
+    const zoneId = this.value;
+    
+    lgaSelect.innerHTML = '<option value="">Select LGA</option>';
+    wardSelect.innerHTML = '<option value="">Select Ward</option>';
+    roleSelect.innerHTML = '<option value="">General Member (No Leadership Role)</option>';
+    roleMessage.textContent = '';
+    
+    if (!zoneId) return;
+    
+    try {
+        const response = await fetch(`/account/api/get-lgas/?zone_id=${zoneId}`);
+        const data = await response.json();
+        
+        data.lgas.forEach(lga => {
+            const option = document.createElement('option');
+            option.value = lga.id;
+            option.textContent = lga.name;
+            lgaSelect.appendChild(option);
+        });
+        
+        checkVacantRoles();
+    } catch (error) {
+        console.error('Error fetching LGAs:', error);
+    }
+});
+
+lgaSelect.addEventListener('change', async function() {
+    const lgaId = this.value;
+    
+    wardSelect.innerHTML = '<option value="">Select Ward</option>';
+    roleSelect.innerHTML = '<option value="">General Member (No Leadership Role)</option>';
+    roleMessage.textContent = '';
+    
+    if (!lgaId) return;
+    
+    try {
+        const response = await fetch(`/account/api/get-wards/?lga_id=${lgaId}`);
+        const data = await response.json();
+        
+        data.wards.forEach(ward => {
+            const option = document.createElement('option');
+            option.value = ward.id;
+            option.textContent = ward.name;
+            wardSelect.appendChild(option);
+        });
+        
+        checkVacantRoles();
+    } catch (error) {
+        console.error('Error fetching wards:', error);
+    }
+});
+
+wardSelect.addEventListener('change', checkVacantRoles);
+
+async function checkVacantRoles() {
+    const zoneId = zoneSelect.value;
+    const lgaId = lgaSelect.value;
+    const wardId = wardSelect.value;
+    
+    if (!zoneId || !lgaId) {
+        return;
+    }
+    
+    roleSelect.innerHTML = '<option value="">General Member (No Leadership Role)</option>';
+    roleMessage.textContent = 'Checking available positions...';
+    roleMessage.className = 'text-sm mt-2 text-blue-600 dark:text-blue-400';
+    
+    try {
+        const params = new URLSearchParams({ zone_id: zoneId, lga_id: lgaId });
+        if (wardId) params.append('ward_id', wardId);
+        
+        const response = await fetch(`/account/api/check-vacant-roles/?${params}`);
+        const data = await response.json();
+        
+        if (data.vacant_roles.length === 0) {
+            roleMessage.textContent = 'No vacant leadership positions available in this location. You can register as a General Member.';
+            roleMessage.className = 'text-sm mt-2 text-orange-600 dark:text-orange-400';
+        } else {
+            data.vacant_roles.forEach(role => {
+                const option = document.createElement('option');
+                option.value = role.id;
+                option.textContent = role.title;
+                roleSelect.appendChild(option);
+            });
+            
+            roleMessage.textContent = `${data.vacant_roles.length} vacant leadership position(s) available in this location.`;
+            roleMessage.className = 'text-sm mt-2 text-green-600 dark:text-green-400';
+        }
+    } catch (error) {
+        console.error('Error checking vacant roles:', error);
+        roleMessage.textContent = 'Error checking vacant roles. Please try again.';
+        roleMessage.className = 'text-sm mt-2 text-red-600 dark:text-red-400';
+    }
+}
+</script>
 {% endblock %}
