@@ -26,7 +26,22 @@ The project is built on Django 5.2.7 and structured into seven modular applicati
 - **Dashboards**: Role-specific dashboards for all 41 leadership positions, providing tailored functionalities and data relevant to their jurisdiction and responsibilities. The President's dashboard includes staff management, member approval workflow, and reporting oversight.
 - **Registration**: Enhanced registration form with locked cascading dropdowns for location and role selection, real-time vacancy checking via AJAX, and mandatory Facebook verification.
 - **Reporting**: A hierarchical reporting system is envisioned.
-- **Finance Management (`donations` app)**: Donation tracking with a two-step verification workflow between Treasurer and Financial Secretary.
+- **Disciplinary Actions (`staff` app)**: 
+  - **Phase 4 Implementation - Completed**
+  - **Action Types**: Warning, Suspension, Dismissal with detailed reason tracking
+  - **Approval Workflow**: Warnings auto-approved by issuer; Suspensions and Dismissals require State President approval
+  - **Status Updates**: Approved suspensions/dismissals automatically update member status (SUSPENDED/DISMISSED)
+  - **Access Control**: All approved leaders can create actions; only State President can approve/reject
+  - **Templates**: Complete UI for viewing, creating, approving, and rejecting disciplinary actions
+- **Finance Management (`donations` app)**: 
+  - **Phase 4 Implementation - Completed**
+  - **Donation Verification Workflow**: Three-tier process (UNVERIFIED → Treasurer verifies → Financial Secretary records)
+  - **Expense Tracking**: Complete expense management system with category, amount, description, and receipt support
+  - **Financial Reports**: Automated report generation aggregating donations, expenses, and balance calculations
+  - **Role-Based Access**: Treasurer handles verification; Financial Secretary records donations, manages expenses, and generates reports
+  - **Models**: Donation (with verification status), Expense, FinancialReport
+  - **Templates**: Comprehensive UI for donation verification, expense management, and report generation
+  - **Dashboard Integration**: Treasurer and Financial Secretary dashboards with real-time statistics and quick action links
 - **Media Management (`media` app)**: Gallery for photos/videos with an upload and approval workflow.
 - **Events (`events` app)**: 
   - **Full Event Management System** (Phase 3 Implementation - Completed)
