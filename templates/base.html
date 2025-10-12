@@ -130,40 +130,137 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 dark:bg-black text-white mt-16">
+    <footer class="bg-gradient-to-b from-gray-900 to-black dark:from-black dark:to-gray-900 text-white mt-16 relative overflow-hidden">
+        <!-- Decorative Elements -->
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-kpn-green via-kpn-blue to-kpn-green"></div>
+        
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <!-- About Section -->
-                <div class="col-span-1 md:col-span-2">
-                    <h3 class="text-xl font-bold text-kpn-green mb-4">Kebbi Progressive Network</h3>
-                    <p class="text-gray-400 mb-4">One Voice, One Change</p>
-                    <p class="text-sm text-gray-400">A youth-led movement for civic awareness, digital empowerment, and advocacy across Kebbi State, Nigeria.</p>
+                <div class="col-span-1 md:col-span-2 transform hover:scale-105 transition-transform duration-300">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <img src="{% static 'images/kpn-logo.png' %}" alt="KPN Logo" class="w-12 h-12 rounded-full">
+                        <h3 class="text-2xl font-bold text-kpn-green">Kebbi Progressive Network</h3>
+                    </div>
+                    <p class="text-lg text-kpn-green italic mb-4 font-semibold">"One Voice, One Change"</p>
+                    <p class="text-sm text-gray-400 leading-relaxed">A youth-led movement for civic awareness, digital empowerment, and advocacy across Kebbi State, Nigeria. Together, we're building a progressive future.</p>
+                    
+                    <!-- Stats -->
+                    <div class="mt-6 grid grid-cols-3 gap-4">
+                        <div class="text-center p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition">
+                            <div class="text-kpn-green font-bold text-xl">3</div>
+                            <div class="text-xs text-gray-400">Zones</div>
+                        </div>
+                        <div class="text-center p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition">
+                            <div class="text-kpn-blue font-bold text-xl">21</div>
+                            <div class="text-xs text-gray-400">LGAs</div>
+                        </div>
+                        <div class="text-center p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition">
+                            <div class="text-yellow-500 font-bold text-xl">225</div>
+                            <div class="text-xs text-gray-400">Wards</div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Quick Links -->
-                <div>
-                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="{% url 'core:about' %}" class="text-gray-400 hover:text-kpn-green transition">About Us</a></li>
-                        <li><a href="{% url 'core:leadership' %}" class="text-gray-400 hover:text-kpn-green transition">Leadership</a></li>
-                        <li><a href="{% url 'core:faq' %}" class="text-gray-400 hover:text-kpn-green transition">FAQ</a></li>
-                        <li><a href="{% url 'core:code_of_conduct' %}" class="text-gray-400 hover:text-kpn-green transition">Code of Conduct</a></li>
+                <div class="transform hover:translate-x-2 transition-transform duration-300">
+                    <h4 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-link text-kpn-green mr-2"></i>
+                        Quick Links
+                    </h4>
+                    <ul class="space-y-3 text-sm">
+                        <li>
+                            <a href="{% url 'core:about' %}" class="text-gray-400 hover:text-kpn-green transition-all duration-300 flex items-center group">
+                                <i class="fas fa-chevron-right mr-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                <span>About Us</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'core:leadership' %}" class="text-gray-400 hover:text-kpn-green transition-all duration-300 flex items-center group">
+                                <i class="fas fa-chevron-right mr-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                <span>Leadership</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'core:support_us' %}" class="text-gray-400 hover:text-kpn-green transition-all duration-300 flex items-center group">
+                                <i class="fas fa-chevron-right mr-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                <span>Support Us</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'core:faq' %}" class="text-gray-400 hover:text-kpn-green transition-all duration-300 flex items-center group">
+                                <i class="fas fa-chevron-right mr-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                <span>FAQ</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'core:code_of_conduct' %}" class="text-gray-400 hover:text-kpn-green transition-all duration-300 flex items-center group">
+                                <i class="fas fa-chevron-right mr-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                <span>Code of Conduct</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
                 
                 <!-- Connect -->
-                <div>
-                    <h4 class="text-lg font-semibold mb-4">Connect</h4>
-                    <div class="flex space-x-4 text-2xl">
-                        <a href="https://www.facebook.com/kpnkebbi" target="_blank" class="text-gray-400 hover:text-blue-500 transition"><i class="fab fa-facebook"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-blue-400 transition"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-pink-500 transition"><i class="fab fa-instagram"></i></a>
+                <div class="transform hover:translate-x-2 transition-transform duration-300">
+                    <h4 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-share-alt text-kpn-green mr-2"></i>
+                        Connect With Us
+                    </h4>
+                    <p class="text-sm text-gray-400 mb-4">Join our growing community on social media</p>
+                    <div class="flex space-x-3">
+                        <a href="https://www.facebook.com/kpnkebbi" target="_blank" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-blue-600 hover:text-white transform hover:scale-110 hover:-rotate-12 transition-all duration-300">
+                            <i class="fab fa-facebook text-xl"></i>
+                        </a>
+                        <a href="#" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-blue-400 hover:text-white transform hover:scale-110 hover:rotate-12 transition-all duration-300">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-pink-600 hover:text-white transform hover:scale-110 hover:-rotate-12 transition-all duration-300">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
+                        <a href="#" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-green-500 hover:text-white transform hover:scale-110 hover:rotate-12 transition-all duration-300">
+                            <i class="fab fa-whatsapp text-xl"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- Contact Info -->
+                    <div class="mt-6 space-y-2 text-sm text-gray-400">
+                        <p class="flex items-center">
+                            <i class="fas fa-envelope mr-2 text-kpn-green"></i>
+                            info@kpnkebbi.org
+                        </p>
+                        <p class="flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2 text-kpn-green"></i>
+                            Kebbi State, Nigeria
+                        </p>
                     </div>
                 </div>
             </div>
             
-            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-                <p>&copy; {% now "Y" %} Kebbi Progressive Network. All rights reserved.</p>
+            <!-- Bottom Bar -->
+            <div class="border-t border-gray-800 mt-10 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
+                    <p class="mb-4 md:mb-0">
+                        &copy; {% now "Y" %} Kebbi Progressive Network. All rights reserved.
+                    </p>
+                    <div class="flex items-center space-x-4">
+                        <a href="{% url 'core:code_of_conduct' %}" class="hover:text-kpn-green transition">Privacy Policy</a>
+                        <span>|</span>
+                        <a href="{% url 'core:code_of_conduct' %}" class="hover:text-kpn-green transition">Terms of Service</a>
+                        <span>|</span>
+                        <a href="{% url 'core:contact' %}" class="hover:text-kpn-green transition">Contact</a>
+                    </div>
+                </div>
+                
+                <!-- Back to Top Button -->
+                <div class="text-center mt-6">
+                    <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" 
+                       class="inline-flex items-center px-4 py-2 bg-kpn-green text-white rounded-full hover:bg-green-600 transform hover:scale-110 transition-all duration-300">
+                        <i class="fas fa-arrow-up mr-2"></i>
+                        Back to Top
+                    </a>
+                </div>
             </div>
         </div>
     </footer>
