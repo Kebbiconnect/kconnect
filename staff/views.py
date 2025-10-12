@@ -567,17 +567,29 @@ def financial_secretary_dashboard(request):
 
 @specific_role_required('Organizing Secretary')
 def organizing_secretary_dashboard(request):
+    from events.models import MeetingMinutes
     upcoming_events = Event.objects.filter(start_date__gte=timezone.now()).count()
+    past_events = Event.objects.filter(start_date__lt=timezone.now()).count()
     
     context = {
         'upcoming_events': upcoming_events,
+        'past_events': past_events,
     }
     
     return render(request, 'staff/dashboards/organizing_secretary.html', context)
 
 @specific_role_required('General Secretary')
 def general_secretary_dashboard(request):
-    context = {}
+    from events.models import MeetingMinutes
+    meeting_minutes_count = MeetingMinutes.objects.all().count()
+    published_minutes = MeetingMinutes.objects.filter(is_published=True).count()
+    upcoming_meetings = Event.objects.filter(start_date__gte=timezone.now()).count()
+    
+    context = {
+        'meeting_minutes_count': meeting_minutes_count,
+        'published_minutes': published_minutes,
+        'upcoming_meetings': upcoming_meetings,
+    }
     return render(request, 'staff/dashboards/general_secretary.html', context)
 
 @specific_role_required('Zonal Coordinator')
