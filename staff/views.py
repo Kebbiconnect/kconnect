@@ -2,10 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db import models
 from django.db.models import Q
 from django.http import JsonResponse
 from django.utils import timezone
-from .models import User, DisciplinaryAction
+from .models import User, DisciplinaryAction, WomensProgram
 from .decorators import specific_role_required, role_required, approved_leader_required
 from .forms import MemberMobilizationFilterForm
 from leadership.models import Zone, LGA, Ward, RoleDefinition
@@ -1502,3 +1503,281 @@ def member_mobilization(request):
     }
     
     return render(request, 'staff/member_mobilization.html', context)
+
+
+# Women's Program Management Views
+
+@specific_role_required('Women Leader', 'Assistant Women Leader')
+def womens_programs_list(request):
+    """List all women's programs"""
+    user = request.user
+    
+    # Filter programs based on user's jurisdiction
+    if user.role == 'STATE':
+        programs = WomensProgram.objects.all()
+    elif user.role == 'ZONAL':
+        programs = WomensProgram.objects.filter(
+            models.Q(zone=user.zone) | models.Q(zone__isnull=True, lga__isnull=True)
+        )
+    elif user.role == 'LGA':
+        programs = WomensProgram.objects.filter(
+            models.Q(lga=user.lga) | models.Q(zone=user.zone, lga__isnull=True) | models.Q(zone__isnull=True, lga__isnull=True)
+        )
+    else:
+        programs = WomensProgram.objects.none()
+    
+    programs = programs.order_by('-created_at')
+    
+    context = {
+        'programs': programs,
+    }
+    return render(request, 'staff/womens_programs/list.html', context)
+
+
+@specific_role_required('Women Leader', 'Assistant Women Leader')
+def create_womens_program(request):
+    """Create a new women's program"""
+    from .forms import WomensProgramForm
+    
+    if request.method == 'POST':
+        form = WomensProgramForm(request.POST)
+        if form.is_valid():
+            program = form.save(commit=False)
+            program.created_by = request.user
+            
+            # Set jurisdiction based on user's role
+            if request.user.role == 'ZONAL':
+                program.zone = request.user.zone
+            elif request.user.role == 'LGA':
+                program.lga = request.user.lga
+                program.zone = request.user.zone
+            
+            program.save()
+            messages.success(request, f'Women\'s program "{program.title}" created successfully!')
+            return redirect('staff:womens_programs_list')
+    else:
+        form = WomensProgramForm()
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'staff/womens_programs/form.html', context)
+
+
+@specific_role_required('Women Leader', 'Assistant Women Leader')
+def edit_womens_program(request, program_id):
+    """Edit an existing women's program"""
+    from .forms import WomensProgramForm
+    
+    program = get_object_or_404(WomensProgram, pk=program_id)
+    
+    if request.method == 'POST':
+        form = WomensProgramForm(request.POST, instance=program)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Women\'s program "{program.title}" updated successfully!')
+            return redirect('staff:womens_programs_list')
+    else:
+        form = WomensProgramForm(instance=program)
+    
+    context = {
+        'form': form,
+        'program': program,
+    }
+    return render(request, 'staff/womens_programs/form.html', context)
+
+
+@specific_role_required('Women Leader', 'Assistant Women Leader')
+def delete_womens_program(request, program_id):
+    """Delete a women's program"""
+    program = get_object_or_404(WomensProgram, pk=program_id)
+    
+    if request.method == 'POST':
+        program_title = program.title
+        program.delete()
+        messages.success(request, f'Women\'s program "{program_title}" deleted successfully!')
+        return redirect('staff:womens_programs_list')
+    
+    context = {
+        'program': program,
+    }
+    return render(request, 'staff/womens_programs/delete.html', context)
+
+
+@specific_role_required('Women Leader', 'Assistant Women Leader')
+def manage_program_participants(request, program_id):
+    """Manage participants for a women's program"""
+    program = get_object_or_404(WomensProgram, pk=program_id)
+    
+    # Get all female members within jurisdiction
+    if request.user.role == 'STATE':
+        female_members = User.objects.filter(status='APPROVED', gender='F')
+    elif request.user.role == 'ZONAL':
+        female_members = User.objects.filter(status='APPROVED', gender='F', zone=request.user.zone)
+    elif request.user.role == 'LGA':
+        female_members = User.objects.filter(status='APPROVED', gender='F', lga=request.user.lga)
+    else:
+        female_members = User.objects.none()
+    
+    if request.method == 'POST':
+        selected_participants = request.POST.getlist('participants')
+        program.participants.set(selected_participants)
+        messages.success(request, f'Participants updated for "{program.title}"!')
+        return redirect('staff:womens_programs_list')
+    
+    current_participants = program.participants.values_list('id', flat=True)
+    
+    context = {
+        'program': program,
+        'female_members': female_members.order_by('last_name', 'first_name'),
+        'current_participants': list(current_participants),
+    }
+    return render(request, 'staff/womens_programs/manage_participants.html', context)
+
+
+# FAQ Management Views
+
+@specific_role_required('Assistant General Secretary')
+def faq_list(request):
+    """List all FAQs for management"""
+    from core.models import FAQ
+    
+    faqs = FAQ.objects.all().order_by('order', '-created_at')
+    
+    context = {
+        'faqs': faqs,
+    }
+    return render(request, 'staff/faq/list.html', context)
+
+
+@specific_role_required('Assistant General Secretary')
+def create_faq(request):
+    """Create a new FAQ"""
+    from .forms import FAQForm
+    
+    if request.method == 'POST':
+        form = FAQForm(request.POST)
+        if form.is_valid():
+            faq = form.save()
+            messages.success(request, 'FAQ created successfully!')
+            return redirect('staff:faq_list')
+    else:
+        form = FAQForm()
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'staff/faq/form.html', context)
+
+
+@specific_role_required('Assistant General Secretary')
+def edit_faq(request, faq_id):
+    """Edit an existing FAQ"""
+    from core.models import FAQ
+    from .forms import FAQForm
+    
+    faq = get_object_or_404(FAQ, pk=faq_id)
+    
+    if request.method == 'POST':
+        form = FAQForm(request.POST, instance=faq)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'FAQ updated successfully!')
+            return redirect('staff:faq_list')
+    else:
+        form = FAQForm(instance=faq)
+    
+    context = {
+        'form': form,
+        'faq': faq,
+    }
+    return render(request, 'staff/faq/form.html', context)
+
+
+@specific_role_required('Assistant General Secretary')
+def delete_faq(request, faq_id):
+    """Delete an FAQ"""
+    from core.models import FAQ
+    
+    faq = get_object_or_404(FAQ, pk=faq_id)
+    
+    if request.method == 'POST':
+        faq.delete()
+        messages.success(request, 'FAQ deleted successfully!')
+        return redirect('staff:faq_list')
+    
+    context = {
+        'faq': faq,
+    }
+    return render(request, 'staff/faq/delete.html', context)
+
+
+@specific_role_required('Assistant General Secretary')
+def toggle_faq_status(request, faq_id):
+    """Toggle FAQ active/inactive status"""
+    from core.models import FAQ
+    
+    faq = get_object_or_404(FAQ, pk=faq_id)
+    faq.is_active = not faq.is_active
+    faq.save()
+    
+    status = "activated" if faq.is_active else "deactivated"
+    messages.success(request, f'FAQ "{faq.question[:50]}..." {status} successfully!')
+    return redirect('staff:faq_list')
+
+
+# Legal Review Views
+
+@specific_role_required('Legal & Ethics Adviser')
+def legal_review_queue(request):
+    """View pending disciplinary actions for legal review"""
+    
+    # Get disciplinary actions that need legal review (not warnings, not already legally reviewed)
+    pending_actions = DisciplinaryAction.objects.filter(
+        legal_reviewed_by__isnull=True,
+        is_approved=False
+    ).exclude(action_type='WARNING').order_by('-created_at')
+    
+    # Get actions already reviewed by this legal adviser
+    reviewed_actions = DisciplinaryAction.objects.filter(
+        legal_reviewed_by=request.user
+    ).order_by('-legal_reviewed_at')[:20]
+    
+    context = {
+        'pending_actions': pending_actions,
+        'reviewed_actions': reviewed_actions,
+    }
+    return render(request, 'staff/legal_review/queue.html', context)
+
+
+@specific_role_required('Legal & Ethics Adviser')
+def legal_review_action(request, action_id):
+    """Legal review of a disciplinary action"""
+    from .forms import LegalReviewForm
+    
+    action = get_object_or_404(DisciplinaryAction, pk=action_id)
+    
+    if action.legal_reviewed_by:
+        messages.warning(request, 'This action has already been legally reviewed.')
+        return redirect('staff:legal_review_queue')
+    
+    if request.method == 'POST':
+        form = LegalReviewForm(request.POST)
+        if form.is_valid():
+            action.legal_reviewed_by = request.user
+            action.legal_opinion = form.cleaned_data['legal_opinion']
+            action.legal_approved = form.cleaned_data.get('legal_approved', False)
+            action.legal_reviewed_at = timezone.now()
+            action.save()
+            
+            status = "approved" if action.legal_approved else "rejected"
+            messages.success(request, f'Legal review completed. Action {status}.')
+            return redirect('staff:legal_review_queue')
+    else:
+        form = LegalReviewForm()
+    
+    context = {
+        'form': form,
+        'action': action,
+    }
+    return render(request, 'staff/legal_review/review_form.html', context)

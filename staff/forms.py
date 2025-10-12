@@ -1,6 +1,7 @@
 from django import forms
-from .models import User, DisciplinaryAction
+from .models import User, DisciplinaryAction, WomensProgram
 from leadership.models import RoleDefinition, Zone, LGA, Ward
+from core.models import FAQ
 
 
 class EditMemberRoleForm(forms.ModelForm):
@@ -344,3 +345,155 @@ class MemberMobilizationFilterForm(forms.Form):
                 self.fields['ward'].queryset = Ward.objects.filter(lga_id=lga_id).order_by('name')
             except (ValueError, TypeError):
                 pass
+
+
+class WomensProgramForm(forms.ModelForm):
+    """Form for creating and editing women's programs"""
+    
+    title = forms.CharField(
+        max_length=300,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Enter program title...'
+        })
+    )
+    
+    description = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Describe the program objectives and activities...',
+            'rows': 5
+        })
+    )
+    
+    program_type = forms.ChoiceField(
+        choices=WomensProgram.PROGRAM_TYPE_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'
+        })
+    )
+    
+    status = forms.ChoiceField(
+        choices=WomensProgram.PROGRAM_STATUS_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'
+        })
+    )
+    
+    start_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'
+        })
+    )
+    
+    end_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'
+        })
+    )
+    
+    location = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Enter location/venue...'
+        })
+    )
+    
+    target_participants = forms.IntegerField(
+        initial=0,
+        widget=forms.NumberInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'min': 0
+        })
+    )
+    
+    budget = forms.DecimalField(
+        required=False,
+        max_digits=12,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'step': '0.01',
+            'placeholder': '0.00'
+        })
+    )
+    
+    notes = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Additional notes or comments...',
+            'rows': 3
+        })
+    )
+    
+    class Meta:
+        model = WomensProgram
+        fields = ['title', 'description', 'program_type', 'status', 'start_date', 'end_date', 
+                  'location', 'target_participants', 'budget', 'notes']
+
+
+class FAQForm(forms.ModelForm):
+    """Form for managing FAQs"""
+    
+    question = forms.CharField(
+        max_length=500,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Enter the question...'
+        })
+    )
+    
+    answer = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Enter the answer...',
+            'rows': 5
+        })
+    )
+    
+    order = forms.IntegerField(
+        initial=0,
+        help_text="Lower numbers appear first",
+        widget=forms.NumberInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'min': 0
+        })
+    )
+    
+    is_active = forms.BooleanField(
+        required=False,
+        initial=True,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'w-4 h-4 text-kpn-blue border-gray-300 rounded focus:ring-kpn-blue dark:focus:ring-kpn-blue dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'
+        })
+    )
+    
+    class Meta:
+        model = FAQ
+        fields = ['question', 'answer', 'order', 'is_active']
+
+
+class LegalReviewForm(forms.Form):
+    """Form for Legal Adviser to review disciplinary actions"""
+    
+    legal_opinion = forms.CharField(
+        required=True,
+        widget=forms.Textarea(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Provide your legal opinion on this disciplinary action...',
+            'rows': 5
+        })
+    )
+    
+    legal_approved = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'w-4 h-4 text-kpn-blue border-gray-300 rounded focus:ring-kpn-blue dark:focus:ring-kpn-blue dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600'
+        })
+    )

@@ -79,4 +79,22 @@ urlpatterns = [
     
     path('member-mobilization/', views.member_mobilization, name='member_mobilization'),
     path('women-members/', views.women_members, name='women_members'),
+    
+    # Women's Program Management URLs
+    path('womens-programs/', views.womens_programs_list, name='womens_programs_list'),
+    path('womens-programs/create/', views.create_womens_program, name='create_womens_program'),
+    path('womens-programs/<int:program_id>/edit/', views.edit_womens_program, name='edit_womens_program'),
+    path('womens-programs/<int:program_id>/delete/', views.delete_womens_program, name='delete_womens_program'),
+    path('womens-programs/<int:program_id>/participants/', views.manage_program_participants, name='manage_program_participants'),
+    
+    # FAQ Management URLs
+    path('faq/', views.faq_list, name='faq_list'),
+    path('faq/create/', views.create_faq, name='create_faq'),
+    path('faq/<int:faq_id>/edit/', views.edit_faq, name='edit_faq'),
+    path('faq/<int:faq_id>/delete/', views.delete_faq, name='delete_faq'),
+    path('faq/<int:faq_id>/toggle/', views.toggle_faq_status, name='toggle_faq_status'),
+    
+    # Legal Review URLs
+    path('legal-review/', views.legal_review_queue, name='legal_review_queue'),
+    path('legal-review/<int:action_id>/', views.legal_review_action, name='legal_review_action'),
 ]
