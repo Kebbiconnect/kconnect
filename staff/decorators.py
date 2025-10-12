@@ -20,7 +20,7 @@ def role_required(*allowed_roles):
         return _wrapped_view
     return decorator
 
-def specific_role_required(role_title):
+def specific_role_required(*role_titles):
     def decorator(view_func):
         @wraps(view_func)
         @login_required
@@ -29,7 +29,7 @@ def specific_role_required(role_title):
                 messages.error(request, 'Your account is not approved yet.')
                 return redirect('core:home')
             
-            if not request.user.role_definition or request.user.role_definition.title != role_title:
+            if not request.user.role_definition or request.user.role_definition.title not in role_titles:
                 messages.error(request, 'You do not have permission to access this page.')
                 return redirect('staff:dashboard')
             
