@@ -51,8 +51,13 @@ def edit_campaign(request, campaign_id):
     if request.method == 'POST':
         form = CampaignForm(request.POST, request.FILES, instance=campaign)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Campaign updated successfully!')
+            updated_campaign = form.save(commit=False)
+            if campaign.status == 'REJECTED':
+                updated_campaign.status = 'DRAFT'
+                messages.success(request, 'Campaign updated and reset to draft status!')
+            else:
+                messages.success(request, 'Campaign updated successfully!')
+            updated_campaign.save()
             return redirect('campaigns:my_campaigns')
     else:
         form = CampaignForm(instance=campaign)
