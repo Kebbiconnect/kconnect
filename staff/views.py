@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from .models import User, DisciplinaryAction
 from .decorators import specific_role_required, role_required, approved_leader_required
+from .forms import MemberMobilizationFilterForm
 from leadership.models import Zone, LGA, Ward, RoleDefinition
 from core.models import Report
 from campaigns.models import Campaign
@@ -1431,3 +1432,73 @@ def women_members(request):
         'search': search,
     }
     return render(request, 'staff/women_members.html', context)
+
+
+@specific_role_required('Director of Mobilization', 'Assistant Director of Mobilization')
+def member_mobilization(request):
+    """Member filtering and contact list generation for mobilization"""
+    import csv
+    from django.http import HttpResponse
+    
+    form = MemberMobilizationFilterForm(request.GET or None)
+    # Start with all members - don't filter by status initially
+    members = User.objects.all().order_by('last_name', 'first_name')
+    
+    # Apply filters
+    if form.is_valid():
+        if form.cleaned_data.get('zone'):
+            members = members.filter(zone=form.cleaned_data['zone'])
+        
+        if form.cleaned_data.get('lga'):
+            members = members.filter(lga=form.cleaned_data['lga'])
+        
+        if form.cleaned_data.get('ward'):
+            members = members.filter(ward=form.cleaned_data['ward'])
+        
+        if form.cleaned_data.get('role'):
+            members = members.filter(role=form.cleaned_data['role'])
+        
+        if form.cleaned_data.get('gender'):
+            members = members.filter(gender=form.cleaned_data['gender'])
+        
+        if form.cleaned_data.get('status'):
+            members = members.filter(status=form.cleaned_data['status'])
+        else:
+            # If no status filter selected, default to APPROVED members only
+            members = members.filter(status='APPROVED')
+    
+    # Handle CSV export
+    if 'export' in request.GET:
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="kpn_contact_list.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['Name', 'Phone', 'Role', 'Zone', 'LGA', 'Ward', 'Gender', 'Status'])
+        
+        for member in members:
+            writer.writerow([
+                member.get_full_name(),
+                member.phone,
+                member.get_role_display(),
+                member.zone.name if member.zone else '',
+                member.lga.name if member.lga else '',
+                member.ward.name if member.ward else '',
+                member.get_gender_display() if member.gender else '',
+                member.get_status_display()
+            ])
+        
+        return response
+    
+    # Pagination
+    from django.core.paginator import Paginator
+    paginator = Paginator(members, 50)  # Show 50 members per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'form': form,
+        'members': page_obj,
+        'total_count': members.count(),
+    }
+    
+    return render(request, 'staff/member_mobilization.html', context)

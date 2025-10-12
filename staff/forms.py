@@ -282,3 +282,65 @@ class DisciplinaryActionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['user'].queryset = User.objects.filter(status='APPROVED').order_by('last_name', 'first_name')
+
+
+class MemberMobilizationFilterForm(forms.Form):
+    """Advanced filter form for member mobilization and contact list generation"""
+    
+    zone = forms.ModelChoiceField(
+        queryset=Zone.objects.all(),
+        required=False,
+        empty_label="All Zones",
+        widget=forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'})
+    )
+    
+    lga = forms.ModelChoiceField(
+        queryset=LGA.objects.all(),
+        required=False,
+        empty_label="All LGAs",
+        widget=forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'})
+    )
+    
+    ward = forms.ModelChoiceField(
+        queryset=Ward.objects.all(),
+        required=False,
+        empty_label="All Wards",
+        widget=forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'})
+    )
+    
+    role = forms.ChoiceField(
+        choices=[('', 'All Roles')] + User.ROLE_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'})
+    )
+    
+    gender = forms.ChoiceField(
+        choices=[('', 'All Genders')] + User.GENDER_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'})
+    )
+    
+    status = forms.ChoiceField(
+        choices=[('', 'All Status'), ('APPROVED', 'Approved'), ('PENDING', 'Pending'), ('SUSPENDED', 'Suspended')],
+        required=False,
+        widget=forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'})
+    )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Dynamic LGA filtering based on zone
+        if 'zone' in self.data:
+            try:
+                zone_id = int(self.data.get('zone'))
+                self.fields['lga'].queryset = LGA.objects.filter(zone_id=zone_id).order_by('name')
+            except (ValueError, TypeError):
+                pass
+        
+        # Dynamic Ward filtering based on LGA
+        if 'lga' in self.data:
+            try:
+                lga_id = int(self.data.get('lga'))
+                self.fields['ward'].queryset = Ward.objects.filter(lga_id=lga_id).order_by('name')
+            except (ValueError, TypeError):
+                pass

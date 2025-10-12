@@ -34,6 +34,9 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <a href="{% url 'staff:member_mobilization' %}" class="block p-3 bg-kpn-green dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
+                <i class="fas fa-filter mr-2"></i> Member Mobilization & Contact Lists
+            </a>
             <a href="{% url 'staff:view_reports' %}" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
                 <i class="fas fa-chart-line mr-2"></i> View Mobilization Reports
             </a>

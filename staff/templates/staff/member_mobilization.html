@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block title %}Member Mobilization - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold">Member Mobilization & Contact List Generation</h1>
+        <p class="text-gray-600 dark:text-gray-400">Filter members and generate contact lists for campaigns and mobilization efforts</p>
+    </div>
+    
+    <!-- Filter Panel -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4">Advanced Filters</h2>
+        <form method="get" action="{% url 'staff:member_mobilization' %}" id="filterForm">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Zone</label>
+                    {{ form.zone }}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2">LGA</label>
+                    {{ form.lga }}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2">Ward</label>
+                    {{ form.ward }}
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Role</label>
+                    {{ form.role }}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2">Gender</label>
+                    {{ form.gender }}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2">Status</label>
+                    {{ form.status }}
+                </div>
+            </div>
+            
+            <div class="flex gap-3">
+                <button type="submit" class="px-6 py-2 bg-kpn-blue text-white rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-filter mr-2"></i> Apply Filters
+                </button>
+                <a href="{% url 'staff:member_mobilization' %}" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                    <i class="fas fa-redo mr-2"></i> Reset
+                </a>
+                <button type="button" onclick="document.location.href='?{{ request.GET.urlencode }}&export=1'" class="px-6 py-2 bg-kpn-green text-white rounded-lg hover:bg-green-700 transition">
+                    <i class="fas fa-file-csv mr-2"></i> Export to CSV
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Results Summary -->
+    <div class="bg-blue-50 dark:bg-blue-900 rounded-lg p-4 mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="fas fa-users text-2xl text-kpn-blue mr-3"></i>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Members Matched</p>
+                    <p class="text-2xl font-bold text-kpn-blue">{{ total_count }}</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="text-sm text-gray-600 dark:text-gray-400">Export all {{ total_count }} contacts to CSV for use in campaigns</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Members Table -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold">Filtered Members</h3>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Phone</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Role</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Location</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Gender</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {% for member in members %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div>
+                                    <div class="text-sm font-medium">{{ member.get_full_name }}</div>
+                                    <div class="text-sm text-gray-500">{{ member.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ member.phone }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ member.get_role_display }}</td>
+                        <td class="px-6 py-4 text-sm">
+                            {% if member.ward %}Ward: {{ member.ward.name }}{% endif %}
+                            {% if member.lga %}<br>LGA: {{ member.lga.name }}{% endif %}
+                            {% if member.zone %}<br>Zone: {{ member.zone.name }}{% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            {{ member.get_gender_display|default:"N/A" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                            <i class="fas fa-search text-4xl mb-2"></i>
+                            <p>No members found matching your filters. Try adjusting your search criteria.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if members.has_other_pages %}
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+                Page {{ members.number }} of {{ members.paginator.num_pages }}
+            </div>
+            <div class="flex gap-2">
+                {% if members.has_previous %}
+                    <a href="?{{ request.GET.urlencode }}&page={{ members.previous_page_number }}" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600">
+                        Previous
+                    </a>
+                {% endif %}
+                {% if members.has_next %}
+                    <a href="?{{ request.GET.urlencode }}&page={{ members.next_page_number }}" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600">
+                        Next
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Dynamic LGA filtering based on Zone selection
+document.getElementById('id_zone').addEventListener('change', function() {
+    const zoneId = this.value;
+    const lgaSelect = document.getElementById('id_lga');
+    const wardSelect = document.getElementById('id_ward');
+    
+    if (zoneId) {
+        fetch(`/account/api/get-lgas/?zone=${zoneId}`)
+            .then(response => response.json())
+            .then(data => {
+                lgaSelect.innerHTML = '<option value="">All LGAs</option>';
+                data.lgas.forEach(lga => {
+                    lgaSelect.innerHTML += `<option value="${lga.id}">${lga.name}</option>`;
+                });
+                wardSelect.innerHTML = '<option value="">All Wards</option>';
+            });
+    } else {
+        lgaSelect.innerHTML = '<option value="">All LGAs</option>';
+        wardSelect.innerHTML = '<option value="">All Wards</option>';
+    }
+});
+
+// Dynamic Ward filtering based on LGA selection
+document.getElementById('id_lga').addEventListener('change', function() {
+    const lgaId = this.value;
+    const wardSelect = document.getElementById('id_ward');
+    
+    if (lgaId) {
+        fetch(`/account/api/get-wards/?lga=${lgaId}`)
+            .then(response => response.json())
+            .then(data => {
+                wardSelect.innerHTML = '<option value="">All Wards</option>';
+                data.wards.forEach(ward => {
+                    wardSelect.innerHTML += `<option value="${ward.id}">${ward.name}</option>`;
+                });
+            });
+    } else {
+        wardSelect.innerHTML = '<option value="">All Wards</option>';
+    }
+});
+</script>
+{% endblock %}
