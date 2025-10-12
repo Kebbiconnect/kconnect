@@ -41,15 +41,17 @@ The project is built on Django 5.2.7 and structured into seven modular applicati
   - **Models**: Enhanced Report model with submitted_by, submitted_to, status, deadline, review_date, and reviewer_feedback fields
   - **Forms**: ReportSubmissionForm and ReportReviewForm with validation
   - **Templates**: Complete UI for report submission, review, and status tracking
+  - **Dashboard Integration**: Ward/LGA/Zonal coordinators have "Submit Report" quick action; State Supervisor/Zonal/LGA coordinators display pending reports count for review
 - **Member Mobilization Tools (`staff` app)**:
   - **Phase 5 Implementation - Completed (October 12, 2025)**
   - **Advanced Filtering**: Comprehensive member filtering by Zone, LGA, Ward, Role, Gender, and Status
-  - **Contact List Export**: CSV export functionality for filtered member lists with contact information
-  - **Search Capability**: Real-time search by name, username, or phone number
-  - **Female Member Dashboard**: Dedicated filtering interface for Women Leader to manage female members
-  - **Role Access**: Director of Mobilization and Assistant can access full mobilization tools
+  - **Contact List Export**: CSV export functionality for filtered member lists with contact information (Name, Phone, Role, Zone, LGA, Ward, Gender, Status)
+  - **Smart Status Filtering**: Defaults to APPROVED members when no status selected; supports filtering by any status (Pending, Suspended, Dismissed, etc.)
+  - **Female Member Dashboard**: Dedicated filtering interface for Women Leader and Assistant Women Leader to manage female members
+  - **Role Access**: Director of Mobilization and Assistant Director can access full mobilization tools with export capability
   - **Views**: member_mobilization and women_members with complete filtering and export logic
-  - **Templates**: Interactive filtering UI with export buttons and result counts
+  - **Templates**: Interactive filtering UI with export buttons, result counts, and pagination (50 members per page)
+  - **Dashboard Integration**: Director and Assistant Director of Mobilization dashboards have "Member Mobilization & Contact Lists" quick action link
 - **Disciplinary Actions (`staff` app)**: 
   - **Phase 4 Implementation - Completed**
   - **Action Types**: Warning, Suspension, Dismissal with detailed reason tracking
