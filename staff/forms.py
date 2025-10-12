@@ -1,5 +1,5 @@
 from django import forms
-from .models import User
+from .models import User, DisciplinaryAction
 from leadership.models import RoleDefinition, Zone, LGA, Ward
 
 
@@ -245,3 +245,40 @@ class SwapPositionsForm(forms.Form):
                 raise forms.ValidationError("Both members must have leadership positions to swap")
         
         return cleaned_data
+
+
+class DisciplinaryActionForm(forms.ModelForm):
+    """Form for creating disciplinary actions"""
+    
+    user = forms.ModelChoiceField(
+        queryset=User.objects.filter(status='APPROVED'),
+        label="Select Member",
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'
+        })
+    )
+    
+    action_type = forms.ChoiceField(
+        choices=DisciplinaryAction.ACTION_CHOICES,
+        label="Action Type",
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'
+        })
+    )
+    
+    reason = forms.CharField(
+        label="Reason for Disciplinary Action",
+        widget=forms.Textarea(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Provide a detailed reason for this disciplinary action...',
+            'rows': 5
+        })
+    )
+    
+    class Meta:
+        model = DisciplinaryAction
+        fields = ['user', 'action_type', 'reason']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['user'].queryset = User.objects.filter(status='APPROVED').order_by('last_name', 'first_name')

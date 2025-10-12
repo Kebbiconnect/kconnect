@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Approve Disciplinary Action - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <a href="{% url 'staff:disciplinary_actions' %}" class="text-kpn-blue hover:underline">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Disciplinary Actions
+        </a>
+        <h1 class="text-3xl font-bold mt-4">Approve Disciplinary Action</h1>
+        <p class="text-gray-600 dark:text-gray-400">Review and approve this disciplinary action</p>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
+            <h3 class="font-semibold text-yellow-800 dark:text-yellow-300 mb-2">
+                <i class="fas fa-exclamation-triangle mr-2"></i> Confirmation Required
+            </h3>
+            <p class="text-yellow-700 dark:text-yellow-400">
+                You are about to approve a {{ action.get_action_type_display|lower }} action. This will be executed immediately upon approval.
+            </p>
+        </div>
+        
+        <div class="space-y-4 mb-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Member</label>
+                <p class="text-lg font-semibold">{{ action.user.get_full_name }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ action.user.role_definition.title|default:"General Member" }}</p>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Action Type</label>
+                <p class="text-lg">
+                    {% if action.action_type == 'WARNING' %}
+                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded">
+                            <i class="fas fa-exclamation-triangle"></i> Warning
+                        </span>
+                    {% elif action.action_type == 'SUSPENSION' %}
+                        <span class="px-3 py-1 bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 rounded">
+                            <i class="fas fa-pause-circle"></i> Suspension
+                        </span>
+                    {% else %}
+                        <span class="px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded">
+                            <i class="fas fa-ban"></i> Dismissal
+                        </span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Reason</label>
+                <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ action.reason }}</p>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Issued By</label>
+                <p class="text-gray-700 dark:text-gray-300">{{ action.issued_by.get_full_name }}</p>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Date Issued</label>
+                <p class="text-gray-700 dark:text-gray-300">{{ action.created_at|date:"F d, Y \a\t h:i A" }}</p>
+            </div>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="flex gap-4">
+                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">
+                    <i class="fas fa-check-circle mr-2"></i> Approve & Execute
+                </button>
+                <a href="{% url 'staff:disciplinary_actions' %}" class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 transition inline-block">
+                    <i class="fas fa-times mr-2"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -35,14 +35,14 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
             <div class="space-y-3">
-                <a href="#" class="block p-3 bg-yellow-50 dark:bg-yellow-900 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-800 transition">
+                <a href="{% url 'donations:treasurer_donations' %}" class="block p-3 bg-yellow-50 dark:bg-yellow-900 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-800 transition">
                     <i class="fas fa-check-double mr-2"></i> Verify Incoming Donations
                 </a>
-                <a href="#" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
-                    <i class="fas fa-file-invoice-dollar mr-2"></i> Submit Verification Reports
+                <a href="{% url 'donations:add_donation' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
+                    <i class="fas fa-plus-circle mr-2"></i> Add New Donation
                 </a>
-                <a href="#" class="block p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
-                    <i class="fas fa-chart-bar mr-2"></i> View Total Donation Inflows
+                <a href="{% url 'donations:financial_reports' %}" class="block p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
+                    <i class="fas fa-chart-bar mr-2"></i> View Financial Reports
                 </a>
             </div>
         </div>

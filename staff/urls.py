@@ -20,6 +20,9 @@ urlpatterns = [
     path('manage-staff/', views.manage_staff, name='manage_staff'),
     path('view-reports/', views.view_reports, name='view_reports'),
     path('disciplinary-actions/', views.disciplinary_actions, name='disciplinary_actions'),
+    path('disciplinary-actions/create/', views.create_disciplinary_action, name='create_disciplinary_action'),
+    path('disciplinary-actions/<int:action_id>/approve/', views.approve_disciplinary_action, name='approve_disciplinary_action'),
+    path('disciplinary-actions/<int:action_id>/reject/', views.reject_disciplinary_action, name='reject_disciplinary_action'),
     
     path('dashboards/media-director/', views.media_director_dashboard, name='media_director_dashboard'),
     path('dashboards/treasurer/', views.treasurer_dashboard, name='treasurer_dashboard'),

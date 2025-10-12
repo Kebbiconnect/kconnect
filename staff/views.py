@@ -529,6 +529,104 @@ def disciplinary_actions(request):
     
     return render(request, 'staff/disciplinary_actions.html', context)
 
+
+@approved_leader_required
+def create_disciplinary_action(request):
+    from .forms import DisciplinaryActionForm
+    
+    if request.method == 'POST':
+        form = DisciplinaryActionForm(request.POST)
+        if form.is_valid():
+            action = form.save(commit=False)
+            action.issued_by = request.user
+            
+            if action.action_type == 'WARNING':
+                action.is_approved = True
+                action.approved_by = request.user
+            else:
+                action.is_approved = False
+                action.approved_by = None
+            
+            action.save()
+            
+            if action.action_type == 'WARNING':
+                messages.success(request, f'Warning issued to {action.user.get_full_name()}.')
+            else:
+                messages.success(request, f'{action.get_action_type_display()} proposed for {action.user.get_full_name()}. Awaiting State President approval.')
+            
+            return redirect('staff:disciplinary_actions')
+    else:
+        form = DisciplinaryActionForm()
+    
+    context = {
+        'form': form,
+    }
+    
+    return render(request, 'staff/create_disciplinary_action.html', context)
+
+
+@approved_leader_required
+def approve_disciplinary_action(request, action_id):
+    action = get_object_or_404(DisciplinaryAction, pk=action_id)
+    
+    if action.is_approved:
+        messages.warning(request, 'This action has already been approved.')
+        return redirect('staff:disciplinary_actions')
+    
+    if request.user.role not in ['STATE']:
+        messages.error(request, 'You do not have permission to approve disciplinary actions.')
+        return redirect('staff:disciplinary_actions')
+    
+    if request.method == 'POST':
+        action.is_approved = True
+        action.approved_by = request.user
+        action.save()
+        
+        member = action.user
+        
+        if action.action_type == 'SUSPENSION':
+            member.status = 'SUSPENDED'
+            member.save()
+            messages.success(request, f'{member.get_full_name()} has been suspended.')
+        elif action.action_type == 'DISMISSAL':
+            member.status = 'DISMISSED'
+            member.save()
+            messages.success(request, f'{member.get_full_name()} has been dismissed from the organization.')
+        else:
+            messages.success(request, f'{action.get_action_type_display()} for {member.get_full_name()} has been approved.')
+        
+        return redirect('staff:disciplinary_actions')
+    
+    context = {
+        'action': action,
+    }
+    
+    return render(request, 'staff/approve_disciplinary_action.html', context)
+
+
+@approved_leader_required
+def reject_disciplinary_action(request, action_id):
+    action = get_object_or_404(DisciplinaryAction, pk=action_id)
+    
+    if action.is_approved:
+        messages.warning(request, 'Cannot reject an already approved action.')
+        return redirect('staff:disciplinary_actions')
+    
+    if request.user.role not in ['STATE']:
+        messages.error(request, 'You do not have permission to reject disciplinary actions.')
+        return redirect('staff:disciplinary_actions')
+    
+    if request.method == 'POST':
+        action.delete()
+        messages.success(request, f'Disciplinary action for {action.user.get_full_name()} has been rejected and removed.')
+        return redirect('staff:disciplinary_actions')
+    
+    context = {
+        'action': action,
+    }
+    
+    return render(request, 'staff/reject_disciplinary_action.html', context)
+
 @specific_role_required('Director of Media & Publicity')
 def media_director_dashboard(request):
     pending_campaigns = Campaign.objects.filter(status='PENDING').count()

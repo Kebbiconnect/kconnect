@@ -30,6 +30,31 @@ class Donation(models.Model):
         return f"{self.donor_name} - ₦{self.amount}"
 
 
+class Expense(models.Model):
+    CATEGORY_CHOICES = [
+        ('OPERATIONS', 'Operational Expenses'),
+        ('EVENTS', 'Events & Meetings'),
+        ('PUBLICITY', 'Publicity & Media'),
+        ('WELFARE', 'Welfare & Support'),
+        ('OTHER', 'Other'),
+    ]
+    
+    description = models.CharField(max_length=300)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    notes = models.TextField(blank=True)
+    date = models.DateField()
+    
+    recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='recorded_expenses')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-date', '-created_at']
+    
+    def __str__(self):
+        return f"{self.description} - ₦{self.amount}"
+
+
 class FinancialReport(models.Model):
     title = models.CharField(max_length=300)
     report_period = models.CharField(max_length=100, help_text="e.g., 'January 2025' or 'Q1 2025'")

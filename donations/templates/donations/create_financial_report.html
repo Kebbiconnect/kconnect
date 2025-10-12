@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Financial Report - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <a href="{% url 'donations:financial_reports' %}" class="text-kpn-blue hover:underline">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Reports
+        </a>
+        <h1 class="text-3xl font-bold mt-4">Create Financial Report</h1>
+        <p class="text-gray-600 dark:text-gray-400">Generate a comprehensive financial summary</p>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">Report Title *</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.title.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">Report Period *</label>
+                {{ form.report_period }}
+                {% if form.report_period.errors %}
+                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.report_period.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">e.g., "January 2025" or "Q1 2025"</p>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Total Income (₦) *</label>
+                    {{ form.total_income }}
+                    {% if form.total_income.errors %}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.total_income.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2">Total Expenses (₦) *</label>
+                    {{ form.total_expenses }}
+                    {% if form.total_expenses.errors %}
+                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.total_expenses.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">Summary *</label>
+                {{ form.summary }}
+                {% if form.summary.errors %}
+                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.summary.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">Upload Report File (Optional)</label>
+                {{ form.report_file }}
+                {% if form.report_file.errors %}
+                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.report_file.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">PDF, Excel, or Word document</p>
+            </div>
+            
+            <div class="flex gap-4">
+                <button type="submit" class="bg-kpn-blue text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                    <i class="fas fa-file-alt mr-2"></i> Create Report
+                </button>
+                <a href="{% url 'donations:financial_reports' %}" class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 transition inline-block">
+                    <i class="fas fa-times mr-2"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

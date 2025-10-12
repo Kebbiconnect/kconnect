@@ -9,9 +9,9 @@
             <h1 class="text-3xl font-bold">Disciplinary Actions</h1>
             <p class="text-gray-600 dark:text-gray-400">Manage disciplinary cases and organizational compliance</p>
         </div>
-        <button class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">
+        <a href="{% url 'staff:create_disciplinary_action' %}" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition inline-block">
             <i class="fas fa-plus mr-2"></i> New Action
-        </button>
+        </a>
     </div>
     
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
@@ -24,6 +24,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium uppercase">Issued By</th>
                     <th class="px-6 py-3 text-left text-xs font-medium uppercase">Date</th>
                     <th class="px-6 py-3 text-left text-xs font-medium uppercase">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -62,10 +63,26 @@
                             </span>
                         {% endif %}
                     </td>
+                    <td class="px-6 py-4">
+                        {% if not action.is_approved and user.role == 'STATE' %}
+                            <div class="flex gap-2">
+                                <a href="{% url 'staff:approve_disciplinary_action' action.id %}" class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300">
+                                    <i class="fas fa-check-circle"></i> Approve
+                                </a>
+                                <a href="{% url 'staff:reject_disciplinary_action' action.id %}" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
+                                    <i class="fas fa-times-circle"></i> Reject
+                                </a>
+                            </div>
+                        {% elif action.is_approved %}
+                            <span class="text-gray-400">-</span>
+                        {% else %}
+                            <span class="text-gray-400 text-sm">Awaiting approval</span>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                         <i class="fas fa-shield-alt text-4xl mb-3"></i>
                         <p>No disciplinary actions on record</p>
                     </td>
