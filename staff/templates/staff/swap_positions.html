@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Swap Positions - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <a href="{% url 'staff:manage_staff' %}" class="text-kpn-blue hover:text-kpn-green">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Staff Management
+        </a>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h1 class="text-3xl font-bold mb-6">Swap Member Positions</h1>
+        
+        <div class="mb-6 p-4 bg-purple-50 dark:bg-purple-900 rounded-lg">
+            <p class="text-sm"><i class="fas fa-info-circle mr-2"></i>This feature allows you to exchange positions between two members. Both members must be leaders (not General Members).</p>
+        </div>
+        
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="bg-red-50 dark:bg-red-900 p-4 rounded-lg">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">First Member</label>
+                {{ form.member1 }}
+                {% if form.member1.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.member1.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="text-center py-2">
+                <i class="fas fa-exchange-alt text-3xl text-purple-600"></i>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">Second Member</label>
+                {{ form.member2 }}
+                {% if form.member2.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.member2.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="flex space-x-4">
+                <button type="submit" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                    <i class="fas fa-exchange-alt mr-2"></i> Swap Positions
+                </button>
+                <a href="{% url 'staff:manage_staff' %}" class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

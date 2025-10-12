@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Demote Member - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <a href="{% url 'staff:manage_staff' %}" class="text-kpn-blue hover:text-kpn-green">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Staff Management
+        </a>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h1 class="text-3xl font-bold mb-6">Demote Member</h1>
+        
+        <div class="mb-6 p-4 bg-orange-50 dark:bg-orange-900 rounded-lg">
+            <p class="text-sm"><strong>Member:</strong> {{ member.get_full_name }}</p>
+            <p class="text-sm"><strong>Current Role:</strong> {{ member.role_definition.title|default:"General Member" }}</p>
+            <p class="text-sm"><strong>Current Tier:</strong> {{ member.get_role_display }}</p>
+        </div>
+        
+        <div class="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900 rounded-lg">
+            <p class="text-sm"><i class="fas fa-exclamation-triangle mr-2"></i>Warning: Demoting a member will change their access level and responsibilities.</p>
+        </div>
+        
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">Demote to Tier</label>
+                <div class="space-y-2">
+                    {% for choice in form.new_role.field.choices %}
+                    <label class="flex items-center">
+                        <input type="radio" name="new_role" value="{{ choice.0 }}" class="form-radio text-kpn-green">
+                        <span class="ml-2">{{ choice.1 }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% if form.new_role.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.new_role.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">Specific Position (if not General Member)</label>
+                {{ form.new_role_definition }}
+                {% if form.new_role_definition.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.new_role_definition.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">Zone (if applicable)</label>
+                {{ form.zone }}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">LGA (if applicable)</label>
+                {{ form.lga }}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">Ward (if applicable)</label>
+                {{ form.ward }}
+            </div>
+            
+            <div class="flex space-x-4">
+                <button type="submit" class="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition">
+                    <i class="fas fa-level-down-alt mr-2"></i> Demote Member
+                </button>
+                <a href="{% url 'staff:manage_staff' %}" class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
