@@ -856,23 +856,54 @@ def youth_empowerment_officer_dashboard(request):
 
 @specific_role_required('Women Leader')
 def women_leader_dashboard(request):
+    # Filter only female members
     if request.user.role == 'STATE':
-        total_members = User.objects.filter(status='APPROVED').count()
+        female_members = User.objects.filter(status='APPROVED', gender='F')
+    elif request.user.role == 'ZONAL':
+        female_members = User.objects.filter(status='APPROVED', gender='F', zone=request.user.zone)
+    elif request.user.role == 'LGA':
+        female_members = User.objects.filter(status='APPROVED', gender='F', lga=request.user.lga)
     else:
-        total_members = 0
+        female_members = User.objects.none()
+    
+    total_members = female_members.count()
+    
+    # Get role-based statistics for female members
+    state_female_count = female_members.filter(role='STATE').count()
+    zonal_female_count = female_members.filter(role='ZONAL').count()
+    lga_female_count = female_members.filter(role='LGA').count()
+    ward_female_count = female_members.filter(role='WARD').count()
+    general_female_count = female_members.filter(role='GENERAL').count()
     
     context = {
         'total_members': total_members,
+        'female_members': female_members[:20],  # Show first 20
+        'state_female_count': state_female_count,
+        'zonal_female_count': zonal_female_count,
+        'lga_female_count': lga_female_count,
+        'ward_female_count': ward_female_count,
+        'general_female_count': general_female_count,
     }
     
     return render(request, 'staff/dashboards/women_leader.html', context)
 
 @specific_role_required('Assistant Women Leader')
 def assistant_women_leader_dashboard(request):
-    total_members = User.objects.filter(status='APPROVED').count()
+    # Filter only female members
+    if request.user.role == 'STATE':
+        female_members = User.objects.filter(status='APPROVED', gender='F')
+    elif request.user.role == 'ZONAL':
+        female_members = User.objects.filter(status='APPROVED', gender='F', zone=request.user.zone)
+    elif request.user.role == 'LGA':
+        female_members = User.objects.filter(status='APPROVED', gender='F', lga=request.user.lga)
+    else:
+        female_members = User.objects.none()
+    
+    total_members = female_members.count()
     
     context = {
         'total_members': total_members,
+        'female_members': female_members[:20],  # Show first 20
     }
     
     return render(request, 'staff/dashboards/assistant_women_leader.html', context)
