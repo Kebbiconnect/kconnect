@@ -18,9 +18,15 @@ class User(AbstractUser):
         ('DISMISSED', 'Dismissed'),
     ]
     
+    GENDER_CHOICES = [
+        ('M', 'Male'),
+        ('F', 'Female'),
+    ]
+    
     phone = models.CharField(max_length=20)
     bio = models.TextField(blank=True)
     photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True)
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True)
     
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='GENERAL')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')

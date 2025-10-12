@@ -14,4 +14,6 @@ urlpatterns = [
     path('support-us/', views.support_us, name='support_us'),
     path('faq/', views.faq, name='faq'),
     path('code-of-conduct/', views.code_of_conduct, name='code_of_conduct'),
+    path('submit-report/', views.submit_report, name='submit_report'),
+    path('review-report/<int:report_id>/', views.review_report, name='review_report'),
 ]

@@ -57,6 +57,7 @@ def register(request):
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
         bio = request.POST.get('bio', '')
+        gender = request.POST.get('gender', '')
         
         zone_id = request.POST.get('zone')
         lga_id = request.POST.get('lga')
@@ -140,6 +141,7 @@ def register(request):
             last_name=last_name,
             phone=phone,
             bio=bio,
+            gender=gender,
             zone=zone,
             lga=lga,
             ward=ward,
@@ -242,6 +244,7 @@ def profile(request):
         request.user.email = request.POST.get('email')
         request.user.phone = request.POST.get('phone')
         request.user.bio = request.POST.get('bio', '')
+        request.user.gender = request.POST.get('gender', '')
         
         if request.FILES.get('photo'):
             request.user.photo = request.FILES['photo']
@@ -1254,3 +1257,125 @@ def swap_positions(request):
         'form': form,
     }
     return render(request, 'staff/swap_positions.html', context)
+
+
+@specific_role_required('Director of Mobilization', 'Assistant Director of Mobilization')
+def member_mobilization(request):
+    """Member filtering and contact list generation for mobilization"""
+    import csv
+    from django.http import HttpResponse
+    
+    zone_filter = request.GET.get('zone', '')
+    lga_filter = request.GET.get('lga', '')
+    ward_filter = request.GET.get('ward', '')
+    role_filter = request.GET.get('role', '')
+    gender_filter = request.GET.get('gender', '')
+    status_filter = request.GET.get('status', 'APPROVED')
+    search = request.GET.get('search', '')
+    export = request.GET.get('export', '')
+    
+    members = User.objects.all().order_by('last_name', 'first_name')
+    
+    if search:
+        members = members.filter(
+            Q(first_name__icontains=search) |
+            Q(last_name__icontains=search) |
+            Q(username__icontains=search) |
+            Q(phone__icontains=search)
+        )
+    
+    if zone_filter:
+        members = members.filter(zone_id=zone_filter)
+    
+    if lga_filter:
+        members = members.filter(lga_id=lga_filter)
+    
+    if ward_filter:
+        members = members.filter(ward_id=ward_filter)
+    
+    if role_filter:
+        members = members.filter(role=role_filter)
+    
+    if gender_filter:
+        members = members.filter(gender=gender_filter)
+    
+    if status_filter:
+        members = members.filter(status=status_filter)
+    
+    if export == 'csv':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="kpn_members_contact_list.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['Name', 'Phone', 'Email', 'Gender', 'Role', 'Location', 'Status'])
+        
+        for member in members:
+            location = member.get_jurisdiction()
+            writer.writerow([
+                member.get_full_name(),
+                member.phone,
+                member.email,
+                member.get_gender_display() if member.gender else '',
+                member.get_role_display(),
+                location,
+                member.get_status_display()
+            ])
+        
+        return response
+    
+    zones = Zone.objects.all()
+    lgas = LGA.objects.all()
+    wards = Ward.objects.all()
+    
+    context = {
+        'members': members,
+        'total_count': members.count(),
+        'zones': zones,
+        'lgas': lgas,
+        'wards': wards,
+        'zone_filter': zone_filter,
+        'lga_filter': lga_filter,
+        'ward_filter': ward_filter,
+        'role_filter': role_filter,
+        'gender_filter': gender_filter,
+        'status_filter': status_filter,
+        'search': search,
+    }
+    return render(request, 'staff/member_mobilization.html', context)
+
+
+@specific_role_required('Women Leader', 'Assistant Women Leader')
+def women_members(request):
+    """Female members dashboard for Women Leader"""
+    search = request.GET.get('search', '')
+    zone_filter = request.GET.get('zone', '')
+    lga_filter = request.GET.get('lga', '')
+    
+    female_members = User.objects.filter(status='APPROVED', gender='F').order_by('last_name', 'first_name')
+    
+    if search:
+        female_members = female_members.filter(
+            Q(first_name__icontains=search) |
+            Q(last_name__icontains=search) |
+            Q(username__icontains=search)
+        )
+    
+    if zone_filter:
+        female_members = female_members.filter(zone_id=zone_filter)
+    
+    if lga_filter:
+        female_members = female_members.filter(lga_id=lga_filter)
+    
+    zones = Zone.objects.all()
+    lgas = LGA.objects.all()
+    
+    context = {
+        'female_members': female_members,
+        'total_count': female_members.count(),
+        'zones': zones,
+        'lgas': lgas,
+        'zone_filter': zone_filter,
+        'lga_filter': lga_filter,
+        'search': search,
+    }
+    return render(request, 'staff/women_members.html', context)

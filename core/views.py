@@ -1,10 +1,14 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 from campaigns.models import Campaign
 from media.models import MediaItem
 from staff.models import User
 from leadership.models import Zone, LGA, Ward
-from .models import FAQ
+from .models import FAQ, Report
+from .forms import WardReportForm, LGAReportForm, ZonalReportForm, ReportReviewForm
+from staff.decorators import approved_leader_required
 
 def home(request):
     featured_campaigns = Campaign.objects.filter(status='PUBLISHED').order_by('-published_at')[:3]
@@ -158,3 +162,111 @@ def faq(request):
 
 def code_of_conduct(request):
     return render(request, 'core/code_of_conduct.html')
+
+
+@login_required
+@approved_leader_required
+def submit_report(request):
+    """Hierarchical report submission view"""
+    user = request.user
+    
+    if user.role == 'WARD':
+        FormClass = WardReportForm
+        report_type = 'WARD_TO_LGA'
+        lga_coordinator = User.objects.filter(
+            role='LGA',
+            lga=user.lga,
+            role_definition__title='LGA Coordinator',
+            status='APPROVED'
+        ).first()
+        submitted_to = lga_coordinator
+    elif user.role == 'LGA':
+        FormClass = LGAReportForm
+        report_type = 'LGA_TO_ZONAL'
+        zonal_coordinator = User.objects.filter(
+            role='ZONAL',
+            zone=user.zone,
+            role_definition__title='Zonal Coordinator',
+            status='APPROVED'
+        ).first()
+        submitted_to = zonal_coordinator
+    elif user.role == 'ZONAL':
+        FormClass = ZonalReportForm
+        report_type = 'ZONAL_TO_STATE'
+        state_supervisor = User.objects.filter(
+            role='STATE',
+            role_definition__title='State Supervisor',
+            status='APPROVED'
+        ).first()
+        submitted_to = state_supervisor
+    else:
+        messages.error(request, 'Report submission is only available for Ward, LGA, and Zonal leaders.')
+        return redirect('staff:dashboard')
+    
+    if not submitted_to:
+        messages.error(request, f'No supervisor found to submit the report to. Please contact the administrator.')
+        return redirect('staff:dashboard')
+    
+    if request.method == 'POST':
+        form = FormClass(request.POST)
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.submitted_by = user
+            report.submitted_to = submitted_to
+            report.report_type = report_type
+            report.status = 'SUBMITTED'
+            report.submitted_at = timezone.now()
+            report.save()
+            
+            messages.success(request, f'Report submitted successfully to {submitted_to.get_full_name()}!')
+            return redirect('staff:dashboard')
+    else:
+        form = FormClass()
+    
+    context = {
+        'form': form,
+        'report_type': report_type,
+        'submitted_to': submitted_to,
+    }
+    return render(request, 'core/submit_report.html', context)
+
+
+@login_required
+@approved_leader_required
+def review_report(request, report_id):
+    """Supervisor report review view"""
+    report = get_object_or_404(Report, id=report_id)
+    user = request.user
+    
+    is_president = user.role_definition and user.role_definition.title == 'President'
+    if report.submitted_to != user and not is_president:
+        messages.error(request, 'You do not have permission to review this report.')
+        return redirect('staff:dashboard')
+    
+    if request.method == 'POST':
+        form = ReportReviewForm(request.POST, instance=report)
+        if form.is_valid():
+            report = form.save(commit=False)
+            action = request.POST.get('action')
+            report.status = action
+            report.is_reviewed = True
+            report.reviewed_by = user
+            report.reviewed_at = timezone.now()
+            report.save()
+            
+            action_text = {
+                'APPROVED': 'approved',
+                'FLAGGED': 'flagged for issues',
+                'REJECTED': 'rejected'
+            }.get(action, 'reviewed')
+            
+            messages.success(request, f'Report has been {action_text} successfully!')
+            return redirect('staff:dashboard')
+    else:
+        form = ReportReviewForm(instance=report)
+    
+    context = {
+        'report': report,
+        'form': form,
+    }
+    return render(request, 'core/review_report.html', context)

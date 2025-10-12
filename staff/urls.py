@@ -76,4 +76,7 @@ urlpatterns = [
     path('suspend-member/<int:user_id>/', views.suspend_member, name='suspend_member'),
     path('reinstate-member/<int:user_id>/', views.reinstate_member, name='reinstate_member'),
     path('swap-positions/', views.swap_positions, name='swap_positions'),
+    
+    path('member-mobilization/', views.member_mobilization, name='member_mobilization'),
+    path('women-members/', views.women_members, name='women_members'),
 ]
