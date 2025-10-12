@@ -71,6 +71,12 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
             <div class="space-y-3">
+                <a href="{% url 'staff:womens_programs_list' %}" class="block p-3 bg-pink-50 dark:bg-pink-900 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-800 transition">
+                    <i class="fas fa-calendar-check mr-2"></i> Women's Programs
+                </a>
+                <a href="{% url 'staff:women_members' %}" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
+                    <i class="fas fa-users mr-2"></i> View All Female Members
+                </a>
                 <a href="{% url 'staff:profile' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
                     <i class="fas fa-user mr-2"></i> My Profile
                 </a>

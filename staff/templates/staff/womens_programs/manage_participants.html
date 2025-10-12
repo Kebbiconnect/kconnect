@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Program Participants - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold">Manage Participants</h1>
+        <p class="text-gray-600 dark:text-gray-400">Program: {{ program.title }}</p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-4">Select Female Members</h3>
+                <div class="space-y-2 max-h-96 overflow-y-auto">
+                    {% for member in female_members %}
+                    <label class="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
+                        <input type="checkbox" name="participants" value="{{ member.id }}" 
+                               {% if member.id in current_participants %}checked{% endif %}
+                               class="w-4 h-4 text-kpn-blue border-gray-300 rounded focus:ring-kpn-blue">
+                        <div class="ml-3 flex-1">
+                            <span class="font-medium">{{ member.get_full_name }}</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400 ml-2">
+                                ({{ member.get_role_display }}{% if member.lga %} - {{ member.lga.name }}{% endif %})
+                            </span>
+                        </div>
+                    </label>
+                    {% empty %}
+                    <p class="text-gray-600 dark:text-gray-400">No female members found in your jurisdiction.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <button type="submit" class="bg-kpn-blue hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+                    <i class="fas fa-save mr-2"></i>Save Participants
+                </button>
+                <a href="{% url 'staff:womens_programs_list' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Programs
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -25,6 +25,12 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
             <div class="space-y-3">
+                <a href="{% url 'staff:womens_programs_list' %}" class="block p-3 bg-pink-50 dark:bg-pink-900 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-800 transition">
+                    <i class="fas fa-calendar-check mr-2"></i> Women's Programs
+                </a>
+                <a href="{% url 'staff:women_members' %}" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
+                    <i class="fas fa-users mr-2"></i> View All Female Members
+                </a>
                 <a href="{% url 'staff:profile' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
                     <i class="fas fa-user mr-2"></i> My Profile
                 </a>
@@ -32,10 +38,17 @@
         </div>
         
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 class="text-xl font-semibold mb-4">Women's Programs</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Support the Women Leader in planning and managing programs for female members.</p>
-            <div class="text-center py-4">
-                <p class="text-gray-500 dark:text-gray-400">Program management tools coming soon</p>
+            <h3 class="text-xl font-semibold mb-4">Female Member Statistics</h3>
+            <div class="space-y-2">
+                <div class="flex justify-between items-center py-2">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Total Female Members</span>
+                    <span class="font-bold text-pink-600">{{ total_members }}</span>
+                </div>
+                <div class="text-center mt-4">
+                    <a href="{% url 'staff:women_members' %}" class="text-kpn-blue hover:underline">
+                        View all female members →
+                    </a>
+                </div>
             </div>
         </div>
     </div>
