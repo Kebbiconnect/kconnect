@@ -5,9 +5,44 @@ The Kebbi Progressive Network (KPN) website is a comprehensive Django-based civi
 
 **Motto:** One Voice, One Change
 
-**Status:** Phase 6 - UI Enhancement & Logo Integration Complete ✅
+**Status:** Phase 8 - Campaign & Publicity System Complete ✅
 
 ## Recent Changes (October 12, 2025)
+
+### Phase 8 Completed (Latest - October 12, 2025)
+- ✅ **Campaign & Publicity System**: Complete implementation of campaign management workflow
+  - **Campaign Model**: Created with status workflow (DRAFT → PENDING → PUBLISHED/REJECTED)
+  - **Campaign Forms**: CampaignForm with title, content, and featured image upload
+  - **Campaign Views (10 total)**:
+    - create_campaign, my_campaigns, edit_campaign, delete_campaign
+    - submit_for_approval, approval_queue, approve_campaign, reject_campaign
+    - view_campaign, all_campaigns
+  - **Campaign Templates (10 total)**: All templates created with consistent KPN branding
+  - **URL Routing**: campaigns/ namespace with all routes configured
+  - **Dashboard Integration**: Updated all 5 publicity officer dashboards with campaign links
+  - **Workflow Fix**: Resolved rejected campaign resubmission issue
+    - Rejected campaigns can now be edited (automatically reset to DRAFT)
+    - Full lifecycle: create → submit → approve/reject → (if rejected) revise → resubmit → publish
+  - **Role-Based Access**: Director of Media & Publicity has exclusive approval queue access
+  - **File Uploads**: Campaign featured images properly handled via MEDIA_ROOT/MEDIA_URL
+
+### Phase 7 Completed (October 12, 2025)
+- ✅ **President Admin Powers**: Full member management capabilities implemented
+  - **7 Admin Views Created**:
+    - edit_member_role: Edit member position and location
+    - promote_member: Promote from GENERAL → WARD → LGA → ZONAL → STATE
+    - demote_member: Demote through hierarchy with position reset
+    - dismiss_member: Remove member from leadership
+    - suspend_member: Temporary suspension with reason and duration
+    - reinstate_member: Restore suspended member
+    - swap_positions: Exchange positions between two members
+  - **Forms with Validation**:
+    - EditMemberRoleForm, PromoteMemberForm, DemoteMemberForm
+    - Hierarchy validation enforces tier progression
+    - Position uniqueness validation prevents duplicate role holders
+  - **7 Dedicated Templates**: Professional UI for each admin action
+  - **Security**: All views use @specific_role_required('President') decorator
+  - **URL Patterns**: Comprehensive routing under staff/ namespace
 
 ### Phase 6 Completed (Latest)
 - ✅ **Mobile Navigation Fix**: Fixed Alpine.js scoping issue in toggle menu
