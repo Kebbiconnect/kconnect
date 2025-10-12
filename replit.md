@@ -52,6 +52,36 @@ The project is built on Django 5.2.7 and structured into seven modular applicati
   - **Views**: member_mobilization and women_members with complete filtering and export logic
   - **Templates**: Interactive filtering UI with export buttons, result counts, and pagination (50 members per page)
   - **Dashboard Integration**: Director and Assistant Director of Mobilization dashboards have "Member Mobilization & Contact Lists" quick action link
+- **Women's Programs Management (`staff` app)**:
+  - **Phase 6 Implementation - Completed (October 12, 2025)**
+  - **Program Planning**: Women Leader and Assistant Women Leader can create, edit, and manage women-focused programs (workshops, training, empowerment initiatives, advocacy campaigns)
+  - **Jurisdiction-Based Access**: State Women Leader manages all programs; LGA Women Leaders manage LGA-specific programs
+  - **Participant Management**: Dedicated interface to add/remove female members as program participants with enrollment tracking
+  - **Budget Tracking**: Program budget allocation and tracking with status workflow (PLANNING → SCHEDULED → ONGOING → COMPLETED → CANCELLED)
+  - **Models**: WomensProgram with program_type, status, scope (State/Zonal/LGA), budget, participant tracking, and location linkage
+  - **Forms**: WomensProgramForm with jurisdiction-aware location filtering and participant selection
+  - **Templates**: Complete CRUD UI for program list, creation, editing, detail view, and participant management
+  - **Dashboard Integration**: Women Leader and Assistant Women Leader dashboards show quick access to programs and female members
+- **FAQ Management System (`staff` app)**:
+  - **Phase 6 Implementation - Completed (October 12, 2025)**
+  - **Content Management**: Assistant General Secretary can create, edit, and delete frequently asked questions
+  - **Status Control**: Toggle FAQ visibility (active/inactive) to control public display
+  - **Organization**: Support for question-answer pairs with ordering and categorization
+  - **Access Control**: Only Assistant General Secretary can manage FAQs
+  - **Models**: FAQ model with question, answer, status, created_by, and display order fields
+  - **Forms**: FAQForm with validation for question and answer content
+  - **Templates**: Complete CRUD interface for FAQ list, creation, editing, and status toggling
+  - **Dashboard Integration**: Assistant General Secretary dashboard includes "Manage FAQs" quick action
+- **Legal & Ethics Oversight (`staff` app)**:
+  - **Phase 6 Implementation - Completed (October 12, 2025)**
+  - **Two-Tier Approval Workflow**: Disciplinary actions (Suspension/Dismissal) now require both State President approval AND Legal & Ethics Adviser review
+  - **Legal Opinion Documentation**: Legal Adviser provides formal legal opinion and approval decision with timestamp tracking
+  - **Review Queue**: Dedicated interface for Legal & Ethics Adviser to review pending disciplinary actions
+  - **Access Control**: Only Legal & Ethics Adviser can provide legal review; only State President can grant final approval
+  - **Enhanced DisciplinaryAction Model**: Added legal_approved, legal_opinion, legal_reviewed_by, and legal_reviewed_at fields
+  - **Forms**: LegalReviewForm for recording legal opinions and approval decisions
+  - **Templates**: Legal review queue and detailed review interface with approval/rejection workflow
+  - **Dashboard Integration**: Legal & Ethics Adviser dashboard includes "Legal Review Queue" quick action with pending count
 - **Disciplinary Actions (`staff` app)**: 
   - **Phase 4 Implementation - Completed**
   - **Action Types**: Warning, Suspension, Dismissal with detailed reason tracking
