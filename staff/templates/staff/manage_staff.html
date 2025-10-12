@@ -65,6 +65,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium uppercase">Location</th>
                     <th class="px-6 py-3 text-left text-xs font-medium uppercase">Status</th>
                     <th class="px-6 py-3 text-left text-xs font-medium uppercase">Joined</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -98,14 +99,81 @@
                         {% endif %}
                     </td>
                     <td class="px-6 py-4">{{ member.created_at|date:"M d, Y" }}</td>
+                    <td class="px-6 py-4">
+                        <div class="relative inline-block text-left">
+                            <button onclick="toggleDropdown('dropdown-{{ member.id }}')" class="px-3 py-1 bg-kpn-blue text-white rounded hover:bg-blue-700 transition">
+                                <i class="fas fa-cog mr-1"></i> Actions
+                            </button>
+                            <div id="dropdown-{{ member.id }}" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg z-10">
+                                <div class="py-1">
+                                    <a href="{% url 'staff:edit_member_role' member.id %}" class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
+                                        <i class="fas fa-edit mr-2"></i> Edit Role
+                                    </a>
+                                    {% if member.role != 'STATE' %}
+                                    <a href="{% url 'staff:promote_member' member.id %}" class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
+                                        <i class="fas fa-level-up-alt mr-2"></i> Promote
+                                    </a>
+                                    {% endif %}
+                                    {% if member.role != 'GENERAL' %}
+                                    <a href="{% url 'staff:demote_member' member.id %}" class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
+                                        <i class="fas fa-level-down-alt mr-2"></i> Demote
+                                    </a>
+                                    {% endif %}
+                                    {% if member.status == 'APPROVED' %}
+                                    <a href="{% url 'staff:suspend_member' member.id %}" class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
+                                        <i class="fas fa-pause-circle mr-2"></i> Suspend
+                                    </a>
+                                    <a href="{% url 'staff:dismiss_member' member.id %}" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600">
+                                        <i class="fas fa-user-times mr-2"></i> Dismiss
+                                    </a>
+                                    {% elif member.status == 'SUSPENDED' or member.status == 'DISMISSED' %}
+                                    <a href="{% url 'staff:reinstate_member' member.id %}" class="block px-4 py-2 text-sm text-green-600 hover:bg-gray-100 dark:hover:bg-gray-600">
+                                        <i class="fas fa-user-check mr-2"></i> Reinstate
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">No staff members found</td>
+                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">No staff members found</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+    
+    <div class="mt-6">
+        <a href="{% url 'staff:swap_positions' %}" class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+            <i class="fas fa-exchange-alt mr-2"></i> Swap Member Positions
+        </a>
+    </div>
 </div>
+
+<script>
+function toggleDropdown(id) {
+    const dropdown = document.getElementById(id);
+    const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
+    
+    allDropdowns.forEach(dd => {
+        if (dd.id !== id) {
+            dd.classList.add('hidden');
+        }
+    });
+    
+    dropdown.classList.toggle('hidden');
+}
+
+document.addEventListener('click', function(event) {
+    const isClickInsideDropdown = event.target.closest('[id^="dropdown-"]');
+    const isClickOnButton = event.target.closest('button[onclick^="toggleDropdown"]');
+    
+    if (!isClickInsideDropdown && !isClickOnButton) {
+        const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
+        allDropdowns.forEach(dd => dd.classList.add('hidden'));
+    }
+});
+</script>
 {% endblock %}
