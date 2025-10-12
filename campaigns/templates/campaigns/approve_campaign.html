@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Approve Campaign - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <a href="{% url 'campaigns:approval_queue' %}" class="text-kpn-blue hover:text-kpn-green">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Approval Queue
+        </a>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h1 class="text-3xl font-bold mb-6 text-green-600">Approve & Publish Campaign</h1>
+        
+        <div class="mb-6">
+            <h2 class="text-2xl font-semibold mb-4">{{ campaign.title }}</h2>
+            {% if campaign.featured_image %}
+            <div class="mb-4">
+                <img src="{{ campaign.featured_image.url }}" alt="{{ campaign.title }}" class="w-full max-w-2xl rounded-lg">
+            </div>
+            {% endif %}
+            <div class="prose dark:prose-invert max-w-none mb-6">
+                {{ campaign.content|linebreaks }}
+            </div>
+            <div class="flex items-center space-x-4 text-sm text-gray-500 mb-4">
+                <span><i class="fas fa-user mr-1"></i> {{ campaign.author.get_full_name }}</span>
+                <span><i class="fas fa-calendar mr-1"></i> {{ campaign.created_at|date:"M d, Y" }}</span>
+            </div>
+        </div>
+        
+        <div class="mb-6 p-4 bg-green-50 dark:bg-green-900 rounded-lg">
+            <p class="text-sm">Approving this campaign will publish it immediately and make it visible to all users.</p>
+        </div>
+        
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="flex space-x-4">
+                <button type="submit" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                    <i class="fas fa-check mr-2"></i> Approve & Publish
+                </button>
+                <a href="{% url 'campaigns:approval_queue' %}" class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

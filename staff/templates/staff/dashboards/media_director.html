@@ -45,7 +45,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
             <div class="space-y-3">
-                <a href="#" class="block p-3 bg-yellow-50 dark:bg-yellow-900 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-800 transition">
+                <a href="{% url 'campaigns:approval_queue' %}" class="block p-3 bg-yellow-50 dark:bg-yellow-900 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-800 transition">
                     <i class="fas fa-check-circle mr-2"></i> Review & Publish Campaigns
                 </a>
                 <a href="#" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
@@ -54,8 +54,11 @@
                 <a href="{% url 'staff:approve_members' %}" class="block p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
                     <i class="fas fa-user-check mr-2"></i> Approve Member Applications
                 </a>
-                <a href="#" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
+                <a href="{% url 'campaigns:create_campaign' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
                     <i class="fas fa-plus-circle mr-2"></i> Create New Campaign
+                </a>
+                <a href="{% url 'campaigns:my_campaigns' %}" class="block p-3 bg-indigo-50 dark:bg-indigo-900 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-800 transition">
+                    <i class="fas fa-list mr-2"></i> My Campaigns
                 </a>
             </div>
         </div>
