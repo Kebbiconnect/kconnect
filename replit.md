@@ -24,8 +24,32 @@ The project is built on Django 5.2.7 and structured into seven modular applicati
 - **Organizational Hierarchy (`leadership` app)**: Models for Zone, LGA, Ward, and `RoleDefinition`, enforcing seat limits and vacancy checking.
 - **Campaigns (`campaigns` app)**: A comprehensive campaign and publicity system with a status workflow (DRAFT, PENDING, PUBLISHED, REJECTED), supporting featured image uploads and a dedicated approval process managed by the Director of Media & Publicity.
 - **Dashboards**: Role-specific dashboards for all 41 leadership positions, providing tailored functionalities and data relevant to their jurisdiction and responsibilities. The President's dashboard includes staff management, member approval workflow, and reporting oversight.
-- **Registration**: Enhanced registration form with locked cascading dropdowns for location and role selection, real-time vacancy checking via AJAX, and mandatory Facebook verification.
-- **Reporting**: A hierarchical reporting system is envisioned.
+- **Registration**: Enhanced registration form with locked cascading dropdowns for location and role selection, real-time vacancy checking via AJAX, and mandatory Facebook verification. Now includes gender field collection.
+- **Gender Tracking (`staff` app)**:
+  - **Phase 5 Implementation - Completed (October 12, 2025)**
+  - **User Model Enhancement**: Added gender field (Male/Female/Other/Prefer not to say) to User model with migration
+  - **Registration & Profile**: Gender field integrated into registration and profile editing forms
+  - **Data Collection**: All new members must specify gender during registration; existing members can update via profile
+- **Hierarchical Reporting System (`core` app)**:
+  - **Phase 5 Implementation - Completed (October 12, 2025)**
+  - **Report Status Workflow**: DRAFT → SUBMITTED → UNDER_REVIEW → APPROVED/FLAGGED with complete audit trail
+  - **Hierarchical Routing**: Ward → LGA Coordinator → Zonal Coordinator → State President submission chain
+  - **Deadline Management**: Report submission deadlines with status tracking and automated routing
+  - **Review Workflow**: Supervisors can approve or flag reports with feedback; flagged reports return to submitter
+  - **Role-Based Submission**: Ward, LGA, and Zonal leaders submit reports to their respective supervisors
+  - **Access Control**: Only designated supervisor (or President) can review reports; safe handling of missing role_definition
+  - **Models**: Enhanced Report model with submitted_by, submitted_to, status, deadline, review_date, and reviewer_feedback fields
+  - **Forms**: ReportSubmissionForm and ReportReviewForm with validation
+  - **Templates**: Complete UI for report submission, review, and status tracking
+- **Member Mobilization Tools (`staff` app)**:
+  - **Phase 5 Implementation - Completed (October 12, 2025)**
+  - **Advanced Filtering**: Comprehensive member filtering by Zone, LGA, Ward, Role, Gender, and Status
+  - **Contact List Export**: CSV export functionality for filtered member lists with contact information
+  - **Search Capability**: Real-time search by name, username, or phone number
+  - **Female Member Dashboard**: Dedicated filtering interface for Women Leader to manage female members
+  - **Role Access**: Director of Mobilization and Assistant can access full mobilization tools
+  - **Views**: member_mobilization and women_members with complete filtering and export logic
+  - **Templates**: Interactive filtering UI with export buttons and result counts
 - **Disciplinary Actions (`staff` app)**: 
   - **Phase 4 Implementation - Completed**
   - **Action Types**: Warning, Suspension, Dismissal with detailed reason tracking
