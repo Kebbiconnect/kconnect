@@ -698,9 +698,16 @@ def zonal_coordinator_dashboard(request):
     lgas_in_zone = LGA.objects.filter(zone=request.user.zone).count()
     members_in_zone = User.objects.filter(zone=request.user.zone, status='APPROVED').count()
     
+    # Get pending reports submitted to Zonal Coordinator
+    pending_reports = Report.objects.filter(
+        submitted_to=request.user,
+        status='SUBMITTED'
+    ).count()
+    
     context = {
         'lgas_in_zone': lgas_in_zone,
         'members_in_zone': members_in_zone,
+        'pending_reports': pending_reports,
     }
     
     return render(request, 'staff/dashboards/zonal_coordinator.html', context)
@@ -710,9 +717,16 @@ def lga_coordinator_dashboard(request):
     wards_in_lga = Ward.objects.filter(lga=request.user.lga).count()
     members_in_lga = User.objects.filter(lga=request.user.lga, status='APPROVED').count()
     
+    # Get pending reports submitted to LGA Coordinator
+    pending_reports = Report.objects.filter(
+        submitted_to=request.user,
+        status='SUBMITTED'
+    ).count()
+    
     context = {
         'wards_in_lga': wards_in_lga,
         'members_in_lga': members_in_lga,
+        'pending_reports': pending_reports,
     }
     
     return render(request, 'staff/dashboards/lga_coordinator.html', context)
@@ -751,9 +765,16 @@ def state_supervisor_dashboard(request):
     total_zones = Zone.objects.count()
     total_lgas = LGA.objects.count()
     
+    # Get pending reports submitted to State Supervisor
+    pending_reports = Report.objects.filter(
+        submitted_to=request.user,
+        status='SUBMITTED'
+    ).count()
+    
     context = {
         'total_zones': total_zones,
         'total_lgas': total_lgas,
+        'pending_reports': pending_reports,
     }
     
     return render(request, 'staff/dashboards/state_supervisor.html', context)

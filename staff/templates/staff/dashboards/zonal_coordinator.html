@@ -9,7 +9,7 @@
         <p class="text-gray-600 dark:text-gray-400">Supervise all LGAs in {{ user.zone.name }} Zone</p>
     </div>
     
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
@@ -27,6 +27,16 @@
                     <p class="text-3xl font-bold text-kpn-green">{{ members_in_zone }}</p>
                 </div>
                 <i class="fas fa-users text-4xl text-kpn-green"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Pending Reports</p>
+                    <p class="text-3xl font-bold text-yellow-600">{{ pending_reports }}</p>
+                </div>
+                <i class="fas fa-file-alt text-4xl text-yellow-600"></i>
             </div>
         </div>
     </div>
