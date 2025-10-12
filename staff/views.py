@@ -948,3 +948,199 @@ def ward_adviser_dashboard(request):
     }
     
     return render(request, 'staff/dashboards/ward_adviser.html', context)
+
+
+@specific_role_required('President')
+def edit_member_role(request, user_id):
+    from .forms import EditMemberRoleForm
+    
+    member = get_object_or_404(User, pk=user_id)
+    
+    if request.method == 'POST':
+        form = EditMemberRoleForm(request.POST, instance=member)
+        if form.is_valid():
+            updated_member = form.save()
+            messages.success(request, f'Successfully updated {updated_member.get_full_name()}\'s role.')
+            return redirect('staff:manage_staff')
+    else:
+        form = EditMemberRoleForm(instance=member)
+    
+    context = {
+        'form': form,
+        'member': member,
+    }
+    return render(request, 'staff/edit_member_role.html', context)
+
+
+@specific_role_required('President')
+def promote_member(request, user_id):
+    from .forms import PromoteMemberForm
+    
+    member = get_object_or_404(User, pk=user_id)
+    
+    if request.method == 'POST':
+        form = PromoteMemberForm(request.POST, user=member)
+        if form.is_valid():
+            new_role_def = form.cleaned_data['new_role_definition']
+            zone = form.cleaned_data.get('zone')
+            lga = form.cleaned_data.get('lga')
+            ward = form.cleaned_data.get('ward')
+            
+            member.role_definition = new_role_def
+            member.role = new_role_def.tier
+            member.zone = zone
+            member.lga = lga
+            member.ward = ward
+            member.save()
+            
+            messages.success(request, f'Successfully promoted {member.get_full_name()} to {new_role_def.title}.')
+            return redirect('staff:manage_staff')
+    else:
+        form = PromoteMemberForm(user=member)
+    
+    context = {
+        'form': form,
+        'member': member,
+    }
+    return render(request, 'staff/promote_member.html', context)
+
+
+@specific_role_required('President')
+def demote_member(request, user_id):
+    from .forms import DemoteMemberForm
+    
+    member = get_object_or_404(User, pk=user_id)
+    
+    if request.method == 'POST':
+        form = DemoteMemberForm(request.POST, user=member)
+        if form.is_valid():
+            new_role = form.cleaned_data['new_role']
+            
+            if new_role == 'GENERAL':
+                member.role = 'GENERAL'
+                member.role_definition = None
+                member.save()
+                messages.success(request, f'{member.get_full_name()} has been demoted to General Member.')
+            else:
+                new_role_def = form.cleaned_data.get('new_role_definition')
+                zone = form.cleaned_data.get('zone')
+                lga = form.cleaned_data.get('lga')
+                ward = form.cleaned_data.get('ward')
+                
+                if new_role_def:
+                    member.role_definition = new_role_def
+                    member.role = new_role_def.tier
+                    member.zone = zone
+                    member.lga = lga
+                    member.ward = ward
+                    member.save()
+                    messages.success(request, f'Successfully demoted {member.get_full_name()} to {new_role_def.title}.')
+                else:
+                    messages.error(request, 'Please select a specific position.')
+                    return redirect('staff:demote_member', user_id=user_id)
+            
+            return redirect('staff:manage_staff')
+    else:
+        form = DemoteMemberForm(user=member)
+    
+    context = {
+        'form': form,
+        'member': member,
+    }
+    return render(request, 'staff/demote_member.html', context)
+
+
+@specific_role_required('President')
+def dismiss_member(request, user_id):
+    member = get_object_or_404(User, pk=user_id)
+    
+    if request.method == 'POST':
+        reason = request.POST.get('reason', '')
+        member.status = 'DISMISSED'
+        member.save()
+        
+        messages.success(request, f'{member.get_full_name()} has been dismissed from the organization.')
+        return redirect('staff:manage_staff')
+    
+    context = {
+        'member': member,
+    }
+    return render(request, 'staff/dismiss_member.html', context)
+
+
+@specific_role_required('President')
+def suspend_member(request, user_id):
+    member = get_object_or_404(User, pk=user_id)
+    
+    if request.method == 'POST':
+        reason = request.POST.get('reason', '')
+        member.status = 'SUSPENDED'
+        member.save()
+        
+        messages.success(request, f'{member.get_full_name()} has been suspended.')
+        return redirect('staff:manage_staff')
+    
+    context = {
+        'member': member,
+    }
+    return render(request, 'staff/suspend_member.html', context)
+
+
+@specific_role_required('President')
+def reinstate_member(request, user_id):
+    member = get_object_or_404(User, pk=user_id)
+    
+    if request.method == 'POST':
+        member.status = 'APPROVED'
+        member.date_approved = timezone.now()
+        member.approved_by = request.user
+        member.save()
+        
+        messages.success(request, f'{member.get_full_name()} has been reinstated.')
+        return redirect('staff:manage_staff')
+    
+    context = {
+        'member': member,
+    }
+    return render(request, 'staff/reinstate_member.html', context)
+
+
+@specific_role_required('President')
+def swap_positions(request):
+    from .forms import SwapPositionsForm
+    
+    if request.method == 'POST':
+        form = SwapPositionsForm(request.POST)
+        if form.is_valid():
+            member1 = form.cleaned_data['member1']
+            member2 = form.cleaned_data['member2']
+            
+            temp_role_def = member1.role_definition
+            temp_role = member1.role
+            temp_zone = member1.zone
+            temp_lga = member1.lga
+            temp_ward = member1.ward
+            
+            member1.role_definition = member2.role_definition
+            member1.role = member2.role
+            member1.zone = member2.zone
+            member1.lga = member2.lga
+            member1.ward = member2.ward
+            member1.save()
+            
+            member2.role_definition = temp_role_def
+            member2.role = temp_role
+            member2.zone = temp_zone
+            member2.lga = temp_lga
+            member2.ward = temp_ward
+            member2.save()
+            
+            messages.success(request, f'Successfully swapped positions between {member1.get_full_name()} and {member2.get_full_name()}.')
+            return redirect('staff:manage_staff')
+    else:
+        form = SwapPositionsForm()
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'staff/swap_positions.html', context)
