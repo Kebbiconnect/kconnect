@@ -65,4 +65,12 @@ urlpatterns = [
     path('dashboards/ward-financial-secretary/', views.ward_financial_secretary_dashboard, name='ward_financial_secretary_dashboard'),
     path('dashboards/ward-supervisor/', views.ward_supervisor_dashboard, name='ward_supervisor_dashboard'),
     path('dashboards/ward-adviser/', views.ward_adviser_dashboard, name='ward_adviser_dashboard'),
+    
+    path('edit-member/<int:user_id>/', views.edit_member_role, name='edit_member_role'),
+    path('promote-member/<int:user_id>/', views.promote_member, name='promote_member'),
+    path('demote-member/<int:user_id>/', views.demote_member, name='demote_member'),
+    path('dismiss-member/<int:user_id>/', views.dismiss_member, name='dismiss_member'),
+    path('suspend-member/<int:user_id>/', views.suspend_member, name='suspend_member'),
+    path('reinstate-member/<int:user_id>/', views.reinstate_member, name='reinstate_member'),
+    path('swap-positions/', views.swap_positions, name='swap_positions'),
 ]
