@@ -391,8 +391,8 @@ def president_dashboard(request):
     total_events = Event.objects.count()
     
     # Financial statistics
-    total_donations = Donation.objects.filter(verification_status='VERIFIED').aggregate(total=Sum('amount'))['total'] or 0
-    pending_donations = Donation.objects.filter(verification_status='UNVERIFIED').count()
+    total_donations = Donation.objects.filter(status='VERIFIED').aggregate(total=Sum('amount'))['total'] or 0
+    pending_donations = Donation.objects.filter(status='UNVERIFIED').count()
     total_expenses = Expense.objects.aggregate(total=Sum('amount'))['total'] or 0
     
     # Disciplinary actions
