@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if meeting %}Edit{% else %}Schedule{% endif %} Ward Meeting - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold">{% if meeting %}Edit{% else %}Schedule{% endif %} Ward Meeting</h1>
+        <p class="text-gray-600 dark:text-gray-400">Plan and manage ward meetings</p>
+    </div>
+
+    <form method="post" class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 space-y-6">
+        {% csrf_token %}
+        
+        {% if form.errors %}
+        <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+            <p class="text-red-800 dark:text-red-200 font-semibold mb-2">Please correct the following errors:</p>
+            <ul class="list-disc list-inside text-red-700 dark:text-red-300">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium mb-2">Meeting Title *</label>
+                {{ form.title }}
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-2">Meeting Type *</label>
+                {{ form.meeting_type }}
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-2">Date *</label>
+                {{ form.date }}
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-2">Time *</label>
+                {{ form.time }}
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-2">Location</label>
+                {{ form.location }}
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium mb-2">Agenda *</label>
+                {{ form.agenda }}
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium mb-2">Notes</label>
+                {{ form.notes }}
+            </div>
+        </div>
+
+        <div class="flex gap-4 pt-4 border-t dark:border-gray-700">
+            <button type="submit" class="bg-kpn-blue hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+                <i class="fas fa-save mr-2"></i>{% if meeting %}Update{% else %}Schedule{% endif %} Meeting
+            </button>
+            <a href="{% url 'staff:ward_meetings_list' %}" class="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 px-6 py-3 rounded-lg transition">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

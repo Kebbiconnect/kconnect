@@ -33,17 +33,72 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Pending Reports</p>
-                    <p class="text-3xl font-bold text-purple-600">{{ pending_reports }}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Pending Members</p>
+                    <p class="text-3xl font-bold text-yellow-600">{{ pending_members }}</p>
                 </div>
-                <i class="fas fa-file-alt text-4xl text-purple-600"></i>
+                <i class="fas fa-user-clock text-4xl text-yellow-600"></i>
             </div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-xl font-semibold mb-4">Zone Statistics</h3>
+            {% if zone_stats %}
+            <div class="space-y-3">
+                {% for stat in zone_stats %}
+                <div class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-semibold">{{ stat.zone.name }}</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ stat.lgas }} LGAs</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-kpn-blue">{{ stat.total_members }} Members</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ stat.leaders }} Leaders</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500">No zone data available.</p>
+            {% endif %}
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-xl font-semibold mb-4">Recent Disciplinary Actions</h3>
+            {% if recent_disciplinary_actions %}
+            <div class="space-y-3 max-h-64 overflow-y-auto">
+                {% for action in recent_disciplinary_actions %}
+                <div class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold">{{ action.user.get_full_name }}</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ action.get_action_type_display }}</p>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full {% if action.is_approved %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                            {% if action.is_approved %}Approved{% else %}Pending{% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500">No disciplinary actions recorded.</p>
+            {% endif %}
         </div>
     </div>
     
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <a href="{% url 'staff:vice_president_staff_directory' %}" class="block p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
+                <i class="fas fa-address-book mr-2"></i> Staff Directory
+            </a>
+            <a href="{% url 'staff:vice_president_disciplinary_review' %}" class="block p-3 bg-orange-50 dark:bg-orange-900 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-800 transition">
+                <i class="fas fa-gavel mr-2"></i> Disciplinary Review
+            </a>
             <a href="{% url 'staff:view_reports' %}" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
                 <i class="fas fa-chart-line mr-2"></i> View Reports & Analytics
             </a>

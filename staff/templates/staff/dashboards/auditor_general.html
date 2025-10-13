@@ -9,21 +9,102 @@
         <p class="text-gray-600 dark:text-gray-400">Welcome, {{ user.get_full_name }}. Managing financial audits and compliance.</p>
     </div>
     
-    <div class="grid grid-cols-1 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Reports</p>
-                    <p class="text-3xl font-bold text-kpn-green">{{ total_reports }}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Financial Reports</p>
+                    <p class="text-3xl font-bold text-kpn-green">{{ total_financial_reports }}</p>
                 </div>
                 <i class="fas fa-file-invoice text-4xl text-kpn-green"></i>
             </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">My Audit Reports</p>
+                    <p class="text-3xl font-bold text-kpn-blue">{{ total_audit_reports }}</p>
+                </div>
+                <i class="fas fa-clipboard-check text-4xl text-kpn-blue"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Draft Reports</p>
+                    <p class="text-3xl font-bold text-yellow-600">{{ draft_audits }}</p>
+                </div>
+                <i class="fas fa-file-alt text-4xl text-yellow-600"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Submitted Reports</p>
+                    <p class="text-3xl font-bold text-green-600">{{ submitted_audits }}</p>
+                </div>
+                <i class="fas fa-check-circle text-4xl text-green-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-xl font-semibold mb-4">Recent Financial Reports</h3>
+            {% if financial_reports %}
+            <div class="space-y-3 max-h-64 overflow-y-auto">
+                {% for report in financial_reports %}
+                <div class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold">{{ report.title }}</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ report.period }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500">No financial reports available.</p>
+            {% endif %}
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-xl font-semibold mb-4">Recent Audit Reports</h3>
+            {% if audit_reports %}
+            <div class="space-y-3 max-h-64 overflow-y-auto">
+                {% for audit in audit_reports %}
+                <div class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold">{{ audit.title }}</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ audit.audit_period }}</p>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full {% if audit.status == 'SUBMITTED' %}bg-green-100 text-green-800{% elif audit.status == 'DRAFT' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                            {{ audit.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500">No audit reports yet.</p>
+            {% endif %}
         </div>
     </div>
     
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <a href="{% url 'staff:create_audit_report' %}" class="block p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
+                <i class="fas fa-file-medical mr-2"></i> Create Audit Report
+            </a>
+            <a href="{% url 'staff:auditor_general_dashboard' %}" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
+                <i class="fas fa-chart-bar mr-2"></i> View All Financial Reports
+            </a>
             <a href="{% url 'staff:profile' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
                 <i class="fas fa-user mr-2"></i> My Profile
             </a>
