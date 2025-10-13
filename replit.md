@@ -37,6 +37,9 @@ Built on Django 5.2.7, the system is modularized into `core`, `staff`, `leadersh
 - **Welfare Programs**: Management of welfare programs (health, financial aid) with beneficiary tracking, budget, and funds disbursed monitoring.
 - **Audit Reports**: Auditor General can create, edit, and submit audit reports to the President with findings, recommendations, and file uploads, with read-only access to financial data.
 - **Vice President Tools**: Inter-zone reports, comprehensive staff directory with advanced filtering, and read-only disciplinary case review panel.
+- **Community Outreach Management**: PR & Community Engagement Officer can track all community engagement activities including partnerships, meetings, events, and media collaborations with follow-up tracking and comprehensive reporting.
+- **Ward Meeting Logbook**: Ward Coordinators and Ward Secretaries can create, manage, and track ward-level meetings with attendance recording, agenda documentation, and meeting minutes.
+- **Assistant Organizing Secretary Permissions**: Enhanced event management access allowing creation, editing, and deletion of events (matching Organizing Secretary capabilities).
 
 ### System Design Choices
 - **Database**: SQLite (development), LibSQL via Turso (production) with `django-libsql`.
