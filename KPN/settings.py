@@ -95,7 +95,7 @@ if USE_TURSO:
     DATABASES = {
         'default': {
             'ENGINE': 'libsql.db.backends.sqlite3',
-            'NAME': f"https://{TURSO_DATABASE_URL}?authToken={TURSO_AUTH_TOKEN}",
+            'NAME': f"libsql://{TURSO_DATABASE_URL}?authToken={TURSO_AUTH_TOKEN}",
         }
     }
 else:
