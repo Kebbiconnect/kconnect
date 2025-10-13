@@ -155,3 +155,126 @@ class WomensProgram(models.Model):
         elif self.zone:
             return f"Zonal - {self.zone.name}"
         return "State-wide"
+
+
+class YouthProgram(models.Model):
+    PROGRAM_STATUS_CHOICES = [
+        ('PLANNED', 'Planned'),
+        ('ONGOING', 'Ongoing'),
+        ('COMPLETED', 'Completed'),
+        ('CANCELLED', 'Cancelled'),
+    ]
+    
+    PROGRAM_TYPE_CHOICES = [
+        ('TRAINING', 'Training & Skills Development'),
+        ('WORKSHOP', 'Workshop'),
+        ('MENTORSHIP', 'Mentorship Program'),
+        ('ENTREPRENEURSHIP', 'Entrepreneurship'),
+        ('LEADERSHIP', 'Leadership Development'),
+        ('SPORTS', 'Sports & Recreation'),
+        ('OTHER', 'Other'),
+    ]
+    
+    title = models.CharField(max_length=300)
+    description = models.TextField()
+    program_type = models.CharField(max_length=20, choices=PROGRAM_TYPE_CHOICES)
+    status = models.CharField(max_length=15, choices=PROGRAM_STATUS_CHOICES, default='PLANNED')
+    
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL, null=True, blank=True, help_text="Leave blank for State-level programs")
+    lga = models.ForeignKey(LGA, on_delete=models.SET_NULL, null=True, blank=True, help_text="Leave blank for Zonal/State-level programs")
+    
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    location = models.CharField(max_length=200, blank=True)
+    
+    participants = models.ManyToManyField(User, blank=True, related_name='youth_programs')
+    target_participants = models.PositiveIntegerField(default=0, help_text="Expected number of participants")
+    
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_youth_programs')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    budget = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    impact_report = models.TextField(blank=True, help_text="Summary of program impact and outcomes")
+    notes = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['-start_date', '-created_at']
+        verbose_name = "Youth Program"
+        verbose_name_plural = "Youth Programs"
+    
+    def __str__(self):
+        return f"{self.title} ({self.get_status_display()})"
+    
+    def get_participant_count(self):
+        return self.participants.count()
+    
+    def get_scope(self):
+        if self.lga:
+            return f"LGA - {self.lga.name}"
+        elif self.zone:
+            return f"Zonal - {self.zone.name}"
+        return "State-wide"
+
+
+class WelfareProgram(models.Model):
+    PROGRAM_STATUS_CHOICES = [
+        ('PLANNED', 'Planned'),
+        ('ONGOING', 'Ongoing'),
+        ('COMPLETED', 'Completed'),
+        ('CANCELLED', 'Cancelled'),
+    ]
+    
+    PROGRAM_TYPE_CHOICES = [
+        ('HEALTH', 'Health Support'),
+        ('FINANCIAL', 'Financial Assistance'),
+        ('EDUCATION', 'Educational Support'),
+        ('EMERGENCY', 'Emergency Relief'),
+        ('SOCIAL', 'Social Welfare'),
+        ('OTHER', 'Other'),
+    ]
+    
+    title = models.CharField(max_length=300)
+    description = models.TextField()
+    program_type = models.CharField(max_length=20, choices=PROGRAM_TYPE_CHOICES)
+    status = models.CharField(max_length=15, choices=PROGRAM_STATUS_CHOICES, default='PLANNED')
+    
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL, null=True, blank=True, help_text="Leave blank for State-level programs")
+    lga = models.ForeignKey(LGA, on_delete=models.SET_NULL, null=True, blank=True, help_text="Leave blank for Zonal/State-level programs")
+    
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    
+    beneficiaries = models.ManyToManyField(User, blank=True, related_name='welfare_programs')
+    target_beneficiaries = models.PositiveIntegerField(default=0, help_text="Expected number of beneficiaries")
+    
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_welfare_programs')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    budget = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    funds_disbursed = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Amount already disbursed")
+    notes = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['-start_date', '-created_at']
+        verbose_name = "Welfare Program"
+        verbose_name_plural = "Welfare Programs"
+    
+    def __str__(self):
+        return f"{self.title} ({self.get_status_display()})"
+    
+    def get_beneficiary_count(self):
+        return self.beneficiaries.count()
+    
+    def get_remaining_budget(self):
+        if self.budget:
+            return self.budget - self.funds_disbursed
+        return 0
+    
+    def get_scope(self):
+        if self.lga:
+            return f"LGA - {self.lga.name}"
+        elif self.zone:
+            return f"Zonal - {self.zone.name}"
+        return "State-wide"

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, DisciplinaryAction, WomensProgram
+from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
@@ -26,3 +26,19 @@ class WomensProgramAdmin(admin.ModelAdmin):
     list_filter = ['program_type', 'status', 'zone', 'lga']
     search_fields = ['title', 'description']
     filter_horizontal = ['participants']
+
+
+@admin.register(YouthProgram)
+class YouthProgramAdmin(admin.ModelAdmin):
+    list_display = ['title', 'program_type', 'status', 'get_scope', 'start_date', 'get_participant_count']
+    list_filter = ['program_type', 'status', 'zone', 'lga']
+    search_fields = ['title', 'description']
+    filter_horizontal = ['participants']
+
+
+@admin.register(WelfareProgram)
+class WelfareProgramAdmin(admin.ModelAdmin):
+    list_display = ['title', 'program_type', 'status', 'get_scope', 'start_date', 'get_beneficiary_count', 'budget', 'funds_disbursed']
+    list_filter = ['program_type', 'status', 'zone', 'lga']
+    search_fields = ['title', 'description']
+    filter_horizontal = ['beneficiaries']

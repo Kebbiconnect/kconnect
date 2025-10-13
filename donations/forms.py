@@ -1,5 +1,5 @@
 from django import forms
-from .models import Donation, Expense, FinancialReport
+from .models import Donation, Expense, FinancialReport, AuditReport
 
 
 class DonationForm(forms.ModelForm):
@@ -88,6 +88,44 @@ class FinancialReportForm(forms.ModelForm):
                 'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
                 'placeholder': 'Financial summary and key highlights...',
                 'rows': 6
+            }),
+            'report_file': forms.FileInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'
+            }),
+        }
+
+
+class AuditReportForm(forms.ModelForm):
+    """Form for Auditor General to submit audit reports"""
+    
+    class Meta:
+        model = AuditReport
+        fields = ['title', 'audit_period', 'findings', 'recommendations', 'compliance_status', 'submitted_to', 'report_file']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+                'placeholder': 'Audit report title'
+            }),
+            'audit_period': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+                'placeholder': 'e.g., Q1 2025 or January-March 2025'
+            }),
+            'findings': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+                'placeholder': 'Key findings from the audit...',
+                'rows': 6
+            }),
+            'recommendations': forms.Textarea(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+                'placeholder': 'Recommendations for improvement...',
+                'rows': 6
+            }),
+            'compliance_status': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+                'placeholder': 'Overall compliance status'
+            }),
+            'submitted_to': forms.Select(attrs={
+                'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'
             }),
             'report_file': forms.FileInput(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'

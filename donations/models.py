@@ -71,3 +71,39 @@ class FinancialReport(models.Model):
     
     def __str__(self):
         return f"{self.title} - {self.report_period}"
+
+
+class AuditReport(models.Model):
+    STATUS_CHOICES = [
+        ('DRAFT', 'Draft'),
+        ('SUBMITTED', 'Submitted'),
+        ('REVIEWED', 'Reviewed'),
+    ]
+    
+    title = models.CharField(max_length=300)
+    audit_period = models.CharField(max_length=100, help_text="e.g., 'Q1 2025' or 'January-March 2025'")
+    findings = models.TextField(help_text="Key findings from the audit")
+    recommendations = models.TextField(help_text="Recommendations for improvement")
+    compliance_status = models.CharField(max_length=200, blank=True, help_text="Overall compliance status")
+    
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='DRAFT')
+    
+    report_file = models.FileField(upload_to='audit_reports/', blank=True, null=True, help_text="Upload detailed audit report PDF")
+    
+    submitted_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='submitted_audits')
+    submitted_to = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='received_audits', help_text="Usually the President")
+    reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_audits')
+    
+    review_notes = models.TextField(blank=True, help_text="Notes from the reviewer")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Audit Report"
+        verbose_name_plural = "Audit Reports"
+    
+    def __str__(self):
+        return f"{self.title} - {self.audit_period}"

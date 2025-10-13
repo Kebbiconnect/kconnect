@@ -97,4 +97,23 @@ urlpatterns = [
     # Legal Review URLs
     path('legal-review/', views.legal_review_queue, name='legal_review_queue'),
     path('legal-review/<int:action_id>/', views.legal_review_action, name='legal_review_action'),
+    
+    # Youth Program Management URLs
+    path('youth-programs/create/', views.create_youth_program, name='create_youth_program'),
+    path('youth-programs/<int:program_id>/edit/', views.edit_youth_program, name='edit_youth_program'),
+    path('youth-programs/<int:program_id>/delete/', views.delete_youth_program, name='delete_youth_program'),
+    
+    # Welfare Program Management URLs
+    path('welfare-programs/create/', views.create_welfare_program, name='create_welfare_program'),
+    path('welfare-programs/<int:program_id>/edit/', views.edit_welfare_program, name='edit_welfare_program'),
+    path('welfare-programs/<int:program_id>/delete/', views.delete_welfare_program, name='delete_welfare_program'),
+    
+    # Audit Report URLs
+    path('audit-reports/create/', views.create_audit_report, name='create_audit_report'),
+    path('audit-reports/<int:report_id>/edit/', views.edit_audit_report, name='edit_audit_report'),
+    path('audit-reports/<int:report_id>/submit/', views.submit_audit_report, name='submit_audit_report'),
+    
+    # Vice President URLs
+    path('vice-president/staff-directory/', views.vice_president_staff_directory, name='vice_president_staff_directory'),
+    path('vice-president/disciplinary-review/', views.vice_president_disciplinary_review, name='vice_president_disciplinary_review'),
 ]

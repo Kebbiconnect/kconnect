@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Welfare Program - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+        <div class="text-center mb-6">
+            <i class="fas fa-exclamation-triangle text-6xl text-red-600 mb-4"></i>
+            <h2 class="text-2xl font-bold mb-4">Delete Welfare Program?</h2>
+            <p class="text-gray-600 dark:text-gray-400 mb-4">
+                Are you sure you want to delete the program "{{ program.title }}"? This action cannot be undone.
+            </p>
+        </div>
+
+        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-6">
+            <h3 class="font-semibold mb-2">Program Details:</h3>
+            <p class="text-sm"><strong>Type:</strong> {{ program.get_program_type_display }}</p>
+            <p class="text-sm"><strong>Status:</strong> {{ program.get_status_display }}</p>
+            <p class="text-sm"><strong>Beneficiaries:</strong> {{ program.get_beneficiary_count }}</p>
+            <p class="text-sm"><strong>Budget:</strong> ₦{{ program.budget|default:"0"|floatformat:2 }}</p>
+        </div>
+
+        <form method="post" class="flex gap-4 justify-center">
+            {% csrf_token %}
+            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition">
+                <i class="fas fa-trash mr-2"></i>Yes, Delete Program
+            </button>
+            <a href="{% url 'staff:welfare_officer_dashboard' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

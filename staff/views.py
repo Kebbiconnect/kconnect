@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models import Q
 from django.http import JsonResponse
 from django.utils import timezone
-from .models import User, DisciplinaryAction, WomensProgram
+from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram
 from .decorators import specific_role_required, role_required, approved_leader_required
 from .forms import MemberMobilizationFilterForm
 from leadership.models import Zone, LGA, Ward, RoleDefinition
@@ -745,16 +745,42 @@ def ward_coordinator_dashboard(request):
 
 @specific_role_required('Vice President')
 def vice_president_dashboard(request):
+    """Vice President dashboard with inter-zone reports and disciplinary review"""
+    from leadership.models import Zone
+    
+    # Get all zones with statistics
+    zones = Zone.objects.all()
+    zone_stats = []
+    
+    for zone in zones:
+        total_members = User.objects.filter(zone=zone, status='APPROVED').count()
+        leaders = User.objects.filter(zone=zone, status='APPROVED').exclude(role='GENERAL').count()
+        lgas = zone.lgas.count()
+        
+        zone_stats.append({
+            'zone': zone,
+            'total_members': total_members,
+            'leaders': leaders,
+            'lgas': lgas,
+        })
+    
+    # Get disciplinary actions for review
+    recent_disciplinary_actions = DisciplinaryAction.objects.filter(
+        is_approved=True
+    ).order_by('-created_at')[:10]
+    
+    # Overall statistics
     total_members = User.objects.filter(status='APPROVED').count()
     total_leaders = User.objects.filter(status='APPROVED').exclude(role='GENERAL').count()
-    pending_reports = Report.objects.filter(is_reviewed=False).count()
+    pending_members = User.objects.filter(status='PENDING').count()
     
     context = {
+        'zone_stats': zone_stats,
+        'recent_disciplinary_actions': recent_disciplinary_actions,
         'total_members': total_members,
         'total_leaders': total_leaders,
-        'pending_reports': pending_reports,
+        'pending_members': pending_members,
     }
-    
     return render(request, 'staff/dashboards/vice_president.html', context)
 
 @specific_role_required('Assistant General Secretary')
@@ -827,31 +853,93 @@ def assistant_organizing_secretary_dashboard(request):
 
 @specific_role_required('Auditor General')
 def auditor_general_dashboard(request):
-    from donations.models import FinancialReport
-    total_reports = FinancialReport.objects.count() if hasattr(FinancialReport, 'objects') else 0
+    from donations.models import FinancialReport, AuditReport
+    
+    financial_reports = FinancialReport.objects.all()
+    audit_reports = AuditReport.objects.filter(submitted_by=request.user)
+    
+    total_financial_reports = financial_reports.count()
+    total_audit_reports = audit_reports.count()
+    
+    # Audit report status counts
+    draft_audits = audit_reports.filter(status='DRAFT').count()
+    submitted_audits = audit_reports.filter(status='SUBMITTED').count()
+    reviewed_audits = audit_reports.filter(status='REVIEWED').count()
     
     context = {
-        'total_reports': total_reports,
+        'total_financial_reports': total_financial_reports,
+        'total_audit_reports': total_audit_reports,
+        'financial_reports': financial_reports[:5],  # Latest 5 financial reports
+        'audit_reports': audit_reports[:10],  # Latest 10 audit reports
+        'draft_audits': draft_audits,
+        'submitted_audits': submitted_audits,
+        'reviewed_audits': reviewed_audits,
     }
     
     return render(request, 'staff/dashboards/auditor_general.html', context)
 
 @specific_role_required('Welfare Officer')
 def welfare_officer_dashboard(request):
+    from .models import WelfareProgram
+    
     total_members = User.objects.filter(status='APPROVED').count()
+    
+    # Get welfare programs based on user's jurisdiction
+    if request.user.role == 'STATE':
+        welfare_programs = WelfareProgram.objects.all()
+    elif request.user.role == 'ZONAL' and request.user.zone:
+        welfare_programs = WelfareProgram.objects.filter(zone=request.user.zone) | WelfareProgram.objects.filter(zone__isnull=True, lga__isnull=True)
+    elif request.user.role == 'LGA' and request.user.lga:
+        welfare_programs = WelfareProgram.objects.filter(lga=request.user.lga) | WelfareProgram.objects.filter(lga__isnull=True, zone=request.user.lga.zone)
+    else:
+        welfare_programs = WelfareProgram.objects.none()
+    
+    # Program statistics
+    ongoing_programs = welfare_programs.filter(status='ONGOING').count()
+    planned_programs = welfare_programs.filter(status='PLANNED').count()
+    completed_programs = welfare_programs.filter(status='COMPLETED').count()
+    total_beneficiaries = sum([p.get_beneficiary_count() for p in welfare_programs])
     
     context = {
         'total_members': total_members,
+        'welfare_programs': welfare_programs[:10],  # Latest 10 programs
+        'ongoing_programs': ongoing_programs,
+        'planned_programs': planned_programs,
+        'completed_programs': completed_programs,
+        'total_beneficiaries': total_beneficiaries,
     }
     
     return render(request, 'staff/dashboards/welfare_officer.html', context)
 
 @specific_role_required('Youth Development & Empowerment Officer')
 def youth_empowerment_officer_dashboard(request):
+    from .models import YouthProgram
+    
     total_members = User.objects.filter(status='APPROVED').count()
+    
+    # Get youth programs based on user's jurisdiction
+    if request.user.role == 'STATE':
+        youth_programs = YouthProgram.objects.all()
+    elif request.user.role == 'ZONAL' and request.user.zone:
+        youth_programs = YouthProgram.objects.filter(zone=request.user.zone) | YouthProgram.objects.filter(zone__isnull=True, lga__isnull=True)
+    elif request.user.role == 'LGA' and request.user.lga:
+        youth_programs = YouthProgram.objects.filter(lga=request.user.lga) | YouthProgram.objects.filter(lga__isnull=True, zone=request.user.lga.zone)
+    else:
+        youth_programs = YouthProgram.objects.none()
+    
+    # Program statistics
+    ongoing_programs = youth_programs.filter(status='ONGOING').count()
+    planned_programs = youth_programs.filter(status='PLANNED').count()
+    completed_programs = youth_programs.filter(status='COMPLETED').count()
+    total_participants = sum([p.get_participant_count() for p in youth_programs])
     
     context = {
         'total_members': total_members,
+        'youth_programs': youth_programs[:10],  # Latest 10 programs
+        'ongoing_programs': ongoing_programs,
+        'planned_programs': planned_programs,
+        'completed_programs': completed_programs,
+        'total_participants': total_participants,
     }
     
     return render(request, 'staff/dashboards/youth_empowerment_officer.html', context)
@@ -1781,3 +1869,281 @@ def legal_review_action(request, action_id):
         'action': action,
     }
     return render(request, 'staff/legal_review/review_form.html', context)
+
+
+# Youth Program Management Views
+
+@specific_role_required('Youth Development & Empowerment Officer')
+def create_youth_program(request):
+    """Create a new youth program"""
+    from .forms import YouthProgramForm
+    from .models import YouthProgram
+    
+    if request.method == 'POST':
+        form = YouthProgramForm(request.POST)
+        if form.is_valid():
+            program = form.save(commit=False)
+            program.created_by = request.user
+            program.save()
+            messages.success(request, 'Youth program created successfully!')
+            return redirect('staff:youth_empowerment_officer_dashboard')
+    else:
+        form = YouthProgramForm()
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'staff/youth_programs/form.html', context)
+
+
+@specific_role_required('Youth Development & Empowerment Officer')
+def edit_youth_program(request, program_id):
+    """Edit an existing youth program"""
+    from .forms import YouthProgramForm
+    from .models import YouthProgram
+    
+    program = get_object_or_404(YouthProgram, pk=program_id)
+    
+    if request.method == 'POST':
+        form = YouthProgramForm(request.POST, instance=program)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Youth program updated successfully!')
+            return redirect('staff:youth_empowerment_officer_dashboard')
+    else:
+        form = YouthProgramForm(instance=program)
+    
+    context = {
+        'form': form,
+        'program': program,
+    }
+    return render(request, 'staff/youth_programs/form.html', context)
+
+
+@specific_role_required('Youth Development & Empowerment Officer')
+def delete_youth_program(request, program_id):
+    """Delete a youth program"""
+    from .models import YouthProgram
+    
+    program = get_object_or_404(YouthProgram, pk=program_id)
+    
+    if request.method == 'POST':
+        program.delete()
+        messages.success(request, 'Youth program deleted successfully!')
+        return redirect('staff:youth_empowerment_officer_dashboard')
+    
+    context = {
+        'program': program,
+    }
+    return render(request, 'staff/youth_programs/delete.html', context)
+
+
+# Welfare Program Management Views
+
+@specific_role_required('Welfare Officer')
+def create_welfare_program(request):
+    """Create a new welfare program"""
+    from .forms import WelfareProgramForm
+    from .models import WelfareProgram
+    
+    if request.method == 'POST':
+        form = WelfareProgramForm(request.POST)
+        if form.is_valid():
+            program = form.save(commit=False)
+            program.created_by = request.user
+            program.save()
+            messages.success(request, 'Welfare program created successfully!')
+            return redirect('staff:welfare_officer_dashboard')
+    else:
+        form = WelfareProgramForm()
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'staff/welfare_programs/form.html', context)
+
+
+@specific_role_required('Welfare Officer')
+def edit_welfare_program(request, program_id):
+    """Edit an existing welfare program"""
+    from .forms import WelfareProgramForm
+    from .models import WelfareProgram
+    
+    program = get_object_or_404(WelfareProgram, pk=program_id)
+    
+    if request.method == 'POST':
+        form = WelfareProgramForm(request.POST, instance=program)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Welfare program updated successfully!')
+            return redirect('staff:welfare_officer_dashboard')
+    else:
+        form = WelfareProgramForm(instance=program)
+    
+    context = {
+        'form': form,
+        'program': program,
+    }
+    return render(request, 'staff/welfare_programs/form.html', context)
+
+
+@specific_role_required('Welfare Officer')
+def delete_welfare_program(request, program_id):
+    """Delete a welfare program"""
+    from .models import WelfareProgram
+    
+    program = get_object_or_404(WelfareProgram, pk=program_id)
+    
+    if request.method == 'POST':
+        program.delete()
+        messages.success(request, 'Welfare program deleted successfully!')
+        return redirect('staff:welfare_officer_dashboard')
+    
+    context = {
+        'program': program,
+    }
+    return render(request, 'staff/welfare_programs/delete.html', context)
+
+
+# Audit Report Management Views
+
+@specific_role_required('Auditor General')
+def create_audit_report(request):
+    """Create a new audit report"""
+    from donations.forms import AuditReportForm
+    from donations.models import AuditReport
+    
+    if request.method == 'POST':
+        form = AuditReportForm(request.POST, request.FILES)
+        if form.is_valid():
+            audit = form.save(commit=False)
+            audit.submitted_by = request.user
+            # Get President as submitted_to
+            president = User.objects.filter(
+                role_definition__title='President',
+                status='APPROVED'
+            ).first()
+            audit.submitted_to = president
+            audit.save()
+            messages.success(request, 'Audit report created successfully!')
+            return redirect('staff:auditor_general_dashboard')
+    else:
+        form = AuditReportForm()
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'staff/audit_reports/form.html', context)
+
+
+@specific_role_required('Auditor General')
+def edit_audit_report(request, report_id):
+    """Edit an existing audit report"""
+    from donations.forms import AuditReportForm
+    from donations.models import AuditReport
+    
+    audit = get_object_or_404(AuditReport, pk=report_id, submitted_by=request.user)
+    
+    if audit.status != 'DRAFT':
+        messages.warning(request, 'Only draft audit reports can be edited.')
+        return redirect('staff:auditor_general_dashboard')
+    
+    if request.method == 'POST':
+        form = AuditReportForm(request.POST, request.FILES, instance=audit)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Audit report updated successfully!')
+            return redirect('staff:auditor_general_dashboard')
+    else:
+        form = AuditReportForm(instance=audit)
+    
+    context = {
+        'form': form,
+        'audit': audit,
+    }
+    return render(request, 'staff/audit_reports/form.html', context)
+
+
+@specific_role_required('Auditor General')
+def submit_audit_report(request, report_id):
+    """Submit an audit report to the President"""
+    from donations.models import AuditReport
+    
+    audit = get_object_or_404(AuditReport, pk=report_id, submitted_by=request.user)
+    
+    if audit.status != 'DRAFT':
+        messages.warning(request, 'This audit report has already been submitted.')
+        return redirect('staff:auditor_general_dashboard')
+    
+    if request.method == 'POST':
+        audit.status = 'SUBMITTED'
+        audit.submitted_at = timezone.now()
+        audit.save()
+        messages.success(request, 'Audit report submitted successfully to the President!')
+        return redirect('staff:auditor_general_dashboard')
+    
+    context = {
+        'audit': audit,
+    }
+    return render(request, 'staff/audit_reports/submit.html', context)
+
+
+# Vice President Views
+
+@specific_role_required('Vice President')
+def vice_president_staff_directory(request):
+    """Advanced staff directory with filtering"""
+    
+    # Get filter parameters
+    zone_id = request.GET.get('zone')
+    lga_id = request.GET.get('lga')
+    role = request.GET.get('role')
+    status = request.GET.get('status', 'APPROVED')
+    
+    # Base queryset
+    members = User.objects.filter(status=status).order_by('zone__name', 'lga__name', 'last_name')
+    
+    # Apply filters
+    if zone_id:
+        members = members.filter(zone_id=zone_id)
+    if lga_id:
+        members = members.filter(lga_id=lga_id)
+    if role:
+        members = members.filter(role=role)
+    
+    # Get filter options
+    from leadership.models import Zone, LGA
+    zones = Zone.objects.all()
+    lgas = LGA.objects.all()
+    if zone_id:
+        lgas = lgas.filter(zone_id=zone_id)
+    
+    context = {
+        'members': members[:100],  # Limit to 100 for performance
+        'zones': zones,
+        'lgas': lgas,
+        'selected_zone': zone_id,
+        'selected_lga': lga_id,
+        'selected_role': role,
+        'selected_status': status,
+    }
+    return render(request, 'staff/vice_president/staff_directory.html', context)
+
+
+@specific_role_required('Vice President')
+def vice_president_disciplinary_review(request):
+    """View and review disciplinary actions (read-only with comments)"""
+    
+    # Get all disciplinary actions
+    disciplinary_actions = DisciplinaryAction.objects.all().order_by('-created_at')
+    
+    # Filter options
+    action_type = request.GET.get('action_type')
+    if action_type:
+        disciplinary_actions = disciplinary_actions.filter(action_type=action_type)
+    
+    context = {
+        'disciplinary_actions': disciplinary_actions[:50],  # Latest 50
+        'selected_action_type': action_type,
+    }
+    return render(request, 'staff/vice_president/disciplinary_review.html', context)
