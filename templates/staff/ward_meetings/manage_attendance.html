@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Meeting Attendance - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Manage Meeting Attendance</h1>
+    <h2 class="text-xl text-gray-600 dark:text-gray-400 mb-6">{{ meeting.title }}</h2>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+                <span class="text-gray-500 dark:text-gray-400">Date:</span>
+                <span class="ml-2 text-gray-900 dark:text-white font-medium">{{ meeting.date|date:"M d, Y" }}</span>
+            </div>
+            <div>
+                <span class="text-gray-500 dark:text-gray-400">Time:</span>
+                <span class="ml-2 text-gray-900 dark:text-white font-medium">{{ meeting.time|time:"h:i A" }}</span>
+            </div>
+            <div>
+                <span class="text-gray-500 dark:text-gray-400">Ward:</span>
+                <span class="ml-2 text-gray-900 dark:text-white font-medium">{{ meeting.ward.name }}</span>
+            </div>
+            <div>
+                <span class="text-gray-500 dark:text-gray-400">Current Attendance:</span>
+                <span class="ml-2 text-gray-900 dark:text-white font-medium">{{ existing_attendances|length }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Mark Attendance</h3>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {% for field in form %}
+                    {% if field.name|slice:":9" == "attendee_" %}
+                    <div class="flex items-center">
+                        <label class="flex items-center cursor-pointer">
+                            {{ field }}
+                            <span class="ml-2 text-gray-900 dark:text-white">{{ field.label }}</span>
+                        </label>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="mt-8 flex space-x-4">
+                <button type="submit" class="bg-kpn-green text-white px-6 py-2 rounded-lg hover:bg-green-600 transition">
+                    <i class="fas fa-check mr-2"></i>Save Attendance
+                </button>
+                <a href="{% url 'staff:ward_meetings_list' %}" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition">
+                    Back to Meetings
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Current Attendance List -->
+    {% if existing_attendances %}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mt-6">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Marked as Present</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {% for attendance_id in existing_attendances %}
+                {% for field in form %}
+                    {% if field.name == "attendee_"|add:attendance_id|stringformat:"s" %}
+                    <div class="flex items-center text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                        <span>{{ field.label }}</span>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Pre-check existing attendances
+document.addEventListener('DOMContentLoaded', function() {
+    const existingAttendances = {{ existing_attendances|safe }};
+    existingAttendances.forEach(id => {
+        const checkbox = document.querySelector(`input[name="attendee_${id}"]`);
+        if (checkbox) {
+            checkbox.checked = true;
+        }
+    });
+});
+</script>
+{% endblock %}

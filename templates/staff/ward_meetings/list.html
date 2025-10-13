@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Ward Meetings - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Ward Meeting Logbook</h1>
+        {% if user.role == 'Ward Coordinator' or user.role == 'Ward Secretary' %}
+        <a href="{% url 'staff:create_ward_meeting' %}" class="bg-kpn-green text-white px-6 py-2 rounded-lg hover:bg-green-600 transition">
+            <i class="fas fa-plus mr-2"></i>Create Meeting Record
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Meetings List -->
+    <div class="grid gap-6">
+        {% for meeting in meetings %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ meeting.title }}</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">{{ meeting.agenda|truncatewords:30 }}</p>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-500 dark:text-gray-400">Date:</span>
+                            <span class="ml-2 text-gray-900 dark:text-white font-medium">{{ meeting.date|date:"M d, Y" }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 dark:text-gray-400">Time:</span>
+                            <span class="ml-2 text-gray-900 dark:text-white font-medium">{{ meeting.time|time:"h:i A" }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 dark:text-gray-400">Ward:</span>
+                            <span class="ml-2 text-gray-900 dark:text-white font-medium">{{ meeting.ward.name }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 dark:text-gray-400">Attendance:</span>
+                            <span class="ml-2 text-gray-900 dark:text-white font-medium">{{ meeting.attendance_records.count }}</span>
+                        </div>
+                    </div>
+                    
+                    {% if meeting.location %}
+                    <div class="mt-3 text-sm">
+                        <i class="fas fa-map-marker-alt text-gray-500"></i>
+                        <span class="ml-2 text-gray-600 dark:text-gray-400">{{ meeting.location }}</span>
+                    </div>
+                    {% endif %}
+
+                    {% if meeting.notes %}
+                    <div class="mt-3 text-sm">
+                        <strong class="text-gray-700 dark:text-gray-300">Notes:</strong>
+                        <p class="text-gray-600 dark:text-gray-400 mt-1">{{ meeting.notes|truncatewords:20 }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="flex space-x-2 ml-4">
+                    <a href="{% url 'staff:manage_ward_meeting_attendance' meeting.pk %}" 
+                       class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300" 
+                       title="Manage Attendance">
+                        <i class="fas fa-users"></i>
+                    </a>
+                    {% if user.role == 'Ward Coordinator' or user.role == 'Ward Secretary' %}
+                    <a href="{% url 'staff:edit_ward_meeting' meeting.pk %}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="{% url 'staff:delete_ward_meeting' meeting.pk %}" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
+            <i class="fas fa-users text-6xl text-gray-400 mb-4"></i>
+            <p class="text-gray-600 dark:text-gray-400 text-lg">No ward meetings recorded yet.</p>
+            {% if user.role == 'Ward Coordinator' or user.role == 'Ward Secretary' %}
+            <a href="{% url 'staff:create_ward_meeting' %}" class="inline-block mt-4 text-kpn-green hover:text-green-600">
+                Create your first meeting record
+            </a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="mt-6">
+        <a href="{% url 'staff:dashboard' %}" class="text-kpn-blue hover:text-blue-700">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}
