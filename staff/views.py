@@ -736,9 +736,11 @@ def lga_coordinator_dashboard(request):
 @specific_role_required('Ward Coordinator')
 def ward_coordinator_dashboard(request):
     members_in_ward = User.objects.filter(ward=request.user.ward, status='APPROVED').count()
+    total_meetings = WardMeeting.objects.filter(ward=request.user.ward).count() if request.user.ward else 0
     
     context = {
         'members_in_ward': members_in_ward,
+        'total_meetings': total_meetings,
     }
     
     return render(request, 'staff/dashboards/ward_coordinator.html', context)
@@ -1013,9 +1015,13 @@ def assistant_media_director_dashboard(request):
 @specific_role_required('Public Relations & Community Engagement Officer')
 def pr_officer_dashboard(request):
     published_campaigns = Campaign.objects.filter(status='PUBLISHED').count()
+    total_outreach = CommunityOutreach.objects.count()
+    completed_outreach = CommunityOutreach.objects.filter(status='COMPLETED').count()
     
     context = {
         'published_campaigns': published_campaigns,
+        'total_outreach': total_outreach,
+        'completed_outreach': completed_outreach,
     }
     
     return render(request, 'staff/dashboards/pr_officer.html', context)
@@ -1137,9 +1143,11 @@ def lga_adviser_dashboard(request):
 @specific_role_required('Secretary')
 def ward_secretary_dashboard(request):
     members_in_ward = User.objects.filter(ward=request.user.ward, status='APPROVED').count() if request.user.ward else 0
+    total_meetings = WardMeeting.objects.filter(ward=request.user.ward).count() if request.user.ward else 0
     
     context = {
         'members_in_ward': members_in_ward,
+        'total_meetings': total_meetings,
     }
     
     return render(request, 'staff/dashboards/ward_secretary.html', context)

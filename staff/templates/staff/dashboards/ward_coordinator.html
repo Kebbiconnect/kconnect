@@ -9,7 +9,7 @@
         <p class="text-gray-600 dark:text-gray-400">Supervise {{ user.ward.name }} Ward</p>
     </div>
     
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
@@ -23,10 +23,20 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Reports Submitted</p>
-                    <p class="text-3xl font-bold text-kpn-blue">0</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Ward Meetings</p>
+                    <p class="text-3xl font-bold text-kpn-blue">{{ total_meetings }}</p>
                 </div>
-                <i class="fas fa-file-alt text-4xl text-kpn-blue"></i>
+                <i class="fas fa-clipboard-list text-4xl text-kpn-blue"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Reports Submitted</p>
+                    <p class="text-3xl font-bold text-purple-600">0</p>
+                </div>
+                <i class="fas fa-file-alt text-4xl text-purple-600"></i>
             </div>
         </div>
     </div>
@@ -38,8 +48,11 @@
                 <a href="#" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
                     <i class="fas fa-users mr-2"></i> View Ward Members
                 </a>
-                <a href="#" class="block p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
-                    <i class="fas fa-clipboard-list mr-2"></i> Attendance Logbook
+                <a href="{% url 'staff:ward_meetings_list' %}" class="block p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
+                    <i class="fas fa-clipboard-list mr-2"></i> Ward Meeting Logbook
+                </a>
+                <a href="{% url 'staff:create_ward_meeting' %}" class="block p-3 bg-teal-50 dark:bg-teal-900 rounded-lg hover:bg-teal-100 dark:hover:bg-teal-800 transition">
+                    <i class="fas fa-plus mr-2"></i> Create Meeting Record
                 </a>
                 <a href="{% url 'core:submit_report' %}" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
                     <i class="fas fa-paper-plane mr-2"></i> Submit Activity Report to LGA
