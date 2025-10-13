@@ -378,8 +378,8 @@ def president_dashboard(request):
     pending_approvals = User.objects.filter(status='PENDING').count()
     total_members = User.objects.filter(status='APPROVED').count()
     total_leaders = User.objects.filter(status='APPROVED').exclude(role='GENERAL').count()
-    male_members = User.objects.filter(status='APPROVED', gender='MALE').count()
-    female_members = User.objects.filter(status='APPROVED', gender='FEMALE').count()
+    male_members = User.objects.filter(status='APPROVED', gender='M').count()
+    female_members = User.objects.filter(status='APPROVED', gender='F').count()
     
     # Campaign statistics
     total_campaigns = Campaign.objects.count()
@@ -758,20 +758,24 @@ def media_director_dashboard(request):
 def treasurer_dashboard(request):
     from donations.models import Donation
     unverified_donations = Donation.objects.filter(status='UNVERIFIED').count()
+    verified_donations = Donation.objects.filter(status='VERIFIED').count()
     
     context = {
         'unverified_donations': unverified_donations,
+        'verified_donations': verified_donations,
     }
     
     return render(request, 'staff/dashboards/treasurer.html', context)
 
 @specific_role_required('Financial Secretary')
 def financial_secretary_dashboard(request):
-    from donations.models import Donation
+    from donations.models import Donation, FinancialReport
     verified_donations = Donation.objects.filter(status='VERIFIED').count()
+    financial_reports_count = FinancialReport.objects.count()
     
     context = {
         'verified_donations': verified_donations,
+        'financial_reports_count': financial_reports_count,
     }
     
     return render(request, 'staff/dashboards/financial_secretary.html', context)
@@ -845,10 +849,12 @@ def lga_coordinator_dashboard(request):
 def ward_coordinator_dashboard(request):
     members_in_ward = User.objects.filter(ward=request.user.ward, status='APPROVED').count()
     total_meetings = WardMeeting.objects.filter(ward=request.user.ward).count() if request.user.ward else 0
+    reports_submitted = Report.objects.filter(submitted_by=request.user).count()
     
     context = {
         'members_in_ward': members_in_ward,
         'total_meetings': total_meetings,
+        'reports_submitted': reports_submitted,
     }
     
     return render(request, 'staff/dashboards/ward_coordinator.html', context)

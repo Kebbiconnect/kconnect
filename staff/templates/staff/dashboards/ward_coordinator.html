@@ -34,7 +34,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Reports Submitted</p>
-                    <p class="text-3xl font-bold text-purple-600">0</p>
+                    <p class="text-3xl font-bold text-purple-600">{{ reports_submitted }}</p>
                 </div>
                 <i class="fas fa-file-alt text-4xl text-purple-600"></i>
             </div>
@@ -45,7 +45,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
             <div class="space-y-3">
-                <a href="#" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
+                <a href="{% url 'staff:manage_staff' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
                     <i class="fas fa-users mr-2"></i> View Ward Members
                 </a>
                 <a href="{% url 'staff:ward_meetings_list' %}" class="block p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
@@ -57,7 +57,7 @@
                 <a href="{% url 'core:submit_report' %}" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
                     <i class="fas fa-paper-plane mr-2"></i> Submit Activity Report to LGA
                 </a>
-                <a href="#" class="block p-3 bg-yellow-50 dark:bg-yellow-900 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-800 transition">
+                <a href="{% url 'staff:disciplinary_actions' %}" class="block p-3 bg-yellow-50 dark:bg-yellow-900 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-800 transition">
                     <i class="fas fa-exclamation-triangle mr-2"></i> Report Misconduct
                 </a>
             </div>

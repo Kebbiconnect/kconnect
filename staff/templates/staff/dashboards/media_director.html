@@ -48,8 +48,8 @@
                 <a href="{% url 'campaigns:approval_queue' %}" class="block p-3 bg-yellow-50 dark:bg-yellow-900 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-800 transition">
                     <i class="fas fa-check-circle mr-2"></i> Review & Publish Campaigns
                 </a>
-                <a href="#" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
-                    <i class="fas fa-photo-video mr-2"></i> Approve Media Gallery
+                <a href="{% url 'campaigns:all_campaigns' %}" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
+                    <i class="fas fa-photo-video mr-2"></i> View All Campaigns
                 </a>
                 <a href="{% url 'staff:approve_members' %}" class="block p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
                     <i class="fas fa-user-check mr-2"></i> Approve Member Applications
