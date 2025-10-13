@@ -1,7 +1,7 @@
 # Kebbi Progressive Network (KPN) Website
 
 ## Overview
-The Kebbi Progressive Network (KPN) website is a comprehensive Django-based civic engagement platform for youth mobilization, charity, welfare, and governance advocacy across Kebbi State, Nigeria. Its primary purpose is to provide a robust system for member management, campaign dissemination, and financial transparency within the organization, with the ultimate ambition of fostering a unified voice for change.
+The Kebbi Progressive Network (KPN) website is a Django-based civic engagement platform for youth mobilization, charity, welfare, and governance advocacy in Kebbi State, Nigeria. It aims to provide a robust system for member management, campaign dissemination, and financial transparency, fostering a unified voice for change.
 
 ## User Preferences
 - Mobile-first design approach
@@ -13,113 +13,39 @@ The Kebbi Progressive Network (KPN) website is a comprehensive Django-based civi
 ## System Architecture
 
 ### UI/UX Decisions
-The platform utilizes a mobile-first design philosophy with Tailwind CSS for responsiveness and Alpine.js for lightweight interactivity. The branding incorporates KPN's official colors (Green, White, Blue) and includes a dark mode toggle. Navigation features a professional bar with the KPN logo and a mobile menu. Public-facing pages include Home, About Us, Leadership directory, News & Campaigns, Media Gallery, Contact, Support Us, FAQ, and Code of Conduct.
+The platform adopts a mobile-first design using Tailwind CSS for responsiveness and Alpine.js for interactivity. It incorporates KPN's official colors (Green, White, Blue) and includes a dark mode toggle. Navigation features a professional bar with the KPN logo and a mobile menu. Public pages include Home, About Us, Leadership directory, News & Campaigns, Media Gallery, Contact, Support Us, FAQ, and Code of Conduct.
 
 ### Technical Implementations
-The project is built on Django 5.2.7 and structured into seven modular applications: `core`, `staff`, `leadership`, `campaigns`, `donations`, `media`, and `events`. It features a custom `User` model with a comprehensive role-based authentication and authorization system, enabling distinct dashboards and permissions for 41 leadership roles across State, Zonal, LGA, and Ward tiers. Dynamic registration includes cascading dropdowns for location selection (Zone, LGA, Ward), real-time vacancy checking, and mandatory Facebook page follow verification. The system enforces strict seat limits for leadership positions and incorporates security measures for input validation.
+Built on Django 5.2.7, the system is modularized into `core`, `staff`, `leadership`, `campaigns`, `donations`, `media`, and `events` applications. It features a custom `User` model with a role-based authentication and authorization system supporting 41 leadership roles across State, Zonal, LGA, and Ward tiers, each with distinct dashboards and permissions. Registration includes dynamic cascading dropdowns for location, real-time vacancy checking, gender collection, and mandatory Facebook page follow verification, enforcing strict seat limits.
 
 ### Feature Specifications
-- **Public Pages**: Core static and informational content.
-- **User Management (`staff` app)**: Custom user model, role-based permissions, disciplinary actions, and full member management capabilities for the President, including promotion, demotion, suspension, and role swapping.
-- **Organizational Hierarchy (`leadership` app)**: Models for Zone, LGA, Ward, and `RoleDefinition`, enforcing seat limits and vacancy checking.
-- **Campaigns (`campaigns` app)**: A comprehensive campaign and publicity system with a status workflow (DRAFT, PENDING, PUBLISHED, REJECTED), supporting featured image uploads and a dedicated approval process managed by the Director of Media & Publicity.
-- **Dashboards**: Role-specific dashboards for all 41 leadership positions, providing tailored functionalities and data relevant to their jurisdiction and responsibilities. The President's dashboard includes staff management, member approval workflow, and reporting oversight.
-- **Registration**: Enhanced registration form with locked cascading dropdowns for location and role selection, real-time vacancy checking via AJAX, and mandatory Facebook verification. Now includes gender field collection.
-- **Gender Tracking (`staff` app)**:
-  - **Phase 5 Implementation - Completed (October 12, 2025)**
-  - **User Model Enhancement**: Added gender field (Male/Female/Other/Prefer not to say) to User model with migration
-  - **Registration & Profile**: Gender field integrated into registration and profile editing forms
-  - **Data Collection**: All new members must specify gender during registration; existing members can update via profile
-- **Hierarchical Reporting System (`core` app)**:
-  - **Phase 5 Implementation - Completed (October 12, 2025)**
-  - **Report Status Workflow**: DRAFT → SUBMITTED → UNDER_REVIEW → APPROVED/FLAGGED with complete audit trail
-  - **Hierarchical Routing**: Ward → LGA Coordinator → Zonal Coordinator → State President submission chain
-  - **Deadline Management**: Report submission deadlines with status tracking and automated routing
-  - **Review Workflow**: Supervisors can approve or flag reports with feedback; flagged reports return to submitter
-  - **Role-Based Submission**: Ward, LGA, and Zonal leaders submit reports to their respective supervisors
-  - **Access Control**: Only designated supervisor (or President) can review reports; safe handling of missing role_definition
-  - **Models**: Enhanced Report model with submitted_by, submitted_to, status, deadline, review_date, and reviewer_feedback fields
-  - **Forms**: ReportSubmissionForm and ReportReviewForm with validation
-  - **Templates**: Complete UI for report submission, review, and status tracking
-  - **Dashboard Integration**: Ward/LGA/Zonal coordinators have "Submit Report" quick action; State Supervisor/Zonal/LGA coordinators display pending reports count for review
-- **Member Mobilization Tools (`staff` app)**:
-  - **Phase 5 Implementation - Completed (October 12, 2025)**
-  - **Advanced Filtering**: Comprehensive member filtering by Zone, LGA, Ward, Role, Gender, and Status
-  - **Contact List Export**: CSV export functionality for filtered member lists with contact information (Name, Phone, Role, Zone, LGA, Ward, Gender, Status)
-  - **Smart Status Filtering**: Defaults to APPROVED members when no status selected; supports filtering by any status (Pending, Suspended, Dismissed, etc.)
-  - **Female Member Dashboard**: Dedicated filtering interface for Women Leader and Assistant Women Leader to manage female members
-  - **Role Access**: Director of Mobilization and Assistant Director can access full mobilization tools with export capability
-  - **Views**: member_mobilization and women_members with complete filtering and export logic
-  - **Templates**: Interactive filtering UI with export buttons, result counts, and pagination (50 members per page)
-  - **Dashboard Integration**: Director and Assistant Director of Mobilization dashboards have "Member Mobilization & Contact Lists" quick action link
-- **Women's Programs Management (`staff` app)**:
-  - **Phase 6 Implementation - Completed (October 12, 2025)**
-  - **Program Planning**: Women Leader and Assistant Women Leader can create, edit, and manage women-focused programs (workshops, training, empowerment initiatives, advocacy campaigns)
-  - **Jurisdiction-Based Access**: State Women Leader manages all programs; LGA Women Leaders manage LGA-specific programs
-  - **Participant Management**: Dedicated interface to add/remove female members as program participants with enrollment tracking
-  - **Budget Tracking**: Program budget allocation and tracking with status workflow (PLANNING → SCHEDULED → ONGOING → COMPLETED → CANCELLED)
-  - **Models**: WomensProgram with program_type, status, scope (State/Zonal/LGA), budget, participant tracking, and location linkage
-  - **Forms**: WomensProgramForm with jurisdiction-aware location filtering and participant selection
-  - **Templates**: Complete CRUD UI for program list, creation, editing, detail view, and participant management
-  - **Dashboard Integration**: Women Leader and Assistant Women Leader dashboards show quick access to programs and female members
-- **FAQ Management System (`staff` app)**:
-  - **Phase 6 Implementation - Completed (October 12, 2025)**
-  - **Content Management**: Assistant General Secretary can create, edit, and delete frequently asked questions
-  - **Status Control**: Toggle FAQ visibility (active/inactive) to control public display
-  - **Organization**: Support for question-answer pairs with ordering and categorization
-  - **Access Control**: Only Assistant General Secretary can manage FAQs
-  - **Models**: FAQ model with question, answer, status, created_by, and display order fields
-  - **Forms**: FAQForm with validation for question and answer content
-  - **Templates**: Complete CRUD interface for FAQ list, creation, editing, and status toggling
-  - **Dashboard Integration**: Assistant General Secretary dashboard includes "Manage FAQs" quick action
-- **Legal & Ethics Oversight (`staff` app)**:
-  - **Phase 6 Implementation - Completed (October 12, 2025)**
-  - **Two-Tier Approval Workflow**: Disciplinary actions (Suspension/Dismissal) now require both State President approval AND Legal & Ethics Adviser review
-  - **Legal Opinion Documentation**: Legal Adviser provides formal legal opinion and approval decision with timestamp tracking
-  - **Review Queue**: Dedicated interface for Legal & Ethics Adviser to review pending disciplinary actions
-  - **Access Control**: Only Legal & Ethics Adviser can provide legal review; only State President can grant final approval
-  - **Enhanced DisciplinaryAction Model**: Added legal_approved, legal_opinion, legal_reviewed_by, and legal_reviewed_at fields
-  - **Forms**: LegalReviewForm for recording legal opinions and approval decisions
-  - **Templates**: Legal review queue and detailed review interface with approval/rejection workflow
-  - **Dashboard Integration**: Legal & Ethics Adviser dashboard includes "Legal Review Queue" quick action with pending count
-- **Disciplinary Actions (`staff` app)**: 
-  - **Phase 4 Implementation - Completed**
-  - **Action Types**: Warning, Suspension, Dismissal with detailed reason tracking
-  - **Approval Workflow**: Warnings auto-approved by issuer; Suspensions and Dismissals require State President approval
-  - **Status Updates**: Approved suspensions/dismissals automatically update member status (SUSPENDED/DISMISSED)
-  - **Access Control**: All approved leaders can create actions; only State President can approve/reject
-  - **Templates**: Complete UI for viewing, creating, approving, and rejecting disciplinary actions
-- **Finance Management (`donations` app)**: 
-  - **Phase 4 Implementation - Completed**
-  - **Donation Verification Workflow**: Three-tier process (UNVERIFIED → Treasurer verifies → Financial Secretary records)
-  - **Expense Tracking**: Complete expense management system with category, amount, description, and receipt support
-  - **Financial Reports**: Automated report generation aggregating donations, expenses, and balance calculations
-  - **Role-Based Access**: Treasurer handles verification; Financial Secretary records donations, manages expenses, and generates reports
-  - **Models**: Donation (with verification status), Expense, FinancialReport
-  - **Templates**: Comprehensive UI for donation verification, expense management, and report generation
-  - **Dashboard Integration**: Treasurer and Financial Secretary dashboards with real-time statistics and quick action links
-- **Media Management (`media` app)**: Gallery for photos/videos with an upload and approval workflow.
-- **Events (`events` app)**: 
-  - **Full Event Management System** (Phase 3 Implementation - Completed)
-  - **Event Creation & Management**: Organizing Secretary can create, edit, and delete organizational events with title, description, location, and date/time scheduling
-  - **Event Calendar**: Private calendar view displaying upcoming and past events, accessible to all leaders
-  - **Attendance Logging**: Bulk attendance recording system allowing Organizing Secretary to mark attendance for multiple leaders per event
-  - **Meeting Minutes**: General Secretary can record, edit, and publish official meeting minutes linked to events, including full content, summary, and attendee tracking
-  - **Models**: Event, EventAttendance (with unique constraint), and MeetingMinutes (OneToOne with Event)
-  - **Role-Based Access**: Organizing Secretary manages events and attendance; General Secretary manages meeting minutes
-  - **Templates**: Complete UI for event calendar, creation, editing, detail view, attendance management, and meeting minutes (create/edit/view)
-  - **Dashboard Integration**: Both Organizing Secretary and General Secretary dashboards show real-time statistics and quick access links to event features
+- **Public Pages**: Static and informational content.
+- **User Management**: Custom user model, role-based permissions, disciplinary actions (Warning, Suspension, Dismissal with two-tier approval, including Legal & Ethics Adviser review), and full member management.
+- **Organizational Hierarchy**: Models for Zone, LGA, Ward, and `RoleDefinition` with seat limits and vacancy checks.
+- **Campaigns**: Campaign and publicity system with a status workflow (DRAFT, PENDING, PUBLISHED, REJECTED) and image uploads.
+- **Dashboards**: Role-specific dashboards for all 41 leadership positions, tailored to their jurisdiction and responsibilities (e.g., President's dashboard for staff management, member approval; Director of Mobilization for member filtering and export).
+- **Registration**: Enhanced form with locked cascading dropdowns, real-time AJAX vacancy checking, mandatory Facebook verification, and gender field.
+- **Hierarchical Reporting System**: Report submission (Ward → LGA Coordinator → Zonal Coordinator → State President) with a status workflow (DRAFT → SUBMITTED → UNDER_REVIEW → APPROVED/FLAGGED), deadline management, and role-based access control.
+- **Member Mobilization Tools**: Advanced member filtering (by Zone, LGA, Ward, Role, Gender, Status), CSV export of contact lists, and dedicated interfaces for Women Leaders.
+- **Women's Programs Management**: CRUD for women-focused programs (workshops, training) with jurisdiction-based access, participant management, and budget tracking.
+- **FAQ Management System**: CRUD for FAQs with content management, status control, and organization by Assistant General Secretary.
+- **Legal & Ethics Oversight**: Two-tier approval workflow for disciplinary actions requiring both State President and Legal & Ethics Adviser review, including legal opinion documentation.
+- **Finance Management**: Donation verification workflow (UNVERIFIED → Treasurer → Financial Secretary), expense tracking, and automated financial report generation.
+- **Media Management**: Gallery for photos/videos with upload and approval.
+- **Events**: Full event management system including creation, calendar, attendance logging, and meeting minutes recording.
+- **Youth Development Programs**: Management of youth-focused programs with participant tracking, budget, and impact reporting.
+- **Welfare Programs**: Management of welfare programs (health, financial aid) with beneficiary tracking, budget, and funds disbursed monitoring.
+- **Audit Reports**: Auditor General can create, edit, and submit audit reports to the President with findings, recommendations, and file uploads, with read-only access to financial data.
+- **Vice President Tools**: Inter-zone reports, comprehensive staff directory with advanced filtering, and read-only disciplinary case review panel.
 
 ### System Design Choices
-- **Database**: Uses SQLite for development and LibSQL via Turso for production, integrated through `django-libsql`.
-- **Authentication**: Robust login, logout, and registration with extensive validation.
-- **Access Control**: Utilizes `@role_required` and `@specific_role_required` decorators for secure, role-based access to functionalities and dashboards.
-- **Static Files**: Managed via Django's static files system, with proper loading ensured.
-- **Error Handling**: Comprehensive validation for location and role IDs to prevent `DoesNotExist`, `ValueError`, and `TypeError`.
+- **Database**: SQLite (development), LibSQL via Turso (production) with `django-libsql`.
+- **Authentication**: Robust login, logout, registration with extensive validation.
+- **Access Control**: `@role_required` and `@specific_role_required` decorators for secure, role-based access.
+- **Static Files**: Managed via Django's static files system.
+- **Error Handling**: Comprehensive validation for location and role IDs.
 
 ## External Dependencies
-- **Database**:
-    - SQLite (for development)
-    - LibSQL via Turso (for production)
+- **Database**: SQLite, LibSQL (via Turso)
 - **Image Processing**: Pillow
 - **Environment Variables**: python-decouple
