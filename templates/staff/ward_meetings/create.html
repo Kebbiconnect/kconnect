@@ -64,12 +64,12 @@
                 </div>
 
                 <div>
-                    <label for="{{ form.notes.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Meeting Notes
+                    <label for="{{ form.minutes.id_for_label }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Meeting Minutes
                     </label>
-                    {{ form.notes }}
-                    {% if form.notes.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.notes.errors.0 }}</p>
+                    {{ form.minutes }}
+                    {% if form.minutes.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.minutes.errors.0 }}</p>
                     {% endif %}
                 </div>
             </div>

@@ -19,20 +19,20 @@
                 <select name="status" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                     <option value="">All Statuses</option>
                     <option value="PLANNED" {% if selected_status == 'PLANNED' %}selected{% endif %}>Planned</option>
-                    <option value="IN_PROGRESS" {% if selected_status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+                    <option value="ONGOING" {% if selected_status == 'ONGOING' %}selected{% endif %}>Ongoing</option>
                     <option value="COMPLETED" {% if selected_status == 'COMPLETED' %}selected{% endif %}>Completed</option>
-                    <option value="CANCELLED" {% if selected_status == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+                    <option value="FOLLOW_UP" {% if selected_status == 'FOLLOW_UP' %}selected{% endif %}>Follow-up Required</option>
                 </select>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Engagement Type</label>
                 <select name="engagement_type" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                     <option value="">All Types</option>
-                    <option value="COMMUNITY_VISIT" {% if selected_engagement_type == 'COMMUNITY_VISIT' %}selected{% endif %}>Community Visit</option>
-                    <option value="PARTNERSHIP" {% if selected_engagement_type == 'PARTNERSHIP' %}selected{% endif %}>Partnership</option>
-                    <option value="TOWN_HALL" {% if selected_engagement_type == 'TOWN_HALL' %}selected{% endif %}>Town Hall</option>
-                    <option value="MEDIA_INTERVIEW" {% if selected_engagement_type == 'MEDIA_INTERVIEW' %}selected{% endif %}>Media Interview</option>
-                    <option value="STAKEHOLDER_MEETING" {% if selected_engagement_type == 'STAKEHOLDER_MEETING' %}selected{% endif %}>Stakeholder Meeting</option>
+                    <option value="MEETING" {% if selected_engagement_type == 'MEETING' %}selected{% endif %}>Meeting</option>
+                    <option value="PARTNERSHIP" {% if selected_engagement_type == 'PARTNERSHIP' %}selected{% endif %}>Partnership Discussion</option>
+                    <option value="EVENT" {% if selected_engagement_type == 'EVENT' %}selected{% endif %}>Community Event</option>
+                    <option value="MEDIA" {% if selected_engagement_type == 'MEDIA' %}selected{% endif %}>Media Engagement</option>
+                    <option value="COLLABORATION" {% if selected_engagement_type == 'COLLABORATION' %}selected{% endif %}>Collaboration</option>
                     <option value="OTHER" {% if selected_engagement_type == 'OTHER' %}selected{% endif %}>Other</option>
                 </select>
             </div>
@@ -50,8 +50,8 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div class="flex justify-between items-start">
                 <div class="flex-1">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ outreach.title }}</h3>
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">{{ outreach.description|truncatewords:30 }}</p>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ outreach.organization }}</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">{{ outreach.purpose|truncatewords:30 }}</p>
                     
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
@@ -65,14 +65,16 @@
                         <div>
                             <span class="text-gray-500 dark:text-gray-400">Status:</span>
                             <span class="ml-2 px-2 py-1 rounded-full text-xs font-semibold
-                                {% if outreach.status == 'COMPLETED' %}bg-green-100 text-green-800{% elif outreach.status == 'IN_PROGRESS' %}bg-blue-100 text-blue-800{% elif outreach.status == 'PLANNED' %}bg-yellow-100 text-yellow-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {% if outreach.status == 'COMPLETED' %}bg-green-100 text-green-800{% elif outreach.status == 'ONGOING' %}bg-blue-100 text-blue-800{% elif outreach.status == 'PLANNED' %}bg-yellow-100 text-yellow-800{% elif outreach.status == 'FOLLOW_UP' %}bg-orange-100 text-orange-800{% else %}bg-gray-100 text-gray-800{% endif %}">
                                 {{ outreach.get_status_display }}
                             </span>
                         </div>
+                        {% if outreach.contact_person %}
                         <div>
-                            <span class="text-gray-500 dark:text-gray-400">Partners:</span>
-                            <span class="ml-2 text-gray-900 dark:text-white font-medium">{{ outreach.number_of_participants|default:"N/A" }}</span>
+                            <span class="text-gray-500 dark:text-gray-400">Contact:</span>
+                            <span class="ml-2 text-gray-900 dark:text-white font-medium">{{ outreach.contact_person }}</span>
                         </div>
+                        {% endif %}
                     </div>
                     
                     {% if outreach.location %}

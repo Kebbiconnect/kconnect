@@ -11,8 +11,8 @@
             <p class="text-gray-600 dark:text-gray-400 mb-4">Are you sure you want to delete this outreach activity?</p>
             
             <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">{{ outreach.title }}</h3>
-                <p class="text-gray-600 dark:text-gray-400 mb-2">{{ outreach.description|truncatewords:30 }}</p>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">{{ outreach.organization }}</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-2">{{ outreach.purpose|truncatewords:30 }}</p>
                 <div class="text-sm text-gray-500 dark:text-gray-400">
                     <p><strong>Date:</strong> {{ outreach.date|date:"M d, Y" }}</p>
                     <p><strong>Type:</strong> {{ outreach.get_engagement_type_display }}</p>
