@@ -503,23 +503,68 @@ def manage_staff(request):
 
 @approved_leader_required
 def view_reports(request):
-    if request.user.role == 'STATE':
-        reports = Report.objects.all().order_by('-created_at')
-    elif request.user.role == 'ZONAL':
-        reports = Report.objects.filter(
-            Q(submitted_by__zone=request.user.zone) |
-            Q(report_type='LGA_TO_ZONAL')
-        ).order_by('-created_at')
-    elif request.user.role == 'LGA':
-        reports = Report.objects.filter(
-            Q(submitted_by__lga=request.user.lga) |
-            Q(report_type='WARD_TO_LGA')
-        ).order_by('-created_at')
+    """View reports submitted to the current user with dashboard statistics"""
+    user = request.user
+    
+    filter_status = request.GET.get('status', 'all')
+    
+    is_president = user.role_definition and user.role_definition.title == 'President'
+    is_state_supervisor = user.role_definition and user.role_definition.title == 'State Supervisor'
+    
+    if is_president or is_state_supervisor:
+        base_reports = Report.objects.all()
     else:
-        reports = Report.objects.none()
+        base_reports = Report.objects.filter(submitted_to=user)
+    
+    reports = base_reports
+    
+    if filter_status == 'pending':
+        reports = reports.filter(status='SUBMITTED', is_reviewed=False)
+    elif filter_status == 'reviewed':
+        reports = reports.filter(is_reviewed=True)
+    elif filter_status == 'approved':
+        reports = reports.filter(status='APPROVED')
+    elif filter_status == 'flagged':
+        reports = reports.filter(status='FLAGGED')
+    elif filter_status == 'rejected':
+        reports = reports.filter(status='REJECTED')
+    elif filter_status == 'escalated':
+        reports = reports.filter(status='ESCALATED')
+    elif filter_status == 'overdue':
+        from django.utils import timezone
+        today = timezone.now().date()
+        reports = reports.filter(
+            deadline__lt=today,
+            status__in=['DRAFT', 'SUBMITTED']
+        )
+    
+    reports = reports.select_related('submitted_by', 'submitted_to', 'reviewed_by', 'parent_report').order_by('-created_at')
+    
+    pending_count = base_reports.filter(status='SUBMITTED', is_reviewed=False).count()
+    reviewed_count = base_reports.filter(is_reviewed=True).count()
+    approved_count = base_reports.filter(status='APPROVED').count()
+    flagged_count = base_reports.filter(status='FLAGGED').count()
+    rejected_count = base_reports.filter(status='REJECTED').count()
+    escalated_count = base_reports.filter(status='ESCALATED').count()
+    
+    from django.utils import timezone
+    today = timezone.now().date()
+    overdue_count = base_reports.filter(
+        deadline__lt=today,
+        status__in=['DRAFT', 'SUBMITTED']
+    ).count()
     
     context = {
         'reports': reports,
+        'filter_status': filter_status,
+        'pending_count': pending_count,
+        'reviewed_count': reviewed_count,
+        'approved_count': approved_count,
+        'flagged_count': flagged_count,
+        'rejected_count': rejected_count,
+        'escalated_count': escalated_count,
+        'overdue_count': overdue_count,
+        'total_count': base_reports.count(),
     }
     
     return render(request, 'staff/view_reports.html', context)

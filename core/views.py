@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
 from campaigns.models import Campaign
 from media.models import MediaItem
 from staff.models import User
@@ -218,6 +220,8 @@ def submit_report(request):
             report.submitted_at = timezone.now()
             report.save()
             
+            _send_report_notification(report, 'submitted')
+            
             messages.success(request, f'Report submitted successfully to {submitted_to.get_full_name()}!')
             return redirect('staff:dashboard')
     else:
@@ -260,7 +264,24 @@ def review_report(request, report_id):
                 'REJECTED': 'rejected'
             }.get(action, 'reviewed')
             
-            messages.success(request, f'Report has been {action_text} successfully!')
+            _send_report_notification(report, 'reviewed')
+            
+            if action == 'APPROVED' and report.can_be_escalated():
+                escalated_report = _escalate_report(report, user)
+                if escalated_report:
+                    _send_report_notification(escalated_report, 'submitted')
+                    messages.success(
+                        request, 
+                        f'Report approved and escalated to {escalated_report.submitted_to.get_full_name()}!'
+                    )
+                else:
+                    messages.warning(
+                        request, 
+                        f'Report approved but could not be escalated - no supervisor found for the next level. Please contact the administrator to ensure all coordinator positions are filled.'
+                    )
+            else:
+                messages.success(request, f'Report has been {action_text} successfully!')
+            
             return redirect('staff:dashboard')
     else:
         form = ReportReviewForm(instance=report)
@@ -270,3 +291,130 @@ def review_report(request, report_id):
         'form': form,
     }
     return render(request, 'core/review_report.html', context)
+
+
+def _escalate_report(original_report, reviewer):
+    """
+    Create an escalated report to the next level in the hierarchy.
+    Ward → LGA → Zonal → State
+    
+    Uses the original submitter's geography (ward/LGA/zone) to determine the next supervisor,
+    ensuring escalation works even when President or others without zone data review.
+    """
+    if original_report.report_type == 'WARD_TO_LGA':
+        next_report_type = 'LGA_TO_ZONAL'
+        
+        submitter = original_report.submitted_by
+        submitter_zone = submitter.zone
+        
+        if not submitter_zone and submitter.ward:
+            if submitter.ward.lga and submitter.ward.lga.zone:
+                submitter_zone = submitter.ward.lga.zone
+        
+        if not submitter_zone and submitter.lga:
+            if submitter.lga.zone:
+                submitter_zone = submitter.lga.zone
+        
+        if not submitter_zone:
+            return None
+        
+        next_supervisor = User.objects.filter(
+            role='ZONAL',
+            zone=submitter_zone,
+            role_definition__title='Zonal Coordinator',
+            status='APPROVED'
+        ).first()
+    elif original_report.report_type == 'LGA_TO_ZONAL':
+        next_report_type = 'ZONAL_TO_STATE'
+        next_supervisor = User.objects.filter(
+            role='STATE',
+            role_definition__title='State Supervisor',
+            status='APPROVED'
+        ).first()
+    else:
+        return None
+    
+    if not next_supervisor:
+        return None
+    
+    actual_submitter = original_report.submitted_to if original_report.submitted_to else reviewer
+    
+    escalated_report = Report.objects.create(
+        title=f"Consolidated {original_report.get_report_type_display()} - {original_report.period}",
+        report_type=next_report_type,
+        content=f"[Escalated from {original_report.submitted_to.get_full_name() if original_report.submitted_to else reviewer.get_full_name()}]\n[Approved by: {reviewer.get_full_name()}]\n\n{original_report.content}",
+        period=original_report.period,
+        submitted_by=actual_submitter,
+        submitted_to=next_supervisor,
+        parent_report=original_report,
+        status='SUBMITTED',
+        submitted_at=timezone.now(),
+        deadline=original_report.deadline
+    )
+    
+    original_report.is_escalated = True
+    original_report.escalated_at = timezone.now()
+    original_report.status = 'ESCALATED'
+    original_report.save()
+    
+    return escalated_report
+
+
+def _send_report_notification(report, notification_type):
+    """Send email notification for report submission or review"""
+    try:
+        if notification_type == 'submitted':
+            if report.submitted_to and report.submitted_to.email:
+                subject = f'New Report Submitted: {report.title}'
+                message = f"""
+Dear {report.submitted_to.get_full_name()},
+
+A new report has been submitted for your review:
+
+Title: {report.title}
+Period: {report.period}
+Submitted by: {report.submitted_by.get_full_name()}
+Report Type: {report.get_report_type_display()}
+Deadline: {report.deadline if report.deadline else 'Not set'}
+
+Please log in to the KPN platform to review this report.
+
+Best regards,
+KPN Management System
+                """
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [report.submitted_to.email],
+                    fail_silently=True,
+                )
+        
+        elif notification_type == 'reviewed':
+            if report.submitted_by and report.submitted_by.email:
+                status_text = report.get_status_display()
+                subject = f'Report {status_text}: {report.title}'
+                message = f"""
+Dear {report.submitted_by.get_full_name()},
+
+Your report has been reviewed:
+
+Title: {report.title}
+Status: {status_text}
+Reviewed by: {report.reviewed_by.get_full_name() if report.reviewed_by else 'N/A'}
+Review Notes: {report.review_notes if report.review_notes else 'No notes provided'}
+
+Please log in to the KPN platform to view the full details.
+
+Best regards,
+KPN Management System
+                """
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [report.submitted_by.email],
+                    fail_silently=True,
+                )
+    except Exception as e:
+        pass
