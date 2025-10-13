@@ -1748,21 +1748,34 @@ def delete_womens_program(request, program_id):
 @specific_role_required('Women Leader', 'Assistant Women Leader')
 def manage_program_participants(request, program_id):
     """Manage participants for a women's program"""
-    program = get_object_or_404(WomensProgram, pk=program_id)
     
-    # Get all female members within jurisdiction
+    # Filter programs by jurisdiction to prevent IDOR
     if request.user.role == 'STATE':
+        programs = WomensProgram.objects.all()
         female_members = User.objects.filter(status='APPROVED', gender='F')
     elif request.user.role == 'ZONAL':
+        programs = WomensProgram.objects.filter(
+            models.Q(zone=request.user.zone) | models.Q(zone__isnull=True, lga__isnull=True)
+        )
         female_members = User.objects.filter(status='APPROVED', gender='F', zone=request.user.zone)
     elif request.user.role == 'LGA':
+        programs = WomensProgram.objects.filter(
+            models.Q(lga=request.user.lga) | models.Q(zone=request.user.zone, lga__isnull=True) | models.Q(zone__isnull=True, lga__isnull=True)
+        )
         female_members = User.objects.filter(status='APPROVED', gender='F', lga=request.user.lga)
     else:
+        programs = WomensProgram.objects.none()
         female_members = User.objects.none()
+    
+    program = get_object_or_404(programs, pk=program_id)
     
     if request.method == 'POST':
         selected_participants = request.POST.getlist('participants')
-        program.participants.set(selected_participants)
+        # Validate that all selected participants are within jurisdiction
+        valid_member_ids = set(female_members.values_list('id', flat=True))
+        validated_participants = [p_id for p_id in selected_participants if int(p_id) in valid_member_ids]
+        
+        program.participants.set(validated_participants)
         messages.success(request, f'Participants updated for "{program.title}"!')
         return redirect('staff:womens_programs_list')
     
@@ -1927,6 +1940,35 @@ def legal_review_action(request, action_id):
 # Youth Program Management Views
 
 @specific_role_required('Youth Development & Empowerment Officer')
+def youth_programs_list(request):
+    """List all youth programs"""
+    from .models import YouthProgram
+    
+    user = request.user
+    
+    # Filter programs based on user's jurisdiction
+    if user.role == 'STATE':
+        programs = YouthProgram.objects.all()
+    elif user.role == 'ZONAL':
+        programs = YouthProgram.objects.filter(
+            models.Q(zone=user.zone) | models.Q(zone__isnull=True, lga__isnull=True)
+        )
+    elif user.role == 'LGA':
+        programs = YouthProgram.objects.filter(
+            models.Q(lga=user.lga) | models.Q(zone=user.zone, lga__isnull=True) | models.Q(zone__isnull=True, lga__isnull=True)
+        )
+    else:
+        programs = YouthProgram.objects.none()
+    
+    programs = programs.order_by('-created_at')
+    
+    context = {
+        'programs': programs,
+    }
+    return render(request, 'staff/youth_programs/list.html', context)
+
+
+@specific_role_required('Youth Development & Empowerment Officer')
 def create_youth_program(request):
     """Create a new youth program"""
     from .forms import YouthProgramForm
@@ -1939,7 +1981,7 @@ def create_youth_program(request):
             program.created_by = request.user
             program.save()
             messages.success(request, 'Youth program created successfully!')
-            return redirect('staff:youth_empowerment_officer_dashboard')
+            return redirect('staff:youth_programs_list')
     else:
         form = YouthProgramForm()
     
@@ -1962,7 +2004,7 @@ def edit_youth_program(request, program_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Youth program updated successfully!')
-            return redirect('staff:youth_empowerment_officer_dashboard')
+            return redirect('staff:youth_programs_list')
     else:
         form = YouthProgramForm(instance=program)
     
@@ -1983,7 +2025,7 @@ def delete_youth_program(request, program_id):
     if request.method == 'POST':
         program.delete()
         messages.success(request, 'Youth program deleted successfully!')
-        return redirect('staff:youth_empowerment_officer_dashboard')
+        return redirect('staff:youth_programs_list')
     
     context = {
         'program': program,
@@ -1991,7 +2033,81 @@ def delete_youth_program(request, program_id):
     return render(request, 'staff/youth_programs/delete.html', context)
 
 
+@specific_role_required('Youth Development & Empowerment Officer')
+def manage_youth_participants(request, program_id):
+    """Manage participants for a youth program"""
+    from .models import YouthProgram
+    
+    # Filter programs by jurisdiction to prevent IDOR
+    if request.user.role == 'STATE':
+        programs = YouthProgram.objects.all()
+        members = User.objects.filter(status='APPROVED')
+    elif request.user.role == 'ZONAL':
+        programs = YouthProgram.objects.filter(
+            models.Q(zone=request.user.zone) | models.Q(zone__isnull=True, lga__isnull=True)
+        )
+        members = User.objects.filter(status='APPROVED', zone=request.user.zone)
+    elif request.user.role == 'LGA':
+        programs = YouthProgram.objects.filter(
+            models.Q(lga=request.user.lga) | models.Q(zone=request.user.zone, lga__isnull=True) | models.Q(zone__isnull=True, lga__isnull=True)
+        )
+        members = User.objects.filter(status='APPROVED', lga=request.user.lga)
+    else:
+        programs = YouthProgram.objects.none()
+        members = User.objects.none()
+    
+    program = get_object_or_404(programs, pk=program_id)
+    
+    if request.method == 'POST':
+        selected_participants = request.POST.getlist('participants')
+        # Validate that all selected participants are within jurisdiction
+        valid_member_ids = set(members.values_list('id', flat=True))
+        validated_participants = [p_id for p_id in selected_participants if int(p_id) in valid_member_ids]
+        
+        program.participants.set(validated_participants)
+        messages.success(request, f'Participants updated for "{program.title}"!')
+        return redirect('staff:youth_programs_list')
+    
+    current_participants = program.participants.values_list('id', flat=True)
+    
+    context = {
+        'program': program,
+        'members': members.order_by('last_name', 'first_name'),
+        'current_participants': list(current_participants),
+    }
+    return render(request, 'staff/youth_programs/manage_participants.html', context)
+
+
 # Welfare Program Management Views
+
+@specific_role_required('Welfare Officer')
+def welfare_programs_list(request):
+    """List all welfare programs"""
+    from .models import WelfareProgram
+    
+    user = request.user
+    
+    # Filter programs based on user's jurisdiction
+    if user.role == 'STATE':
+        programs = WelfareProgram.objects.all()
+    elif user.role == 'ZONAL':
+        programs = WelfareProgram.objects.filter(
+            models.Q(zone=user.zone) | models.Q(zone__isnull=True, lga__isnull=True)
+        )
+    elif user.role == 'LGA':
+        programs = WelfareProgram.objects.filter(
+            models.Q(lga=user.lga) | models.Q(zone=user.zone, lga__isnull=True) | models.Q(zone__isnull=True, lga__isnull=True)
+        )
+    else:
+        programs = WelfareProgram.objects.none()
+    
+    programs = programs.order_by('-created_at')
+    
+    context = {
+        'programs': programs,
+    }
+    return render(request, 'staff/welfare_programs/list.html', context)
+
 
 @specific_role_required('Welfare Officer')
 def create_welfare_program(request):
@@ -2006,7 +2122,7 @@ def create_welfare_program(request):
             program.created_by = request.user
             program.save()
             messages.success(request, 'Welfare program created successfully!')
-            return redirect('staff:welfare_officer_dashboard')
+            return redirect('staff:welfare_programs_list')
     else:
         form = WelfareProgramForm()
     
@@ -2029,7 +2145,7 @@ def edit_welfare_program(request, program_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Welfare program updated successfully!')
-            return redirect('staff:welfare_officer_dashboard')
+            return redirect('staff:welfare_programs_list')
     else:
         form = WelfareProgramForm(instance=program)
     
@@ -2050,12 +2166,57 @@ def delete_welfare_program(request, program_id):
     if request.method == 'POST':
         program.delete()
         messages.success(request, 'Welfare program deleted successfully!')
-        return redirect('staff:welfare_officer_dashboard')
+        return redirect('staff:welfare_programs_list')
     
     context = {
         'program': program,
     }
     return render(request, 'staff/welfare_programs/delete.html', context)
+
+
+@specific_role_required('Welfare Officer')
+def manage_welfare_beneficiaries(request, program_id):
+    """Manage beneficiaries for a welfare program"""
+    from .models import WelfareProgram
+    
+    # Filter programs by jurisdiction to prevent IDOR
+    if request.user.role == 'STATE':
+        programs = WelfareProgram.objects.all()
+        members = User.objects.filter(status='APPROVED')
+    elif request.user.role == 'ZONAL':
+        programs = WelfareProgram.objects.filter(
+            models.Q(zone=request.user.zone) | models.Q(zone__isnull=True, lga__isnull=True)
+        )
+        members = User.objects.filter(status='APPROVED', zone=request.user.zone)
+    elif request.user.role == 'LGA':
+        programs = WelfareProgram.objects.filter(
+            models.Q(lga=request.user.lga) | models.Q(zone=request.user.zone, lga__isnull=True) | models.Q(zone__isnull=True, lga__isnull=True)
+        )
+        members = User.objects.filter(status='APPROVED', lga=request.user.lga)
+    else:
+        programs = WelfareProgram.objects.none()
+        members = User.objects.none()
+    
+    program = get_object_or_404(programs, pk=program_id)
+    
+    if request.method == 'POST':
+        selected_beneficiaries = request.POST.getlist('beneficiaries')
+        # Validate that all selected beneficiaries are within jurisdiction
+        valid_member_ids = set(members.values_list('id', flat=True))
+        validated_beneficiaries = [b_id for b_id in selected_beneficiaries if int(b_id) in valid_member_ids]
+        
+        program.beneficiaries.set(validated_beneficiaries)
+        messages.success(request, f'Beneficiaries updated for "{program.title}"!')
+        return redirect('staff:welfare_programs_list')
+    
+    current_beneficiaries = program.beneficiaries.values_list('id', flat=True)
+    
+    context = {
+        'program': program,
+        'members': members.order_by('last_name', 'first_name'),
+        'current_beneficiaries': list(current_beneficiaries),
+    }
+    return render(request, 'staff/welfare_programs/manage_beneficiaries.html', context)
 
 
 # Audit Report Management Views

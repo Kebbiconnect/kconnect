@@ -9,24 +9,85 @@
         <p class="text-gray-600 dark:text-gray-400">Welcome, {{ user.get_full_name }}. Managing member welfare and well-being.</p>
     </div>
     
-    <div class="grid grid-cols-1 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Total Members</p>
                     <p class="text-3xl font-bold text-kpn-green">{{ total_members }}</p>
                 </div>
-                <i class="fas fa-heart text-4xl text-kpn-green"></i>
+                <i class="fas fa-users text-4xl text-kpn-green"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Ongoing Programs</p>
+                    <p class="text-3xl font-bold text-green-600">{{ ongoing_programs }}</p>
+                </div>
+                <i class="fas fa-tasks text-4xl text-green-600"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Planned Programs</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ planned_programs }}</p>
+                </div>
+                <i class="fas fa-calendar-alt text-4xl text-blue-600"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Beneficiaries</p>
+                    <p class="text-3xl font-bold text-purple-600">{{ total_beneficiaries }}</p>
+                </div>
+                <i class="fas fa-hands-helping text-4xl text-purple-600"></i>
             </div>
         </div>
     </div>
     
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <a href="{% url 'staff:profile' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
-                <i class="fas fa-user mr-2"></i> My Profile
-            </a>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-xl font-semibold mb-4">Recent Welfare Programs</h3>
+            {% if welfare_programs %}
+            <div class="space-y-3">
+                {% for program in welfare_programs %}
+                <div class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold">{{ program.title }}</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ program.get_program_type_display }} - {{ program.get_status_display }}</p>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full {% if program.status == 'ONGOING' %}bg-green-100 text-green-800{% elif program.status == 'PLANNED' %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ program.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500">No programs yet. Create one to get started!</p>
+            {% endif %}
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
+            <div class="space-y-3">
+                <a href="{% url 'staff:welfare_programs_list' %}" class="block p-3 bg-red-50 dark:bg-red-900 rounded-lg hover:bg-red-100 dark:hover:bg-red-800 transition">
+                    <i class="fas fa-heart mr-2"></i> Welfare Programs
+                </a>
+                <a href="{% url 'staff:create_welfare_program' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
+                    <i class="fas fa-plus mr-2"></i> Create New Program
+                </a>
+                <a href="{% url 'staff:profile' %}" class="block p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+                    <i class="fas fa-user mr-2"></i> My Profile
+                </a>
+            </div>
         </div>
     </div>
 </div>

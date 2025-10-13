@@ -99,14 +99,18 @@ urlpatterns = [
     path('legal-review/<int:action_id>/', views.legal_review_action, name='legal_review_action'),
     
     # Youth Program Management URLs
+    path('youth-programs/', views.youth_programs_list, name='youth_programs_list'),
     path('youth-programs/create/', views.create_youth_program, name='create_youth_program'),
     path('youth-programs/<int:program_id>/edit/', views.edit_youth_program, name='edit_youth_program'),
     path('youth-programs/<int:program_id>/delete/', views.delete_youth_program, name='delete_youth_program'),
+    path('youth-programs/<int:program_id>/participants/', views.manage_youth_participants, name='manage_youth_participants'),
     
     # Welfare Program Management URLs
+    path('welfare-programs/', views.welfare_programs_list, name='welfare_programs_list'),
     path('welfare-programs/create/', views.create_welfare_program, name='create_welfare_program'),
     path('welfare-programs/<int:program_id>/edit/', views.edit_welfare_program, name='edit_welfare_program'),
     path('welfare-programs/<int:program_id>/delete/', views.delete_welfare_program, name='delete_welfare_program'),
+    path('welfare-programs/<int:program_id>/beneficiaries/', views.manage_welfare_beneficiaries, name='manage_welfare_beneficiaries'),
     
     # Audit Report URLs
     path('audit-reports/create/', views.create_audit_report, name='create_audit_report'),
