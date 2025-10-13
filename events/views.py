@@ -22,7 +22,7 @@ def event_calendar(request):
     return render(request, 'events/event_calendar.html', context)
 
 
-@specific_role_required('Organizing Secretary')
+@specific_role_required('Organizing Secretary', 'Assistant Organizing Secretary')
 def create_event(request):
     if request.method == 'POST':
         form = EventForm(request.POST)
@@ -42,7 +42,7 @@ def create_event(request):
     return render(request, 'events/create_event.html', context)
 
 
-@specific_role_required('Organizing Secretary')
+@specific_role_required('Organizing Secretary', 'Assistant Organizing Secretary')
 def edit_event(request, pk):
     event = get_object_or_404(Event, pk=pk)
     
@@ -63,7 +63,7 @@ def edit_event(request, pk):
     return render(request, 'events/edit_event.html', context)
 
 
-@specific_role_required('Organizing Secretary')
+@specific_role_required('Organizing Secretary', 'Assistant Organizing Secretary')
 def delete_event(request, pk):
     event = get_object_or_404(Event, pk=pk)
     

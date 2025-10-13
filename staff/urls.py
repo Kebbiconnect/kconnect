@@ -116,4 +116,17 @@ urlpatterns = [
     # Vice President URLs
     path('vice-president/staff-directory/', views.vice_president_staff_directory, name='vice_president_staff_directory'),
     path('vice-president/disciplinary-review/', views.vice_president_disciplinary_review, name='vice_president_disciplinary_review'),
+    
+    # Community Outreach URLs (PR Officer)
+    path('outreach/', views.outreach_list, name='outreach_list'),
+    path('outreach/create/', views.create_outreach, name='create_outreach'),
+    path('outreach/<int:pk>/edit/', views.edit_outreach, name='edit_outreach'),
+    path('outreach/<int:pk>/delete/', views.delete_outreach, name='delete_outreach'),
+    
+    # Ward Meeting URLs
+    path('ward-meetings/', views.ward_meetings_list, name='ward_meetings_list'),
+    path('ward-meetings/create/', views.create_ward_meeting, name='create_ward_meeting'),
+    path('ward-meetings/<int:pk>/edit/', views.edit_ward_meeting, name='edit_ward_meeting'),
+    path('ward-meetings/<int:pk>/attendance/', views.manage_ward_meeting_attendance, name='manage_ward_meeting_attendance'),
+    path('ward-meetings/<int:pk>/delete/', views.delete_ward_meeting, name='delete_ward_meeting'),
 ]

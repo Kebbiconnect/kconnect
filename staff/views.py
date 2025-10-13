@@ -6,9 +6,9 @@ from django.db import models
 from django.db.models import Q
 from django.http import JsonResponse
 from django.utils import timezone
-from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram
+from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram, CommunityOutreach, WardMeeting, WardMeetingAttendance
 from .decorators import specific_role_required, role_required, approved_leader_required
-from .forms import MemberMobilizationFilterForm
+from .forms import MemberMobilizationFilterForm, CommunityOutreachForm, WardMeetingForm, WardMeetingAttendanceForm
 from leadership.models import Zone, LGA, Ward, RoleDefinition
 from core.models import Report
 from campaigns.models import Campaign
@@ -2147,3 +2147,203 @@ def vice_president_disciplinary_review(request):
         'selected_action_type': action_type,
     }
     return render(request, 'staff/vice_president/disciplinary_review.html', context)
+
+
+# Community Outreach Management (PR Officer)
+
+@specific_role_required('Public Relations & Community Engagement Officer')
+def create_outreach(request):
+    """Create a new community outreach activity"""
+    if request.method == 'POST':
+        form = CommunityOutreachForm(request.POST)
+        if form.is_valid():
+            outreach = form.save(commit=False)
+            outreach.created_by = request.user
+            outreach.save()
+            messages.success(request, 'Community outreach activity created successfully!')
+            return redirect('staff:outreach_list')
+    else:
+        form = CommunityOutreachForm()
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'staff/outreach/create.html', context)
+
+
+@specific_role_required('Public Relations & Community Engagement Officer')
+def outreach_list(request):
+    """List all community outreach activities"""
+    outreach_activities = CommunityOutreach.objects.all().order_by('-date')
+    
+    # Filter by status
+    status = request.GET.get('status')
+    if status:
+        outreach_activities = outreach_activities.filter(status=status)
+    
+    # Filter by engagement type
+    engagement_type = request.GET.get('engagement_type')
+    if engagement_type:
+        outreach_activities = outreach_activities.filter(engagement_type=engagement_type)
+    
+    context = {
+        'outreach_activities': outreach_activities,
+        'selected_status': status,
+        'selected_engagement_type': engagement_type,
+    }
+    return render(request, 'staff/outreach/list.html', context)
+
+
+@specific_role_required('Public Relations & Community Engagement Officer')
+def edit_outreach(request, pk):
+    """Edit an existing community outreach activity"""
+    outreach = get_object_or_404(CommunityOutreach, pk=pk)
+    
+    if request.method == 'POST':
+        form = CommunityOutreachForm(request.POST, instance=outreach)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Community outreach activity updated successfully!')
+            return redirect('staff:outreach_list')
+    else:
+        form = CommunityOutreachForm(instance=outreach)
+    
+    context = {
+        'form': form,
+        'outreach': outreach,
+    }
+    return render(request, 'staff/outreach/edit.html', context)
+
+
+@specific_role_required('Public Relations & Community Engagement Officer')
+def delete_outreach(request, pk):
+    """Delete a community outreach activity"""
+    outreach = get_object_or_404(CommunityOutreach, pk=pk)
+    
+    if request.method == 'POST':
+        outreach.delete()
+        messages.success(request, 'Community outreach activity deleted successfully!')
+        return redirect('staff:outreach_list')
+    
+    context = {
+        'outreach': outreach,
+    }
+    return render(request, 'staff/outreach/delete.html', context)
+
+
+# Ward Meeting Management
+
+@specific_role_required('Ward Coordinator', 'Ward Secretary')
+def create_ward_meeting(request):
+    """Create a new ward meeting"""
+    if request.method == 'POST':
+        form = WardMeetingForm(request.POST, user=request.user)
+        if form.is_valid():
+            meeting = form.save(commit=False)
+            meeting.created_by = request.user
+            meeting.save()
+            messages.success(request, 'Ward meeting created successfully!')
+            return redirect('staff:ward_meetings_list')
+    else:
+        form = WardMeetingForm(user=request.user)
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'staff/ward_meetings/create.html', context)
+
+
+@specific_role_required('Ward Coordinator', 'Ward Secretary', 'Ward Organizing Secretary')
+def ward_meetings_list(request):
+    """List all ward meetings for the user's ward"""
+    if request.user.ward:
+        meetings = WardMeeting.objects.filter(ward=request.user.ward).order_by('-date')
+    else:
+        meetings = WardMeeting.objects.none()
+    
+    context = {
+        'meetings': meetings,
+    }
+    return render(request, 'staff/ward_meetings/list.html', context)
+
+
+@specific_role_required('Ward Coordinator', 'Ward Secretary')
+def edit_ward_meeting(request, pk):
+    """Edit an existing ward meeting"""
+    meeting = get_object_or_404(WardMeeting, pk=pk, ward=request.user.ward)
+    
+    if request.method == 'POST':
+        form = WardMeetingForm(request.POST, instance=meeting, user=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Ward meeting updated successfully!')
+            return redirect('staff:ward_meetings_list')
+    else:
+        form = WardMeetingForm(instance=meeting, user=request.user)
+    
+    context = {
+        'form': form,
+        'meeting': meeting,
+    }
+    return render(request, 'staff/ward_meetings/edit.html', context)
+
+
+@specific_role_required('Ward Coordinator', 'Ward Secretary', 'Ward Organizing Secretary')
+def manage_ward_meeting_attendance(request, pk):
+    """Manage attendance for a ward meeting"""
+    meeting = get_object_or_404(WardMeeting, pk=pk, ward=request.user.ward)
+    
+    if request.method == 'POST':
+        form = WardMeetingAttendanceForm(request.POST, meeting=meeting)
+        if form.is_valid():
+            count = 0
+            for field_name, value in form.cleaned_data.items():
+                if field_name.startswith('attendee_') and value:
+                    member_id = field_name.split('_')[1]
+                    member = User.objects.get(id=member_id)
+                    
+                    attendance, created = WardMeetingAttendance.objects.get_or_create(
+                        meeting=meeting,
+                        member=member,
+                        defaults={
+                            'present': True,
+                            'recorded_by': request.user
+                        }
+                    )
+                    
+                    if not created:
+                        attendance.present = True
+                        attendance.recorded_by = request.user
+                        attendance.save()
+                    
+                    count += 1
+            
+            messages.success(request, f'Attendance recorded for {count} member(s).')
+            return redirect('staff:ward_meetings_list')
+    else:
+        form = WardMeetingAttendanceForm(meeting=meeting)
+    
+    existing_attendances = meeting.attendance_records.filter(present=True).values_list('member_id', flat=True)
+    
+    context = {
+        'meeting': meeting,
+        'form': form,
+        'existing_attendances': list(existing_attendances),
+    }
+    return render(request, 'staff/ward_meetings/manage_attendance.html', context)
+
+
+@specific_role_required('Ward Coordinator', 'Ward Secretary')
+def delete_ward_meeting(request, pk):
+    """Delete a ward meeting"""
+    meeting = get_object_or_404(WardMeeting, pk=pk, ward=request.user.ward)
+    
+    if request.method == 'POST':
+        meeting.delete()
+        messages.success(request, 'Ward meeting deleted successfully!')
+        return redirect('staff:ward_meetings_list')
+    
+    context = {
+        'meeting': meeting,
+    }
+    return render(request, 'staff/ward_meetings/delete.html', context)
