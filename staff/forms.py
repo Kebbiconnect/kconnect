@@ -1,5 +1,5 @@
 from django import forms
-from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram
+from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram, CommunityOutreach, WardMeeting, WardMeetingAttendance
 from leadership.models import RoleDefinition, Zone, LGA, Ward
 from core.models import FAQ
 
@@ -607,3 +607,214 @@ class WelfareProgramForm(forms.ModelForm):
                 'rows': 3
             }),
         }
+
+
+class CommunityOutreachForm(forms.ModelForm):
+    """Form for creating and managing community outreach activities"""
+    
+    organization = forms.CharField(
+        max_length=300,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Organization or community group name...'
+        })
+    )
+    
+    contact_person = forms.CharField(
+        required=False,
+        max_length=200,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Contact person name...'
+        })
+    )
+    
+    contact_phone = forms.CharField(
+        required=False,
+        max_length=20,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Phone number...'
+        })
+    )
+    
+    contact_email = forms.EmailField(
+        required=False,
+        widget=forms.EmailInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Email address...'
+        })
+    )
+    
+    engagement_type = forms.ChoiceField(
+        choices=CommunityOutreach.ENGAGEMENT_TYPE_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'
+        })
+    )
+    
+    status = forms.ChoiceField(
+        choices=CommunityOutreach.STATUS_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'
+        })
+    )
+    
+    date = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'
+        })
+    )
+    
+    location = forms.CharField(
+        required=False,
+        max_length=200,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Location of engagement...'
+        })
+    )
+    
+    purpose = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Purpose of the outreach activity...',
+            'rows': 4
+        })
+    )
+    
+    notes = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Details and outcomes of the engagement...',
+            'rows': 4
+        })
+    )
+    
+    follow_up_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'
+        })
+    )
+    
+    follow_up_notes = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Follow-up action items...',
+            'rows': 3
+        })
+    )
+    
+    class Meta:
+        model = CommunityOutreach
+        fields = ['organization', 'contact_person', 'contact_phone', 'contact_email', 
+                  'engagement_type', 'status', 'date', 'location', 'purpose', 'notes', 
+                  'follow_up_date', 'follow_up_notes']
+
+
+class WardMeetingForm(forms.ModelForm):
+    """Form for creating and managing ward meetings"""
+    
+    ward = forms.ModelChoiceField(
+        queryset=Ward.objects.all(),
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'
+        })
+    )
+    
+    meeting_type = forms.ChoiceField(
+        choices=WardMeeting.MEETING_TYPE_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'
+        })
+    )
+    
+    title = forms.CharField(
+        max_length=300,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Meeting title...'
+        })
+    )
+    
+    date = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'
+        })
+    )
+    
+    time = forms.TimeField(
+        required=False,
+        widget=forms.TimeInput(attrs={
+            'type': 'time',
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'
+        })
+    )
+    
+    location = forms.CharField(
+        required=False,
+        max_length=200,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Meeting location/venue...'
+        })
+    )
+    
+    agenda = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Meeting agenda and topics...',
+            'rows': 4
+        })
+    )
+    
+    minutes = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Meeting minutes and decisions...',
+            'rows': 6
+        })
+    )
+    
+    class Meta:
+        model = WardMeeting
+        fields = ['ward', 'meeting_type', 'title', 'date', 'time', 'location', 'agenda', 'minutes']
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        if user and user.ward:
+            self.fields['ward'].initial = user.ward
+            self.fields['ward'].queryset = Ward.objects.filter(pk=user.ward.pk)
+
+
+class WardMeetingAttendanceForm(forms.Form):
+    """Form for recording ward meeting attendance"""
+    
+    def __init__(self, *args, **kwargs):
+        meeting = kwargs.pop('meeting', None)
+        super().__init__(*args, **kwargs)
+        
+        if meeting and meeting.ward:
+            ward_members = User.objects.filter(
+                ward=meeting.ward,
+                status='APPROVED'
+            ).order_by('last_name', 'first_name')
+            
+            for member in ward_members:
+                self.fields[f'attendee_{member.id}'] = forms.BooleanField(
+                    required=False,
+                    label=member.get_full_name(),
+                    widget=forms.CheckboxInput(attrs={
+                        'class': 'w-4 h-4 text-kpn-blue border-gray-300 rounded focus:ring-kpn-blue'
+                    })
+                )

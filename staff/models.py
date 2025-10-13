@@ -347,7 +347,7 @@ class WardMeeting(models.Model):
     agenda = models.TextField(blank=True, help_text="Meeting agenda and topics")
     minutes = models.TextField(blank=True, help_text="Meeting minutes and decisions")
     
-    attendees = models.ManyToManyField(User, blank=True, related_name='attended_ward_meetings', through='WardMeetingAttendance')
+    attendees = models.ManyToManyField(User, blank=True, related_name='attended_ward_meetings', through='WardMeetingAttendance', through_fields=('meeting', 'member'))
     
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_ward_meetings')
     created_at = models.DateTimeField(auto_now_add=True)
