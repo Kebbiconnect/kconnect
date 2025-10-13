@@ -366,10 +366,54 @@ def check_vacant_roles(request):
 
 @specific_role_required('President')
 def president_dashboard(request):
+    from leadership.models import Zone
+    from campaigns.models import Campaign
+    from events.models import Event
+    from donations.models import Donation, Expense
+    from core.models import FAQ
+    from staff.models import WomensProgram, YouthProgram, WelfareProgram
+    from django.db.models import Sum
+    
+    # Member statistics
     pending_approvals = User.objects.filter(status='PENDING').count()
     total_members = User.objects.filter(status='APPROVED').count()
     total_leaders = User.objects.filter(status='APPROVED').exclude(role='GENERAL').count()
+    male_members = User.objects.filter(status='APPROVED', gender='MALE').count()
+    female_members = User.objects.filter(status='APPROVED', gender='FEMALE').count()
+    
+    # Campaign statistics
+    total_campaigns = Campaign.objects.count()
+    active_campaigns = Campaign.objects.filter(status='PUBLISHED').count()
+    pending_campaigns = Campaign.objects.filter(status='PENDING').count()
+    
+    # Event statistics  
+    upcoming_events = Event.objects.filter(start_date__gte=timezone.now()).count()
+    total_events = Event.objects.count()
+    
+    # Financial statistics
+    total_donations = Donation.objects.filter(verification_status='VERIFIED').aggregate(total=Sum('amount'))['total'] or 0
+    pending_donations = Donation.objects.filter(verification_status='UNVERIFIED').count()
+    total_expenses = Expense.objects.aggregate(total=Sum('amount'))['total'] or 0
+    
+    # Disciplinary actions
+    pending_disciplinary = DisciplinaryAction.objects.filter(is_approved=False).count()
+    
+    # Reporting statistics
     pending_reports = Report.objects.filter(is_reviewed=False).count()
+    total_reports = Report.objects.count()
+    
+    # Organizational structure
+    total_zones = Zone.objects.count()
+    total_lgas = LGA.objects.count()
+    total_wards = Ward.objects.count()
+    
+    # Programs statistics
+    total_womens_programs = WomensProgram.objects.count()
+    total_youth_programs = YouthProgram.objects.count()
+    total_welfare_programs = WelfareProgram.objects.count()
+    
+    # Content
+    total_faqs = FAQ.objects.count()
     
     pending_applicants = User.objects.filter(status='PENDING').order_by('-created_at')[:10]
     
@@ -377,7 +421,26 @@ def president_dashboard(request):
         'pending_approvals': pending_approvals,
         'total_members': total_members,
         'total_leaders': total_leaders,
+        'male_members': male_members,
+        'female_members': female_members,
+        'total_campaigns': total_campaigns,
+        'active_campaigns': active_campaigns,
+        'pending_campaigns': pending_campaigns,
+        'upcoming_events': upcoming_events,
+        'total_events': total_events,
+        'total_donations': total_donations,
+        'pending_donations': pending_donations,
+        'total_expenses': total_expenses,
+        'pending_disciplinary': pending_disciplinary,
         'pending_reports': pending_reports,
+        'total_reports': total_reports,
+        'total_zones': total_zones,
+        'total_lgas': total_lgas,
+        'total_wards': total_wards,
+        'total_womens_programs': total_womens_programs,
+        'total_youth_programs': total_youth_programs,
+        'total_welfare_programs': total_welfare_programs,
+        'total_faqs': total_faqs,
         'pending_applicants': pending_applicants,
         'recent_activities': [],
     }
@@ -832,7 +895,20 @@ def vice_president_dashboard(request):
 
 @specific_role_required('Assistant General Secretary')
 def assistant_general_secretary_dashboard(request):
-    context = {}
+    from core.models import FAQ
+    
+    # FAQ Statistics
+    total_faqs = FAQ.objects.count()
+    active_faqs = FAQ.objects.filter(is_active=True).count()
+    inactive_faqs = FAQ.objects.filter(is_active=False).count()
+    recent_faqs = FAQ.objects.all().order_by('-created_at')[:5]
+    
+    context = {
+        'total_faqs': total_faqs,
+        'active_faqs': active_faqs,
+        'inactive_faqs': inactive_faqs,
+        'recent_faqs': recent_faqs,
+    }
     return render(request, 'staff/dashboards/assistant_general_secretary.html', context)
 
 @specific_role_required('State Supervisor')
