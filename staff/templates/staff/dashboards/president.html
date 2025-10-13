@@ -9,6 +9,100 @@
         <p class="text-gray-600 dark:text-gray-400">Welcome, {{ user.get_full_name }}. You have full oversight of the organization.</p>
     </div>
     
+    <!-- Platform Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Members</p>
+                    <p class="text-3xl font-bold text-kpn-green">{{ total_members }}</p>
+                    <p class="text-xs text-gray-500">M: {{ male_members }} | F: {{ female_members }}</p>
+                </div>
+                <i class="fas fa-users text-4xl text-kpn-green"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Leaders</p>
+                    <p class="text-3xl font-bold text-kpn-blue">{{ total_leaders }}</p>
+                    <p class="text-xs text-gray-500">Pending: {{ pending_approvals }}</p>
+                </div>
+                <i class="fas fa-user-tie text-4xl text-kpn-blue"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Campaigns</p>
+                    <p class="text-3xl font-bold text-purple-600">{{ total_campaigns }}</p>
+                    <p class="text-xs text-gray-500">Active: {{ active_campaigns }}</p>
+                </div>
+                <i class="fas fa-bullhorn text-4xl text-purple-600"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Events</p>
+                    <p class="text-3xl font-bold text-orange-600">{{ total_events }}</p>
+                    <p class="text-xs text-gray-500">Upcoming: {{ upcoming_events }}</p>
+                </div>
+                <i class="fas fa-calendar text-4xl text-orange-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Financial & Programs Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Donations</p>
+                    <p class="text-2xl font-bold text-green-600">₦{{ total_donations|floatformat:0 }}</p>
+                    <p class="text-xs text-gray-500">Pending: {{ pending_donations }}</p>
+                </div>
+                <i class="fas fa-donate text-4xl text-green-600"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Expenses</p>
+                    <p class="text-2xl font-bold text-red-600">₦{{ total_expenses|floatformat:0 }}</p>
+                </div>
+                <i class="fas fa-money-bill-wave text-4xl text-red-600"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Programs</p>
+                    <p class="text-3xl font-bold text-teal-600">{{ total_womens_programs|add:total_youth_programs|add:total_welfare_programs }}</p>
+                    <p class="text-xs text-gray-500">W: {{ total_womens_programs }} | Y: {{ total_youth_programs }} | Wf: {{ total_welfare_programs }}</p>
+                </div>
+                <i class="fas fa-tasks text-4xl text-teal-600"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Structure</p>
+                    <p class="text-3xl font-bold text-indigo-600">{{ total_zones }}</p>
+                    <p class="text-xs text-gray-500">{{ total_lgas }} LGAs | {{ total_wards }} Wards</p>
+                </div>
+                <i class="fas fa-sitemap text-4xl text-indigo-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Alerts & Actions -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
@@ -23,30 +117,31 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Members</p>
-                    <p class="text-3xl font-bold text-kpn-green">{{ total_members }}</p>
-                </div>
-                <i class="fas fa-users text-4xl text-kpn-green"></i>
-            </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Leaders</p>
-                    <p class="text-3xl font-bold text-kpn-blue">{{ total_leaders }}</p>
-                </div>
-                <i class="fas fa-user-tie text-4xl text-kpn-blue"></i>
-            </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Pending Reports</p>
-                    <p class="text-3xl font-bold text-purple-600">{{ pending_reports }}</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ pending_reports }}</p>
+                    <p class="text-xs text-gray-500">Total: {{ total_reports }}</p>
                 </div>
-                <i class="fas fa-file-alt text-4xl text-purple-600"></i>
+                <i class="fas fa-file-alt text-4xl text-blue-600"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Disciplinary</p>
+                    <p class="text-3xl font-bold text-red-600">{{ pending_disciplinary }}</p>
+                </div>
+                <i class="fas fa-gavel text-4xl text-red-600"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">FAQs</p>
+                    <p class="text-3xl font-bold text-gray-600">{{ total_faqs }}</p>
+                </div>
+                <i class="fas fa-question-circle text-4xl text-gray-600"></i>
             </div>
         </div>
     </div>

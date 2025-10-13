@@ -25,9 +25,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SESSION_SECRET', default='django-insecure--l18i910ohi552++odr*0w6@#ar(hsiyw9*w_4vmdvbbb0=+)6')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,.replit.dev,.replit.app,.repl.co', cast=lambda v: [s.strip() for s in v.split(',')])
 
 
 # Application definition
