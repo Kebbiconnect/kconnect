@@ -29,6 +29,12 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,.replit.dev,.replit.app,.repl.co', cast=lambda v: [s.strip() for s in v.split(',')])
 
+# CSRF Trusted Origins for Replit
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.replit.dev',
+    'https://*.replit.app',
+    'https://*.repl.co',
+]
 
 # Application definition
 
