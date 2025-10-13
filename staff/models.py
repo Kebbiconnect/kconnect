@@ -278,3 +278,107 @@ class WelfareProgram(models.Model):
         elif self.zone:
             return f"Zonal - {self.zone.name}"
         return "State-wide"
+
+
+class CommunityOutreach(models.Model):
+    ENGAGEMENT_TYPE_CHOICES = [
+        ('MEETING', 'Meeting'),
+        ('PARTNERSHIP', 'Partnership Discussion'),
+        ('EVENT', 'Community Event'),
+        ('MEDIA', 'Media Engagement'),
+        ('COLLABORATION', 'Collaboration'),
+        ('OTHER', 'Other'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('PLANNED', 'Planned'),
+        ('ONGOING', 'Ongoing'),
+        ('COMPLETED', 'Completed'),
+        ('FOLLOW_UP', 'Follow-up Required'),
+    ]
+    
+    organization = models.CharField(max_length=300, help_text="Organization or community group name")
+    contact_person = models.CharField(max_length=200, blank=True)
+    contact_phone = models.CharField(max_length=20, blank=True)
+    contact_email = models.EmailField(blank=True)
+    
+    engagement_type = models.CharField(max_length=20, choices=ENGAGEMENT_TYPE_CHOICES)
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='PLANNED')
+    
+    date = models.DateField(help_text="Date of outreach activity")
+    location = models.CharField(max_length=200, blank=True)
+    
+    purpose = models.TextField(help_text="Purpose of the outreach")
+    notes = models.TextField(blank=True, help_text="Details and outcomes of the engagement")
+    
+    follow_up_date = models.DateField(null=True, blank=True, help_text="Date for follow-up action")
+    follow_up_notes = models.TextField(blank=True)
+    
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_outreach')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-date', '-created_at']
+        verbose_name = 'Community Outreach'
+        verbose_name_plural = 'Community Outreach Activities'
+    
+    def __str__(self):
+        return f"{self.organization} - {self.get_engagement_type_display()} ({self.date})"
+
+
+class WardMeeting(models.Model):
+    MEETING_TYPE_CHOICES = [
+        ('GENERAL', 'General Meeting'),
+        ('EXECUTIVE', 'Executive Meeting'),
+        ('EMERGENCY', 'Emergency Meeting'),
+        ('PLANNING', 'Planning Session'),
+        ('OTHER', 'Other'),
+    ]
+    
+    ward = models.ForeignKey(Ward, on_delete=models.CASCADE, related_name='ward_meetings')
+    meeting_type = models.CharField(max_length=20, choices=MEETING_TYPE_CHOICES)
+    
+    title = models.CharField(max_length=300)
+    date = models.DateField()
+    time = models.TimeField(null=True, blank=True)
+    location = models.CharField(max_length=200, blank=True)
+    
+    agenda = models.TextField(blank=True, help_text="Meeting agenda and topics")
+    minutes = models.TextField(blank=True, help_text="Meeting minutes and decisions")
+    
+    attendees = models.ManyToManyField(User, blank=True, related_name='attended_ward_meetings', through='WardMeetingAttendance')
+    
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_ward_meetings')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-date', '-created_at']
+        verbose_name = 'Ward Meeting'
+        verbose_name_plural = 'Ward Meetings'
+    
+    def __str__(self):
+        return f"{self.ward.name} - {self.title} ({self.date})"
+    
+    def get_attendance_count(self):
+        return self.attendees.count()
+
+
+class WardMeetingAttendance(models.Model):
+    meeting = models.ForeignKey(WardMeeting, on_delete=models.CASCADE, related_name='attendance_records')
+    member = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ward_meeting_attendance')
+    
+    present = models.BooleanField(default=True)
+    notes = models.TextField(blank=True)
+    
+    recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='recorded_ward_attendance')
+    recorded_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['meeting', 'member']
+        ordering = ['member__last_name', 'member__first_name']
+    
+    def __str__(self):
+        status = "Present" if self.present else "Absent"
+        return f"{self.member.get_full_name()} - {status}"
