@@ -1,0 +1,57 @@
+<!-- Reusable Dashboard Header Component with Typing Animation -->
+<div class="mb-8 bg-gradient-to-r from-kpn-green to-kpn-blue rounded-2xl p-8 shadow-2xl animate-fadeInScale">
+    <div class="flex items-center justify-between flex-wrap gap-4">
+        <div class="flex-1">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-white mb-2">
+                <i class="{{ icon_class|default:'fas fa-tachometer-alt' }} mr-3"></i>{{ title }}
+            </h1>
+            <div class="text-white text-lg">
+                <span class="typing-text font-semibold" data-messages="{{ welcome_messages }}"></span>
+                <span class="typing-cursor inline-block w-0.5 h-5 bg-white ml-1 animate-pulse"></span>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div class="bg-white/20 backdrop-blur-sm rounded-lg px-6 py-3 text-white">
+                <p class="text-sm opacity-90">Welcome back,</p>
+                <p class="text-xl font-bold">{{ user.get_full_name }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    .animate-fadeInScale {
+        animation: fadeInScale 0.6s ease-out;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .stat-card {
+        animation: slideUp 0.5s ease-out backwards;
+    }
+    
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+</style>

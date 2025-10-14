@@ -2,16 +2,53 @@
 
 {% block title %}President Dashboard - KPN{% endblock %}
 
+{% block extra_css %}
+<style>
+    @keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    .animate-fadeInScale {
+        animation: fadeInScale 0.6s ease-out;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .stat-card {
+        animation: slideUp 0.5s ease-out backwards;
+    }
+    
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold">President Dashboard</h1>
-        <p class="text-gray-600 dark:text-gray-400">Welcome, {{ user.get_full_name }}. You have full oversight of the organization.</p>
-    </div>
+    <!-- Reusable Dashboard Header with Typing Animation -->
+    {% include 'staff/dashboards/includes/_role_header.html' with title="President Dashboard" icon_class="fas fa-crown" welcome_messages="You have full oversight of the organization.|Leading KPN toward progress and change.|Empowering youth across Kebbi State.|One Voice, One Change. 🌟" %}
     
     <!-- Platform Overview -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="stat-card bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Total Members</p>
@@ -22,7 +59,7 @@
             </div>
         </div>
         
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="stat-card bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Total Leaders</p>
@@ -33,7 +70,7 @@
             </div>
         </div>
         
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="stat-card bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Campaigns</p>
@@ -44,7 +81,7 @@
             </div>
         </div>
         
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="stat-card bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Events</p>
@@ -58,7 +95,7 @@
     
     <!-- Financial & Programs Overview -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Donations</p>
@@ -69,7 +106,7 @@
             </div>
         </div>
         
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Expenses</p>
@@ -79,7 +116,7 @@
             </div>
         </div>
         
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Programs</p>
@@ -90,7 +127,7 @@
             </div>
         </div>
         
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Structure</p>
@@ -104,7 +141,7 @@
     
     <!-- Alerts & Actions -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Pending Approvals</p>
@@ -114,7 +151,7 @@
             </div>
         </div>
         
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Pending Reports</p>
@@ -125,7 +162,7 @@
             </div>
         </div>
         
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Disciplinary</p>
@@ -135,7 +172,7 @@
             </div>
         </div>
         
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">FAQs</p>
@@ -147,29 +184,33 @@
     </div>
     
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+            <h3 class="text-xl font-semibold mb-4 flex items-center">
+                <i class="fas fa-bolt text-yellow-500 mr-2"></i>Quick Actions
+            </h3>
             <div class="space-y-3">
-                <a href="{% url 'staff:approve_members' %}" class="block p-3 bg-yellow-50 dark:bg-yellow-900 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-800 transition">
-                    <i class="fas fa-user-check mr-2"></i> Approve Member Applications
+                <a href="{% url 'staff:approve_members' %}" class="block p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800 rounded-lg hover:from-yellow-100 hover:to-yellow-200 dark:hover:from-yellow-800 dark:hover:to-yellow-700 transition-all transform hover:scale-105">
+                    <i class="fas fa-user-check mr-2 text-yellow-600"></i> Approve Member Applications
                 </a>
-                <a href="{% url 'staff:manage_staff' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
-                    <i class="fas fa-users-cog mr-2"></i> Manage All Staff
+                <a href="{% url 'staff:manage_staff' %}" class="block p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 rounded-lg hover:from-blue-100 hover:to-blue-200 dark:hover:from-blue-800 dark:hover:to-blue-700 transition-all transform hover:scale-105">
+                    <i class="fas fa-users-cog mr-2 text-blue-600"></i> Manage All Staff
                 </a>
-                <a href="{% url 'staff:view_reports' %}" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
-                    <i class="fas fa-chart-line mr-2"></i> View Reports & Analytics
+                <a href="{% url 'staff:view_reports' %}" class="block p-4 bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 rounded-lg hover:from-purple-100 hover:to-purple-200 dark:hover:from-purple-800 dark:hover:to-purple-700 transition-all transform hover:scale-105">
+                    <i class="fas fa-chart-line mr-2 text-purple-600"></i> View Reports & Analytics
                 </a>
-                <a href="{% url 'staff:disciplinary_actions' %}" class="block p-3 bg-red-50 dark:bg-red-900 rounded-lg hover:bg-red-100 dark:hover:bg-red-800 transition">
-                    <i class="fas fa-gavel mr-2"></i> Disciplinary Actions
+                <a href="{% url 'staff:disciplinary_actions' %}" class="block p-4 bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900 dark:to-red-800 rounded-lg hover:from-red-100 hover:to-red-200 dark:hover:from-red-800 dark:hover:to-red-700 transition-all transform hover:scale-105">
+                    <i class="fas fa-gavel mr-2 text-red-600"></i> Disciplinary Actions
                 </a>
             </div>
         </div>
         
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 class="text-xl font-semibold mb-4">Recent Activity</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+            <h3 class="text-xl font-semibold mb-4 flex items-center">
+                <i class="fas fa-clock text-kpn-blue mr-2"></i>Recent Activity
+            </h3>
             <div class="space-y-3">
                 {% for activity in recent_activities %}
-                <div class="flex items-start p-3 bg-gray-50 dark:bg-gray-700 rounded">
+                <div class="flex items-start p-3 bg-gray-50 dark:bg-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition">
                     <i class="fas fa-info-circle mt-1 mr-3 text-kpn-blue"></i>
                     <div class="flex-1">
                         <p class="text-sm">{{ activity.description }}</p>
@@ -183,11 +224,13 @@
         </div>
     </div>
     
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 class="text-xl font-semibold mb-4">Pending Member Approvals</h3>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+        <h3 class="text-xl font-semibold mb-4 flex items-center">
+            <i class="fas fa-user-clock text-yellow-600 mr-2"></i>Pending Member Approvals
+        </h3>
         <div class="overflow-x-auto">
             <table class="w-full">
-                <thead class="bg-gray-50 dark:bg-gray-700">
+                <thead class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
                     <tr>
                         <th class="px-4 py-3 text-left text-xs font-medium uppercase">Name</th>
                         <th class="px-4 py-3 text-left text-xs font-medium uppercase">Role</th>
@@ -198,13 +241,15 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                     {% for applicant in pending_applicants %}
-                    <tr>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                         <td class="px-4 py-3">{{ applicant.get_full_name }}</td>
                         <td class="px-4 py-3">{{ applicant.role_definition.title }}</td>
                         <td class="px-4 py-3">{{ applicant.get_jurisdiction }}</td>
                         <td class="px-4 py-3">{{ applicant.created_at|date:"M d, Y" }}</td>
                         <td class="px-4 py-3">
-                            <a href="{% url 'staff:review_applicant' applicant.id %}" class="text-kpn-green hover:text-kpn-blue">Review</a>
+                            <a href="{% url 'staff:review_applicant' applicant.id %}" class="inline-flex items-center px-3 py-1 bg-kpn-green text-white rounded-lg hover:bg-green-600 transition">
+                                <i class="fas fa-search mr-1"></i>Review
+                            </a>
                         </td>
                     </tr>
                     {% empty %}

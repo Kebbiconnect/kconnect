@@ -315,7 +315,8 @@ def check_vacant_roles(request):
             if not existing:
                 vacant_roles.append({
                     'id': role.id,
-                    'title': role.title
+                    'title': role.title,
+                    'tier': role.tier
                 })
     
     if zone:
@@ -329,7 +330,8 @@ def check_vacant_roles(request):
             if not existing:
                 vacant_roles.append({
                     'id': role.id,
-                    'title': role.title
+                    'title': role.title,
+                    'tier': role.tier
                 })
     
     if lga:
@@ -343,7 +345,8 @@ def check_vacant_roles(request):
             if not existing:
                 vacant_roles.append({
                     'id': role.id,
-                    'title': role.title
+                    'title': role.title,
+                    'tier': role.tier
                 })
     
     if ward:
@@ -357,7 +360,8 @@ def check_vacant_roles(request):
             if not existing:
                 vacant_roles.append({
                     'id': role.id,
-                    'title': role.title
+                    'title': role.title,
+                    'tier': role.tier
                 })
     
     return JsonResponse({
