@@ -94,9 +94,25 @@ WSGI_APPLICATION = 'KPN.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 USE_TURSO = config('USE_TURSO', default=False, cast=bool)
-USE_NEON = config('USE_NEON', default=True, cast=bool)
+USE_NEON = config('USE_NEON', default=False, cast=bool)
 
-if USE_NEON:
+DATABASE_URL = config('DATABASE_URL', default=None)
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('PGDATABASE', default=''),
+            'USER': config('PGUSER', default=''),
+            'PASSWORD': config('PGPASSWORD', default=''),
+            'HOST': config('PGHOST', default=''),
+            'PORT': config('PGPORT', default='5432'),
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
+        }
+    }
+elif USE_NEON:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
