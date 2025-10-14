@@ -43,7 +43,18 @@ Built on Django 5.2.7, the system is modularized into `core`, `staff`, `leadersh
 - **Ward Meeting Logbook**: Ward Coordinators and Ward Secretaries can create, manage, and track ward-level meetings with attendance recording, agenda documentation, and meeting minutes.
 - **Assistant Organizing Secretary Permissions**: Enhanced event management access allowing creation, editing, and deletion of events (matching Organizing Secretary capabilities).
 
-## Recent Changes (October 13, 2025)
+## Recent Changes (October 14, 2025)
+
+### Database Migration to Neon PostgreSQL
+**Production Database Configuration:**
+1. **Neon.tech PostgreSQL** - Successfully migrated from SQLite/LibSQL to Neon PostgreSQL cloud database
+2. **Environment Variables** - Secure configuration using environment variables (NEON_DB_PASSWORD, NEON_DB_HOST, NEON_DB_NAME, NEON_DB_USER, NEON_DB_PORT)
+3. **Database Connection** - SSL-enabled connection to Neon with proper security configuration
+4. **Migrations Applied** - All 39 migrations successfully applied to Neon database
+5. **Superuser Created** - Admin account created (username: kpnadmin20, email: kpn.kebbi@gmail.com)
+6. **Member Approval System** - Verified working through Django admin interface with User model fields (status, date_approved, approved_by)
+
+## Previous Changes (October 13, 2025)
 
 ### Comprehensive QA Testing & Bug Fixes
 **Quality Assurance Complete:**
@@ -80,13 +91,14 @@ All new templates follow established design patterns:
 - Role-based access control integration
 
 ### System Design Choices
-- **Database**: SQLite (development), LibSQL via Turso (production) with `django-libsql`.
+- **Database**: Neon PostgreSQL (production/development) with SSL connection, fallback to SQLite/LibSQL via environment variables.
 - **Authentication**: Robust login, logout, registration with extensive validation.
 - **Access Control**: `@role_required` and `@specific_role_required` decorators for secure, role-based access.
 - **Static Files**: Managed via Django's static files system.
 - **Error Handling**: Comprehensive validation for location and role IDs.
 
 ## External Dependencies
-- **Database**: SQLite, LibSQL (via Turso)
+- **Database**: Neon PostgreSQL (primary), SQLite, LibSQL (via Turso)
+- **Database Driver**: psycopg2-binary
 - **Image Processing**: Pillow
 - **Environment Variables**: python-decouple
