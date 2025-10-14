@@ -94,8 +94,23 @@ WSGI_APPLICATION = 'KPN.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 USE_TURSO = config('USE_TURSO', default=False, cast=bool)
+USE_NEON = config('USE_NEON', default=True, cast=bool)
 
-if USE_TURSO:
+if USE_NEON:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('NEON_DB_NAME', default='neondb'),
+            'USER': config('NEON_DB_USER', default='neondb_owner'),
+            'PASSWORD': config('NEON_DB_PASSWORD'),
+            'HOST': config('NEON_DB_HOST', default='ep-solitary-bird-agv5faq5-pooler.c-2.eu-central-1.aws.neon.tech'),
+            'PORT': config('NEON_DB_PORT', default='5432'),
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
+        }
+    }
+elif USE_TURSO:
     TURSO_DATABASE_URL = "kpnai-kpntursodb.aws-eu-west-1.turso.io"
     TURSO_AUTH_TOKEN = config('TURSO_AUTH_TOKEN')
     DATABASES = {
