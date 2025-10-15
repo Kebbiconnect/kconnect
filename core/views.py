@@ -175,9 +175,12 @@ def submit_report(request):
     if user.role == 'WARD':
         FormClass = WardReportForm
         report_type = 'WARD_TO_LGA'
+        if not user.ward:
+            messages.error(request, 'Your ward assignment is missing. Please contact the administrator.')
+            return redirect('staff:dashboard')
         lga_coordinator = User.objects.filter(
             role='LGA',
-            lga=user.lga,
+            lga=user.ward.lga,
             role_definition__title='LGA Coordinator',
             status='APPROVED'
         ).first()
@@ -185,9 +188,12 @@ def submit_report(request):
     elif user.role == 'LGA':
         FormClass = LGAReportForm
         report_type = 'LGA_TO_ZONAL'
+        if not user.lga:
+            messages.error(request, 'Your LGA assignment is missing. Please contact the administrator.')
+            return redirect('staff:dashboard')
         zonal_coordinator = User.objects.filter(
             role='ZONAL',
-            zone=user.zone,
+            zone=user.lga.zone,
             role_definition__title='Zonal Coordinator',
             status='APPROVED'
         ).first()
