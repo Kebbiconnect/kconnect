@@ -2,21 +2,60 @@
 
 {% block title %}Gallery - KPN{% endblock %}
 
+{% block extra_css %}
+<style>
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .fade-in-up {
+        animation: fadeInUp 0.8s ease-out;
+    }
+    
+    .media-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .media-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .media-card img {
+        transition: transform 0.5s ease;
+    }
+    
+    .media-card:hover img {
+        transform: scale(1.1);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <h1 class="text-4xl font-bold mb-8">Media Gallery</h1>
+    <h1 class="text-4xl font-bold mb-8 fade-in-up">Media Gallery</h1>
     
-    <div class="flex justify-center gap-4 mb-8">
-        <a href="?type=all" class="px-6 py-2 rounded {% if selected_type == 'all' %}bg-kpn-green text-white{% else %}bg-gray-200 dark:bg-gray-700{% endif %}">All</a>
-        <a href="?type=PHOTO" class="px-6 py-2 rounded {% if selected_type == 'PHOTO' %}bg-kpn-green text-white{% else %}bg-gray-200 dark:bg-gray-700{% endif %}">Photos</a>
-        <a href="?type=VIDEO" class="px-6 py-2 rounded {% if selected_type == 'VIDEO' %}bg-kpn-green text-white{% else %}bg-gray-200 dark:bg-gray-700{% endif %}">Videos</a>
+    <div class="flex justify-center gap-4 mb-8 fade-in-up" style="animation-delay: 0.1s;">
+        <a href="?type=all" class="px-6 py-2 rounded transition-all hover:scale-105 {% if selected_type == 'all' %}bg-kpn-green text-white{% else %}bg-gray-200 dark:bg-gray-700{% endif %}">All</a>
+        <a href="?type=PHOTO" class="px-6 py-2 rounded transition-all hover:scale-105 {% if selected_type == 'PHOTO' %}bg-kpn-green text-white{% else %}bg-gray-200 dark:bg-gray-700{% endif %}">Photos</a>
+        <a href="?type=VIDEO" class="px-6 py-2 rounded transition-all hover:scale-105 {% if selected_type == 'VIDEO' %}bg-kpn-green text-white{% else %}bg-gray-200 dark:bg-gray-700{% endif %}">Videos</a>
     </div>
     
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         {% for item in media_items %}
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div class="media-card bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden fade-in-up" style="animation-delay: {{ forloop.counter|add:'1'|floatformat:'1' }}00ms;">
             {% if item.media_type == 'PHOTO' %}
-            <img src="{{ item.file.url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
+            <div class="overflow-hidden">
+                <img src="{{ item.file.url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
+            </div>
             {% else %}
             <video controls class="w-full h-64">
                 <source src="{{ item.file.url }}" type="video/mp4">
@@ -28,7 +67,7 @@
             </div>
         </div>
         {% empty %}
-        <div class="col-span-full text-center py-12">
+        <div class="col-span-full text-center py-12 fade-in-up">
             <p class="text-gray-600 dark:text-gray-400">No media items available yet.</p>
         </div>
         {% endfor %}

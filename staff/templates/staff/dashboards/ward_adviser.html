@@ -4,10 +4,8 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold">Ward Adviser Dashboard</h1>
-        <p class="text-gray-600 dark:text-gray-400">Welcome, {{ user.get_full_name }}. Providing advisory services to ward.</p>
-    </div>
+    <!-- Reusable Dashboard Header with Typing Animation -->
+    {% include 'staff/dashboards/includes/_role_header.html' with title="Ward Adviser Dashboard" icon_class="fas fa-user-tie" welcome_messages="Providing expert guidance to ward leadership.|Supporting strategic decisions.|Mentoring grassroots leaders." %}
     
     <div class="grid grid-cols-1 gap-6 mb-8">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">

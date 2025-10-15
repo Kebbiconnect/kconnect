@@ -4,10 +4,8 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold">Director of Mobilization Dashboard</h1>
-        <p class="text-gray-600 dark:text-gray-400">Welcome, {{ user.get_full_name }}. Leading member mobilization efforts.</p>
-    </div>
+    <!-- Reusable Dashboard Header with Typing Animation -->
+    {% include 'staff/dashboards/includes/_role_header.html' with title="Director of Mobilization Dashboard" icon_class="fas fa-bullhorn" welcome_messages="Leading member recruitment and engagement.|Expanding our network of change-makers.|Mobilizing youth for progress." %}
     
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
