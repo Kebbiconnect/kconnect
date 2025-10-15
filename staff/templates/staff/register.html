@@ -295,9 +295,14 @@ zoneSelect.addEventListener('change', async function() {
             lgaSelect.appendChild(option);
         });
         
-        // Check vacant roles when zone changes
+        // Update tier options when zone changes
         if (leadershipRadio.checked) {
-            checkVacantRoles();
+            // Reset tier selection since location changed
+            leadershipTierSelect.value = '';
+            roleSelectionWrapper.classList.add('hidden');
+            roleSelect.disabled = true;
+            roleMessage.textContent = '';
+            updateTierOptions();
         }
     } catch (error) {
         console.error('Error fetching LGAs:', error);
@@ -335,9 +340,14 @@ lgaSelect.addEventListener('change', async function() {
             wardSelect.appendChild(option);
         });
         
-        // Check vacant roles when LGA changes
+        // Update tier options when LGA changes
         if (leadershipRadio.checked) {
-            checkVacantRoles();
+            // Reset tier selection since location changed
+            leadershipTierSelect.value = '';
+            roleSelectionWrapper.classList.add('hidden');
+            roleSelect.disabled = true;
+            roleMessage.textContent = '';
+            updateTierOptions();
         }
     } catch (error) {
         console.error('Error fetching wards:', error);
@@ -348,6 +358,11 @@ lgaSelect.addEventListener('change', async function() {
 
 wardSelect.addEventListener('change', function() {
     if (leadershipRadio.checked) {
+        // Reset tier selection since location changed
+        leadershipTierSelect.value = '';
+        roleSelectionWrapper.classList.add('hidden');
+        roleSelect.disabled = true;
+        roleMessage.textContent = '';
         updateTierOptions();
     }
 });
@@ -454,6 +469,16 @@ async function checkVacantRolesByTier(tier) {
     const zoneId = zoneSelect.value;
     const lgaId = lgaSelect.value;
     const wardId = wardSelect.value;
+    
+    // Validate that tier is still a valid option in the dropdown
+    const tierOptions = Array.from(leadershipTierSelect.options).map(opt => opt.value);
+    if (!tierOptions.includes(tier) || tier === '') {
+        roleSelect.innerHTML = '<option value="">Please select a valid tier first</option>';
+        roleSelect.disabled = true;
+        roleMessage.textContent = 'Please select a leadership tier from the dropdown above.';
+        roleMessage.className = 'text-sm mt-2 text-gray-600 dark:text-gray-400';
+        return;
+    }
     
     roleSelect.innerHTML = '<option value="">Loading available positions...</option>';
     roleSelect.disabled = true;
