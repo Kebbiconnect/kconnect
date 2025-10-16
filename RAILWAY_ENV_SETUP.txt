@@ -1,0 +1,131 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║         RAILWAY ENVIRONMENT VARIABLES - COPY & PASTE GUIDE          ║
+╔══════════════════════════════════════════════════════════════════════╗
+
+STEP 1: GENERATE YOUR SECRET KEY
+════════════════════════════════════════════════════════════════════════
+Run this command on your local machine:
+
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+
+Copy the output and use it below for SESSION_SECRET
+
+
+STEP 2: GET NEON DATABASE CREDENTIALS
+════════════════════════════════════════════════════════════════════════
+1. Go to: https://console.neon.tech
+2. Create new project: "kpn-database"
+3. Copy these values from your Neon dashboard:
+
+   Connection String (looks like):
+   postgresql://username:password@ep-xxxx.neon.tech/neondb?sslmode=require
+   
+   Individual credentials:
+   - Host: ep-xxxx.neon.tech
+   - Database: neondb
+   - Username: neondb_owner
+   - Password: [shown in dashboard]
+
+
+STEP 3: COPY THESE TO RAILWAY VARIABLES TAB
+════════════════════════════════════════════════════════════════════════
+
+─────────────────────────────────────────────────────────────────────
+REQUIRED VARIABLES (Must have all of these):
+─────────────────────────────────────────────────────────────────────
+
+SESSION_SECRET=<paste-your-generated-secret-key>
+DEBUG=False
+DATABASE_URL=postgresql://user:pass@host.neon.tech/db?sslmode=require
+PGHOST=ep-xxxx.neon.tech
+PGDATABASE=neondb
+PGUSER=neondb_owner
+PGPASSWORD=<paste-neon-password>
+PGPORT=5432
+SECURE_SSL_REDIRECT=True
+SESSION_COOKIE_SECURE=True
+CSRF_COOKIE_SECURE=True
+
+─────────────────────────────────────────────────────────────────────
+OPTIONAL VARIABLES (For email/password reset):
+─────────────────────────────────────────────────────────────────────
+
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=<your-email@gmail.com>
+EMAIL_HOST_PASSWORD=<your-gmail-app-password>
+DEFAULT_FROM_EMAIL=noreply@kpn.org
+
+
+STEP 4: AFTER DEPLOYMENT - SEED DATABASE
+════════════════════════════════════════════════════════════════════════
+
+1. Open Railway Dashboard → Your Project
+2. Click on "Deployments" tab
+3. Click your latest deployment
+4. Click "Shell" (terminal icon)
+5. Run this command:
+
+python manage.py seed_data
+
+This will create:
+✓ 3 Zones (Kebbi North, Central, South)
+✓ 21 LGAs
+✓ All Wards (including fixed Kebbi South!)
+✓ 41 Leadership Role Definitions
+
+
+STEP 5 (OPTIONAL): CREATE ADMIN ACCOUNT
+════════════════════════════════════════════════════════════════════════
+
+In Railway shell, run:
+
+python manage.py createsuperuser
+
+Then access admin at: https://your-app.railway.app/admin/
+
+
+DEPLOYMENT VERIFICATION
+════════════════════════════════════════════════════════════════════════
+
+Test these after deployment:
+
+□ Homepage loads: https://your-app.railway.app/
+□ Registration works for all zones
+□ Kebbi South wards load (BUG FIXED!)
+□ Login functionality works
+□ Static files (CSS/images) load correctly
+□ HTTPS redirect works (http → https)
+
+
+QUICK REFERENCE
+════════════════════════════════════════════════════════════════════════
+
+Generate Secret:  python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+Seed Database:    python manage.py seed_data
+Create Admin:     python manage.py createsuperuser
+Collect Static:   python manage.py collectstatic --noinput
+View Logs:        railway logs (if using CLI)
+
+
+COST BREAKDOWN
+════════════════════════════════════════════════════════════════════════
+
+Railway (Hobby):    $5/month (500 execution hours)
+Railway (Pro):      $20/month (unlimited)
+Neon (Free):        $0 (0.5GB storage)
+Neon (Pro):         $19/month (3GB storage)
+
+Recommended Start:  Railway Hobby + Neon Free = $5/month
+
+
+SUPPORT LINKS
+════════════════════════════════════════════════════════════════════════
+
+Railway:  https://railway.app/help
+Neon:     https://neon.tech/docs/introduction
+Django:   https://docs.djangoproject.com/en/stable/howto/deployment/
+
+╚══════════════════════════════════════════════════════════════════════╝

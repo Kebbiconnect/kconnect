@@ -1,0 +1,26 @@
+# Django Framework
+Django==5.2.7
+gunicorn==23.0.0
+
+# Database
+psycopg2-binary==2.9.11
+dj-database-url==2.3.0
+
+# Security & Authentication
+django-axes==8.0.0
+django-ratelimit==4.1.0
+
+# Static Files
+whitenoise==6.11.0
+
+# Image Processing
+pillow==11.3.0
+
+# Configuration
+python-decouple==3.8
+
+# Document Processing
+python-docx==1.2.0
+
+# Optional: LibSQL/Turso support (remove if not using)
+django-libsql==0.1.3

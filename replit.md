@@ -4,10 +4,11 @@
 The Kebbi Progressive Network (KPN) website is a Django-based civic engagement platform designed for youth mobilization, charity, welfare initiatives, and governance advocacy in Kebbi State, Nigeria. Its primary purpose is to provide a robust system for managing members, disseminating campaigns, and ensuring financial transparency, thereby unifying efforts for societal change. The platform is production-ready and fully operational.
 
 ## Recent Changes (October 2025)
+- **Production Deployment Ready**: Complete Railway + Neon Database deployment configuration with all security hardening in place. Deployment files created: requirements.txt, Procfile, railway.json, .env templates, and comprehensive deployment guides.
+- **Critical Bug Fix - Kebbi South Wards**: Fixed registration form bug where Kebbi South zone failed to load wards. Root cause was LGA naming mismatch ("Danko/Wasagu" vs "Wasagu/Danko"). All 71 wards now properly populated across all 7 Kebbi South LGAs.
 - **Enhanced Registration Form**: Replaced Facebook verification checkbox with interactive button that opens KPN's Facebook page in new tab and auto-enables Submit button upon click. Uses localStorage for persistence across page refreshes, with automatic cleanup on successful registration.
 - **Smart Tier Selection**: Implemented auto-hide functionality that only displays leadership tiers with vacant positions. Tiers with all seats filled are completely hidden from the dropdown.
 - **Statewide Role Clarification**: State Executive roles now clearly marked as "(statewide)" in the UI, indicating they are available to all members regardless of their specific zone or LGA location.
-- **Kebbi South LGA Fix**: Added all 7 missing LGAs to Kebbi South zone (Fakai, Ngaski, Sakaba, Shanga, Wasagu/Danko, Yauri, Zuru) in the database.
 - **Password Management**: Implemented comprehensive password management system:
   - Change Password: Secure password change functionality with current password verification, accessible from user profiles
   - Forgot Password: Email-based password reset using Django's token-based authentication system
