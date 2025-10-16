@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import models
@@ -11,6 +11,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
 from django.conf import settings
+from django_ratelimit.decorators import ratelimit
 from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram, CommunityOutreach, WardMeeting, WardMeetingAttendance
 from .decorators import specific_role_required, role_required, approved_leader_required
 from .forms import MemberMobilizationFilterForm, CommunityOutreachForm, WardMeetingForm, WardMeetingAttendanceForm
@@ -51,6 +52,7 @@ def logout_view(request):
     messages.success(request, 'You have been logged out successfully.')
     return redirect('core:home')
 
+@ratelimit(key='ip', rate='5/h', method='POST', block=True)
 def register(request):
     if request.user.is_authenticated:
         return redirect('staff:dashboard')
@@ -291,6 +293,7 @@ def change_password(request):
     
     return render(request, 'staff/change_password.html')
 
+@ratelimit(key='ip', rate='3/h', method='POST', block=True)
 def forgot_password(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -341,6 +344,7 @@ Kebbi Progressive Network Team
     
     return render(request, 'staff/forgot_password.html')
 
+@ratelimit(key='ip', rate='5/h', method='POST', block=True)
 def reset_password(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
