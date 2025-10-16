@@ -257,6 +257,35 @@ def profile(request):
     
     return render(request, 'staff/profile.html')
 
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        old_password = request.POST.get('old_password')
+        new_password1 = request.POST.get('new_password1')
+        new_password2 = request.POST.get('new_password2')
+        
+        if not request.user.check_password(old_password):
+            messages.error(request, 'Current password is incorrect.')
+            return redirect('staff:change_password')
+        
+        if new_password1 != new_password2:
+            messages.error(request, 'New passwords do not match.')
+            return redirect('staff:change_password')
+        
+        if len(new_password1) < 8:
+            messages.error(request, 'Password must be at least 8 characters long.')
+            return redirect('staff:change_password')
+        
+        request.user.set_password(new_password1)
+        request.user.save()
+        
+        login(request, request.user)
+        
+        messages.success(request, 'Your password has been changed successfully!')
+        return redirect('staff:profile')
+    
+    return render(request, 'staff/change_password.html')
+
 def get_lgas_by_zone(request):
     zone_id = request.GET.get('zone_id')
     

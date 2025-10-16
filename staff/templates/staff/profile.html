@@ -4,7 +4,12 @@
 
 {% block content %}
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <h1 class="text-4xl font-bold mb-8">My Profile</h1>
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-4xl font-bold">My Profile</h1>
+        <a href="{% url 'staff:change_password' %}" class="bg-kpn-blue text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition inline-flex items-center">
+            <i class="fas fa-lock mr-2"></i> Change Password
+        </a>
+    </div>
     
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
         <form method="POST" enctype="multipart/form-data">
