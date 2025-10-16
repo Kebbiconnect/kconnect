@@ -31,7 +31,7 @@ class Command(BaseCommand):
                 'Maiyama': ['Andarai/Kurunkudu/Zugun Liba', 'Giwa Tazo/Zara', 'Gumbin Kure', 'Karaye/Dogondaji', 'Kawara/S/Sara/Yarkamba', 'Kuberu/Gidiga', 'Liba/Danwa/Kuka Kogo', 'Maiyama', 'Mungadi/Botoro', 'Sambawa/Mayalo', 'Sarandosa/Gubba'],
             },
             'Kebbi South': {
-                'Danko/Wasagu': ['Ayu', 'Bena', 'Dan Umaru/Mairairai', 'Danko/Maga', 'Kanya', 'Kyabu/Kandu', 'Ribah/Machika', 'Waje', 'Wasagu', 'Yalmo/Shindi', 'Gwanfi/Kele'],
+                'Wasagu/Danko': ['Ayu', 'Bena', 'Dan Umaru/Mairairai', 'Danko/Maga', 'Kanya', 'Kyabu/Kandu', 'Ribah/Machika', 'Waje', 'Wasagu', 'Yalmo/Shindi', 'Gwanfi/Kele'],
                 'Fakai': ['Bajida', 'Bangu/Garinisa', 'Birnin Tudu', 'Mahuta', 'Gulbin Kuka/Maijarhula', 'Maikende', 'Kangi', 'Fakai/Zussun', 'Marafa', 'Penin Amana/Penin Gaba'],
                 'Ngaski': ['Birnin Yauri', 'Gafara Machupa', 'Garin Baka/Makarin', 'Kwakwaran', 'Libata/Kwangia', 'Kambuwa/Danmaraya', 'Makawa Uleira', 'Ngaski', 'Utono/Hoge', 'Wara'],
                 'Sakaba': ['Adai', 'Dankolo', 'Doka/Bere', 'Gelwasa', 'Janbirni', 'Maza/Maza', 'Makuku', 'Sakaba', 'Tudun Kuka', 'Fada'],
