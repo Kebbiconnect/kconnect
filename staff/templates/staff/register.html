@@ -189,10 +189,12 @@
                     <div class="flex items-start">
                         <input type="checkbox" id="facebook_verified" name="facebook_verified" class="mr-3 mt-1 h-4 w-4 text-kpn-green focus:ring-kpn-green" required>
                         <label for="facebook_verified" class="text-sm">
-                            <strong>I confirm that I have followed the official KPN Facebook page at 
-                            <a href="https://www.facebook.com/kpnkebbi" target="_blank" class="text-kpn-blue hover:underline font-bold">facebook.com/kpnkebbi</a></strong>
+                            <strong>Please follow our official KPN Facebook page: 
+                            <a href="https://www.facebook.com/kpnkebbi" id="fbLink" target="_blank" class="text-kpn-blue hover:underline font-bold inline-flex items-center">
+                                facebook.com/kpnkebbi <i class="fas fa-external-link-alt ml-1 text-xs"></i>
+                            </a></strong>
                             <br>
-                            <span class="text-gray-600 dark:text-gray-400">(This is required for registration and must be followed to complete your account setup)</span>
+                            <span class="text-gray-600 dark:text-gray-400">(Click the link above to follow our page, then come back to complete registration)</span>
                         </label>
                     </div>
                 </div>
@@ -541,7 +543,30 @@ document.head.appendChild(style);
 const facebookCheckbox = document.getElementById('facebook_verified');
 const submitBtn = document.getElementById('submitBtn');
 const fbWarning = document.getElementById('fbWarning');
+const fbLink = document.getElementById('fbLink');
 
+// Check if user has already clicked the Facebook link
+function checkFacebookVisit() {
+    const hasVisited = localStorage.getItem('kpn_fb_visited');
+    if (hasVisited === 'true') {
+        facebookCheckbox.checked = true;
+        submitBtn.classList.remove('hidden');
+        submitBtn.classList.add('block', 'animate-fadeIn');
+        fbWarning.classList.add('hidden');
+    }
+}
+
+// Handle Facebook link click
+fbLink.addEventListener('click', function() {
+    localStorage.setItem('kpn_fb_visited', 'true');
+    // Enable submit button immediately
+    facebookCheckbox.checked = true;
+    submitBtn.classList.remove('hidden');
+    submitBtn.classList.add('block', 'animate-fadeIn');
+    fbWarning.classList.add('hidden');
+});
+
+// Handle checkbox change
 facebookCheckbox.addEventListener('change', function() {
     if (this.checked) {
         submitBtn.classList.remove('hidden');
@@ -552,6 +577,24 @@ facebookCheckbox.addEventListener('change', function() {
         submitBtn.classList.remove('block');
         fbWarning.classList.remove('hidden');
     }
+});
+
+// Check on page load
+checkFacebookVisit();
+
+// Listen for when user returns to the page
+window.addEventListener('focus', function() {
+    checkFacebookVisit();
+});
+
+// Clear localStorage on successful form submission to prevent issues on shared devices
+const registrationForm = document.getElementById('registrationForm');
+registrationForm.addEventListener('submit', function() {
+    // Clear the Facebook visited flag only after form is submitted
+    // This prevents permanent enablement on shared/public devices
+    setTimeout(() => {
+        localStorage.removeItem('kpn_fb_visited');
+    }, 1000);
 });
 </script>
 {% endblock %}
