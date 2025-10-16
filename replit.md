@@ -3,6 +3,11 @@
 ## Overview
 The Kebbi Progressive Network (KPN) website is a Django-based civic engagement platform designed for youth mobilization, charity, welfare initiatives, and governance advocacy in Kebbi State, Nigeria. Its primary purpose is to provide a robust system for managing members, disseminating campaigns, and ensuring financial transparency, thereby unifying efforts for societal change. The platform is production-ready and fully operational.
 
+## Recent Changes (October 2025)
+- **Enhanced Registration Form**: Replaced Facebook verification checkbox with interactive button that opens KPN's Facebook page in new tab and auto-enables Submit button upon click. Uses localStorage for persistence across page refreshes, with automatic cleanup on successful registration.
+- **Smart Tier Selection**: Implemented auto-hide functionality that only displays leadership tiers with vacant positions. Tiers with all seats filled are completely hidden from the dropdown.
+- **Statewide Role Clarification**: State Executive roles now clearly marked as "(statewide)" in the UI, indicating they are available to all members regardless of their specific zone or LGA location.
+
 ## User Preferences
 - Mobile-first design approach
 - Dark mode toggle required
@@ -16,7 +21,7 @@ The Kebbi Progressive Network (KPN) website is a Django-based civic engagement p
 The platform utilizes a mobile-first design philosophy, implemented with Tailwind CSS for responsiveness and Alpine.js for interactive elements. It adheres to KPN's official color palette (Green, White, Blue) and incorporates a dark mode toggle for user preference. Navigation is streamlined with a professional bar featuring the KPN logo and a dedicated mobile menu. Public-facing pages include Home, About Us, Leadership, News & Campaigns, Media Gallery, Contact, Support Us, FAQ, and Code of Conduct. Animations and micro-interactions are integrated across the site, including login, mobile menus, and dashboards, to enhance user experience.
 
 ### Technical Implementations
-The system is built on Django and structured into modular applications: `core`, `staff`, `leadership`, `campaigns`, `donations`, `media`, and `events`. It features a custom `User` model with a comprehensive role-based authentication and authorization system, supporting 41 distinct leadership roles across State, Zonal, LGA, and Ward tiers. Each role is assigned a specific dashboard and permissions. The registration process includes dynamic cascading dropdowns for location selection, real-time vacancy checks, gender collection, and mandatory Facebook page follow verification to enforce seat limits.
+The system is built on Django and structured into modular applications: `core`, `staff`, `leadership`, `campaigns`, `donations`, `media`, and `events`. It features a custom `User` model with a comprehensive role-based authentication and authorization system, supporting 41 distinct leadership roles across State, Zonal, LGA, and Ward tiers. Each role is assigned a specific dashboard and permissions. The registration process includes dynamic cascading dropdowns for location selection, real-time vacancy checks, gender collection, and interactive Facebook page follow verification via button (with localStorage persistence). The tier selection system automatically hides tiers with no vacant positions and clearly differentiates statewide roles (State Executive) from location-specific roles (Zonal, LGA, Ward).
 
 ### Feature Specifications
 - **User Management**: Custom user model, role-based permissions, disciplinary actions (Warning, Suspension, Dismissal with two-tier approval), and full member management.
