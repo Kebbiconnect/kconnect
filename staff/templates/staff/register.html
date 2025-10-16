@@ -186,16 +186,21 @@
                 
                 <!-- Facebook Verification -->
                 <div class="mb-6 bg-blue-50 dark:bg-blue-900 border-2 border-blue-200 dark:border-blue-700 rounded-lg p-4">
-                    <div class="flex items-start">
-                        <input type="checkbox" id="facebook_verified" name="facebook_verified" class="mr-3 mt-1 h-4 w-4 text-kpn-green focus:ring-kpn-green" required>
-                        <label for="facebook_verified" class="text-sm">
-                            <strong>Please follow our official KPN Facebook page: 
-                            <a href="https://www.facebook.com/kpnkebbi" id="fbLink" target="_blank" class="text-kpn-blue hover:underline font-bold inline-flex items-center">
-                                facebook.com/kpnkebbi <i class="fas fa-external-link-alt ml-1 text-xs"></i>
-                            </a></strong>
-                            <br>
-                            <span class="text-gray-600 dark:text-gray-400">(Click the link above to follow our page, then come back to complete registration)</span>
-                        </label>
+                    <input type="checkbox" id="facebook_verified" name="facebook_verified" class="hidden" required>
+                    <div class="text-center">
+                        <p class="text-sm font-semibold mb-3">
+                            <i class="fab fa-facebook text-blue-600 mr-2"></i>Follow our official KPN Facebook page to continue
+                        </p>
+                        <button type="button" id="fbFollowBtn" class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all transform hover:scale-105">
+                            <i class="fab fa-facebook mr-2"></i> Follow KPN on Facebook
+                            <i class="fas fa-external-link-alt ml-2 text-xs"></i>
+                        </button>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                            Click the button to visit and follow our page, then return here to complete registration
+                        </p>
+                        <p id="fbStatus" class="text-sm font-semibold mt-3 hidden">
+                            <i class="fas fa-check-circle text-green-600 mr-1"></i> Thank you for following us! You can now submit your registration.
+                        </p>
                     </div>
                 </div>
                 
@@ -369,8 +374,8 @@ wardSelect.addEventListener('change', function() {
     }
 });
 
-// Update tier options based on location
-function updateTierOptions() {
+// Update tier options based on location - auto-hide tiers with no vacant positions
+async function updateTierOptions() {
     const zoneId = zoneSelect.value;
     const lgaId = lgaSelect.value;
     const wardId = wardSelect.value;
@@ -382,17 +387,63 @@ function updateTierOptions() {
         return;
     }
     
-    // Build tier options based on selected location
-    leadershipTierSelect.innerHTML = '<option value="">Select Leadership Tier</option>';
-    leadershipTierSelect.innerHTML += '<option value="STATE">State Executive</option>';
-    leadershipTierSelect.innerHTML += '<option value="ZONAL">Zonal Coordinator</option>';
-    leadershipTierSelect.innerHTML += '<option value="LGA">LGA Coordinator</option>';
+    // Fetch vacant roles to determine which tiers have available positions
+    leadershipTierSelect.innerHTML = '<option value="">Loading tiers...</option>';
+    leadershipTierSelect.disabled = true;
     
-    if (wardId) {
-        leadershipTierSelect.innerHTML += '<option value="WARD">Ward Leader</option>';
+    try {
+        const params = new URLSearchParams({ zone_id: zoneId, lga_id: lgaId });
+        if (wardId) params.append('ward_id', wardId);
+        
+        const response = await fetch(`/account/api/check-vacant-roles/?${params}`);
+        const data = await response.json();
+        
+        // Group vacant roles by tier
+        const tierCounts = {
+            STATE: 0,
+            ZONAL: 0,
+            LGA: 0,
+            WARD: 0
+        };
+        
+        data.vacant_roles.forEach(role => {
+            if (tierCounts[role.tier] !== undefined) {
+                tierCounts[role.tier]++;
+            }
+        });
+        
+        // Build tier options - only show tiers with vacant positions
+        leadershipTierSelect.innerHTML = '<option value="">Select Leadership Tier</option>';
+        let availableTiers = 0;
+        
+        if (tierCounts.STATE > 0) {
+            leadershipTierSelect.innerHTML += '<option value="STATE">State Executive</option>';
+            availableTiers++;
+        }
+        if (tierCounts.ZONAL > 0) {
+            leadershipTierSelect.innerHTML += '<option value="ZONAL">Zonal Coordinator</option>';
+            availableTiers++;
+        }
+        if (tierCounts.LGA > 0) {
+            leadershipTierSelect.innerHTML += '<option value="LGA">LGA Coordinator</option>';
+            availableTiers++;
+        }
+        if (wardId && tierCounts.WARD > 0) {
+            leadershipTierSelect.innerHTML += '<option value="WARD">Ward Leader</option>';
+            availableTiers++;
+        }
+        
+        if (availableTiers === 0) {
+            leadershipTierSelect.innerHTML = '<option value="">No vacant leadership positions available</option>';
+            leadershipTierSelect.disabled = true;
+        } else {
+            leadershipTierSelect.disabled = false;
+        }
+    } catch (error) {
+        console.error('Error fetching tier options:', error);
+        leadershipTierSelect.innerHTML = '<option value="">Error loading tiers</option>';
+        leadershipTierSelect.disabled = true;
     }
-    
-    leadershipTierSelect.disabled = false;
 }
 
 // Handle tier selection
@@ -472,6 +523,16 @@ async function checkVacantRolesByTier(tier) {
     const lgaId = lgaSelect.value;
     const wardId = wardSelect.value;
     
+    // For STATE tier, we need zone and lga to be selected
+    // State Executive is statewide, so location is just for registration purposes
+    if (tier === 'STATE' && (!zoneId || !lgaId)) {
+        roleSelect.innerHTML = '<option value="">Select Zone and LGA first</option>';
+        roleSelect.disabled = true;
+        roleMessage.textContent = 'Please select your Zone and LGA to view State Executive positions.';
+        roleMessage.className = 'text-sm mt-2 text-gray-600 dark:text-gray-400';
+        return;
+    }
+    
     // Validate that tier is still a valid option in the dropdown
     const tierOptions = Array.from(leadershipTierSelect.options).map(opt => opt.value);
     if (!tierOptions.includes(tier) || tier === '') {
@@ -484,7 +545,8 @@ async function checkVacantRolesByTier(tier) {
     
     roleSelect.innerHTML = '<option value="">Loading available positions...</option>';
     roleSelect.disabled = true;
-    roleMessage.textContent = 'Checking available positions for ' + tier + ' tier...';
+    const tierLabel = tier === 'STATE' ? 'State Executive' : tier.toLowerCase();
+    roleMessage.textContent = 'Checking available ' + tierLabel + ' positions...';
     roleMessage.className = 'text-sm mt-2 text-blue-600 dark:text-blue-400';
     
     try {
@@ -500,9 +562,14 @@ async function checkVacantRolesByTier(tier) {
         });
         
         if (filteredRoles.length === 0) {
-            roleSelect.innerHTML = '<option value="">No vacant positions available for this tier</option>';
+            roleSelect.innerHTML = '<option value="">No vacant positions available</option>';
             roleSelect.disabled = true;
-            roleMessage.textContent = `No vacant ${tier.toLowerCase()} positions available in this location. Try another tier or register as a General Member.`;
+            
+            if (tier === 'STATE') {
+                roleMessage.textContent = `All State Executive positions are currently filled. Register as a General Member or select another tier.`;
+            } else {
+                roleMessage.textContent = `No vacant ${tierLabel} positions available in this location. Try another tier or register as a General Member.`;
+            }
             roleMessage.className = 'text-sm mt-2 text-orange-600 dark:text-orange-400';
         } else {
             roleSelect.innerHTML = '<option value="">Select a position</option>';
@@ -514,7 +581,11 @@ async function checkVacantRolesByTier(tier) {
                 roleSelect.appendChild(option);
             });
             
-            roleMessage.textContent = `${filteredRoles.length} vacant ${tier.toLowerCase()} position(s) available.`;
+            if (tier === 'STATE') {
+                roleMessage.textContent = `${filteredRoles.length} vacant State Executive position(s) available (statewide).`;
+            } else {
+                roleMessage.textContent = `${filteredRoles.length} vacant ${tierLabel} position(s) available in this location.`;
+            }
             roleMessage.className = 'text-sm mt-2 text-green-600 dark:text-green-400 font-semibold';
         }
     } catch (error) {
@@ -543,9 +614,10 @@ document.head.appendChild(style);
 const facebookCheckbox = document.getElementById('facebook_verified');
 const submitBtn = document.getElementById('submitBtn');
 const fbWarning = document.getElementById('fbWarning');
-const fbLink = document.getElementById('fbLink');
+const fbFollowBtn = document.getElementById('fbFollowBtn');
+const fbStatus = document.getElementById('fbStatus');
 
-// Check if user has already clicked the Facebook link
+// Check if user has already clicked the Facebook button
 function checkFacebookVisit() {
     const hasVisited = localStorage.getItem('kpn_fb_visited');
     if (hasVisited === 'true') {
@@ -553,30 +625,26 @@ function checkFacebookVisit() {
         submitBtn.classList.remove('hidden');
         submitBtn.classList.add('block', 'animate-fadeIn');
         fbWarning.classList.add('hidden');
+        fbFollowBtn.classList.add('hidden');
+        fbStatus.classList.remove('hidden');
     }
 }
 
-// Handle Facebook link click
-fbLink.addEventListener('click', function() {
+// Handle Facebook button click
+fbFollowBtn.addEventListener('click', function() {
+    // Open Facebook page in new tab
+    window.open('https://www.facebook.com/kpnkebbi', '_blank');
+    
+    // Mark as visited and enable submit
     localStorage.setItem('kpn_fb_visited', 'true');
-    // Enable submit button immediately
     facebookCheckbox.checked = true;
+    
+    // Update UI
     submitBtn.classList.remove('hidden');
     submitBtn.classList.add('block', 'animate-fadeIn');
     fbWarning.classList.add('hidden');
-});
-
-// Handle checkbox change
-facebookCheckbox.addEventListener('change', function() {
-    if (this.checked) {
-        submitBtn.classList.remove('hidden');
-        submitBtn.classList.add('block', 'animate-fadeIn');
-        fbWarning.classList.add('hidden');
-    } else {
-        submitBtn.classList.add('hidden');
-        submitBtn.classList.remove('block');
-        fbWarning.classList.remove('hidden');
-    }
+    fbFollowBtn.classList.add('hidden');
+    fbStatus.classList.remove('hidden');
 });
 
 // Check on page load
