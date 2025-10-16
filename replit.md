@@ -7,6 +7,16 @@ The Kebbi Progressive Network (KPN) website is a Django-based civic engagement p
 - **Enhanced Registration Form**: Replaced Facebook verification checkbox with interactive button that opens KPN's Facebook page in new tab and auto-enables Submit button upon click. Uses localStorage for persistence across page refreshes, with automatic cleanup on successful registration.
 - **Smart Tier Selection**: Implemented auto-hide functionality that only displays leadership tiers with vacant positions. Tiers with all seats filled are completely hidden from the dropdown.
 - **Statewide Role Clarification**: State Executive roles now clearly marked as "(statewide)" in the UI, indicating they are available to all members regardless of their specific zone or LGA location.
+- **Kebbi South LGA Fix**: Added all 7 missing LGAs to Kebbi South zone (Fakai, Ngaski, Sakaba, Shanga, Wasagu/Danko, Yauri, Zuru) in the database.
+- **Password Management**: Implemented comprehensive password management system:
+  - Change Password: Secure password change functionality with current password verification, accessible from user profiles
+  - Forgot Password: Email-based password reset using Django's token-based authentication system
+  - Reset Password: Secure URL-based password reset with password strength indicator and matching validation
+  - Email Integration: Console backend for development, configurable SMTP for production via environment variables
+- **UI/UX Enhancements**: Modernized three key pages with professional designs:
+  - Contact Page: Gradient backgrounds, floating animations, interactive info cards, social media links
+  - News/Campaigns Page: Card-based layout with shimmer effects, hover animations, image overlays, and CTA section
+  - Media Gallery: Advanced grid layout with lightbox functionality for photos, filter buttons, hover effects, and upload CTA
 
 ## User Preferences
 - Mobile-first design approach
