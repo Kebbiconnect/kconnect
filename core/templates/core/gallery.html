@@ -15,62 +15,295 @@
         }
     }
     
+    @keyframes zoomIn {
+        from {
+            opacity: 0;
+            transform: scale(0.5);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
     .fade-in-up {
         animation: fadeInUp 0.8s ease-out;
     }
     
+    .gradient-bg {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(0, 102, 204, 0.05) 100%);
+    }
+    
     .media-card {
-        transition: all 0.3s ease;
+        position: relative;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
+        overflow: hidden;
+    }
+    
+    .media-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.3), rgba(0, 102, 204, 0.3));
+        opacity: 0;
+        transition: opacity 0.4s ease;
+    }
+    
+    .media-card:hover::after {
+        opacity: 1;
     }
     
     .media-card:hover {
-        transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        transform: translateY(-12px) scale(1.05);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+    }
+    
+    .media-image-wrapper {
+        position: relative;
+        overflow: hidden;
+        height: 300px;
     }
     
     .media-card img {
-        transition: transform 0.5s ease;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .media-card:hover img {
-        transform: scale(1.1);
+        transform: scale(1.15) rotate(1deg);
+    }
+    
+    .media-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+    }
+    
+    .media-card:hover .media-overlay {
+        opacity: 1;
+    }
+    
+    .media-type-badge {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        color: white;
+        z-index: 11;
+        backdrop-filter: blur(10px);
+    }
+    
+    .photo-badge {
+        background: rgba(34, 197, 94, 0.9);
+    }
+    
+    .video-badge {
+        background: rgba(0, 102, 204, 0.9);
+    }
+    
+    .filter-btn {
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .filter-btn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .filter-btn:active::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .lightbox {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 1000;
+        animation: fadeInUp 0.3s ease-out;
+    }
+    
+    .lightbox.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .lightbox-content {
+        max-width: 90%;
+        max-height: 90%;
+        animation: zoomIn 0.4s ease-out;
+    }
+    
+    .lightbox-close {
+        position: absolute;
+        top: 30px;
+        right: 30px;
+        color: white;
+        font-size: 40px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 1001;
+    }
+    
+    .lightbox-close:hover {
+        transform: rotate(90deg) scale(1.2);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <h1 class="text-4xl font-bold mb-8 fade-in-up">Media Gallery</h1>
-    
-    <div class="flex justify-center gap-4 mb-8 fade-in-up" style="animation-delay: 0.1s;">
-        <a href="?type=all" class="px-6 py-2 rounded transition-all hover:scale-105 {% if selected_type == 'all' %}bg-kpn-green text-white{% else %}bg-gray-200 dark:bg-gray-700{% endif %}">All</a>
-        <a href="?type=PHOTO" class="px-6 py-2 rounded transition-all hover:scale-105 {% if selected_type == 'PHOTO' %}bg-kpn-green text-white{% else %}bg-gray-200 dark:bg-gray-700{% endif %}">Photos</a>
-        <a href="?type=VIDEO" class="px-6 py-2 rounded transition-all hover:scale-105 {% if selected_type == 'VIDEO' %}bg-kpn-green text-white{% else %}bg-gray-200 dark:bg-gray-700{% endif %}">Videos</a>
-    </div>
-    
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {% for item in media_items %}
-        <div class="media-card bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden fade-in-up" style="animation-delay: {{ forloop.counter|add:'1'|floatformat:'1' }}00ms;">
-            {% if item.media_type == 'PHOTO' %}
-            <div class="overflow-hidden">
-                <img src="{{ item.file.url }}" alt="{{ item.title }}" class="w-full h-64 object-cover">
+<div class="min-h-screen gradient-bg py-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header Section -->
+        <div class="text-center mb-16 fade-in-up">
+            <div class="inline-block mb-4">
+                <div class="w-20 h-20 bg-gradient-to-r from-kpn-green to-kpn-blue rounded-full flex items-center justify-center mx-auto animate-pulse">
+                    <i class="fas fa-images text-white text-3xl"></i>
+                </div>
             </div>
-            {% else %}
-            <video controls class="w-full h-64">
-                <source src="{{ item.file.url }}" type="video/mp4">
-            </video>
-            {% endif %}
-            <div class="p-4">
-                <h3 class="font-semibold">{{ item.title }}</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400">{{ item.description|truncatewords:10 }}</p>
+            <h1 class="text-5xl md:text-6xl font-extrabold mb-4 bg-gradient-to-r from-kpn-green to-kpn-blue bg-clip-text text-transparent">
+                Media Gallery
+            </h1>
+            <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                Explore our collection of photos and videos showcasing KPN's journey and achievements
+            </p>
+        </div>
+        
+        <!-- Filter Buttons -->
+        <div class="flex justify-center gap-4 mb-12 fade-in-up" style="animation-delay: 0.1s;">
+            <a href="?type=all" class="filter-btn px-8 py-3 rounded-full font-bold transition-all transform hover:scale-110 shadow-lg {% if selected_type == 'all' %}bg-gradient-to-r from-kpn-green to-green-600 text-white{% else %}bg-white dark:bg-gray-800 hover:shadow-xl{% endif %}">
+                <i class="fas fa-th mr-2"></i>All Media
+            </a>
+            <a href="?type=PHOTO" class="filter-btn px-8 py-3 rounded-full font-bold transition-all transform hover:scale-110 shadow-lg {% if selected_type == 'PHOTO' %}bg-gradient-to-r from-kpn-green to-green-600 text-white{% else %}bg-white dark:bg-gray-800 hover:shadow-xl{% endif %}">
+                <i class="fas fa-camera mr-2"></i>Photos
+            </a>
+            <a href="?type=VIDEO" class="filter-btn px-8 py-3 rounded-full font-bold transition-all transform hover:scale-110 shadow-lg {% if selected_type == 'VIDEO' %}bg-gradient-to-r from-kpn-blue to-blue-600 text-white{% else %}bg-white dark:bg-gray-800 hover:shadow-xl{% endif %}">
+                <i class="fas fa-video mr-2"></i>Videos
+            </a>
+        </div>
+        
+        <!-- Media Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for item in media_items %}
+            <div class="media-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden fade-in-up" style="animation-delay: {{ forloop.counter0|add:'1'|floatformat:'1' }}00ms;" {% if item.media_type == 'PHOTO' %}onclick="openLightbox('{{ item.file.url }}')"{% endif %}>
+                {% if item.media_type == 'PHOTO' %}
+                <div class="media-image-wrapper">
+                    <img src="{{ item.file.url }}" alt="{{ item.title }}" class="w-full h-full object-cover">
+                    <div class="media-type-badge photo-badge">
+                        <i class="fas fa-camera mr-1"></i>PHOTO
+                    </div>
+                    <div class="media-overlay">
+                        <div class="text-white text-center">
+                            <i class="fas fa-search-plus text-5xl mb-3"></i>
+                            <p class="font-bold">Click to Enlarge</p>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="media-image-wrapper">
+                    <video controls class="w-full h-full object-cover">
+                        <source src="{{ item.file.url }}" type="video/mp4">
+                    </video>
+                    <div class="media-type-badge video-badge">
+                        <i class="fas fa-video mr-1"></i>VIDEO
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="p-6">
+                    <h3 class="text-xl font-bold mb-2 line-clamp-1">{{ item.title }}</h3>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm line-clamp-2">{{ item.description|truncatewords:15 }}</p>
+                    <div class="mt-4 flex items-center gap-2 text-xs text-gray-500">
+                        <i class="fas fa-user"></i>
+                        <span>{{ item.uploaded_by.get_full_name }}</span>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-20 fade-in-up">
+                <div class="w-32 h-32 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-images text-gray-400 text-5xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-600 dark:text-gray-400 mb-2">No Media Yet</h3>
+                <p class="text-gray-500 dark:text-gray-500">Check back soon for photos and videos!</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Upload CTA -->
+        {% if media_items %}
+        <div class="mt-20 text-center fade-in-up" style="animation-delay: 0.5s;">
+            <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-12 shadow-2xl">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+                    <i class="fas fa-cloud-upload-alt mr-3"></i>Share Your Moments
+                </h2>
+                <p class="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+                    Have photos or videos from KPN events? Share them with the community!
+                </p>
+                <a href="{% url 'staff:login' %}" class="inline-block bg-white text-purple-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-xl">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Login to Upload
+                </a>
             </div>
         </div>
-        {% empty %}
-        <div class="col-span-full text-center py-12 fade-in-up">
-            <p class="text-gray-600 dark:text-gray-400">No media items available yet.</p>
-        </div>
-        {% endfor %}
+        {% endif %}
     </div>
 </div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+    <span class="lightbox-close">&times;</span>
+    <img id="lightbox-img" class="lightbox-content" src="" alt="">
+</div>
+
+<script>
+function openLightbox(imageSrc) {
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    lightboxImg.src = imageSrc;
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    const lightbox = document.getElementById('lightbox');
+    lightbox.classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeLightbox();
+    }
+});
+</script>
 {% endblock %}
