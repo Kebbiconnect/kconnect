@@ -15,70 +15,233 @@
         }
     }
     
+    @keyframes shimmer {
+        0% {
+            background-position: -1000px 0;
+        }
+        100% {
+            background-position: 1000px 0;
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.7;
+        }
+    }
+    
     .fade-in-up {
         animation: fadeInUp 0.8s ease-out;
     }
     
+    .gradient-bg {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(0, 102, 204, 0.05) 100%);
+    }
+    
     .campaign-card {
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
+        overflow: hidden;
+    }
+    
+    .campaign-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s;
+    }
+    
+    .campaign-card:hover::before {
+        left: 100%;
     }
     
     .campaign-card:hover {
-        transform: translateY(-10px) scale(1.02);
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+        transform: translateY(-12px) scale(1.03);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    .campaign-image-wrapper {
+        position: relative;
+        overflow: hidden;
+        height: 240px;
     }
     
     .campaign-card img {
-        transition: transform 0.6s ease;
+        transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .campaign-card:hover img {
-        transform: scale(1.15);
+        transform: scale(1.2) rotate(2deg);
     }
     
-    .campaign-card .read-more {
+    .campaign-badge {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: rgba(40, 167, 69, 0.95);
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        color: white;
+        z-index: 10;
+        animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .read-more {
+        position: relative;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .read-more::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #22c55e, #0066cc);
+        transition: width 0.3s ease;
+    }
+    
+    .campaign-card:hover .read-more::after {
+        width: 100%;
+    }
+    
+    .campaign-card:hover .read-more i {
+        transform: translateX(5px);
+    }
+    
+    .read-more i {
         transition: transform 0.3s ease;
     }
     
-    .campaign-card:hover .read-more {
-        transform: translateX(5px);
+    .featured-tag {
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+        animation: shimmer 3s linear infinite;
+        background-size: 200% 100%;
+    }
+    
+    .campaign-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .date-badge {
+        transition: all 0.3s ease;
+    }
+    
+    .campaign-card:hover .date-badge {
+        transform: scale(1.1);
+        color: #22c55e;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <h1 class="text-4xl font-bold mb-8 fade-in-up">News & Campaigns</h1>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for campaign in campaigns %}
-        <div class="campaign-card bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden fade-in-up" style="animation-delay: {{ forloop.counter|add:'1'|floatformat:'1' }}00ms;">
-            {% if campaign.featured_image %}
-            <div class="overflow-hidden">
-                <img src="{{ campaign.featured_image.url }}" alt="{{ campaign.title }}" class="w-full h-48 object-cover">
-            </div>
-            {% else %}
-            <div class="w-full h-48 bg-gradient-to-r from-kpn-green to-kpn-blue flex items-center justify-center">
-                <i class="fas fa-bullhorn text-white text-5xl"></i>
-            </div>
-            {% endif %}
-            <div class="p-6">
-                <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    <i class="far fa-calendar mr-1"></i> {{ campaign.published_at|date:"M d, Y" }}
+<div class="min-h-screen gradient-bg py-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header Section -->
+        <div class="text-center mb-16 fade-in-up">
+            <div class="inline-block mb-4">
+                <div class="w-20 h-20 bg-gradient-to-r from-kpn-green to-kpn-blue rounded-full flex items-center justify-center mx-auto animate-pulse">
+                    <i class="fas fa-bullhorn text-white text-3xl"></i>
                 </div>
-                <h3 class="text-xl font-semibold mb-2">{{ campaign.title }}</h3>
-                <p class="text-gray-600 dark:text-gray-400 mb-4">{{ campaign.content|truncatewords:20|safe }}</p>
-                <a href="{% url 'core:campaign_detail' campaign.slug %}" class="read-more text-kpn-green hover:text-kpn-blue font-semibold inline-flex items-center">
-                    Read More <i class="fas fa-arrow-right ml-1"></i>
+            </div>
+            <h1 class="text-5xl md:text-6xl font-extrabold mb-4 bg-gradient-to-r from-kpn-green to-kpn-blue bg-clip-text text-transparent">
+                News & Campaigns
+            </h1>
+            <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                Stay updated with our latest initiatives, campaigns, and news from the Kebbi Progressive Network
+            </p>
+        </div>
+        
+        <!-- Campaigns Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for campaign in campaigns %}
+            <div class="campaign-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden fade-in-up" style="animation-delay: {{ forloop.counter0|add:'1'|floatformat:'1' }}00ms;">
+                {% if campaign.featured_image %}
+                <div class="campaign-image-wrapper">
+                    <img src="{{ campaign.featured_image.url }}" alt="{{ campaign.title }}" class="w-full h-full object-cover">
+                    <div class="campaign-badge">
+                        <i class="fas fa-star mr-1"></i>NEW
+                    </div>
+                </div>
+                {% else %}
+                <div class="campaign-image-wrapper bg-gradient-to-br from-kpn-green via-green-500 to-kpn-blue flex items-center justify-center">
+                    <i class="fas fa-bullhorn text-white text-6xl opacity-30"></i>
+                    <div class="campaign-badge featured-tag">
+                        <i class="fas fa-newspaper mr-1"></i>LATEST
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="p-6 campaign-content">
+                    <div class="date-badge text-sm font-bold text-gray-500 dark:text-gray-400 mb-3 inline-flex items-center gap-2">
+                        <div class="w-10 h-10 bg-kpn-green/10 rounded-full flex items-center justify-center">
+                            <i class="far fa-calendar text-kpn-green"></i>
+                        </div>
+                        <span>{{ campaign.published_at|date:"M d, Y" }}</span>
+                    </div>
+                    
+                    <h3 class="text-2xl font-bold mb-3 line-clamp-2 hover:text-kpn-green transition-colors">
+                        {{ campaign.title }}
+                    </h3>
+                    
+                    <p class="text-gray-600 dark:text-gray-400 mb-5 line-clamp-3">
+                        {{ campaign.content|striptags|truncatewords:25 }}
+                    </p>
+                    
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <a href="{% url 'core:campaign_detail' campaign.slug %}" class="read-more text-kpn-green hover:text-kpn-blue font-bold text-lg">
+                            Read Full Story
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <div class="flex items-center gap-2 text-gray-400">
+                            <i class="fas fa-eye"></i>
+                            <span class="text-sm">{{ campaign.views }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-20 fade-in-up">
+                <div class="w-32 h-32 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-newspaper text-gray-400 text-5xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-600 dark:text-gray-400 mb-2">No Campaigns Yet</h3>
+                <p class="text-gray-500 dark:text-gray-500">Check back soon for updates on our latest campaigns and news!</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Call to Action -->
+        {% if campaigns %}
+        <div class="mt-20 text-center fade-in-up" style="animation-delay: 0.5s;">
+            <div class="bg-gradient-to-r from-kpn-green to-kpn-blue rounded-2xl p-12 shadow-2xl">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+                    <i class="fas fa-users mr-3"></i>Join Our Mission
+                </h2>
+                <p class="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+                    Be part of the change. Together, we're building a better future for Kebbi State.
+                </p>
+                <a href="{% url 'staff:register' %}" class="inline-block bg-white text-kpn-green px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-xl">
+                    <i class="fas fa-user-plus mr-2"></i>Become a Member Today
                 </a>
             </div>
         </div>
-        {% empty %}
-        <div class="col-span-full text-center py-12 fade-in-up">
-            <p class="text-gray-600 dark:text-gray-400">No campaigns available yet.</p>
-        </div>
-        {% endfor %}
+        {% endif %}
     </div>
 </div>
 {% endblock %}
