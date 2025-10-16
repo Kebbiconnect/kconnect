@@ -6,6 +6,11 @@ from django.db import models
 from django.db.models import Q, Sum
 from django.http import JsonResponse
 from django.utils import timezone
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
+from django.conf import settings
 from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram, CommunityOutreach, WardMeeting, WardMeetingAttendance
 from .decorators import specific_role_required, role_required, approved_leader_required
 from .forms import MemberMobilizationFilterForm, CommunityOutreachForm, WardMeetingForm, WardMeetingAttendanceForm
@@ -285,6 +290,87 @@ def change_password(request):
         return redirect('staff:profile')
     
     return render(request, 'staff/change_password.html')
+
+def forgot_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        
+        try:
+            user = User.objects.get(email=email)
+            
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            
+            reset_link = request.build_absolute_uri(
+                f'/account/reset-password/{uid}/{token}/'
+            )
+            
+            message = f'''
+Hello {user.get_full_name()},
+
+You have requested to reset your password for your KPN account.
+
+Please click the link below to reset your password:
+{reset_link}
+
+If you did not request this password reset, please ignore this email.
+
+This link will expire in 24 hours.
+
+Best regards,
+Kebbi Progressive Network Team
+            '''
+            
+            try:
+                send_mail(
+                    'KPN Password Reset Request',
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [email],
+                    fail_silently=False,
+                )
+                messages.success(request, 'Password reset instructions have been sent to your email.')
+            except Exception as e:
+                messages.error(request, 'Unable to send email. Please contact support.')
+            
+            return redirect('staff:login')
+            
+        except User.DoesNotExist:
+            messages.error(request, 'No account found with this email address.')
+            return redirect('staff:forgot_password')
+    
+    return render(request, 'staff/forgot_password.html')
+
+def reset_password(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            password1 = request.POST.get('password1')
+            password2 = request.POST.get('password2')
+            
+            if password1 != password2:
+                messages.error(request, 'Passwords do not match.')
+                return redirect('staff:reset_password', uidb64=uidb64, token=token)
+            
+            if len(password1) < 8:
+                messages.error(request, 'Password must be at least 8 characters long.')
+                return redirect('staff:reset_password', uidb64=uidb64, token=token)
+            
+            user.set_password(password1)
+            user.save()
+            
+            messages.success(request, 'Your password has been reset successfully! You can now login.')
+            return redirect('staff:login')
+        
+        return render(request, 'staff/reset_password.html', {'validlink': True})
+    else:
+        messages.error(request, 'Invalid or expired password reset link.')
+        return redirect('staff:forgot_password')
 
 def get_lgas_by_zone(request):
     zone_id = request.GET.get('zone_id')

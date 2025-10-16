@@ -125,9 +125,14 @@
                 </div>
                 
                 <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">
-                        <i class="fas fa-lock mr-2 text-kpn-green"></i>Password
-                    </label>
+                    <div class="flex justify-between items-center">
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">
+                            <i class="fas fa-lock mr-2 text-kpn-green"></i>Password
+                        </label>
+                        <a href="{% url 'staff:forgot_password' %}" class="text-xs text-kpn-green hover:text-kpn-blue font-semibold transition-colors">
+                            Forgot Password?
+                        </a>
+                    </div>
                     <div class="relative">
                         <input type="password" 
                                name="password" 
