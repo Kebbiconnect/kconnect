@@ -18,7 +18,7 @@ The Kebbi Progressive Network (KPN) website is a Django-based civic engagement p
   - Contact Page: Gradient backgrounds, floating animations, interactive info cards, social media links
   - News/Campaigns Page: Card-based layout with shimmer effects, hover animations, image overlays, and CTA section
   - Media Gallery: Advanced grid layout with lightbox functionality for photos, filter buttons, hover effects, and upload CTA
-- **Profile Editing Restrictions (October 17, 2025)**: Restricted profile editing to only 23 privileged roles (20 State Executive + 3 Zonal roles). LGA Coordinators, Ward Leaders, and General Members can view their profiles but cannot edit them. Only approved STATE and ZONAL tier members can upload profile photos and update their information.
+- **Profile Photo Upload Restrictions (October 17, 2025)**: All members can edit their profile details (name, email, phone, bio, gender), but profile photo upload is restricted to only 23 privileged roles (20 State Executive + 3 Zonal roles). LGA Coordinators, Ward Leaders, and General Members can edit their information but cannot upload or change their profile photos.
 - **Registration Optimization (October 17, 2025)**: Removed image upload from registration form to optimize database storage. Members in privileged roles (STATE/ZONAL) can upload profile photos after approval via their profile settings.
 - **Contact Information Update (October 17, 2025)**: Updated official contact details site-wide:
   - Primary Email: kpn.kebbi@gmail.com
