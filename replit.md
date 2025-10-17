@@ -18,6 +18,24 @@ The Kebbi Progressive Network (KPN) website is a Django-based civic engagement p
   - Contact Page: Gradient backgrounds, floating animations, interactive info cards, social media links
   - News/Campaigns Page: Card-based layout with shimmer effects, hover animations, image overlays, and CTA section
   - Media Gallery: Advanced grid layout with lightbox functionality for photos, filter buttons, hover effects, and upload CTA
+- **Profile Editing Restrictions (October 17, 2025)**: Restricted profile editing to only 23 privileged roles (20 State Executive + 3 Zonal roles). LGA Coordinators, Ward Leaders, and General Members can view their profiles but cannot edit them. Only approved STATE and ZONAL tier members can upload profile photos and update their information.
+- **Registration Optimization (October 17, 2025)**: Removed image upload from registration form to optimize database storage. Members in privileged roles (STATE/ZONAL) can upload profile photos after approval via their profile settings.
+- **Contact Information Update (October 17, 2025)**: Updated official contact details site-wide:
+  - Primary Email: kpn.kebbi@gmail.com
+  - Secondary Email: kpnkebbi@hotmail.com
+  - WhatsApp: +2348102444491
+  - Phone: +2342022919562
+  - Facebook: @kpnkebbi
+  - TikTok: @kpn.kb
+  - Removed outdated social media links (YouTube, Twitter, Instagram)
+- **Contact Form Email Integration (October 17, 2025)**: Contact form now sends visitor messages directly to kpn.kebbi@gmail.com with proper error handling and user feedback.
+- **Admin Approval Workflow (October 17, 2025)**: Enhanced Django admin interface with:
+  - Bulk approval action for pending members
+  - Bulk suspension action
+  - Improved list filters (status, role, zone, LGA, date joined)
+  - Enhanced search functionality (username, name, phone, email)
+  - Automatic ordering to show pending members at the top
+  - Full superuser control for member management
 
 ## User Preferences
 - Mobile-first design approach
