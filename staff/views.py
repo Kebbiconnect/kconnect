@@ -160,10 +160,6 @@ def register(request):
             facebook_verified=facebook_verified
         )
         
-        if request.FILES.get('photo'):
-            user.photo = request.FILES['photo']
-            user.save()
-        
         if status == 'APPROVED':
             login(request, user)
             messages.success(request, 'Registration successful! Welcome to KPN.')
@@ -247,7 +243,14 @@ def dashboard(request):
 
 @login_required
 def profile(request):
+    user = request.user
+    can_edit_profile = user.status == 'APPROVED' and user.role in ['STATE', 'ZONAL']
+    
     if request.method == 'POST':
+        if not can_edit_profile:
+            messages.error(request, 'You do not have permission to edit your profile.')
+            return redirect('staff:profile')
+        
         request.user.first_name = request.POST.get('first_name')
         request.user.last_name = request.POST.get('last_name')
         request.user.email = request.POST.get('email')
@@ -262,7 +265,10 @@ def profile(request):
         messages.success(request, 'Profile updated successfully!')
         return redirect('staff:profile')
     
-    return render(request, 'staff/profile.html')
+    context = {
+        'can_edit_profile': can_edit_profile
+    }
+    return render(request, 'staff/profile.html', context)
 
 @login_required
 def change_password(request):

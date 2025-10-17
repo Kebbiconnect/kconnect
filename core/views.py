@@ -147,7 +147,33 @@ def contact(request):
         email = request.POST.get('email')
         message = request.POST.get('message')
         
-        messages.success(request, 'Thank you for contacting us! We will get back to you soon.')
+        try:
+            email_subject = f'KPN Contact Form: Message from {name}'
+            email_body = f"""
+New contact form submission from KPN website:
+
+Name: {name}
+Email: {email}
+
+Message:
+{message}
+
+---
+This message was sent via the KPN contact form.
+            """
+            
+            send_mail(
+                subject=email_subject,
+                message=email_body,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=['kpn.kebbi@gmail.com'],
+                fail_silently=False,
+            )
+            
+            messages.success(request, 'Thank you for contacting us! We will get back to you soon.')
+        except Exception as e:
+            messages.error(request, 'There was an error sending your message. Please try again later or contact us directly via email.')
+        
         return redirect('core:contact')
     
     return render(request, 'core/contact.html')

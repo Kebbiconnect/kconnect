@@ -11,6 +11,21 @@
         </a>
     </div>
     
+    {% if not can_edit_profile %}
+    <div class="bg-yellow-100 dark:bg-yellow-900 border-l-4 border-yellow-500 p-4 mb-6">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-info-circle text-yellow-500"></i>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-yellow-700 dark:text-yellow-300">
+                    Profile editing is only available for State Executive and Zonal Coordinator roles. You can view your profile but cannot make changes.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
@@ -25,36 +40,38 @@
                 {% endif %}
             </div>
             
+            {% if can_edit_profile %}
             <div class="mb-6">
                 <label class="block text-sm font-medium mb-2">Profile Photo</label>
                 <input type="file" name="photo" accept="image/*" class="w-full p-3 border rounded dark:bg-gray-700">
             </div>
+            {% endif %}
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium mb-2">First Name</label>
-                    <input type="text" name="first_name" value="{{ user.first_name }}" required class="w-full p-3 border rounded dark:bg-gray-700">
+                    <input type="text" name="first_name" value="{{ user.first_name }}" required class="w-full p-3 border rounded dark:bg-gray-700" {% if not can_edit_profile %}readonly{% endif %}>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-2">Last Name</label>
-                    <input type="text" name="last_name" value="{{ user.last_name }}" required class="w-full p-3 border rounded dark:bg-gray-700">
+                    <input type="text" name="last_name" value="{{ user.last_name }}" required class="w-full p-3 border rounded dark:bg-gray-700" {% if not can_edit_profile %}readonly{% endif %}>
                 </div>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium mb-2">Email</label>
-                    <input type="email" name="email" value="{{ user.email }}" required class="w-full p-3 border rounded dark:bg-gray-700">
+                    <input type="email" name="email" value="{{ user.email }}" required class="w-full p-3 border rounded dark:bg-gray-700" {% if not can_edit_profile %}readonly{% endif %}>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-2">Phone</label>
-                    <input type="tel" name="phone" value="{{ user.phone }}" required class="w-full p-3 border rounded dark:bg-gray-700">
+                    <input type="tel" name="phone" value="{{ user.phone }}" required class="w-full p-3 border rounded dark:bg-gray-700" {% if not can_edit_profile %}readonly{% endif %}>
                 </div>
             </div>
             
             <div class="mb-6">
                 <label class="block text-sm font-medium mb-2">Gender</label>
-                <select name="gender" class="w-full p-3 border rounded dark:bg-gray-700">
+                <select name="gender" class="w-full p-3 border rounded dark:bg-gray-700" {% if not can_edit_profile %}disabled{% endif %}>
                     <option value="">Select Gender</option>
                     <option value="M" {% if user.gender == 'M' %}selected{% endif %}>Male</option>
                     <option value="F" {% if user.gender == 'F' %}selected{% endif %}>Female</option>
@@ -63,10 +80,12 @@
             
             <div class="mb-6">
                 <label class="block text-sm font-medium mb-2">Bio</label>
-                <textarea name="bio" rows="4" class="w-full p-3 border rounded dark:bg-gray-700">{{ user.bio }}</textarea>
+                <textarea name="bio" rows="4" class="w-full p-3 border rounded dark:bg-gray-700" {% if not can_edit_profile %}readonly{% endif %}>{{ user.bio }}</textarea>
             </div>
             
+            {% if can_edit_profile %}
             <button type="submit" class="w-full bg-kpn-green text-white py-3 rounded-lg hover:bg-green-600 transition">Update Profile</button>
+            {% endif %}
         </form>
     </div>
 </div>
