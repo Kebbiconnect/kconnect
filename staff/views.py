@@ -244,13 +244,9 @@ def dashboard(request):
 @login_required
 def profile(request):
     user = request.user
-    can_edit_profile = user.status == 'APPROVED' and user.role in ['STATE', 'ZONAL']
+    can_upload_photo = user.status == 'APPROVED' and user.role in ['STATE', 'ZONAL']
     
     if request.method == 'POST':
-        if not can_edit_profile:
-            messages.error(request, 'You do not have permission to edit your profile.')
-            return redirect('staff:profile')
-        
         request.user.first_name = request.POST.get('first_name')
         request.user.last_name = request.POST.get('last_name')
         request.user.email = request.POST.get('email')
@@ -259,14 +255,17 @@ def profile(request):
         request.user.gender = request.POST.get('gender', '')
         
         if request.FILES.get('photo'):
-            request.user.photo = request.FILES['photo']
+            if can_upload_photo:
+                request.user.photo = request.FILES['photo']
+            else:
+                messages.warning(request, 'Profile photo upload is only available for State Executive and Zonal Coordinator roles.')
         
         request.user.save()
         messages.success(request, 'Profile updated successfully!')
         return redirect('staff:profile')
     
     context = {
-        'can_edit_profile': can_edit_profile
+        'can_upload_photo': can_upload_photo
     }
     return render(request, 'staff/profile.html', context)
 
