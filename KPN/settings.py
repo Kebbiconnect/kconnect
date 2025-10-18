@@ -161,25 +161,32 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
+# ==============================================================================
+# CLOUDINARY CONFIGURATION (FOR BOTH STATIC AND MEDIA FILES)
+# ==============================================================================
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# This tells Django to use Cloudinary for the 'collectstatic' command.
+# All your CSS, JS, and logo files will be uploaded to Cloudinary.
+STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
-
-# media file
+# This tells Django to use Cloudinary for all user-uploaded files (e.g., profile pictures).
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# Cloudinary Configuration for Media Files
+# Your Cloudinary credentials (this part should already be in your file)
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
     'API_KEY': config('CLOUDINARY_API_KEY'),
     'API_SECRET': config('CLOUDINARY_API_SECRET'),
 }
+
+# Define the URLs that Cloudinary will use
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+
+# You NO LONGER NEED STATIC_ROOT or STATICFILES_DIRS for this setup.
+# Comment them out or delete them to avoid confusion.
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
