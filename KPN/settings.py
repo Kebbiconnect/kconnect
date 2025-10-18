@@ -28,17 +28,21 @@ SECRET_KEY = config('SESSION_SECRET')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config(
-    'ALLOWED_HOSTS',
-    default='localhost,127.0.0.1,.onrender.com',
-    cast=lambda v: [s.strip() for s in v.split(',')]
-)
+# --- START: New and Improved ALLOWED_HOSTS logic ---
+ALLOWED_HOSTS = []
 
-# CSRF Trusted Origins
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+# This makes sure your local development server still works
+if not RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.extend(['localhost', '127.0.0.1'])
+# --- END: New ALLOWED_HOSTS logic ---
+
+# Keep this section. It is correct for Render.
 CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
-    "https://127.0.0.1",
-    "http://127.0.0.1",
 ]
 
 # Application definition
