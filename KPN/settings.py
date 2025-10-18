@@ -30,13 +30,13 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config(
     'ALLOWED_HOSTS',
-    default='localhost,127.0.0.1,.railway.app',
+    default='localhost,127.0.0.1,.onrender.com',
     cast=lambda v: [s.strip() for s in v.split(',')]
 )
 
 # CSRF Trusted Origins
 CSRF_TRUSTED_ORIGINS = [
-    "https://*.railway.app",
+    "https://*.onrender.com",
     "https://127.0.0.1",
     "http://127.0.0.1",
 ]
