@@ -28,13 +28,17 @@ SECRET_KEY = config('SESSION_SECRET')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,.replit.dev,.replit.app,.repl.co', cast=lambda v: [s.strip() for s in v.split(',')])
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS',
+    default='localhost,127.0.0.1,.railway.app',
+    cast=lambda v: [s.strip() for s in v.split(',')]
+)
 
-# CSRF Trusted Origins for Replit
+# CSRF Trusted Origins
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.replit.dev',
-    'https://*.replit.app',
-    'https://*.repl.co',
+    "https://*.railway.app",
+    "https://127.0.0.1",
+    "http://127.0.0.1",
 ]
 
 # Application definition
@@ -129,15 +133,6 @@ elif USE_NEON:
             'OPTIONS': {
                 'sslmode': 'require',
             },
-        }
-    }
-elif USE_TURSO:
-    TURSO_DATABASE_URL = "kpnai-kpntursodb.aws-eu-west-1.turso.io"
-    TURSO_AUTH_TOKEN = config('TURSO_AUTH_TOKEN')
-    DATABASES = {
-        'default': {
-            'ENGINE': 'libsql.db.backends.sqlite3',
-            'NAME': f"libsql://{TURSO_DATABASE_URL}?authToken={TURSO_AUTH_TOKEN}",
         }
     }
 else:

@@ -22,5 +22,12 @@ python-decouple==3.8
 # Document Processing
 python-docx==1.2.0
 
-# Optional: LibSQL/Turso support (remove if not using)
-django-libsql==0.1.3
+# Form Styling (used for rendering professional-looking forms)
+django-crispy-forms==2.1
+crispy-bootstrap5==0.7
+
+# Environment Variables Management (for hiding SECRET_KEY)
+python-dotenv==1.0.0
+
+# Timezone
+tzdata
