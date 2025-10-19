@@ -165,23 +165,37 @@ USE_TZ = True
 # UNIFIED CLOUDINARY CONFIGURATION (for both Static and Media files)
 # ==============================================================================
 
-# Your Cloudinary credentials (this should already be in your file using decouple's 'config')
+# Your Cloudinary credentials
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
     'API_KEY': config('CLOUDINARY_API_KEY'),
     'API_SECRET': config('CLOUDINARY_API_SECRET'),
 }
 
-# 1. This tells Django to use Cloudinary for all user-uploaded files (profile pictures).
+# --- FILE STORAGE SETTINGS ---
+
+# This tells Django to use Cloudinary for all user-uploaded files (profile pictures).
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# 2. This tells Django to use Cloudinary for the 'collectstatic' command and the {% static %} tag.
+# This tells Django to use Cloudinary for the 'collectstatic' command and the {% static %} tag.
 STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
 
-# 3. These URLs are now just placeholders for Django's internal logic.
-# Cloudinary generates the full URLs automatically.
+# --- URL AND PATH CONFIGURATION ---
+
+# The URLs that will be used in the templates
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
+
+# This is the CRITICAL line that was missing or incorrect.
+# It tells 'collectstatic' WHERE TO FIND your local static files to upload them.
+# It should point to the 'static' folder in your project's root directory.
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+# STATIC_ROOT is not strictly needed when using Cloudinary for storage,
+# but it's good practice to keep it defined. It won't be used for local file collection.
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build')
 
 # IMPORTANT: Ensure 'cloudinary_storage' and 'cloudinary' are in INSTALLED_APPS,
 # and 'cloudinary_storage' comes BEFORE 'django.contrib.staticfiles'.
