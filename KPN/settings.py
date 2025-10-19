@@ -162,34 +162,37 @@ USE_TZ = True
 
 
 # ==============================================================================
-# CLOUDINARY CONFIGURATION (FOR BOTH STATIC AND MEDIA FILES)
+# UNIFIED CLOUDINARY CONFIGURATION (for both Static and Media files)
 # ==============================================================================
 
-# This tells Django to use Cloudinary for the 'collectstatic' command.
-# All your CSS, JS, and logo files will be uploaded to Cloudinary.
-STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
-
-# This tells Django to use Cloudinary for all user-uploaded files (e.g., profile pictures).
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-# Your Cloudinary credentials (this part should already be in your file)
+# Your Cloudinary credentials (this should already be in your file using decouple's 'config')
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
     'API_KEY': config('CLOUDINARY_API_KEY'),
     'API_SECRET': config('CLOUDINARY_API_SECRET'),
 }
 
-# Define the URLs that Cloudinary will use
+# 1. This tells Django to use Cloudinary for all user-uploaded files (profile pictures).
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# 2. This tells Django to use Cloudinary for the 'collectstatic' command and the {% static %} tag.
+STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
+
+# 3. These URLs are now just placeholders for Django's internal logic.
+# Cloudinary generates the full URLs automatically.
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
-# You NO LONGER NEED STATIC_ROOT or STATICFILES_DIRS for this setup.
-# Comment them out or delete them to avoid confusion.
-# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+# IMPORTANT: Ensure 'cloudinary_storage' and 'cloudinary' are in INSTALLED_APPS,
+# and 'cloudinary_storage' comes BEFORE 'django.contrib.staticfiles'.
+# Example:
+# INSTALLED_APPS = [
+#     ...
+#     'cloudinary_storage',
+#     'django.contrib.staticfiles',
+#     'cloudinary',
+#     ...
+# ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
