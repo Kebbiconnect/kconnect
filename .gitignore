@@ -42,3 +42,4 @@ Thumbs.db
 *.bak
 .env
 .env
+staticfiles_build/

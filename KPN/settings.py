@@ -161,52 +161,56 @@ USE_I18N = True
 USE_TZ = True
 
 
-# ==============================================================================
-# UNIFIED CLOUDINARY CONFIGURATION (for both Static and Media files)
-# ==============================================================================
+# Static & Media configuration (Cloudinary + local dev fallback)
 
-# Your Cloudinary credentials
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': config('CLOUDINARY_API_KEY'),
-    'API_SECRET': config('CLOUDINARY_API_SECRET'),
-}
+# Read Cloudinary credentials (if absent locally, we fall back safely)
+CLOUD_NAME = config('CLOUDINARY_CLOUD_NAME', default=None)
+CLOUD_API_KEY = config('CLOUDINARY_API_KEY', default=None)
+CLOUD_API_SECRET = config('CLOUDINARY_API_SECRET', default=None)
 
-# --- FILE STORAGE SETTINGS ---
-
-# This tells Django to use Cloudinary for all user-uploaded files (profile pictures).
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-# This tells Django to use Cloudinary for the 'collectstatic' command and the {% static %} tag.
-STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
-
-# --- URL AND PATH CONFIGURATION ---
-
-# The URLs that will be used in the templates
+# Always define URLs used by templates
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
-# This is the CRITICAL line that was missing or incorrect.
-# It tells 'collectstatic' WHERE TO FIND your local static files to upload them.
-# It should point to the 'static' folder in your project's root directory.
+# Where Django should look for your project static sources
+# Your repo has a top-level "static/" folder
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
+    # If you keep any extra project assets in another folder, add them:
+    # os.path.join(BASE_DIR, 'attached_assets'),
 ]
 
-# STATIC_ROOT is not strictly needed when using Cloudinary for storage,
-# but it's good practice to keep it defined. It won't be used for local file collection.
+# A local build target (not used by Cloudinary itself but required by collectstatic)
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build')
 
+# Make sure the finders are explicit (helps Django locate files)
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
+
+# Use Cloudinary if credentials exist; otherwise safe local fallback for dev
+if CLOUD_NAME and CLOUD_API_KEY and CLOUD_API_SECRET:
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': CLOUD_NAME,
+        'API_KEY': CLOUD_API_KEY,
+        'API_SECRET': CLOUD_API_SECRET,
+    }
+
+    # Media (user uploads) always to Cloudinary when creds exist
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+    # Static to Cloudinary using non-hashed storage for reliability
+    # (switch to StaticHashedCloudinaryStorage later if you want hashed filenames)
+    STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticCloudinaryStorage'
+else:
+    # Local fallback (development without Cloudinary env vars)
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
+
 # IMPORTANT: Ensure 'cloudinary_storage' and 'cloudinary' are in INSTALLED_APPS,
-# and 'cloudinary_storage' comes BEFORE 'django.contrib.staticfiles'.
-# Example:
-# INSTALLED_APPS = [
-#     ...
-#     'cloudinary_storage',
-#     'django.contrib.staticfiles',
-#     'cloudinary',
-#     ...
-# ]
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
