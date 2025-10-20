@@ -252,7 +252,7 @@ class DisciplinaryActionForm(forms.ModelForm):
     """Form for creating disciplinary actions"""
     
     user = forms.ModelChoiceField(
-        queryset=User.objects.filter(status='APPROVED'),
+        queryset=User.objects.filter(status='APPROVED', is_superuser=False),
         label="Select Member",
         widget=forms.Select(attrs={
             'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'
@@ -282,7 +282,8 @@ class DisciplinaryActionForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['user'].queryset = User.objects.filter(status='APPROVED').order_by('last_name', 'first_name')
+        # Exclude superusers from disciplinary actions
+        self.fields['user'].queryset = User.objects.filter(status='APPROVED', is_superuser=False).order_by('last_name', 'first_name')
 
 
 class MemberMobilizationFilterForm(forms.Form):

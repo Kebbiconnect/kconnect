@@ -65,16 +65,16 @@
             <i class="fas fa-filter mr-2"></i>
             Filter Leadership
         </h2>
-        <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4" id="leadershipFilterForm">
             <div>
                 <label class="block text-sm font-medium mb-2">
                     <i class="fas fa-map-marked-alt text-kpn-green mr-1"></i>
                     Zone
                 </label>
-                <select name="zone" class="w-full p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 focus:border-kpn-green focus:ring-2 focus:ring-kpn-green transition">
-                    <option value="">State Executive & Zonal</option>
+                <select name="zone" id="zoneSelect" class="w-full p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 focus:border-kpn-green focus:ring-2 focus:ring-kpn-green transition">
+                    <option value="">All Zones</option>
                     {% for zone in zones %}
-                    <option value="{{ zone.id }}" {% if selected_zone == zone.id|stringformat:"s" %}selected{% endif %}>{{ zone.name }}</option>
+                    <option value="{{ zone.id }}" {% if selected_zone == zone.id|stringformat:"s" %}selected{% endif %} data-zone-id="{{ zone.id }}">{{ zone.name }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -83,10 +83,10 @@
                     <i class="fas fa-building text-kpn-blue mr-1"></i>
                     LGA
                 </label>
-                <select name="lga" class="w-full p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 focus:border-kpn-blue focus:ring-2 focus:ring-kpn-blue transition">
+                <select name="lga" id="lgaSelect" class="w-full p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 focus:border-kpn-blue focus:ring-2 focus:ring-kpn-blue transition">
                     <option value="">Select LGA</option>
                     {% for lga in lgas %}
-                    <option value="{{ lga.id }}" {% if selected_lga == lga.id|stringformat:"s" %}selected{% endif %}>{{ lga.name }}</option>
+                    <option value="{{ lga.id }}" {% if selected_lga == lga.id|stringformat:"s" %}selected{% endif %} data-zone-id="{{ lga.zone.id }}" data-lga-id="{{ lga.id }}">{{ lga.name }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -95,10 +95,10 @@
                     <i class="fas fa-home text-yellow-600 mr-1"></i>
                     Ward
                 </label>
-                <select name="ward" class="w-full p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500 transition">
+                <select name="ward" id="wardSelect" class="w-full p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500 transition">
                     <option value="">Select Ward</option>
                     {% for ward in wards %}
-                    <option value="{{ ward.id }}" {% if selected_ward == ward.id|stringformat:"s" %}selected{% endif %}>{{ ward.name }}</option>
+                    <option value="{{ ward.id }}" {% if selected_ward == ward.id|stringformat:"s" %}selected{% endif %} data-lga-id="{{ ward.lga.id }}" data-ward-id="{{ ward.id }}">{{ ward.name }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -175,4 +175,79 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const zoneSelect = document.getElementById('zoneSelect');
+    const lgaSelect = document.getElementById('lgaSelect');
+    const wardSelect = document.getElementById('wardSelect');
+    
+    // Store all options for filtering
+    const allLgas = Array.from(lgaSelect.querySelectorAll('option:not([value=""])'));
+    const allWards = Array.from(wardSelect.querySelectorAll('option:not([value=""])'));
+    
+    // Function to filter LGAs based on selected zone
+    function filterLgas() {
+        const selectedZone = zoneSelect.value;
+        
+        // Clear current LGA options except the default
+        lgaSelect.innerHTML = '<option value="">Select LGA</option>';
+        
+        if (selectedZone) {
+            // Add only LGAs for the selected zone
+            allLgas.forEach(option => {
+                if (option.dataset.zoneId === selectedZone) {
+                    lgaSelect.appendChild(option.cloneNode(true));
+                }
+            });
+        } else {
+            // If no zone selected, show all LGAs
+            allLgas.forEach(option => {
+                lgaSelect.appendChild(option.cloneNode(true));
+            });
+        }
+        
+        // Reset ward selection when zone changes
+        wardSelect.value = '';
+        wardSelect.innerHTML = '<option value="">Select Ward</option>';
+    }
+    
+    // Function to filter Wards based on selected LGA
+    function filterWards() {
+        const selectedLga = lgaSelect.value;
+        
+        // Clear current Ward options except the default
+        wardSelect.innerHTML = '<option value="">Select Ward</option>';
+        
+        if (selectedLga) {
+            // Add only wards for the selected LGA
+            allWards.forEach(option => {
+                if (option.dataset.lgaId === selectedLga) {
+                    wardSelect.appendChild(option.cloneNode(true));
+                }
+            });
+        } else {
+            // If no LGA selected, show all wards
+            allWards.forEach(option => {
+                wardSelect.appendChild(option.cloneNode(true));
+            });
+        }
+    }
+    
+    // Event listeners
+    zoneSelect.addEventListener('change', function() {
+        filterLgas();
+    });
+    
+    lgaSelect.addEventListener('change', function() {
+        filterWards();
+    });
+    
+    // Initialize on page load
+    filterLgas();
+    filterWards();
+});
+</script>
 {% endblock %}

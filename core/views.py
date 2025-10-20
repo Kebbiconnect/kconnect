@@ -33,64 +33,104 @@ def leadership(request):
     
     leadership_positions = []
     
+    # Default: Show only State Executive roles (29 roles)
     if not zone_filter and not lga_filter and not ward_filter:
         state_roles = RoleDefinition.objects.filter(tier='STATE').order_by('seat_number')
         for role in state_roles:
-            holder = User.objects.filter(role_definition=role, status='APPROVED').first()
+            # Exclude superusers from leadership display
+            holder = User.objects.filter(
+                role_definition=role, 
+                status='APPROVED',
+                is_superuser=False
+            ).first()
+            leadership_positions.append({
+                'role': role,
+                'holder': holder,
+                'vacant': holder is None
+            })
+    # Zone filter: Show State Executive + Zonal Coordinators for that zone
+    elif zone_filter and not lga_filter and not ward_filter:
+        zone = Zone.objects.get(id=zone_filter)
+        
+        # Add State Executive roles
+        state_roles = RoleDefinition.objects.filter(tier='STATE').order_by('seat_number')
+        for role in state_roles:
+            holder = User.objects.filter(
+                role_definition=role, 
+                status='APPROVED',
+                is_superuser=False
+            ).first()
             leadership_positions.append({
                 'role': role,
                 'holder': holder,
                 'vacant': holder is None
             })
         
-        zones = Zone.objects.all()
-        for zone in zones:
-            zonal_roles = RoleDefinition.objects.filter(tier='ZONAL').order_by('seat_number')
-            for role in zonal_roles:
-                holder = User.objects.filter(role_definition=role, zone=zone, status='APPROVED').first()
-                leadership_positions.append({
-                    'role': role,
-                    'holder': holder,
-                    'zone': zone,
-                    'vacant': holder is None
-                })
-    elif zone_filter:
-        zone = Zone.objects.get(id=zone_filter)
-        zonal_roles = RoleDefinition.objects.filter(tier='ZONAL').order_by('seat_number')
-        for role in zonal_roles:
-            holder = User.objects.filter(role_definition=role, zone=zone, status='APPROVED').first()
+        # Add only Zonal Coordinator role for selected zone
+        zonal_coordinator_role = RoleDefinition.objects.filter(
+            tier='ZONAL',
+            title='Zonal Coordinator'
+        ).first()
+        if zonal_coordinator_role:
+            holder = User.objects.filter(
+                role_definition=zonal_coordinator_role, 
+                zone=zone, 
+                status='APPROVED',
+                is_superuser=False
+            ).first()
             leadership_positions.append({
-                'role': role,
+                'role': zonal_coordinator_role,
                 'holder': holder,
                 'zone': zone,
                 'vacant': holder is None
             })
-    elif lga_filter:
+    # LGA filter: Show only LGA Coordinator for that LGA
+    elif lga_filter and not ward_filter:
         lga = LGA.objects.get(id=lga_filter)
-        lga_roles = RoleDefinition.objects.filter(tier='LGA').order_by('seat_number')
-        for role in lga_roles:
-            holder = User.objects.filter(role_definition=role, lga=lga, status='APPROVED').first()
+        # Show only LGA Coordinator role
+        lga_coordinator_role = RoleDefinition.objects.filter(
+            tier='LGA',
+            title='LGA Coordinator'
+        ).first()
+        if lga_coordinator_role:
+            holder = User.objects.filter(
+                role_definition=lga_coordinator_role, 
+                lga=lga, 
+                status='APPROVED',
+                is_superuser=False
+            ).first()
             leadership_positions.append({
-                'role': role,
+                'role': lga_coordinator_role,
                 'holder': holder,
                 'lga': lga,
                 'vacant': holder is None
             })
+    # Ward filter: Show only Ward Coordinator for that ward
     elif ward_filter:
         ward = Ward.objects.get(id=ward_filter)
-        ward_roles = RoleDefinition.objects.filter(tier='WARD').order_by('seat_number')
-        for role in ward_roles:
-            holder = User.objects.filter(role_definition=role, ward=ward, status='APPROVED').first()
+        # Show only Ward Coordinator role
+        ward_coordinator_role = RoleDefinition.objects.filter(
+            tier='WARD',
+            title='Ward Coordinator'
+        ).first()
+        if ward_coordinator_role:
+            holder = User.objects.filter(
+                role_definition=ward_coordinator_role, 
+                ward=ward, 
+                status='APPROVED',
+                is_superuser=False
+            ).first()
             leadership_positions.append({
-                'role': role,
+                'role': ward_coordinator_role,
                 'holder': holder,
                 'ward': ward,
                 'vacant': holder is None
             })
     
     zones = Zone.objects.all()
-    lgas = LGA.objects.all()
-    wards = Ward.objects.all()
+    # Use select_related to avoid N+1 queries
+    lgas = LGA.objects.select_related('zone').all()
+    wards = Ward.objects.select_related('lga').all()
     
     context = {
         'leadership_positions': leadership_positions,

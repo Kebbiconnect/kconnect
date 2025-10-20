@@ -582,7 +582,8 @@ def president_dashboard(request):
 @role_required('STATE', 'ZONAL', 'LGA')
 def approve_members(request):
     if request.user.role == 'STATE':
-        pending_users = User.objects.filter(status='PENDING').order_by('-created_at')
+        # Exclude superusers from approval listings
+        pending_users = User.objects.filter(status='PENDING', is_superuser=False).order_by('-created_at')
         
         zone_filter = request.GET.get('zone')
         lga_filter = request.GET.get('lga')
@@ -602,7 +603,8 @@ def approve_members(request):
     elif request.user.role == 'ZONAL':
         pending_users = User.objects.filter(
             status='PENDING',
-            zone=request.user.zone
+            zone=request.user.zone,
+            is_superuser=False
         ).order_by('-created_at')
         zones = lgas = wards = None
         zone_filter = lga_filter = ward_filter = None
@@ -610,7 +612,8 @@ def approve_members(request):
     elif request.user.role == 'LGA':
         pending_users = User.objects.filter(
             status='PENDING',
-            lga=request.user.lga
+            lga=request.user.lga,
+            is_superuser=False
         ).order_by('-created_at')
         zones = lgas = wards = None
         zone_filter = lga_filter = ward_filter = None
@@ -664,7 +667,8 @@ def manage_staff(request):
     zone_filter = request.GET.get('zone', '')
     status_filter = request.GET.get('status', '')
     
-    staff = User.objects.all().order_by('-created_at')
+    # Exclude superusers from staff listings
+    staff = User.objects.filter(is_superuser=False).order_by('-created_at')
     
     if search:
         staff = staff.filter(
@@ -766,7 +770,8 @@ def view_reports(request):
 
 @role_required('STATE')
 def disciplinary_actions(request):
-    actions = DisciplinaryAction.objects.all().order_by('-created_at')
+    # Exclude disciplinary actions against superusers
+    actions = DisciplinaryAction.objects.filter(user__is_superuser=False).order_by('-created_at')
     
     context = {
         'actions': actions,
@@ -783,6 +788,12 @@ def create_disciplinary_action(request):
         form = DisciplinaryActionForm(request.POST)
         if form.is_valid():
             action = form.save(commit=False)
+            
+            # Double-check: Prevent disciplinary actions against superusers
+            if action.user.is_superuser:
+                messages.error(request, 'Cannot create disciplinary actions against website administrators.')
+                return redirect('staff:disciplinary_actions')
+            
             action.issued_by = request.user
             
             if action.action_type == 'WARNING':
@@ -813,6 +824,11 @@ def create_disciplinary_action(request):
 @approved_leader_required
 def approve_disciplinary_action(request, action_id):
     action = get_object_or_404(DisciplinaryAction, pk=action_id)
+    
+    # Prevent acting on superusers
+    if action.user.is_superuser:
+        messages.error(request, 'Cannot approve disciplinary actions against website administrators.')
+        return redirect('staff:disciplinary_actions')
     
     if action.is_approved:
         messages.warning(request, 'This action has already been approved.')
@@ -1001,8 +1017,9 @@ def vice_president_dashboard(request):
     zone_stats = []
     
     for zone in zones:
-        total_members = User.objects.filter(zone=zone, status='APPROVED').count()
-        leaders = User.objects.filter(zone=zone, status='APPROVED').exclude(role='GENERAL').count()
+        # Exclude superusers from statistics
+        total_members = User.objects.filter(zone=zone, status='APPROVED', is_superuser=False).count()
+        leaders = User.objects.filter(zone=zone, status='APPROVED', is_superuser=False).exclude(role='GENERAL').count()
         lgas = zone.lgas.count()
         
         zone_stats.append({
@@ -1012,15 +1029,16 @@ def vice_president_dashboard(request):
             'lgas': lgas,
         })
     
-    # Get disciplinary actions for review
+    # Get disciplinary actions for review (exclude actions against superusers)
     recent_disciplinary_actions = DisciplinaryAction.objects.filter(
-        is_approved=True
+        is_approved=True,
+        user__is_superuser=False
     ).order_by('-created_at')[:10]
     
-    # Overall statistics
-    total_members = User.objects.filter(status='APPROVED').count()
-    total_leaders = User.objects.filter(status='APPROVED').exclude(role='GENERAL').count()
-    pending_members = User.objects.filter(status='PENDING').count()
+    # Overall statistics - exclude superusers
+    total_members = User.objects.filter(status='APPROVED', is_superuser=False).count()
+    total_leaders = User.objects.filter(status='APPROVED', is_superuser=False).exclude(role='GENERAL').count()
+    pending_members = User.objects.filter(status='PENDING', is_superuser=False).count()
     
     context = {
         'zone_stats': zone_stats,
@@ -1797,8 +1815,8 @@ def member_mobilization(request):
     from django.http import HttpResponse
     
     form = MemberMobilizationFilterForm(request.GET or None)
-    # Start with all members - don't filter by status initially
-    members = User.objects.all().order_by('last_name', 'first_name')
+    # Start with all members - exclude superusers
+    members = User.objects.filter(is_superuser=False).order_by('last_name', 'first_name')
     
     # Apply filters
     if form.is_valid():
