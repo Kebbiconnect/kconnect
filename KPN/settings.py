@@ -212,6 +212,11 @@ else:
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
+# Tempo log
+print("☁️ CLOUDINARY_CLOUD_NAME =", os.getenv("CLOUDINARY_CLOUD_NAME"))
+print("🔑 CLOUDINARY_API_KEY =", os.getenv("CLOUDINARY_API_KEY"))
+print("🔒 CLOUDINARY_API_SECRET =", "✅ Loaded" if os.getenv("CLOUDINARY_API_SECRET") else "❌ Missing")
+print("📦 DEFAULT_FILE_STORAGE =", locals().get("DEFAULT_FILE_STORAGE", "Not set"))
 
 # IMPORTANT: Ensure 'cloudinary_storage' and 'cloudinary' are in INSTALLED_APPS,
 
