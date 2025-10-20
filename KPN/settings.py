@@ -162,7 +162,6 @@ USE_TZ = True
 
 
 
-
 # Static & Media configuration (Cloudinary + local dev fallback)
 
 # Read Cloudinary credentials (if absent locally, we fall back safely)

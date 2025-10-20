@@ -253,6 +253,9 @@ def profile(request):
     can_upload_photo = True
     
     if request.method == 'POST':
+        import logging
+        logger = logging.getLogger(__name__)
+        
         request.user.first_name = request.POST.get('first_name')
         request.user.last_name = request.POST.get('last_name')
         request.user.email = request.POST.get('email')
@@ -262,10 +265,29 @@ def profile(request):
         
         # Allow all users to upload profile photos
         if request.FILES.get('photo'):
+            logger.info(f"📸 Photo upload started for user {request.user.id}")
+            logger.info(f"   File name: {request.FILES['photo'].name}")
+            logger.info(f"   File size: {request.FILES['photo'].size} bytes")
+            logger.info(f"   Content type: {request.FILES['photo'].content_type}")
+            
             request.user.photo = request.FILES['photo']
+            logger.info(f"   Photo field set: {request.user.photo}")
         
-        request.user.save()
-        messages.success(request, 'Profile updated successfully!')
+        try:
+            request.user.save()
+            
+            # Log the saved photo URL
+            if request.user.photo:
+                logger.info(f"✅ Photo saved successfully!")
+                logger.info(f"   Photo URL: {request.user.photo.url}")
+                logger.info(f"   Photo path: {request.user.photo.name}")
+            
+            messages.success(request, 'Profile updated successfully!')
+        except Exception as e:
+            logger.error(f"❌ Error saving profile: {str(e)}")
+            logger.exception(e)
+            messages.error(request, f'Error updating profile: {str(e)}')
+        
         return redirect('staff:profile')
     
     context = {
