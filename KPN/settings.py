@@ -162,16 +162,13 @@ USE_TZ = True
 
 
 
+
 # Static & Media configuration (Cloudinary + local dev fallback)
 
 # Read Cloudinary credentials (if absent locally, we fall back safely)
 CLOUD_NAME = config('CLOUDINARY_CLOUD_NAME', default=None)
 CLOUD_API_KEY = config('CLOUDINARY_API_KEY', default=None)
 CLOUD_API_SECRET = config('CLOUDINARY_API_SECRET', default=None)
-
-# Always define URLs used by templates
-STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
 
 # Where Django should look for your project static sources
 # Your repo has a top-level "static/" folder
@@ -203,20 +200,26 @@ if CLOUD_NAME and CLOUD_API_KEY and CLOUD_API_SECRET:
 
     # Media (user uploads) always to Cloudinary when creds exist
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-    # Static to Cloudinary using non-hashed storage for reliability
-    # (switch to StaticHashedCloudinaryStorage later if you want hashed filenames)
-    STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticCloudinaryStorage'
+    
+    # MEDIA_URL points to Cloudinary for user uploads
+    MEDIA_URL = f'https://res.cloudinary.com/{CLOUD_NAME}/'
+    
+    # Static files: Use Cloudinary in production, local in development
+    if DEBUG:
+        # Development: serve static files locally for faster development
+        STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+        STATIC_URL = '/static/'
+    else:
+        # Production: use Cloudinary for static files
+        STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticCloudinaryStorage'
+        STATIC_URL = f'https://res.cloudinary.com/{CLOUD_NAME}/raw/upload/'
 else:
     # Local fallback (development without Cloudinary env vars)
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+    STATIC_URL = '/static/'
+    MEDIA_URL = '/media/'
 
-# Tempo log
-print("☁️ CLOUDINARY_CLOUD_NAME =", os.getenv("CLOUDINARY_CLOUD_NAME"))
-print("🔑 CLOUDINARY_API_KEY =", os.getenv("CLOUDINARY_API_KEY"))
-print("🔒 CLOUDINARY_API_SECRET =", "✅ Loaded" if os.getenv("CLOUDINARY_API_SECRET") else "❌ Missing")
-print("📦 DEFAULT_FILE_STORAGE =", locals().get("DEFAULT_FILE_STORAGE", "Not set"))
 
 # IMPORTANT: Ensure 'cloudinary_storage' and 'cloudinary' are in INSTALLED_APPS,
 
