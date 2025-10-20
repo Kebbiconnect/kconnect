@@ -161,6 +161,7 @@ USE_I18N = True
 USE_TZ = True
 
 
+
 # Static & Media configuration (Cloudinary + local dev fallback)
 
 # Read Cloudinary credentials (if absent locally, we fall back safely)
@@ -182,6 +183,9 @@ STATICFILES_DIRS = [
 
 # A local build target (not used by Cloudinary itself but required by collectstatic)
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build')
+
+# Media file storage location (for user uploads when not using Cloudinary)
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Make sure the finders are explicit (helps Django locate files)
 STATICFILES_FINDERS = [

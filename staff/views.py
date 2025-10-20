@@ -160,6 +160,11 @@ def register(request):
             facebook_verified=facebook_verified
         )
         
+        # Handle profile photo upload
+        if request.FILES.get('photo'):
+            user.photo = request.FILES['photo']
+            user.save()
+        
         if status == 'APPROVED':
             login(request, user)
             messages.success(request, 'Registration successful! Welcome to KPN.')
@@ -244,7 +249,8 @@ def dashboard(request):
 @login_required
 def profile(request):
     user = request.user
-    can_upload_photo = user.status == 'APPROVED' and user.role in ['STATE', 'ZONAL']
+    # Everyone can now upload photos - restriction removed
+    can_upload_photo = True
     
     if request.method == 'POST':
         request.user.first_name = request.POST.get('first_name')
@@ -254,11 +260,9 @@ def profile(request):
         request.user.bio = request.POST.get('bio', '')
         request.user.gender = request.POST.get('gender', '')
         
+        # Allow all users to upload profile photos
         if request.FILES.get('photo'):
-            if can_upload_photo:
-                request.user.photo = request.FILES['photo']
-            else:
-                messages.warning(request, 'Profile photo upload is only available for State Executive and Zonal Coordinator roles.')
+            request.user.photo = request.FILES['photo']
         
         request.user.save()
         messages.success(request, 'Profile updated successfully!')
