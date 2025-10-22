@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 from dotenv import load_dotenv
 from decouple import config
 
@@ -143,24 +146,23 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Cloudinary Configuration
 # ======================================
 
-from decouple import config
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
+cloudinary.config(
+    cloud_name=config('CLOUDINARY_CLOUD_NAME'),
+    api_key=config('CLOUDINARY_API_KEY'),
+    api_secret=config('CLOUDINARY_API_SECRET'),
+    secure=True
+)
 
-CLOUDINARY_URL = config('CLOUDINARY_URL', default=None)
+# Django 4.2+ and 5.x media/static storage setup
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
-if CLOUDINARY_URL:
-    cloudinary.config(cloudinary_url=CLOUDINARY_URL)
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    print("✅ Cloudinary storage enabled")
-else:
-    from django.core.files.storage import FileSystemStorage
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-    print("⚠️ Using local file storage (no CLOUDINARY_URL found)")
-
-# Keep static files local (for WhiteNoise or Render)
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 #MEDIA_URL = 'media/'
 #MEDIA_ROOT = BASE_DIR / 'media'
