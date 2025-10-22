@@ -12,18 +12,20 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
+from dotenv import load_dotenv
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+load_dotenv(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # No default fallback - must be set in environment variables for security
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = config('SESSION_SECRET')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
@@ -53,8 +55,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'cloudinary_storage',
     'django.contrib.staticfiles',
+    'cloudinary_storage',
     'cloudinary',
 
     # Security Apps
@@ -104,50 +106,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'KPN.wsgi.application'
 
-
-# Database
+# Database configuration
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-USE_NEON = config('USE_NEON', default=False, cast=bool)
+# Get the full database URL from environment variables
+DATABASE_URL = os.getenv('DATABASE_URL')
 
-DATABASE_URL = config('DATABASE_URL', default=None)
-
-if DATABASE_URL:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('PGDATABASE', default=''),
-            'USER': config('PGUSER', default=''),
-            'PASSWORD': config('PGPASSWORD', default=''),
-            'HOST': config('PGHOST', default=''),
-            'PORT': config('PGPORT', default='5432'),
-            'OPTIONS': {
-                'sslmode': 'require',
-            },
-        }
-    }
-elif USE_NEON:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('NEON_DB_NAME', default='neondb'),
-            'USER': config('NEON_DB_USER', default='neondb_owner'),
-            'PASSWORD': config('NEON_DB_PASSWORD'),
-            'HOST': config('NEON_DB_HOST', default='ep-solitary-bird-agv5faq5-pooler.c-2.eu-central-1.aws.neon.tech'),
-            'PORT': config('NEON_DB_PORT', default='5432'),
-            'OPTIONS': {
-                'sslmode': 'require',
-            },
-        }
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-
+DATABASES = {
+    'default': dj_database_url.config(
+        default=DATABASE_URL,
+        conn_max_age=600
+    )
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -161,67 +131,39 @@ USE_I18N = True
 USE_TZ = True
 
 
+# ======================================
+# Static files (CSS, JavaScript, Images)
+# ======================================
+# For serving CSS/JS files in production
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Static & Media configuration (Cloudinary + local dev fallback)
+# ======================================
+# Cloudinary Configuration
+# ======================================
 
-# Read Cloudinary credentials (if absent locally, we fall back safely)
-CLOUD_NAME = config('CLOUDINARY_CLOUD_NAME', default=None)
-CLOUD_API_KEY = config('CLOUDINARY_API_KEY', default=None)
-CLOUD_API_SECRET = config('CLOUDINARY_API_SECRET', default=None)
+from decouple import config
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
-# Where Django should look for your project static sources
-# Your repo has a top-level "static/" folder
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-    # If you keep any extra project assets in another folder, add them:
-    # os.path.join(BASE_DIR, 'attached_assets'),
-]
+CLOUDINARY_URL = config('CLOUDINARY_URL', default=None)
 
-# A local build target (not used by Cloudinary itself but required by collectstatic)
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build')
-
-# Media file storage location (for user uploads when not using Cloudinary)
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Make sure the finders are explicit (helps Django locate files)
-STATICFILES_FINDERS = [
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-]
-
-# Use Cloudinary if credentials exist; otherwise safe local fallback for dev
-if CLOUD_NAME and CLOUD_API_KEY and CLOUD_API_SECRET:
-    CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': CLOUD_NAME,
-        'API_KEY': CLOUD_API_KEY,
-        'API_SECRET': CLOUD_API_SECRET,
-    }
-
-    # Media (user uploads) always to Cloudinary when creds exist
+if CLOUDINARY_URL:
+    cloudinary.config(cloudinary_url=CLOUDINARY_URL)
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    
-    # MEDIA_URL points to Cloudinary for user uploads
-    MEDIA_URL = f'https://res.cloudinary.com/{CLOUD_NAME}/'
-    
-    # Static files: Use Cloudinary in production, local in development
-    if DEBUG:
-        # Development: serve static files locally for faster development
-        STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
-        STATIC_URL = '/static/'
-    else:
-        # Production: use Cloudinary for static files
-        STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticCloudinaryStorage'
-        STATIC_URL = f'https://res.cloudinary.com/{CLOUD_NAME}/raw/upload/'
+    print("✅ Cloudinary storage enabled")
 else:
-    # Local fallback (development without Cloudinary env vars)
+    from django.core.files.storage import FileSystemStorage
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
-    STATIC_URL = '/static/'
-    MEDIA_URL = '/media/'
+    print("⚠️ Using local file storage (no CLOUDINARY_URL found)")
 
+# Keep static files local (for WhiteNoise or Render)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# IMPORTANT: Ensure 'cloudinary_storage' and 'cloudinary' are in INSTALLED_APPS,
-
+#MEDIA_URL = 'media/'
+#MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -293,7 +235,6 @@ AUTHENTICATION_BACKENDS = [
 # Django Axes Configuration - Brute Force Protection
 AXES_FAILURE_LIMIT = 5  # Lock after 5 failed attempts
 AXES_COOLOFF_TIME = 1  # Lock for 1 hour (in hours)
-AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = True
 AXES_RESET_ON_SUCCESS = True
 AXES_LOCKOUT_TEMPLATE = None  # Use default lockout behavior
 AXES_LOCKOUT_PARAMETERS = [['username', 'ip_address']]
