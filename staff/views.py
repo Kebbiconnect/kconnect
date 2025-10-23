@@ -79,6 +79,11 @@ def register(request):
             messages.error(request, 'You must follow our Facebook page to complete registration.')
             return redirect('staff:register')
         
+        # Check if photo is uploaded
+        if not request.FILES.get('photo'):
+            messages.error(request, 'Profile photo is required for registration.')
+            return redirect('staff:register')
+        
         if password1 != password2:
             messages.error(request, 'Passwords do not match.')
             return redirect('staff:register')
@@ -256,12 +261,31 @@ def profile(request):
         import logging
         logger = logging.getLogger(__name__)
         
+        request.user.username = request.POST.get('username')
         request.user.first_name = request.POST.get('first_name')
         request.user.last_name = request.POST.get('last_name')
         request.user.email = request.POST.get('email')
         request.user.phone = request.POST.get('phone')
         request.user.bio = request.POST.get('bio', '')
         request.user.gender = request.POST.get('gender', '')
+        
+        # Update location fields
+        zone_id = request.POST.get('zone')
+        lga_id = request.POST.get('lga')
+        ward_id = request.POST.get('ward')
+        
+        if zone_id:
+            request.user.zone_id = zone_id
+        if lga_id:
+            request.user.lga_id = lga_id
+        if ward_id:
+            request.user.ward_id = ward_id
+        
+        # Update social media fields (optional)
+        request.user.facebook_url = request.POST.get('facebook_url', '')
+        request.user.twitter_url = request.POST.get('twitter_url', '')
+        request.user.instagram_url = request.POST.get('instagram_url', '')
+        request.user.tiktok_url = request.POST.get('tiktok_url', '')
         
         # Allow all users to upload profile photos
         if request.FILES.get('photo'):
@@ -290,8 +314,15 @@ def profile(request):
         
         return redirect('staff:profile')
     
+    zones = Zone.objects.all()
+    lgas = LGA.objects.all()
+    wards = Ward.objects.all()
+    
     context = {
-        'can_upload_photo': can_upload_photo
+        'can_upload_photo': can_upload_photo,
+        'zones': zones,
+        'lgas': lgas,
+        'wards': wards,
     }
     return render(request, 'staff/profile.html', context)
 

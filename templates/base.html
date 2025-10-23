@@ -6,6 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Kebbi Progressive Network (KPN){% endblock %}</title>
     
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Kebbi Progressive Network - Driving Change Across Kebbi State">
+    <meta name="theme-color" content="#28a745">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="KPN">
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/kpn-logo.png' %}">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -258,10 +267,13 @@
                         <a href="https://www.facebook.com/kpnkebbi" target="_blank" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-blue-600 hover:text-white transform hover:scale-110 hover:-rotate-12 transition-all duration-300" title="Follow us on Facebook">
                             <i class="fab fa-facebook text-xl"></i>
                         </a>
-                        <a href="https://wa.me/2348102444491" target="_blank" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-green-500 hover:text-white transform hover:scale-110 hover:rotate-12 transition-all duration-300" title="Chat on WhatsApp">
+                        <a href="https://twitter.com/kpnkebbi" target="_blank" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-blue-400 hover:text-white transform hover:scale-110 hover:rotate-12 transition-all duration-300" title="Follow us on Twitter/X">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="https://wa.me/2348102444491" target="_blank" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-green-500 hover:text-white transform hover:scale-110 hover:-rotate-12 transition-all duration-300" title="Chat on WhatsApp">
                             <i class="fab fa-whatsapp text-xl"></i>
                         </a>
-                        <a href="https://www.tiktok.com/@kpn.kb" target="_blank" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-black hover:text-white transform hover:scale-110 hover:-rotate-12 transition-all duration-300" title="Follow us on TikTok">
+                        <a href="https://www.tiktok.com/@kpn.kb" target="_blank" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-black hover:text-white transform hover:scale-110 hover:rotate-12 transition-all duration-300" title="Follow us on TikTok">
                             <i class="fab fa-tiktok text-xl"></i>
                         </a>
                     </div>
@@ -282,7 +294,7 @@
                         </p>
                         <p class="flex items-center">
                             <i class="fas fa-phone mr-2 text-kpn-green"></i>
-                            +234 202 291 9562
+                            +234 806 777 0283
                         </p>
                         <p class="flex items-center">
                             <i class="fas fa-map-marker-alt mr-2 text-kpn-green"></i>
@@ -320,6 +332,98 @@
     </footer>
 
     {% block extra_js %}{% endblock %}
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then((registration) => {
+                        console.log('ServiceWorker registered:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('ServiceWorker registration failed:', error);
+                    });
+            });
+        }
+
+        let deferredPrompt;
+        const installPrompt = document.createElement('div');
+        installPrompt.id = 'install-prompt';
+        installPrompt.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #28a745 0%, #0066cc 100%);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 9999;
+            max-width: 90%;
+            animation: slideUp 0.5s ease-out;
+        `;
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateX(-50%) translateY(100px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(-50%) translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        installPrompt.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-mobile-alt" style="font-size: 24px;"></i>
+                    <span style="font-weight: 600;">Install KPN to Home Screen</span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="install-btn" style="background: white; color: #28a745; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                        <i class="fas fa-download mr-1"></i>Install
+                    </button>
+                    <button id="dismiss-btn" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid white; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.3s;">
+                        <i class="fas fa-times mr-1"></i>Later
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(installPrompt);
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installPrompt.style.display = 'block';
+        });
+
+        document.getElementById('install-btn').addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response: ${outcome}`);
+            deferredPrompt = null;
+            installPrompt.style.display = 'none';
+        });
+
+        document.getElementById('dismiss-btn').addEventListener('click', () => {
+            installPrompt.style.display = 'none';
+        });
+
+        window.addEventListener('appinstalled', () => {
+            console.log('KPN PWA installed successfully!');
+            installPrompt.style.display = 'none';
+        });
+    </script>
     
     <!-- Typing Animation Script -->
     <script src="{% static 'staff/js/typing-hero.js' %}"></script>

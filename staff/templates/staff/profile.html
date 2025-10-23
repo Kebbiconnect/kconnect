@@ -45,6 +45,11 @@
             </div>
             {% endif %}
             
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">Username</label>
+                <input type="text" name="username" value="{{ user.username }}" required class="w-full p-3 border rounded dark:bg-gray-700">
+            </div>
+            
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium mb-2">First Name</label>
@@ -76,13 +81,166 @@
                 </select>
             </div>
             
+            <!-- Location Section -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-3 text-kpn-green">Location</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Zone</label>
+                        <select name="zone" id="zoneSelect" class="w-full p-3 border rounded dark:bg-gray-700">
+                            <option value="">Select Zone</option>
+                            {% for zone in zones %}
+                            <option value="{{ zone.id }}" {% if user.zone.id == zone.id %}selected{% endif %}>{{ zone.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">LGA</label>
+                        <select name="lga" id="lgaSelect" class="w-full p-3 border rounded dark:bg-gray-700">
+                            <option value="">Select LGA</option>
+                            {% for lga in lgas %}
+                            <option value="{{ lga.id }}" {% if user.lga.id == lga.id %}selected{% endif %} data-zone-id="{{ lga.zone.id }}">{{ lga.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Ward</label>
+                        <select name="ward" id="wardSelect" class="w-full p-3 border rounded dark:bg-gray-700">
+                            <option value="">Select Ward</option>
+                            {% for ward in wards %}
+                            <option value="{{ ward.id }}" {% if user.ward.id == ward.id %}selected{% endif %} data-lga-id="{{ ward.lga.id }}">{{ ward.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
             <div class="mb-6">
                 <label class="block text-sm font-medium mb-2">Bio</label>
                 <textarea name="bio" rows="4" class="w-full p-3 border rounded dark:bg-gray-700">{{ user.bio }}</textarea>
+            </div>
+            
+            <!-- Social Media Section -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-3 text-kpn-green flex items-center">
+                    <i class="fas fa-share-alt mr-2"></i>
+                    Social Media Links (Optional)
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Add your social media profiles so people can connect with you</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">
+                            <i class="fab fa-facebook text-blue-600 mr-1"></i> Facebook URL
+                        </label>
+                        <input type="url" name="facebook_url" value="{{ user.facebook_url }}" placeholder="https://facebook.com/yourprofile" class="w-full p-3 border rounded dark:bg-gray-700">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">
+                            <i class="fab fa-twitter text-blue-400 mr-1"></i> Twitter/X URL
+                        </label>
+                        <input type="url" name="twitter_url" value="{{ user.twitter_url }}" placeholder="https://twitter.com/yourprofile" class="w-full p-3 border rounded dark:bg-gray-700">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">
+                            <i class="fab fa-instagram text-pink-600 mr-1"></i> Instagram URL
+                        </label>
+                        <input type="url" name="instagram_url" value="{{ user.instagram_url }}" placeholder="https://instagram.com/yourprofile" class="w-full p-3 border rounded dark:bg-gray-700">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">
+                            <i class="fab fa-tiktok mr-1"></i> TikTok URL
+                        </label>
+                        <input type="url" name="tiktok_url" value="{{ user.tiktok_url }}" placeholder="https://tiktok.com/@yourprofile" class="w-full p-3 border rounded dark:bg-gray-700">
+                    </div>
+                </div>
             </div>
             
             <button type="submit" class="w-full bg-kpn-green text-white py-3 rounded-lg hover:bg-green-600 transition">Update Profile</button>
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const zoneSelect = document.getElementById('zoneSelect');
+    const lgaSelect = document.getElementById('lgaSelect');
+    const wardSelect = document.getElementById('wardSelect');
+    
+    // Store all options for filtering
+    const allLgas = Array.from(lgaSelect.querySelectorAll('option:not([value=""])'));
+    const allWards = Array.from(wardSelect.querySelectorAll('option:not([value=""])'));
+    
+    // Function to filter LGAs based on selected zone
+    function filterLgas() {
+        const selectedZone = zoneSelect.value;
+        const currentLga = lgaSelect.value;
+        
+        // Clear current LGA options except the default
+        lgaSelect.innerHTML = '<option value="">Select LGA</option>';
+        
+        if (selectedZone) {
+            // Add only LGAs for the selected zone
+            allLgas.forEach(option => {
+                if (option.dataset.zoneId === selectedZone) {
+                    lgaSelect.appendChild(option.cloneNode(true));
+                }
+            });
+        } else {
+            // If no zone selected, show all LGAs
+            allLgas.forEach(option => {
+                lgaSelect.appendChild(option.cloneNode(true));
+            });
+        }
+        
+        // Restore selection if it's still valid
+        if (currentLga) {
+            lgaSelect.value = currentLga;
+        }
+    }
+    
+    // Function to filter Wards based on selected LGA
+    function filterWards() {
+        const selectedLga = lgaSelect.value;
+        const currentWard = wardSelect.value;
+        
+        // Clear current Ward options except the default
+        wardSelect.innerHTML = '<option value="">Select Ward</option>';
+        
+        if (selectedLga) {
+            // Add only wards for the selected LGA
+            allWards.forEach(option => {
+                if (option.dataset.lgaId === selectedLga) {
+                    wardSelect.appendChild(option.cloneNode(true));
+                }
+            });
+        } else {
+            // If no LGA selected, show all wards
+            allWards.forEach(option => {
+                wardSelect.appendChild(option.cloneNode(true));
+            });
+        }
+        
+        // Restore selection if it's still valid
+        if (currentWard) {
+            wardSelect.value = currentWard;
+        }
+    }
+    
+    // Event listeners
+    zoneSelect.addEventListener('change', function() {
+        filterLgas();
+        filterWards();
+    });
+    
+    lgaSelect.addEventListener('change', function() {
+        filterWards();
+    });
+    
+    // Initialize on page load
+    filterLgas();
+    filterWards();
+});
+</script>
 {% endblock %}

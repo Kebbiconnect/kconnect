@@ -113,7 +113,7 @@
     <!-- Leadership Grid -->
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {% for position in leadership_positions %}
-        <div class="leader-card bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center hover:shadow-2xl">
+        <div class="leader-card bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center hover:shadow-2xl {% if not position.vacant %}cursor-pointer{% endif %}">
             {% if position.vacant %}
                 <div class="leader-avatar w-28 h-28 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700 mx-auto mb-4 flex items-center justify-center border-4 border-dashed border-gray-400">
                     <i class="fas fa-user-slash text-4xl text-gray-500 dark:text-gray-400"></i>
@@ -138,32 +138,34 @@
                 </p>
                 {% endif %}
             {% else %}
-                {% if position.holder.photo %}
-                <img src="{{ position.holder.photo.url }}" alt="{{ position.holder.get_full_name }}" class="leader-avatar w-28 h-28 rounded-full mx-auto mb-4 object-cover border-4 border-kpn-green shadow-lg">
-                {% else %}
-                <div class="leader-avatar w-28 h-28 rounded-full bg-gradient-to-br from-kpn-green to-green-600 mx-auto mb-4 flex items-center justify-center shadow-lg border-4 border-kpn-green">
-                    <span class="text-white text-3xl font-bold">{{ position.holder.first_name.0 }}{{ position.holder.last_name.0 }}</span>
-                </div>
-                {% endif %}
-                <h3 class="text-lg font-bold mb-2 text-gray-900 dark:text-white">{{ position.holder.get_full_name }}</h3>
-                <p class="text-sm text-kpn-green font-semibold mb-2">{{ position.role.title }}</p>
-                {% if position.zone %}
+                <a href="{% url 'core:view_profile' position.holder.id %}" class="block">
+                    {% if position.holder.photo %}
+                    <img src="{{ position.holder.photo.url }}" alt="{{ position.holder.get_full_name }}" class="leader-avatar w-28 h-28 rounded-full mx-auto mb-4 object-cover border-4 border-kpn-green shadow-lg">
+                    {% else %}
+                    <div class="leader-avatar w-28 h-28 rounded-full bg-gradient-to-br from-kpn-green to-green-600 mx-auto mb-4 flex items-center justify-center shadow-lg border-4 border-kpn-green">
+                        <span class="text-white text-3xl font-bold">{{ position.holder.first_name.0 }}{{ position.holder.last_name.0 }}</span>
+                    </div>
+                    {% endif %}
+                    <h3 class="text-lg font-bold mb-2 text-gray-900 dark:text-white">{{ position.holder.get_full_name }}</h3>
+                    <p class="text-sm text-kpn-green font-semibold mb-2">{{ position.role.title }}</p>
+                {% if position.holder.ward %}
                 <p class="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center">
-                    <i class="fas fa-map-marker-alt mr-1"></i>{{ position.zone.name }}
+                    <i class="fas fa-map-marker-alt mr-1"></i>{{ position.holder.ward.name }}, {{ position.holder.lga.name }}, {{ position.holder.zone.name }}
                 </p>
-                {% elif position.lga %}
+                {% elif position.holder.lga %}
                 <p class="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center">
-                    <i class="fas fa-map-marker-alt mr-1"></i>{{ position.lga.name }}
+                    <i class="fas fa-map-marker-alt mr-1"></i>{{ position.holder.lga.name }}, {{ position.holder.zone.name }}
                 </p>
-                {% elif position.ward %}
+                {% elif position.holder.zone %}
                 <p class="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center">
-                    <i class="fas fa-map-marker-alt mr-1"></i>{{ position.ward.name }}
+                    <i class="fas fa-map-marker-alt mr-1"></i>{{ position.holder.zone.name }}
                 </p>
                 {% else %}
                 <p class="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center">
                     <i class="fas fa-map-marker-alt mr-1"></i>Kebbi State
                 </p>
                 {% endif %}
+                </a>
             {% endif %}
         </div>
         {% empty %}

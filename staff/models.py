@@ -28,6 +28,12 @@ class User(AbstractUser):
     photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True)
     
+    # Social Media Links (optional)
+    facebook_url = models.URLField(max_length=200, blank=True, help_text="Your Facebook profile URL")
+    twitter_url = models.URLField(max_length=200, blank=True, help_text="Your Twitter/X profile URL")
+    instagram_url = models.URLField(max_length=200, blank=True, help_text="Your Instagram profile URL")
+    tiktok_url = models.URLField(max_length=200, blank=True, help_text="Your TikTok profile URL")
+    
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='GENERAL')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
     
