@@ -147,28 +147,43 @@ def register(request):
                 messages.error(request, 'This position is already filled.')
                 return redirect('staff:register')
         
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password1,
-            first_name=first_name,
-            last_name=last_name,
-            phone=phone,
-            bio=bio,
-            gender=gender,
-            zone=zone,
-            lga=lga,
-            ward=ward,
-            role=role,
-            role_definition=role_definition,
-            status=status,
-            facebook_verified=facebook_verified
-        )
-        
-        # Handle profile photo upload
-        if request.FILES.get('photo'):
-            user.photo = request.FILES['photo']
-            user.save()
+        try:
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password1,
+                first_name=first_name,
+                last_name=last_name,
+                phone=phone,
+                bio=bio,
+                gender=gender,
+                zone=zone,
+                lga=lga,
+                ward=ward,
+                role=role,
+                role_definition=role_definition,
+                status=status,
+                facebook_verified=facebook_verified
+            )
+            
+            # Handle profile photo upload with error handling
+            if request.FILES.get('photo'):
+                try:
+                    user.photo = request.FILES['photo']
+                    user.save()
+                except Exception as photo_error:
+                    # If photo upload fails, log it but don't crash registration
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Photo upload failed for user {username}: {str(photo_error)}")
+                    # User is created but without photo
+        except Exception as e:
+            # Log the error for debugging
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"User registration failed for {username}: {str(e)}")
+            messages.error(request, f'Registration failed. Please contact administrator. Error: {str(e)}')
+            return redirect('staff:register')
         
         if status == 'APPROVED':
             login(request, user)

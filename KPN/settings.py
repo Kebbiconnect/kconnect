@@ -156,31 +156,41 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Cloudinary Configuration
 # ======================================
 
-cloudinary.config(
-    cloud_name=config('CLOUDINARY_CLOUD_NAME', default='placeholder'),
-    api_key=config('CLOUDINARY_API_KEY', default='placeholder'),
-    api_secret=config('CLOUDINARY_API_SECRET', default='placeholder'),
-    secure=True
-)
+CLOUDINARY_CLOUD_NAME = config('CLOUDINARY_CLOUD_NAME', default='')
+CLOUDINARY_API_KEY = config('CLOUDINARY_API_KEY', default='')
+CLOUDINARY_API_SECRET = config('CLOUDINARY_API_SECRET', default='')
+
+# Only configure Cloudinary if all credentials are provided
+USE_CLOUDINARY = all([CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET])
+
+if USE_CLOUDINARY:
+    cloudinary.config(
+        cloud_name=CLOUDINARY_CLOUD_NAME,
+        api_key=CLOUDINARY_API_KEY,
+        api_secret=CLOUDINARY_API_SECRET,
+        secure=True
+    )
 
 # Django 4.2+ and 5.x media/static storage setup
 STORAGES = {
     "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage" if USE_CLOUDINARY else "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
 
+# If not using Cloudinary, use local file storage
+if not USE_CLOUDINARY:
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
+
 # WhiteNoise static file serving optimization
 WHITENOISE_MAX_AGE = 31536000  # 1 year cache for static files
 WHITENOISE_COMPRESSION = True
 WHITENOISE_USE_FINDERS = False
 
-
-#MEDIA_URL = 'media/'
-#MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
