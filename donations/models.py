@@ -25,6 +25,10 @@ class Donation(models.Model):
     
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', '-created_at'], name='donation_status_created_idx'),
+            models.Index(fields=['status', '-verified_at'], name='donation_status_verified_idx'),
+        ]
     
     def __str__(self):
         return f"{self.donor_name} - ₦{self.amount}"
@@ -104,6 +108,9 @@ class AuditReport(models.Model):
         ordering = ['-created_at']
         verbose_name = "Audit Report"
         verbose_name_plural = "Audit Reports"
+        indexes = [
+            models.Index(fields=['status', '-submitted_at'], name='audit_status_submitted_idx'),
+        ]
     
     def __str__(self):
         return f"{self.title} - {self.audit_period}"

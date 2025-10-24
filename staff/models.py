@@ -52,6 +52,12 @@ class User(AbstractUser):
     
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', 'role'], name='user_status_role_idx'),
+            models.Index(fields=['status', 'zone'], name='user_status_zone_idx'),
+            models.Index(fields=['status', 'lga'], name='user_status_lga_idx'),
+            models.Index(fields=['status', 'ward'], name='user_status_ward_idx'),
+        ]
     
     def __str__(self):
         return f"{self.get_full_name()} ({self.get_role_display()})"

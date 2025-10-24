@@ -26,6 +26,10 @@ class Campaign(models.Model):
     
     class Meta:
         ordering = ['-published_at', '-created_at']
+        indexes = [
+            models.Index(fields=['status', 'author'], name='campaign_status_author_idx'),
+            models.Index(fields=['status', '-published_at'], name='campaign_status_pub_idx'),
+        ]
     
     def __str__(self):
         return self.title

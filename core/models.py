@@ -59,6 +59,10 @@ class Report(models.Model):
     
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', 'submitted_to'], name='report_status_receiver_idx'),
+            models.Index(fields=['status', '-created_at'], name='report_status_created_idx'),
+        ]
     
     def __str__(self):
         return f"{self.title} - {self.get_report_type_display()}"
@@ -86,3 +90,4 @@ class Report(models.Model):
             not self.is_escalated and 
             self.report_type in ['WARD_TO_LGA', 'LGA_TO_ZONAL']
         )
+
