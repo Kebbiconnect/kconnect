@@ -1,5 +1,5 @@
 from django import forms
-from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram, CommunityOutreach, WardMeeting, WardMeetingAttendance
+from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram, CommunityOutreach, WardMeeting, WardMeetingAttendance, Announcement
 from leadership.models import RoleDefinition, Zone, LGA, Ward
 from core.models import FAQ
 
@@ -819,3 +819,138 @@ class WardMeetingAttendanceForm(forms.Form):
                         'class': 'w-4 h-4 text-kpn-blue border-gray-300 rounded focus:ring-kpn-blue'
                     })
                 )
+
+
+class AnnouncementForm(forms.ModelForm):
+    """Form for creating announcements with role-based permission filtering"""
+    
+    title = forms.CharField(
+        max_length=200,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-green dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Brief title for the announcement...'
+        })
+    )
+    
+    content = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-green dark:bg-gray-700 dark:text-white',
+            'placeholder': 'Write your announcement message here...',
+            'rows': 6
+        })
+    )
+    
+    scope = forms.ChoiceField(
+        choices=Announcement.SCOPE_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-green dark:bg-gray-700 dark:text-white',
+            'id': 'scope-select'
+        })
+    )
+    
+    priority = forms.ChoiceField(
+        choices=Announcement.PRIORITY_CHOICES,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-green dark:bg-gray-700 dark:text-white'
+        })
+    )
+    
+    target_zone = forms.ModelChoiceField(
+        queryset=Zone.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-green dark:bg-gray-700 dark:text-white',
+            'id': 'zone-select'
+        })
+    )
+    
+    target_lga = forms.ModelChoiceField(
+        queryset=LGA.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-green dark:bg-gray-700 dark:text-white',
+            'id': 'lga-select'
+        })
+    )
+    
+    target_ward = forms.ModelChoiceField(
+        queryset=Ward.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-green dark:bg-gray-700 dark:text-white',
+            'id': 'ward-select'
+        })
+    )
+    
+    expires_at = forms.DateTimeField(
+        required=False,
+        widget=forms.DateTimeInput(attrs={
+            'type': 'datetime-local',
+            'class': 'w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-green dark:bg-gray-700 dark:text-white'
+        })
+    )
+    
+    class Meta:
+        model = Announcement
+        fields = ['title', 'content', 'scope', 'priority', 'target_zone', 'target_lga', 'target_ward', 'expires_at']
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        if user:
+            if user.role == 'STATE':
+                pass
+            elif user.role == 'ZONAL' and user.zone:
+                self.fields['scope'].choices = [
+                    ('ZONAL', 'Zonal - Specific Zone'),
+                    ('LGA', 'LGA - Specific LGA'),
+                    ('WARD', 'Ward - Specific Ward'),
+                ]
+                self.fields['target_zone'].queryset = Zone.objects.filter(pk=user.zone.pk)
+                self.fields['target_zone'].initial = user.zone
+                self.fields['target_lga'].queryset = LGA.objects.filter(zone=user.zone)
+                self.fields['target_ward'].queryset = Ward.objects.filter(lga__zone=user.zone)
+            elif user.role == 'LGA' and user.lga:
+                self.fields['scope'].choices = [
+                    ('LGA', 'LGA - Specific LGA'),
+                    ('WARD', 'Ward - Specific Ward'),
+                ]
+                self.fields['target_lga'].queryset = LGA.objects.filter(pk=user.lga.pk)
+                self.fields['target_lga'].initial = user.lga
+                self.fields['target_ward'].queryset = Ward.objects.filter(lga=user.lga)
+                del self.fields['target_zone']
+            elif user.role == 'WARD' and user.ward:
+                self.fields['scope'].choices = [
+                    ('WARD', 'Ward - Specific Ward'),
+                ]
+                self.fields['target_ward'].queryset = Ward.objects.filter(pk=user.ward.pk)
+                self.fields['target_ward'].initial = user.ward
+                del self.fields['target_zone']
+                del self.fields['target_lga']
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        scope = cleaned_data.get('scope')
+        target_zone = cleaned_data.get('target_zone')
+        target_lga = cleaned_data.get('target_lga')
+        target_ward = cleaned_data.get('target_ward')
+        
+        if scope == 'GENERAL':
+            if target_zone or target_lga or target_ward:
+                raise forms.ValidationError("General announcements should not have zone, LGA, or ward targets.")
+        elif scope == 'ZONAL':
+            if not target_zone:
+                raise forms.ValidationError("Please select a zone for this zonal announcement.")
+            if target_lga or target_ward:
+                raise forms.ValidationError("Zonal announcements should only specify a zone.")
+        elif scope == 'LGA':
+            if not target_lga:
+                raise forms.ValidationError("Please select an LGA for this LGA announcement.")
+            if target_ward:
+                raise forms.ValidationError("LGA announcements should not specify a ward.")
+        elif scope == 'WARD':
+            if not target_ward:
+                raise forms.ValidationError("Please select a ward for this ward announcement.")
+        
+        return cleaned_data

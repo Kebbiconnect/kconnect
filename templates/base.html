@@ -61,6 +61,24 @@
         .menu-item:nth-child(6) { animation-delay: 0.3s; }
         .menu-item:nth-child(7) { animation-delay: 0.35s; }
         .menu-item:nth-child(8) { animation-delay: 0.4s; }
+        
+        @keyframes marqueeScroll {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(-100%);
+            }
+        }
+        
+        .announcement-marquee {
+            white-space: nowrap;
+            animation: marqueeScroll 30s linear infinite;
+        }
+        
+        .announcement-marquee:hover {
+            animation-play-state: paused;
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -166,6 +184,24 @@
             </div>
         </div>
     </nav>
+
+    <!-- Announcements Marquee -->
+    {% if user.is_authenticated %}
+    <div id="announcementBar" class="bg-gradient-to-r from-kpn-blue via-purple-600 to-kpn-blue dark:from-blue-900 dark:via-purple-900 dark:to-blue-900 text-white py-2 overflow-hidden relative" style="display: none;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center">
+                <span class="bg-yellow-500 text-gray-900 font-bold px-3 py-1 rounded-full text-xs mr-4 flex-shrink-0">
+                    <i class="fas fa-bullhorn mr-1"></i>ANNOUNCEMENTS
+                </span>
+                <div class="flex-1 overflow-hidden">
+                    <div id="announcementContent" class="announcement-marquee">
+                        <!-- Announcements will be loaded here via JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Messages -->
     {% if messages %}
@@ -427,5 +463,40 @@
     
     <!-- Typing Animation Script -->
     <script src="{% static 'staff/js/typing-hero.js' %}"></script>
+    
+    <!-- Announcements Marquee Script -->
+    {% if user.is_authenticated and user_announcements %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const announcementBar = document.getElementById('announcementBar');
+        const announcementContent = document.getElementById('announcementContent');
+        
+        const announcements = [
+            {% for announcement in user_announcements %}
+            {
+                title: "{{ announcement.title|escapejs }}",
+                content: "{{ announcement.content|escapejs }}",
+                priority: "{{ announcement.priority }}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+        
+        if (announcements.length > 0) {
+            let marqueeHTML = '';
+            announcements.forEach(function(announcement, index) {
+                const priorityIcon = announcement.priority === 'URGENT' ? '🔴' : announcement.priority === 'HIGH' ? '🟠' : '🔵';
+                marqueeHTML += `<span class="mx-8 inline-flex items-center">
+                    <span class="mr-2">${priorityIcon}</span>
+                    <strong class="mr-2">${announcement.title}:</strong>
+                    <span>${announcement.content}</span>
+                </span>`;
+            });
+            
+            announcementContent.innerHTML = marqueeHTML + marqueeHTML;
+            announcementBar.style.display = 'block';
+        }
+    });
+    </script>
+    {% endif %}
 </body>
 </html>

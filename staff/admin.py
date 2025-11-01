@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils import timezone
-from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram
+from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram, Announcement
 
 def approve_members(modeladmin, request, queryset):
     """Action to approve selected members"""
@@ -68,3 +68,34 @@ class WelfareProgramAdmin(admin.ModelAdmin):
     list_filter = ['program_type', 'status', 'zone', 'lga']
     search_fields = ['title', 'description']
     filter_horizontal = ['beneficiaries']
+
+
+@admin.register(Announcement)
+class AnnouncementAdmin(admin.ModelAdmin):
+    list_display = ['title', 'scope', 'get_target_display', 'priority', 'is_active', 'created_by', 'created_at']
+    list_filter = ['scope', 'priority', 'is_active', 'target_zone', 'target_lga', 'created_at']
+    search_fields = ['title', 'content']
+    readonly_fields = ['created_by', 'created_at', 'updated_at']
+    
+    fieldsets = [
+        ('Announcement Details', {
+            'fields': ('title', 'content', 'priority')
+        }),
+        ('Targeting', {
+            'fields': ('scope', 'target_zone', 'target_lga', 'target_ward'),
+            'description': 'Select the scope and target for this announcement. For GENERAL scope, leave all targets empty.'
+        }),
+        ('Activation & Expiration', {
+            'fields': ('is_active', 'expires_at')
+        }),
+        ('Metadata', {
+            'fields': ('created_by', 'created_at', 'updated_at'),
+            'classes': ['collapse']
+        })
+    ]
+    
+    def save_model(self, request, obj, form, change):
+        if not obj.pk:
+            obj.created_by = request.user
+        obj.full_clean()
+        super().save_model(request, obj, form, change)

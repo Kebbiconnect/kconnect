@@ -394,3 +394,108 @@ class WardMeetingAttendance(models.Model):
     def __str__(self):
         status = "Present" if self.present else "Absent"
         return f"{self.member.get_full_name()} - {status}"
+
+
+class Announcement(models.Model):
+    SCOPE_CHOICES = [
+        ('GENERAL', 'General - All KPN Members'),
+        ('ZONAL', 'Zonal - Specific Zone'),
+        ('LGA', 'LGA - Specific LGA'),
+        ('WARD', 'Ward - Specific Ward'),
+    ]
+    
+    PRIORITY_CHOICES = [
+        ('LOW', 'Low'),
+        ('NORMAL', 'Normal'),
+        ('HIGH', 'High'),
+        ('URGENT', 'Urgent'),
+    ]
+    
+    title = models.CharField(max_length=200, help_text="Brief title for the announcement")
+    content = models.TextField(help_text="Announcement message")
+    scope = models.CharField(max_length=10, choices=SCOPE_CHOICES, help_text="Who should receive this announcement")
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='NORMAL')
+    
+    target_zone = models.ForeignKey(Zone, on_delete=models.CASCADE, null=True, blank=True, related_name='announcements', 
+                                   help_text="Required for ZONAL scope - all LGAs in this zone will receive the announcement")
+    target_lga = models.ForeignKey(LGA, on_delete=models.CASCADE, null=True, blank=True, related_name='announcements',
+                                  help_text="Required for LGA scope")
+    target_ward = models.ForeignKey(Ward, on_delete=models.CASCADE, null=True, blank=True, related_name='announcements',
+                                   help_text="Required for WARD scope")
+    
+    is_active = models.BooleanField(default=True, help_text="Only active announcements are shown to users")
+    expires_at = models.DateTimeField(null=True, blank=True, help_text="Optional expiration date (announcement will auto-deactivate)")
+    
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_announcements')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-priority', '-created_at']
+        indexes = [
+            models.Index(fields=['is_active', 'scope', 'target_zone'], name='ann_zone_idx'),
+            models.Index(fields=['is_active', 'scope', 'target_lga'], name='ann_lga_idx'),
+            models.Index(fields=['is_active', 'scope', 'target_ward'], name='ann_ward_idx'),
+            models.Index(fields=['is_active', 'created_at'], name='ann_active_idx'),
+        ]
+    
+    def __str__(self):
+        return f"{self.title} ({self.get_scope_display()})"
+    
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        
+        if self.scope == 'GENERAL':
+            if self.target_zone or self.target_lga or self.target_ward:
+                raise ValidationError("General announcements should not have zone, LGA, or ward targets.")
+        elif self.scope == 'ZONAL':
+            if not self.target_zone:
+                raise ValidationError("Zonal announcements must have a target zone.")
+            if self.target_lga or self.target_ward:
+                raise ValidationError("Zonal announcements should only specify a zone.")
+        elif self.scope == 'LGA':
+            if not self.target_lga:
+                raise ValidationError("LGA announcements must have a target LGA.")
+            if self.target_ward:
+                raise ValidationError("LGA announcements should not specify a ward.")
+            if self.target_zone and self.target_lga and self.target_zone != self.target_lga.zone:
+                raise ValidationError("Target LGA must belong to the target zone.")
+        elif self.scope == 'WARD':
+            if not self.target_ward:
+                raise ValidationError("Ward announcements must have a target ward.")
+            if self.target_lga and self.target_ward and self.target_lga != self.target_ward.lga:
+                raise ValidationError("Target ward must belong to the target LGA.")
+    
+    @classmethod
+    def for_user(cls, user):
+        from django.utils import timezone
+        from django.db.models import Q
+        
+        now = timezone.now()
+        base_query = cls.objects.filter(is_active=True).filter(
+            Q(expires_at__isnull=True) | Q(expires_at__gt=now)
+        )
+        
+        query = Q(scope='GENERAL')
+        
+        if user.zone:
+            query |= Q(scope='ZONAL', target_zone=user.zone)
+        
+        if user.lga:
+            query |= Q(scope='LGA', target_lga=user.lga)
+        
+        if user.ward:
+            query |= Q(scope='WARD', target_ward=user.ward)
+        
+        return base_query.filter(query).select_related('created_by', 'target_zone', 'target_lga', 'target_ward')
+    
+    def get_target_display(self):
+        if self.scope == 'GENERAL':
+            return 'All KPN Members'
+        elif self.scope == 'ZONAL' and self.target_zone:
+            return f'{self.target_zone.name} Zone'
+        elif self.scope == 'LGA' and self.target_lga:
+            return self.target_lga.name
+        elif self.scope == 'WARD' and self.target_ward:
+            return self.target_ward.name
+        return 'Unknown'

@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Announcement - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-4xl font-bold">Create New Announcement</h1>
+        <a href="{% url 'staff:announcements_list' %}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">
+            <i class="fas fa-arrow-left mr-2"></i>Back to List
+        </a>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+        <form method="POST" id="announcementForm">
+            {% csrf_token %}
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">Title <span class="text-red-500">*</span></label>
+                {{ form.title }}
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">Message <span class="text-red-500">*</span></label>
+                {{ form.content }}
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Scope <span class="text-red-500">*</span></label>
+                    {{ form.scope }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Priority</label>
+                    {{ form.priority }}
+                </div>
+            </div>
+            
+            <div id="targetFields" class="mb-6 p-4 bg-blue-50 dark:bg-blue-900 rounded-lg">
+                <h3 class="text-lg font-semibold mb-4 text-blue-800 dark:text-blue-200">Target Audience</h3>
+                <p class="text-sm text-blue-700 dark:text-blue-300 mb-4">Select who should receive this announcement based on the scope you chose.</p>
+                
+                <div id="zoneField" class="mb-4" style="display:none;">
+                    <label class="block text-sm font-medium mb-2">Select Zone</label>
+                    {{ form.target_zone }}
+                </div>
+                
+                <div id="lgaField" class="mb-4" style="display:none;">
+                    <label class="block text-sm font-medium mb-2">Select LGA</label>
+                    {{ form.target_lga }}
+                </div>
+                
+                <div id="wardField" class="mb-4" style="display:none;">
+                    <label class="block text-sm font-medium mb-2">Select Ward</label>
+                    {{ form.target_ward }}
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">Expiration Date (Optional)</label>
+                {{ form.expires_at }}
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Leave empty for no expiration. The announcement will automatically deactivate after this date.</p>
+            </div>
+            
+            {% if form.errors %}
+            <div class="mb-6 bg-red-50 dark:bg-red-900 border-l-4 border-red-500 p-4">
+                <p class="text-red-800 dark:text-red-200 font-semibold">Please fix the following errors:</p>
+                <ul class="list-disc list-inside text-red-700 dark:text-red-300 mt-2">
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <div class="flex gap-4">
+                <button type="submit" class="flex-1 bg-kpn-green text-white px-6 py-3 rounded-lg hover:bg-green-600 transition font-semibold">
+                    <i class="fas fa-bullhorn mr-2"></i>Create Announcement
+                </button>
+                <a href="{% url 'staff:announcements_list' %}" class="flex-1 bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition font-semibold text-center">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const scopeSelect = document.getElementById('scope-select');
+    const zoneField = document.getElementById('zoneField');
+    const lgaField = document.getElementById('lgaField');
+    const wardField = document.getElementById('wardField');
+    const targetFields = document.getElementById('targetFields');
+    
+    function updateTargetFields() {
+        const scope = scopeSelect.value;
+        
+        zoneField.style.display = 'none';
+        lgaField.style.display = 'none';
+        wardField.style.display = 'none';
+        targetFields.style.display = 'none';
+        
+        if (scope === 'ZONAL') {
+            zoneField.style.display = 'block';
+            targetFields.style.display = 'block';
+        } else if (scope === 'LGA') {
+            zoneField.style.display = 'block';
+            lgaField.style.display = 'block';
+            targetFields.style.display = 'block';
+        } else if (scope === 'WARD') {
+            wardField.style.display = 'block';
+            targetFields.style.display = 'block';
+        }
+    }
+    
+    scopeSelect.addEventListener('change', updateTargetFields);
+    updateTargetFields();
+});
+</script>
+{% endblock %}

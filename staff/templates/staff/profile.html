@@ -2,6 +2,25 @@
 
 {% block title %}My Profile - KPN{% endblock %}
 
+{% block extra_css %}
+<style>
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .announcement-card {
+        animation-fill-mode: backwards;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div class="flex justify-between items-center mb-8">
@@ -10,6 +29,75 @@
             <i class="fas fa-lock mr-2"></i> Change Password
         </a>
     </div>
+    
+    <!-- Announcements Section -->
+    {% if user_announcements %}
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold mb-4 flex items-center">
+            <i class="fas fa-bullhorn text-kpn-green mr-2"></i>
+            Latest Announcements
+        </h2>
+        <div class="grid gap-4">
+            {% for announcement in user_announcements %}
+            <div class="announcement-card bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden border-l-4 
+                {% if announcement.priority == 'URGENT' %}border-red-500
+                {% elif announcement.priority == 'HIGH' %}border-orange-500
+                {% elif announcement.priority == 'NORMAL' %}border-blue-500
+                {% else %}border-gray-500{% endif %}
+                transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
+                style="animation: slideInUp {{ forloop.counter0 }}00ms ease-out;">
+                <div class="p-5">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-1 text-gray-900 dark:text-white">
+                                {{ announcement.title }}
+                            </h3>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="px-2 py-1 text-xs rounded-full font-semibold
+                                    {% if announcement.priority == 'URGENT' %}bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200
+                                    {% elif announcement.priority == 'HIGH' %}bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200
+                                    {% elif announcement.priority == 'NORMAL' %}bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200
+                                    {% else %}bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200{% endif %}">
+                                    {{ announcement.get_priority_display }}
+                                </span>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>{{ announcement.get_target_display }}
+                                </span>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">
+                                    <i class="fas fa-clock mr-1"></i>{{ announcement.created_at|timesince }} ago
+                                </span>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            {% if announcement.priority == 'URGENT' %}
+                            <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+                                <i class="fas fa-exclamation-triangle text-2xl text-red-600 dark:text-red-300"></i>
+                            </div>
+                            {% elif announcement.priority == 'HIGH' %}
+                            <div class="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
+                                <i class="fas fa-exclamation-circle text-2xl text-orange-600 dark:text-orange-300"></i>
+                            </div>
+                            {% else %}
+                            <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                                <i class="fas fa-info-circle text-2xl text-blue-600 dark:text-blue-300"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p class="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{{ announcement.content }}</p>
+                    {% if announcement.expires_at %}
+                    <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">
+                            <i class="fas fa-calendar-times mr-1"></i>Expires: {{ announcement.expires_at|date:"M d, Y" }}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
     
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
         <form method="POST" enctype="multipart/form-data">

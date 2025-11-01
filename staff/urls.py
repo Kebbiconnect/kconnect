@@ -136,4 +136,10 @@ urlpatterns = [
     path('ward-meetings/<int:pk>/edit/', views.edit_ward_meeting, name='edit_ward_meeting'),
     path('ward-meetings/<int:pk>/attendance/', views.manage_ward_meeting_attendance, name='manage_ward_meeting_attendance'),
     path('ward-meetings/<int:pk>/delete/', views.delete_ward_meeting, name='delete_ward_meeting'),
+    
+    # Announcement URLs
+    path('announcements/', views.announcements_list, name='announcements_list'),
+    path('announcements/create/', views.create_announcement, name='create_announcement'),
+    path('announcements/<int:pk>/toggle/', views.toggle_announcement, name='toggle_announcement'),
+    path('announcements/<int:pk>/delete/', views.delete_announcement, name='delete_announcement'),
 ]

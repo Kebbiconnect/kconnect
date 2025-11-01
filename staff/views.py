@@ -12,9 +12,9 @@ from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
 from django.conf import settings
 from django_ratelimit.decorators import ratelimit
-from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram, CommunityOutreach, WardMeeting, WardMeetingAttendance
+from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram, CommunityOutreach, WardMeeting, WardMeetingAttendance, Announcement
 from .decorators import specific_role_required, role_required, approved_leader_required
-from .forms import MemberMobilizationFilterForm, CommunityOutreachForm, WardMeetingForm, WardMeetingAttendanceForm
+from .forms import MemberMobilizationFilterForm, CommunityOutreachForm, WardMeetingForm, WardMeetingAttendanceForm, AnnouncementForm
 from leadership.models import Zone, LGA, Ward, RoleDefinition
 from core.models import Report
 from campaigns.models import Campaign
@@ -167,16 +167,18 @@ def register(request):
             )
             
             # Handle profile photo upload with error handling
+            photo_uploaded = False
             if request.FILES.get('photo'):
                 try:
                     user.photo = request.FILES['photo']
                     user.save()
+                    photo_uploaded = True
                 except Exception as photo_error:
                     # If photo upload fails, log it but don't crash registration
                     import logging
                     logger = logging.getLogger(__name__)
                     logger.error(f"Photo upload failed for user {username}: {str(photo_error)}")
-                    # User is created but without photo
+                    # User is created but without photo - will notify user below
         except Exception as e:
             # Log the error for debugging
             import logging
@@ -185,12 +187,19 @@ def register(request):
             messages.error(request, f'Registration failed. Please contact administrator. Error: {str(e)}')
             return redirect('staff:register')
         
+        # Registration successful - show appropriate message
         if status == 'APPROVED':
             login(request, user)
-            messages.success(request, 'Registration successful! Welcome to KPN.')
+            if photo_uploaded:
+                messages.success(request, 'Registration successful! Welcome to KPN.')
+            else:
+                messages.warning(request, 'Registration successful! Welcome to KPN. Note: Your profile photo could not be uploaded. You can update it later in your profile.')
             return redirect('staff:dashboard')
         else:
-            messages.success(request, 'Registration successful! Your application is pending approval.')
+            if photo_uploaded:
+                messages.success(request, 'Registration successful! Your application is pending approval.')
+            else:
+                messages.warning(request, 'Registration successful! Your application is pending approval. Note: Your profile photo could not be uploaded. You can update it after approval.')
             return redirect('staff:login')
     
     zones = Zone.objects.all()
@@ -2861,3 +2870,73 @@ def delete_ward_meeting(request, pk):
         'meeting': meeting,
     }
     return render(request, 'staff/ward_meetings/delete.html', context)
+
+
+@approved_leader_required
+def create_announcement(request):
+    """Create a new announcement (only for approved leaders)"""
+    if request.method == 'POST':
+        form = AnnouncementForm(request.POST, user=request.user)
+        if form.is_valid():
+            announcement = form.save(commit=False)
+            announcement.created_by = request.user
+            
+            try:
+                announcement.full_clean()
+                announcement.save()
+                messages.success(request, 'Announcement created successfully! It is now active and visible to the targeted members.')
+                return redirect('staff:announcements_list')
+            except Exception as e:
+                messages.error(request, f'Error creating announcement: {str(e)}')
+    else:
+        form = AnnouncementForm(user=request.user)
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'staff/announcements/create.html', context)
+
+
+@approved_leader_required
+def announcements_list(request):
+    """List all announcements created by the current user"""
+    announcements = Announcement.objects.filter(created_by=request.user).select_related('target_zone', 'target_lga', 'target_ward')
+    
+    context = {
+        'announcements': announcements,
+    }
+    return render(request, 'staff/announcements/list.html', context)
+
+
+@approved_leader_required
+def toggle_announcement(request, pk):
+    """Toggle announcement active status"""
+    announcement = get_object_or_404(Announcement, pk=pk, created_by=request.user)
+    
+    if request.method == 'POST':
+        announcement.is_active = not announcement.is_active
+        announcement.save()
+        status = 'activated' if announcement.is_active else 'deactivated'
+        messages.success(request, f'Announcement has been {status}.')
+        return redirect('staff:announcements_list')
+    
+    context = {
+        'announcement': announcement,
+    }
+    return render(request, 'staff/announcements/toggle.html', context)
+
+
+@approved_leader_required
+def delete_announcement(request, pk):
+    """Delete an announcement"""
+    announcement = get_object_or_404(Announcement, pk=pk, created_by=request.user)
+    
+    if request.method == 'POST':
+        announcement.delete()
+        messages.success(request, 'Announcement deleted successfully!')
+        return redirect('staff:announcements_list')
+    
+    context = {
+        'announcement': announcement,
+    }
+    return render(request, 'staff/announcements/delete.html', context)
