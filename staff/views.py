@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import models
 from django.db.models import Q, Sum
+from django.db.utils import ProgrammingError, OperationalError
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.contrib.auth.tokens import default_token_generator
@@ -12,6 +13,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
 from django.conf import settings
 from django_ratelimit.decorators import ratelimit
+import logging
 from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram, CommunityOutreach, WardMeeting, WardMeetingAttendance, Announcement
 from .decorators import specific_role_required, role_required, approved_leader_required
 from .forms import MemberMobilizationFilterForm, CommunityOutreachForm, WardMeetingForm, WardMeetingAttendanceForm, AnnouncementForm
@@ -20,6 +22,8 @@ from core.models import Report
 from campaigns.models import Campaign
 from media.models import MediaItem
 from events.models import Event
+
+logger = logging.getLogger(__name__)
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -1086,9 +1090,23 @@ def reject_disciplinary_action(request, action_id):
 
 @specific_role_required('Director of Media & Publicity')
 def media_director_dashboard(request):
-    pending_campaigns = Campaign.objects.filter(status='PENDING').count()
-    pending_media = MediaItem.objects.filter(status='PENDING').count()
-    pending_members = User.objects.filter(status='PENDING').count()
+    try:
+        pending_campaigns = Campaign.objects.filter(status='PENDING').count()
+    except (ProgrammingError, OperationalError) as e:
+        logger.warning(f"Campaign model query failed in media director dashboard: {e}")
+        pending_campaigns = 0
+    
+    try:
+        pending_media = MediaItem.objects.filter(status='PENDING').count()
+    except (ProgrammingError, OperationalError) as e:
+        logger.warning(f"MediaItem model query failed in media director dashboard: {e}")
+        pending_media = 0
+    
+    try:
+        pending_members = User.objects.filter(status='PENDING').count()
+    except (ProgrammingError, OperationalError) as e:
+        logger.warning(f"User model query failed in media director dashboard: {e}")
+        pending_members = 0
     
     context = {
         'pending_campaigns': pending_campaigns,

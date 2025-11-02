@@ -106,86 +106,96 @@ def leadership(request):
                 'vacant': holder is None
             })
     
-    # Case 5: Multiple filters - Show all roles in that location
+    # Case 5: Multiple filters - Show roles based on selection combination
     elif zone_filter or lga_filter or ward_filter:
         zone = Zone.objects.get(id=zone_filter) if zone_filter else None
         lga = LGA.objects.get(id=lga_filter) if lga_filter else None
         ward = Ward.objects.get(id=ward_filter) if ward_filter else None
         
-        # Determine which lga and zone to use if not directly provided
-        if ward and not lga:
-            lga = ward.lga
-        if lga and not zone:
-            zone = lga.zone
-        if ward and not zone:
-            zone = ward.lga.zone
+        # Determine the actual zone and lga from ward if not provided
+        actual_zone = zone
+        actual_lga = lga
         
-        # Add State Executive roles filtered by location
-        # State executives should match at the zone/LGA level, not necessarily ward
-        # Include statewide leaders (NULL geography) as well as location-specific ones
-        state_roles = RoleDefinition.objects.filter(tier='STATE').order_by('seat_number')
-        for role in state_roles:
-            holder_query = User.objects.filter(
-                role_definition=role, 
-                status='APPROVED',
-                is_superuser=False
-            )
-            
-            # Build location filter using OR logic (Q objects)
-            # Include: 1) State executives with matching zone OR lga
-            #         2) State executives with NULL geography (statewide leaders like President)
-            location_filter = Q(zone__isnull=True, lga__isnull=True)  # Include statewide leaders
-            if zone:
-                location_filter |= Q(zone=zone)
-            if lga:
-                location_filter |= Q(lga=lga)
-            
-            # Apply location filter
-            holder_query = holder_query.filter(location_filter)
-            
-            holder = holder_query.first()
-            leadership_positions.append({
-                'role': role,
-                'holder': holder,
-                'vacant': holder is None
-            })
+        if ward and not actual_lga:
+            actual_lga = ward.lga
+        if ward and not actual_zone:
+            actual_zone = ward.lga.zone
+        if lga and not actual_zone:
+            actual_zone = lga.zone
         
-        # Add Zonal roles if zone is specified
-        if zone:
+        # Determine what to show based on filter combination:
+        # - If LGA + Ward selected (no Zone): Show ONLY LGA and Ward roles
+        # - If Zone + LGA + Ward selected: Show State, Zonal, LGA, and Ward roles (full hierarchy)
+        # - If Zone + LGA selected: Show State, Zonal, and LGA roles
+        # - If Zone + Ward selected: Show State, Zonal, LGA, and Ward roles
+        
+        show_state = zone_filter is not None
+        show_zonal = zone_filter is not None
+        show_lga = lga_filter is not None or ward_filter is not None
+        show_ward = ward_filter is not None
+        
+        # Add State Executive roles if zone is selected
+        if show_state:
+            state_roles = RoleDefinition.objects.filter(tier='STATE').order_by('seat_number')
+            for role in state_roles:
+                holder_query = User.objects.filter(
+                    role_definition=role, 
+                    status='APPROVED',
+                    is_superuser=False
+                )
+                
+                # Build location filter using OR logic (Q objects)
+                location_filter = Q(zone__isnull=True, lga__isnull=True)
+                if actual_zone:
+                    location_filter |= Q(zone=actual_zone)
+                if actual_lga:
+                    location_filter |= Q(lga=actual_lga)
+                
+                holder_query = holder_query.filter(location_filter)
+                holder = holder_query.first()
+                
+                leadership_positions.append({
+                    'role': role,
+                    'holder': holder,
+                    'vacant': holder is None
+                })
+        
+        # Add Zonal roles if zone is selected
+        if show_zonal and actual_zone:
             zonal_roles = RoleDefinition.objects.filter(tier='ZONAL').order_by('seat_number')
             for role in zonal_roles:
                 holder = User.objects.filter(
                     role_definition=role, 
-                    zone=zone, 
+                    zone=actual_zone, 
                     status='APPROVED',
                     is_superuser=False
                 ).first()
                 leadership_positions.append({
                     'role': role,
                     'holder': holder,
-                    'zone': zone,
+                    'zone': actual_zone,
                     'vacant': holder is None
                 })
         
-        # Add LGA roles if lga is specified
-        if lga:
+        # Add LGA roles if lga is selected or implied by ward
+        if show_lga and actual_lga:
             lga_roles = RoleDefinition.objects.filter(tier='LGA').order_by('seat_number')
             for role in lga_roles:
                 holder = User.objects.filter(
                     role_definition=role, 
-                    lga=lga, 
+                    lga=actual_lga, 
                     status='APPROVED',
                     is_superuser=False
                 ).first()
                 leadership_positions.append({
                     'role': role,
                     'holder': holder,
-                    'lga': lga,
+                    'lga': actual_lga,
                     'vacant': holder is None
                 })
         
-        # Add Ward roles if ward is specified
-        if ward:
+        # Add Ward roles if ward is selected
+        if show_ward and ward:
             ward_roles = RoleDefinition.objects.filter(tier='WARD').order_by('seat_number')
             for role in ward_roles:
                 holder = User.objects.filter(
