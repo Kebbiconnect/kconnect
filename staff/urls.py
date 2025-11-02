@@ -9,6 +9,7 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('profile/', views.profile, name='profile'),
+    path('generate-id-tag/', views.generate_id_tag, name='generate_id_tag'),
     path('change-password/', views.change_password, name='change_password'),
     path('forgot-password/', views.forgot_password, name='forgot_password'),
     path('reset-password/<uidb64>/<token>/', views.reset_password, name='reset_password'),
@@ -18,6 +19,8 @@ urlpatterns = [
     path('api/get-wards/', views.get_wards_by_lga, name='get_wards'),
     
     path('dashboards/president/', views.president_dashboard, name='president_dashboard'),
+    path('export-members-csv/', views.export_members_csv, name='export_members_csv'),
+    path('export-members-pdf/', views.export_members_pdf, name='export_members_pdf'),
     path('approve-members/', views.approve_members, name='approve_members'),
     path('review-applicant/<int:user_id>/', views.review_applicant, name='review_applicant'),
     path('manage-staff/', views.manage_staff, name='manage_staff'),

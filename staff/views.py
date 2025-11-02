@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import models
 from django.db.models import Q, Sum
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -88,8 +88,29 @@ def register(request):
             messages.error(request, 'Passwords do not match.')
             return redirect('staff:register')
         
+        # Validate password strength using Django's built-in validators
+        from django.contrib.auth.password_validation import validate_password
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        
+        try:
+            validate_password(password1, user=User(username=username, email=email, first_name=first_name, last_name=last_name))
+        except DjangoValidationError as e:
+            for error in e.messages:
+                messages.error(request, error)
+            return redirect('staff:register')
+        
         if User.objects.filter(username=username).exists():
             messages.error(request, 'Username already exists.')
+            return redirect('staff:register')
+        
+        # Check if email already exists
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'This email address is already registered. Please use a different email or login to your existing account.')
+            return redirect('staff:register')
+        
+        # Check if phone number already exists
+        if User.objects.filter(phone=phone).exists():
+            messages.error(request, 'This phone number is already registered. Please use a different phone number or login to your existing account.')
             return redirect('staff:register')
         
         try:
@@ -655,6 +676,104 @@ def president_dashboard(request):
     }
     
     return render(request, 'staff/dashboards/president.html', context)
+
+@specific_role_required('President')
+def export_members_csv(request):
+    import csv
+    from django.http import HttpResponse
+    
+    members = User.objects.filter(status='APPROVED').order_by('last_name', 'first_name')
+    
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="kpn_all_members.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow(['Name', 'Phone', 'Email', 'Gender', 'Role', 'Location', 'Date Joined'])
+    
+    for member in members:
+        location = member.get_jurisdiction()
+        writer.writerow([
+            member.get_full_name(),
+            member.phone,
+            member.email,
+            member.get_gender_display() if member.gender else '',
+            member.get_role_display(),
+            location,
+            member.created_at.strftime('%Y-%m-%d')
+        ])
+    
+    return response
+
+@specific_role_required('President')
+def export_members_pdf(request):
+    from django.http import HttpResponse
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch
+    from io import BytesIO
+    
+    members = User.objects.filter(status='APPROVED').order_by('last_name', 'first_name')
+    
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), topMargin=0.5*inch, bottomMargin=0.5*inch)
+    
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=18,
+        textColor=colors.HexColor('#28a745'),
+        spaceAfter=30,
+        alignment=1
+    )
+    
+    title = Paragraph("KPN Members List", title_style)
+    elements.append(title)
+    elements.append(Spacer(1, 0.2*inch))
+    
+    data = [['Name', 'Phone', 'Email', 'Gender', 'Role', 'Location', 'Date Joined']]
+    
+    for member in members:
+        location = member.get_jurisdiction()
+        data.append([
+            member.get_full_name(),
+            member.phone,
+            member.email or 'N/A',
+            member.get_gender_display() if member.gender else 'N/A',
+            member.get_role_display(),
+            location,
+            member.created_at.strftime('%Y-%m-%d')
+        ])
+    
+    table = Table(data, repeatRows=1)
+    
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#28a745')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey]),
+    ]))
+    
+    elements.append(table)
+    
+    doc.build(elements)
+    
+    buffer.seek(0)
+    response = HttpResponse(buffer.read(), content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="kpn_all_members.pdf"'
+    
+    return response
 
 @role_required('STATE', 'ZONAL', 'LGA')
 def approve_members(request):
@@ -1885,7 +2004,7 @@ def women_members(request):
     return render(request, 'staff/women_members.html', context)
 
 
-@specific_role_required('Director of Mobilization', 'Assistant Director of Mobilization')
+@specific_role_required('Director of Mobilization', 'Assistant Director of Mobilization', 'Director of Contact and Mobilization', 'President')
 def member_mobilization(request):
     """Member filtering and contact list generation for mobilization"""
     import csv
@@ -1908,6 +2027,9 @@ def member_mobilization(request):
         
         if form.cleaned_data.get('role'):
             members = members.filter(role=form.cleaned_data['role'])
+        
+        if form.cleaned_data.get('tier'):
+            members = members.filter(role=form.cleaned_data['tier'])
         
         if form.cleaned_data.get('gender'):
             members = members.filter(gender=form.cleaned_data['gender'])
@@ -2940,3 +3062,233 @@ def delete_announcement(request, pk):
         'announcement': announcement,
     }
     return render(request, 'staff/announcements/delete.html', context)
+
+
+# Role name shortening mapping for ID tags
+ROLE_SHORTENING = {
+    'President': 'President',
+    'Vice President': 'Vice President',
+    'General Secretary': 'General Secretary',
+    'Assistant General Secretary': 'Asst. Secretary',
+    'State Supervisor': 'State Supervisor',
+    'Legal & Ethics Adviser': 'Legal Adviser',
+    'Treasurer': 'Treasurer',
+    'Financial Secretary': 'Finance Secretary',
+    'Director of Mobilization': 'Mobilization Dir.',
+    'Assistant Director of Mobilization': 'Asst. Mobilization',
+    'Organizing Secretary': 'Organizer',
+    'Assistant Organizing Secretary': 'Asst. Organizer',
+    'Auditor General': 'Auditor General',
+    'Welfare Officer': 'Welfare Officer',
+    'Youth Development & Empowerment Officer': 'Youth Officer',
+    'Women Leader': 'Women Leader',
+    'Assistant Women Leader': 'Asst. Women Lead',
+    'Director of Media & Publicity': 'Publicity Officer',
+    'Assistant Director of Media & Publicity': 'Asst. Publicity',
+    'Public Relations & Community Engagement Officer': 'PR Officer',
+    'Zonal Coordinator': 'Zonal Coord.',
+    'Zonal Secretary': 'Zonal Secretary',
+    'Zonal Publicity Officer': 'Zonal Publicity',
+    'LGA Coordinator': 'LGA Coordinator',
+    'Secretary': 'Secretary',
+    'Publicity Officer': 'Publicity Officer',
+    'Contact & Mobilization': 'Contact Officer',
+    'LGA Supervisor': 'LGA Supervisor',
+    'LGA Adviser': 'LGA Adviser',
+    'Ward Coordinator': 'Ward Coordinator',
+    'Ward Supervisor': 'Ward Supervisor',
+    'Ward Adviser': 'Ward Adviser',
+}
+
+@login_required
+def generate_id_tag(request):
+    '''Generate an ID tag for the logged-in user as PDF'''
+    from PIL import Image, ImageDraw, ImageFont
+    from io import BytesIO
+    from django.urls import reverse
+    import qrcode
+    import os
+    from reportlab.lib.pagesizes import letter
+    from reportlab.pdfgen import canvas as pdf_canvas
+    
+    user = request.user
+    
+    # Get the tag template
+    template_path = os.path.join(settings.STATIC_ROOT, 'images', 'id_tag_template.png')
+    if not os.path.exists(template_path):
+        template_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'id_tag_template.png')
+    
+    #  the template
+    try:
+        tag = Image.open(template_path).convert('RGB')
+    except Exception as e:
+        messages.error(request, f'Error loading tag template: {str(e)}')
+        return Openredirect('staff:dashboard')
+    
+    draw = ImageDraw.Draw(tag)
+    
+    # Define positions for text (adjusted for better layout)
+    # Template size is around 458 x 812 pixels
+    photo_center = (239, 385)  # Center of the white circle for photo
+    photo_radius = 169  # Increased radius for better fit
+    
+    # Text positions - moved all text higher and closer together
+    name_y = 577  # Moved up significantly
+    position_y = 637  # Moved up
+    address_y = 687  # Moved up
+    text_x = 229  # Center X for all text
+    
+    # QR code position (white square at bottom left) - increased size to fill properly
+    qr_position = (11, 720)
+    qr_size = 99  # Increased size to fill the white square better
+    
+    # Try to load a font - use default if not available
+    try:
+        # Use clean, professional fonts with better sizing
+        font_large = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 24)
+        font_medium = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 20)
+        font_small = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 18)
+    except:
+        # Fallback to default font
+        font_large = ImageFont.load_default()
+        font_medium = ImageFont.load_default()
+        font_small = ImageFont.load_default()
+    
+    # Get user information
+    full_name = user.get_full_name() or user.username
+    
+    # Get position/role
+    if user.role == 'GENERAL':
+        position = 'Member'
+    else:
+        if user.role_definition:
+            role_title = user.role_definition.title
+            position = ROLE_SHORTENING.get(role_title, role_title)
+        else:
+            position = user.get_role_display()
+    
+    # Get address
+    address_parts = []
+    if user.ward:
+        address_parts.append(user.ward.name)
+    if user.lga:
+        address_parts.append(user.lga.name)
+    if user.zone:
+        address_parts.append(user.zone.name)
+    
+    address = ', '.join(address_parts) if address_parts else 'Kebbi State'
+    
+    # Add user photo to the white circle
+    if user.photo:
+        try:
+            # Open user photo
+            if hasattr(user.photo, 'url'):
+                # Handle both local and cloud storage
+                if user.photo.url.startswith('http'):
+                    import requests
+                    response = requests.get(user.photo.url)
+                    user_photo = Image.open(BytesIO(response.content))
+                else:
+                    user_photo_path = os.path.join(settings.BASE_DIR, user.photo.url.lstrip('/'))
+                    user_photo = Image.open(user_photo_path)
+            else:
+                user_photo = Image.open(user.photo)
+            
+            # Convert to RGB
+            user_photo = user_photo.convert('RGB')
+            
+            # Crop photo to square before resizing
+            width, height = user_photo.size
+            min_dimension = min(width, height)
+            left = (width - min_dimension) // 2
+            top = (height - min_dimension) // 2
+            right = left + min_dimension
+            bottom = top + min_dimension
+            user_photo = user_photo.crop((left, top, right, bottom))
+            
+            # Resize to fit circle perfectly
+            size = photo_radius * 2
+            user_photo = user_photo.resize((size, size), Image.Resampling.LANCZOS)
+            
+            # Create a circular mask
+            mask = Image.new('L', (size, size), 0)
+            mask_draw = ImageDraw.Draw(mask)
+            mask_draw.ellipse((0, 0, size, size), fill=255)
+            
+            # Apply mask to create circular photo
+            output = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+            output.paste(user_photo, (0, 0))
+            output.putalpha(mask)
+            
+            # Paste circular photo onto tag (centered properly)
+            tag.paste(output, (photo_center[0] - photo_radius, photo_center[1] - photo_radius), output)
+        except Exception as e:
+            # If photo fails to load, continue without it
+            pass
+    
+    # Generate QR code with link to user profile
+    profile_url = request.build_absolute_uri(reverse('core:view_profile', args=[user.id]))
+    qr = qrcode.QRCode(version=1, box_size=10, border=0)  # No border for better fit
+    qr.add_data(profile_url)
+    qr.make(fit=True)
+    qr_img = qr.make_image(fill_color='black', back_color='white')
+    qr_img = qr_img.resize((qr_size, qr_size), Image.Resampling.LANCZOS)
+    
+    # Paste QR code onto tag
+    tag.paste(qr_img, qr_position)
+    
+    # Draw text on tag (navy blue color to match template)
+    text_color = (30, 58, 79)  # Navy blue from template
+    
+    # Draw name
+    name_bbox = draw.textbbox((0, 0), full_name, font=font_large)
+    name_width = name_bbox[2] - name_bbox[0]
+    draw.text((text_x - name_width//2, name_y), full_name, fill=text_color, font=font_large)
+    
+    # Draw position
+    pos_bbox = draw.textbbox((0, 0), position, font=font_medium)
+    pos_width = pos_bbox[2] - pos_bbox[0]
+    draw.text((text_x - pos_width//2, position_y), position, fill=text_color, font=font_medium)
+    
+    # Draw address
+    addr_bbox = draw.textbbox((0, 0), address, font=font_small)
+    addr_width = addr_bbox[2] - addr_bbox[0]
+    draw.text((text_x - addr_width//2, address_y), address, fill=text_color, font=font_small)
+    
+    # Save tag image to a temporary buffer for PDF conversion
+    img_buffer = BytesIO()
+    tag.save(img_buffer, format='PNG', quality=95)
+    img_buffer.seek(0)
+    
+    # Create PDF with the tag image
+    pdf_buffer = BytesIO()
+    
+    # Set page size to match ID tag dimensions (scale up for print quality)
+    tag_width, tag_height = tag.size
+    page_width = tag_width * 1.5  # Scale for better print quality
+    page_height = tag_height * 1.5
+    
+    c = pdf_canvas.Canvas(pdf_buffer, pagesize=(page_width, page_height))
+    
+    # Save the image to a temporary file to embed in PDF
+    temp_img_path = os.path.join(settings.BASE_DIR, 'temp_tag.png')
+    tag.save(temp_img_path, format='PNG', quality=95)
+    
+    # Draw the image on PDF (fill entire page)
+    c.drawImage(temp_img_path, 0, 0, width=page_width, height=page_height, preserveAspectRatio=True)
+    
+    # Finalize PDF
+    c.showPage()
+    c.save()
+    
+    # Clean up temporary image file
+    if os.path.exists(temp_img_path):
+        os.remove(temp_img_path)
+    
+    # Return PDF as response
+    pdf_buffer.seek(0)
+    response = HttpResponse(pdf_buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{user.username}_id_tag.pdf"'
+    
+    return response
+

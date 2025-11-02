@@ -25,9 +25,11 @@
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div class="flex justify-between items-center mb-8">
         <h1 class="text-4xl font-bold">My Profile</h1>
-        <a href="{% url 'staff:change_password' %}" class="bg-kpn-blue text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition inline-flex items-center">
-            <i class="fas fa-lock mr-2"></i> Change Password
-        </a>
+        <div class="flex gap-3">
+            <a href="{% url 'staff:change_password' %}" class="bg-kpn-blue text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition inline-flex items-center">
+                <i class="fas fa-lock mr-2"></i> Change Password
+            </a>
+        </div>
     </div>
     
     <!-- Announcements Section -->
@@ -178,7 +180,7 @@
                         <select name="zone" id="zoneSelect" class="w-full p-3 border rounded dark:bg-gray-700">
                             <option value="">Select Zone</option>
                             {% for zone in zones %}
-                            <option value="{{ zone.id }}" {% if user.zone.id == zone.id %}selected{% endif %}>{{ zone.name }}</option>
+                            <option value="{{ zone.id }}" {% if user.zone and user.zone.id == zone.id %}selected{% endif %}>{{ zone.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -187,7 +189,7 @@
                         <select name="lga" id="lgaSelect" class="w-full p-3 border rounded dark:bg-gray-700">
                             <option value="">Select LGA</option>
                             {% for lga in lgas %}
-                            <option value="{{ lga.id }}" {% if user.lga.id == lga.id %}selected{% endif %} data-zone-id="{{ lga.zone.id }}">{{ lga.name }}</option>
+                            <option value="{{ lga.id }}" {% if user.lga and user.lga.id == lga.id %}selected{% endif %} data-zone-id="{{ lga.zone.id }}">{{ lga.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -196,7 +198,7 @@
                         <select name="ward" id="wardSelect" class="w-full p-3 border rounded dark:bg-gray-700">
                             <option value="">Select Ward</option>
                             {% for ward in wards %}
-                            <option value="{{ ward.id }}" {% if user.ward.id == ward.id %}selected{% endif %} data-lga-id="{{ ward.lga.id }}">{{ ward.name }}</option>
+                            <option value="{{ ward.id }}" {% if user.ward and user.ward.id == ward.id %}selected{% endif %} data-lga-id="{{ ward.lga.id }}">{{ ward.name }}</option>
                             {% endfor %}
                         </select>
                     </div>

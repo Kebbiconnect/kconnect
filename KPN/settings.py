@@ -34,25 +34,38 @@ SECRET_KEY = config('SESSION_SECRET', default='django-insecure-dev-key-replace-i
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 # --- START: New and Improved ALLOWED_HOSTS logic ---
-ALLOWED_HOSTS = []
-
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-
-# This makes sure your local development server still works
-if not RENDER_EXTERNAL_HOSTNAME and not REPLIT_DOMAINS:
-    ALLOWED_HOSTS.extend(['localhost', '127.0.0.1'])
-
-# Allow all hosts in DEBUG mode for easier development
+# In DEBUG mode, allow all hosts for easier development
 if DEBUG:
-    ALLOWED_HOSTS.append('*')
+    ALLOWED_HOSTS = ['*']
+else:
+    ALLOWED_HOSTS = []
+    RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+    if RENDER_EXTERNAL_HOSTNAME:
+        ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+    
+    REPLIT_DOMAINS = os.environ.get('REPLIT_DOMAINS')
+    if REPLIT_DOMAINS:
+        ALLOWED_HOSTS.extend(REPLIT_DOMAINS.split(','))
+    
+    # This makes sure your local development server still works
+    if not RENDER_EXTERNAL_HOSTNAME and not REPLIT_DOMAINS:
+        ALLOWED_HOSTS.extend(['localhost', '127.0.0.1'])
+
+# Store these for CSRF_TRUSTED_ORIGINS
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+REPLIT_DOMAINS = os.environ.get('REPLIT_DOMAINS')
 # --- END: New ALLOWED_HOSTS logic ---
 
 # Keep this section. It is correct for Render.
 CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
 ]
+
+# Add Replit domains to trusted origins
+if REPLIT_DOMAINS:
+    for domain in REPLIT_DOMAINS.split(','):
+        CSRF_TRUSTED_ORIGINS.append(f"https://{domain}")
+        CSRF_TRUSTED_ORIGINS.append(f"http://{domain}")
 
 # Application definition
 
@@ -106,6 +119,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
                 'django.template.context_processors.static',
+                'staff.context_processors.announcements',
             ],
         },
     },
@@ -116,21 +130,20 @@ WSGI_APPLICATION = 'KPN.wsgi.application'
 # Database configuration
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Get the full database URL from environment variables
-DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///db.sqlite3')
-
+# Use PostgreSQL database from DATABASE_URL environment variable
 DATABASES = {
     'default': dj_database_url.config(
-        default=DATABASE_URL,
+        default=os.getenv('DATABASE_URL'),
         conn_max_age=600,
         conn_health_checks=True,
     )
 }
 
-# Configure database connection pool settings for high traffic (Neon-compatible)
-if 'OPTIONS' not in DATABASES['default']:
-    DATABASES['default']['OPTIONS'] = {}
-DATABASES['default']['OPTIONS']['connect_timeout'] = 10
+# Configure database connection pool settings for PostgreSQL
+if DATABASES['default'].get('ENGINE') == 'django.db.backends.postgresql':
+    if 'OPTIONS' not in DATABASES['default']:
+        DATABASES['default']['OPTIONS'] = {}
+    DATABASES['default']['OPTIONS']['connect_timeout'] = 10
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -244,7 +257,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
         'OPTIONS': {
-            'min_length': 10,  # Increased from 8 to 10
+            'min_length': 8,
         }
     },
     {

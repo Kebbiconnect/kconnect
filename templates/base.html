@@ -73,7 +73,7 @@
         
         .announcement-marquee {
             white-space: nowrap;
-            animation: marqueeScroll 30s linear infinite;
+            animation: marqueeScroll 15s linear infinite;
         }
         
         .announcement-marquee:hover {
@@ -485,14 +485,15 @@
             let marqueeHTML = '';
             announcements.forEach(function(announcement, index) {
                 const priorityIcon = announcement.priority === 'URGENT' ? '🔴' : announcement.priority === 'HIGH' ? '🟠' : '🔵';
-                marqueeHTML += `<span class="mx-8 inline-flex items-center">
+                marqueeHTML += `<span class="mx-12 inline-flex items-center">
                     <span class="mr-2">${priorityIcon}</span>
                     <strong class="mr-2">${announcement.title}:</strong>
-                    <span>${announcement.content}</span>
+                    <span class="mr-4">${announcement.content}</span>
+                    <span class="mx-4 text-yellow-300">|</span>
                 </span>`;
             });
             
-            announcementContent.innerHTML = marqueeHTML + marqueeHTML;
+            announcementContent.innerHTML = marqueeHTML + ' ' + marqueeHTML;
             announcementBar.style.display = 'block';
         }
     });

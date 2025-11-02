@@ -328,6 +328,20 @@ class MemberMobilizationFilterForm(forms.Form):
         widget=forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'})
     )
     
+    tier = forms.ChoiceField(
+        choices=[
+            ('', 'All Tiers'),
+            ('STATE', 'State Executive'),
+            ('ZONAL', 'Zonal'),
+            ('LGA', 'LGA'),
+            ('WARD', 'Ward'),
+            ('GENERAL', 'General Members')
+        ],
+        required=False,
+        label="Filter by Tier",
+        widget=forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'})
+    )
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
