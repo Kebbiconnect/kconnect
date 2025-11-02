@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Opinion - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold mb-2">Create Opinion</h1>
+        <p class="text-gray-600 dark:text-gray-400">Share images or videos with the community</p>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">Select Images or Videos</label>
+                <input type="file" name="files" multiple accept="image/*,video/*" required class="w-full p-3 border rounded dark:bg-gray-700" />
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">You can select multiple files at once. Supported formats: Images (JPEG, PNG, GIF) and Videos (MP4, MOV, AVI)</p>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">{{ form.caption.label }}</label>
+                {{ form.caption }}
+                {% if form.caption.help_text %}
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">{{ form.caption.help_text }}</p>
+                {% endif %}
+                {% if form.caption.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.caption.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-500 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-blue-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-blue-700 dark:text-blue-300">
+                            Your media will be automatically published to the website gallery and will be visible to all visitors.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-3">
+                <button type="submit" class="flex-1 bg-kpn-green text-white py-3 rounded-lg hover:bg-green-600 transition">
+                    <i class="fas fa-cloud-upload-alt mr-2"></i>Upload & Publish
+                </button>
+                <a href="{% url 'media:my_opinions' %}" class="flex-1 bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition text-center">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
