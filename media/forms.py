@@ -25,8 +25,4 @@ class MediaItemEditForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'class': 'w-full p-3 border rounded dark:bg-gray-700'}),
             'description': forms.Textarea(attrs={'rows': 3, 'class': 'w-full p-3 border rounded dark:bg-gray-700'}),
             'media_type': forms.Select(attrs={'class': 'w-full p-3 border rounded dark:bg-gray-700'}),
-<<<<<<< HEAD
-      }
-=======
         }
->>>>>>> dcc6e63 (Mupdate)
