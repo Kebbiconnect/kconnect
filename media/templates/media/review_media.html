@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Review Pending Media - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold mb-2">Review Pending Media</h1>
+        <p class="text-gray-600 dark:text-gray-400">Approve or reject media submissions from publicity officers</p>
+    </div>
+    
+    {% if pending_media %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for item in pending_media %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+            {% if item.media_type == 'PHOTO' %}
+            <img src="{{ item.file.url }}" alt="{{ item.title }}" class="w-full h-48 object-cover">
+            {% else %}
+            <video src="{{ item.file.url }}" class="w-full h-48 object-cover" controls></video>
+            {% endif %}
+            
+            <div class="p-4">
+                <div class="mb-3">
+                    <h3 class="font-semibold text-lg">{{ item.uploaded_by.get_full_name }}</h3>
+                    {% if item.uploaded_by.role_definition %}
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ item.uploaded_by.role_definition.title }}</p>
+                    {% if item.uploaded_by.role == 'STATE' %}
+                    <span class="inline-block px-2 py-1 text-xs font-semibold bg-kpn-green text-white rounded mt-1">
+                        <i class="fas fa-star mr-1"></i>State Executive
+                    </span>
+                    {% elif item.uploaded_by.role == 'ZONAL' %}
+                    <span class="inline-block px-2 py-1 text-xs font-semibold bg-blue-500 text-white rounded mt-1">
+                        <i class="fas fa-map-marker-alt mr-1"></i>Zonal
+                    </span>
+                    {% elif item.uploaded_by.role == 'LGA' %}
+                    <span class="inline-block px-2 py-1 text-xs font-semibold bg-purple-500 text-white rounded mt-1">
+                        <i class="fas fa-map-pin mr-1"></i>LGA
+                    </span>
+                    {% elif item.uploaded_by.role == 'WARD' %}
+                    <span class="inline-block px-2 py-1 text-xs font-semibold bg-orange-500 text-white rounded mt-1">
+                        <i class="fas fa-location-arrow mr-1"></i>Ward
+                    </span>
+                    {% endif %}
+                    {% endif %}
+                </div>
+                
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ item.description|truncatewords:20 }}</p>
+                
+                <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-3">
+                    <span><i class="fas fa-clock mr-1"></i>{{ item.created_at|timesince }} ago</span>
+                </div>
+                
+                <div class="flex gap-2">
+                    <a href="{% url 'media:approve_media' item.pk %}" class="flex-1 bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 transition text-center text-sm">
+                        <i class="fas fa-check mr-1"></i>Approve
+                    </a>
+                    <a href="{% url 'media:reject_media' item.pk %}" class="flex-1 bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 transition text-center text-sm">
+                        <i class="fas fa-times mr-1"></i>Reject
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
+        <i class="fas fa-check-circle text-6xl text-green-400 mb-4"></i>
+        <h3 class="text-xl font-semibold mb-2">All caught up!</h3>
+        <p class="text-gray-600 dark:text-gray-400">There are no pending media submissions to review.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

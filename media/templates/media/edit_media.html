@@ -1,21 +1,21 @@
 {% extends 'base.html' %}
 
-{% block title %}Edit Opinion - KPN{% endblock %}
+{% block title %}Edit Media - KPN{% endblock %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div class="mb-8">
-        <h1 class="text-4xl font-bold mb-2">Edit Opinion</h1>
+        <h1 class="text-4xl font-bold mb-2">Edit Media</h1>
         <p class="text-gray-600 dark:text-gray-400">Update your media information</p>
     </div>
     
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
         <div class="mb-6">
             <label class="block text-sm font-medium mb-2">Current Media</label>
-            {% if opinion.media_type == 'PHOTO' %}
-            <img src="{{ opinion.file.url }}" alt="{{ opinion.title }}" class="w-full max-w-md rounded-lg">
+            {% if media_item.media_type == 'PHOTO' %}
+            <img src="{{ media_item.file.url }}" alt="{{ media_item.title }}" class="w-full max-w-md rounded-lg">
             {% else %}
-            <video src="{{ opinion.file.url }}" class="w-full max-w-md rounded-lg" controls></video>
+            <video src="{{ media_item.file.url }}" class="w-full max-w-md rounded-lg" controls></video>
             {% endif %}
         </div>
         
@@ -50,7 +50,7 @@
                 <button type="submit" class="flex-1 bg-kpn-green text-white py-3 rounded-lg hover:bg-green-600 transition">
                     <i class="fas fa-save mr-2"></i>Save Changes
                 </button>
-                <a href="{% url 'media:my_opinions' %}" class="flex-1 bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition text-center">
+                <a href="{% url 'media:my_media' %}" class="flex-1 bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition text-center">
                     <i class="fas fa-times mr-2"></i>Cancel
                 </a>
             </div>

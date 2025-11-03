@@ -4,7 +4,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import models
 from django.db.models import Q, Sum
-from django.db.utils import ProgrammingError, OperationalError
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.contrib.auth.tokens import default_token_generator
@@ -13,7 +12,6 @@ from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
 from django.conf import settings
 from django_ratelimit.decorators import ratelimit
-import logging
 from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram, CommunityOutreach, WardMeeting, WardMeetingAttendance, Announcement
 from .decorators import specific_role_required, role_required, approved_leader_required
 from .forms import MemberMobilizationFilterForm, CommunityOutreachForm, WardMeetingForm, WardMeetingAttendanceForm, AnnouncementForm
@@ -22,8 +20,6 @@ from core.models import Report
 from campaigns.models import Campaign
 from media.models import MediaItem
 from events.models import Event
-
-logger = logging.getLogger(__name__)
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -214,7 +210,7 @@ def register(request):
         
         # Registration successful - show appropriate message
         if status == 'APPROVED':
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             if photo_uploaded:
                 messages.success(request, 'Registration successful! Welcome to KPN.')
             else:
@@ -249,7 +245,7 @@ def dashboard(request):
         return render(request, 'staff/pending_approval.html')
     
     if user.role == 'GENERAL':
-        return redirect('staff:profile')
+        return redirect('staff:general_member_dashboard')
     
     if user.role_definition:
         role_title = user.role_definition.title
@@ -299,6 +295,33 @@ def dashboard(request):
     }
     
     return render(request, 'staff/dashboard.html', context)
+
+@login_required
+def general_member_dashboard(request):
+    """Dashboard for general members with announcements and motivational content"""
+    user = request.user
+    
+    if user.status != 'APPROVED':
+        messages.warning(request, 'Your account is pending approval.')
+        return render(request, 'staff/pending_approval.html')
+    
+    if user.role != 'GENERAL':
+        return redirect('staff:dashboard')
+    
+    from campaigns.models import Campaign
+    from staff.models import Announcement
+    
+    latest_campaigns = Campaign.objects.filter(status='PUBLISHED').order_by('-published_at')[:3]
+    total_members = User.objects.filter(status='APPROVED').count()
+    total_campaigns = Campaign.objects.filter(status='PUBLISHED').count()
+    
+    context = {
+        'latest_campaigns': latest_campaigns,
+        'total_members': total_members,
+        'total_campaigns': total_campaigns,
+    }
+    
+    return render(request, 'staff/dashboards/general_member.html', context)
 
 @login_required
 def profile(request):
@@ -1090,23 +1113,9 @@ def reject_disciplinary_action(request, action_id):
 
 @specific_role_required('Director of Media & Publicity')
 def media_director_dashboard(request):
-    try:
-        pending_campaigns = Campaign.objects.filter(status='PENDING').count()
-    except (ProgrammingError, OperationalError) as e:
-        logger.warning(f"Campaign model query failed in media director dashboard: {e}")
-        pending_campaigns = 0
-    
-    try:
-        pending_media = MediaItem.objects.filter(status='PENDING').count()
-    except (ProgrammingError, OperationalError) as e:
-        logger.warning(f"MediaItem model query failed in media director dashboard: {e}")
-        pending_media = 0
-    
-    try:
-        pending_members = User.objects.filter(status='PENDING').count()
-    except (ProgrammingError, OperationalError) as e:
-        logger.warning(f"User model query failed in media director dashboard: {e}")
-        pending_members = 0
+    pending_campaigns = Campaign.objects.filter(status='PENDING').count()
+    pending_media = MediaItem.objects.filter(status='PENDING').count()
+    pending_members = User.objects.filter(status='PENDING').count()
     
     context = {
         'pending_campaigns': pending_campaigns,
