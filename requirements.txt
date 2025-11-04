@@ -3,6 +3,7 @@ certifi==2025.10.5
 charset-normalizer==3.4.4
 cloudinary==1.44.1
 crispy-bootstrap5==0.7
+Cython==3.1.6
 dj-database-url==2.3.0
 Django==5.2.7
 django-appconf==1.1.0
@@ -25,13 +26,15 @@ psycopg2-binary==2.9.11
 python-decouple==3.8
 python-docx==1.2.0
 python-dotenv==1.0.0
+qrcode==8.0
+reportlab==4.4.4
 requests==2.32.5
 requests-toolbelt==1.0.0
+setuptools==80.9.0
 six==1.17.0
 sqlparse==0.5.3
 typing_extensions==4.15.0
 tzdata==2025.2
 urllib3==2.5.0
+wheel==0.45.1
 whitenoise==6.11.0
-qrcode[pil]==8.0
-reportlab
