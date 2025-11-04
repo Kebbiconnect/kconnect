@@ -54,8 +54,11 @@
                 <a href="{% url 'staff:member_mobilization' %}" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
                     <i class="fas fa-redo mr-2"></i> Reset
                 </a>
-                <button type="button" onclick="document.location.href='?{{ request.GET.urlencode }}&export=1'" class="px-6 py-2 bg-kpn-green text-white rounded-lg hover:bg-green-700 transition">
+                <button type="button" onclick="document.location.href='?{{ request.GET.urlencode }}&export=csv'" class="px-6 py-2 bg-kpn-green text-white rounded-lg hover:bg-green-700 transition">
                     <i class="fas fa-file-csv mr-2"></i> Export to CSV
+                </button>
+                <button type="button" onclick="document.location.href='?{{ request.GET.urlencode }}&export=pdf'" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                    <i class="fas fa-file-pdf mr-2"></i> Export to PDF
                 </button>
             </div>
         </form>

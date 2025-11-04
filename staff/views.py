@@ -312,13 +312,9 @@ def general_member_dashboard(request):
     from staff.models import Announcement
     
     latest_campaigns = Campaign.objects.filter(status='PUBLISHED').order_by('-published_at')[:3]
-    total_members = User.objects.filter(status='APPROVED').count()
-    total_campaigns = Campaign.objects.filter(status='PUBLISHED').count()
     
     context = {
         'latest_campaigns': latest_campaigns,
-        'total_members': total_members,
-        'total_campaigns': total_campaigns,
     }
     
     return render(request, 'staff/dashboards/general_member.html', context)
@@ -1909,89 +1905,6 @@ def swap_positions(request):
     return render(request, 'staff/swap_positions.html', context)
 
 
-@specific_role_required('Director of Mobilization', 'Assistant Director of Mobilization')
-def member_mobilization(request):
-    """Member filtering and contact list generation for mobilization"""
-    import csv
-    from django.http import HttpResponse
-    
-    zone_filter = request.GET.get('zone', '')
-    lga_filter = request.GET.get('lga', '')
-    ward_filter = request.GET.get('ward', '')
-    role_filter = request.GET.get('role', '')
-    gender_filter = request.GET.get('gender', '')
-    status_filter = request.GET.get('status', 'APPROVED')
-    search = request.GET.get('search', '')
-    export = request.GET.get('export', '')
-    
-    members = User.objects.all().order_by('last_name', 'first_name')
-    
-    if search:
-        members = members.filter(
-            Q(first_name__icontains=search) |
-            Q(last_name__icontains=search) |
-            Q(username__icontains=search) |
-            Q(phone__icontains=search)
-        )
-    
-    if zone_filter:
-        members = members.filter(zone_id=zone_filter)
-    
-    if lga_filter:
-        members = members.filter(lga_id=lga_filter)
-    
-    if ward_filter:
-        members = members.filter(ward_id=ward_filter)
-    
-    if role_filter:
-        members = members.filter(role=role_filter)
-    
-    if gender_filter:
-        members = members.filter(gender=gender_filter)
-    
-    if status_filter:
-        members = members.filter(status=status_filter)
-    
-    if export == 'csv':
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="kpn_members_contact_list.csv"'
-        
-        writer = csv.writer(response)
-        writer.writerow(['Name', 'Phone', 'Email', 'Gender', 'Role', 'Location', 'Status'])
-        
-        for member in members:
-            location = member.get_jurisdiction()
-            writer.writerow([
-                member.get_full_name(),
-                member.phone,
-                member.email,
-                member.get_gender_display() if member.gender else '',
-                member.get_role_display(),
-                location,
-                member.get_status_display()
-            ])
-        
-        return response
-    
-    zones = Zone.objects.all()
-    lgas = LGA.objects.all()
-    wards = Ward.objects.all()
-    
-    context = {
-        'members': members,
-        'total_count': members.count(),
-        'zones': zones,
-        'lgas': lgas,
-        'wards': wards,
-        'zone_filter': zone_filter,
-        'lga_filter': lga_filter,
-        'ward_filter': ward_filter,
-        'role_filter': role_filter,
-        'gender_filter': gender_filter,
-        'status_filter': status_filter,
-        'search': search,
-    }
-    return render(request, 'staff/member_mobilization.html', context)
 
 
 @specific_role_required('Women Leader', 'Assistant Women Leader')
@@ -2068,7 +1981,7 @@ def member_mobilization(request):
             members = members.filter(status='APPROVED')
     
     # Handle CSV export
-    if 'export' in request.GET:
+    if 'export' in request.GET and request.GET['export'] == 'csv':
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="kpn_contact_list.csv"'
         
@@ -2086,6 +1999,82 @@ def member_mobilization(request):
                 member.get_gender_display() if member.gender else '',
                 member.get_status_display()
             ])
+        
+        return response
+    
+    # Handle PDF export
+    if 'export' in request.GET and request.GET['export'] == 'pdf':
+        from reportlab.lib.pagesizes import letter, landscape
+        from reportlab.lib import colors
+        from reportlab.lib.units import inch
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from io import BytesIO
+        from datetime import datetime
+        
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=landscape(letter), rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
+        elements = []
+        styles = getSampleStyleSheet()
+        
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=16,
+            textColor=colors.HexColor('#28a745'),
+            spaceAfter=12,
+            alignment=1
+        )
+        
+        subtitle_style = ParagraphStyle(
+            'CustomSubtitle',
+            parent=styles['Normal'],
+            fontSize=10,
+            textColor=colors.grey,
+            spaceAfter=20,
+            alignment=1
+        )
+        
+        title = Paragraph("Kebbi Progressive Network - Member Contact List", title_style)
+        subtitle = Paragraph(f"Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}", subtitle_style)
+        elements.append(title)
+        elements.append(subtitle)
+        
+        data = [['Name', 'Phone', 'Role', 'Zone', 'LGA', 'Ward', 'Gender', 'Status']]
+        
+        for member in members:
+            data.append([
+                member.get_full_name(),
+                member.phone or '',
+                member.get_role_display(),
+                member.zone.name if member.zone else '',
+                member.lga.name if member.lga else '',
+                member.ward.name if member.ward else '',
+                member.get_gender_display() if member.gender else '',
+                member.get_status_display()
+            ])
+        
+        table = Table(data, repeatRows=1)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#28a745')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f0f0f0')]),
+        ]))
+        
+        elements.append(table)
+        doc.build(elements)
+        
+        buffer.seek(0)
+        response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="kpn_contact_list.pdf"'
         
         return response
     
