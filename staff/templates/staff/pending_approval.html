@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Pending Approval - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+        <div class="mb-6">
+            <i class="fas fa-clock text-6xl text-yellow-500"></i>
+        </div>
+        <h1 class="text-3xl font-bold mb-4">Application Pending</h1>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">
+            Your registration has been submitted successfully. Your application for 
+            <strong class="text-kpn-green">{{ user.role_definition.title }}</strong> is currently pending approval.
+        </p>
+        <p class="text-gray-600 dark:text-gray-400 mb-8">
+            You will receive access to your dashboard once your application has been reviewed and approved by the appropriate supervisor.
+        </p>
+        <a href="{% url 'core:home' %}" class="inline-block bg-kpn-green text-white px-6 py-3 rounded-lg hover:bg-green-600 transition">
+            Return to Home
+        </a>
+    </div>
+</div>
+{% endblock %}

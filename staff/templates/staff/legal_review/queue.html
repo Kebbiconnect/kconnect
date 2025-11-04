@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Legal Review Queue - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold">Legal Review Queue</h1>
+        <p class="text-gray-600 dark:text-gray-400">Review pending disciplinary actions from a legal perspective</p>
+    </div>
+
+    <!-- Pending Reviews -->
+    <div class="mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Pending Legal Reviews</h2>
+        {% if pending_actions %}
+        <div class="grid grid-cols-1 gap-4">
+            {% for action in pending_actions %}
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="px-3 py-1 rounded-full text-sm font-semibold
+                                {% if action.action_type == 'SUSPENSION' %}bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200
+                                {% else %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200{% endif %}">
+                                {{ action.get_action_type_display }}
+                            </span>
+                            <span class="text-gray-600 dark:text-gray-400">
+                                {{ action.created_at|date:"M d, Y" }}
+                            </span>
+                        </div>
+                        
+                        <h3 class="text-lg font-semibold mb-2">{{ action.user.get_full_name }}</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                            {{ action.user.get_role_display }} 
+                            {% if action.user.lga %}- {{ action.user.lga.name }}{% endif %}
+                        </p>
+                        
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <p class="text-sm font-medium mb-1">Reason for Action:</p>
+                            <p class="text-sm">{{ action.reason }}</p>
+                        </div>
+                        
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-3">
+                            <strong>Issued by:</strong> {{ action.issued_by.get_full_name }} ({{ action.issued_by.role_definition.title }})
+                        </p>
+                    </div>
+                    
+                    <a href="{% url 'staff:legal_review_action' action.id %}" 
+                       class="bg-kpn-blue hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition ml-4">
+                        <i class="fas fa-gavel mr-2"></i>Review Now
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
+            <i class="fas fa-clipboard-check text-6xl text-gray-400 mb-4"></i>
+            <h3 class="text-xl font-semibold mb-2">No Pending Reviews</h3>
+            <p class="text-gray-600 dark:text-gray-400">All disciplinary actions have been legally reviewed.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Recently Reviewed -->
+    {% if reviewed_actions %}
+    <div>
+        <h2 class="text-2xl font-semibold mb-4">Recently Reviewed Actions</h2>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-900">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Member</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Action</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Legal Decision</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Reviewed On</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    {% for action in reviewed_actions %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium">{{ action.user.get_full_name }}</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">{{ action.user.get_role_display }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700">
+                                {{ action.get_action_type_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                {% if action.legal_approved %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                                {% else %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200{% endif %}">
+                                {% if action.legal_approved %}Approved{% else %}Rejected{% endif %}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ action.legal_reviewed_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

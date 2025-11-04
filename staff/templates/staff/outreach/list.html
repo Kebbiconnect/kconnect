@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Community Outreach - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold">Community Outreach</h1>
+            <p class="text-gray-600 dark:text-gray-400">Manage community engagement and partnerships</p>
+        </div>
+        <a href="{% url 'staff:create_outreach' %}" class="bg-kpn-blue hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+            <i class="fas fa-plus mr-2"></i>New Outreach Activity
+        </a>
+    </div>
+
+    {% if outreach_activities %}
+    <div class="grid grid-cols-1 gap-6">
+        {% for outreach in outreach_activities %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                    <h3 class="text-xl font-semibold mb-2">{{ outreach.organization }}</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-2">{{ outreach.purpose|truncatewords:25 }}</p>
+                    
+                    <div class="flex flex-wrap gap-4 mt-4">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm 
+                            {% if outreach.status == 'PLANNED' %}bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200
+                            {% elif outreach.status == 'ONGOING' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
+                            {% elif outreach.status == 'COMPLETED' %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                            {% else %}bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200{% endif %}">
+                            {{ outreach.get_status_display }}
+                        </span>
+                        <span class="text-sm text-gray-600 dark:text-gray-400">
+                            <i class="fas fa-handshake mr-1"></i>{{ outreach.get_engagement_type_display }}
+                        </span>
+                        <span class="text-sm text-gray-600 dark:text-gray-400">
+                            <i class="fas fa-calendar mr-1"></i>{{ outreach.date|date:"M d, Y" }}
+                        </span>
+                        {% if outreach.contact_person %}
+                        <span class="text-sm text-gray-600 dark:text-gray-400">
+                            <i class="fas fa-user mr-1"></i>{{ outreach.contact_person }}
+                        </span>
+                        {% endif %}
+                        {% if outreach.location %}
+                        <span class="text-sm text-gray-600 dark:text-gray-400">
+                            <i class="fas fa-map-marker-alt mr-1"></i>{{ outreach.location }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="flex gap-2 ml-4">
+                    <a href="{% url 'staff:edit_outreach' outreach.id %}" 
+                       class="bg-kpn-blue hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm">
+                        <i class="fas fa-edit mr-1"></i>Edit
+                    </a>
+                    <a href="{% url 'staff:delete_outreach' outreach.id %}" 
+                       class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition text-sm">
+                        <i class="fas fa-trash mr-1"></i>Delete
+                    </a>
+                </div>
+            </div>
+            
+            {% if outreach.follow_up_date %}
+            <div class="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                    <i class="fas fa-clock mr-1"></i><strong>Follow-up scheduled:</strong> {{ outreach.follow_up_date|date:"M d, Y" }}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
+        <i class="fas fa-handshake text-6xl text-gray-400 mb-4"></i>
+        <h3 class="text-xl font-semibold mb-2">No Outreach Activities Yet</h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">Start logging community engagement activities.</p>
+        <a href="{% url 'staff:create_outreach' %}" class="bg-kpn-blue hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition inline-block">
+            <i class="fas fa-plus mr-2"></i>Log Outreach Activity
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

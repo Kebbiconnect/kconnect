@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Treasurer Dashboard - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Reusable Dashboard Header with Typing Animation -->
+    {% include 'staff/dashboards/includes/_role_header.html' with title="Treasurer Dashboard" icon_class="fas fa-wallet" welcome_messages="Safeguarding organizational finances.|Managing budgets and expenditures.|Ensuring financial sustainability." %}
+    
+    <!-- Profile Section -->
+    {% include 'staff/dashboards/includes/_profile_section.html' %}
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Unverified Donations</p>
+                    <p class="text-3xl font-bold text-yellow-600">{{ unverified_donations }}</p>
+                </div>
+                <i class="fas fa-money-bill-wave text-4xl text-yellow-600"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Verified</p>
+                    <p class="text-3xl font-bold text-kpn-green">{{ verified_donations }}</p>
+                </div>
+                <i class="fas fa-check-circle text-4xl text-kpn-green"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
+            <div class="space-y-3">
+                <a href="{% url 'donations:treasurer_donations' %}" class="block p-3 bg-yellow-50 dark:bg-yellow-900 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-800 transition">
+                    <i class="fas fa-check-double mr-2"></i> Verify Incoming Donations
+                </a>
+                <a href="{% url 'donations:add_donation' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
+                    <i class="fas fa-plus-circle mr-2"></i> Add New Donation
+                </a>
+                <a href="{% url 'donations:financial_reports' %}" class="block p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
+                    <i class="fas fa-chart-bar mr-2"></i> View Financial Reports
+                </a>
+                <a href="{% url 'staff:profile' %}" class="block p-4 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 rounded-lg hover:from-green-100 hover:to-green-200 dark:hover:from-green-800 dark:hover:to-green-700 transition-all transform hover:scale-105">
+                    <i class="fas fa-user-edit mr-2 text-green-600"></i> Edit Profile
+                </a>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-xl font-semibold mb-4">My Responsibilities</h3>
+            <ul class="space-y-2 text-sm">
+                <li class="flex items-start">
+                    <i class="fas fa-check text-kpn-green mt-1 mr-2"></i>
+                    <span>Verify offline donations against bank statements</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-check text-kpn-green mt-1 mr-2"></i>
+                    <span>Mark donations as "Verified" after confirmation</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-check text-kpn-green mt-1 mr-2"></i>
+                    <span>Submit verification reports to Financial Secretary</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-check text-kpn-green mt-1 mr-2"></i>
+                    <span>Keep track of all organizational funds</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

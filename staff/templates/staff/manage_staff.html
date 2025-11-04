@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Staff - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold">Manage All Staff</h1>
+        <p class="text-gray-600 dark:text-gray-400">View and manage all members of the organization</p>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium mb-2">Search</label>
+                <input type="text" name="search" value="{{ search }}" placeholder="Name, username, email..." class="w-full p-2 border rounded dark:bg-gray-700">
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-2">Role</label>
+                <select name="role" class="w-full p-2 border rounded dark:bg-gray-700">
+                    <option value="">All Roles</option>
+                    <option value="GENERAL" {% if role_filter == 'GENERAL' %}selected{% endif %}>General Member</option>
+                    <option value="STATE" {% if role_filter == 'STATE' %}selected{% endif %}>State Executive</option>
+                    <option value="ZONAL" {% if role_filter == 'ZONAL' %}selected{% endif %}>Zonal Coordinator</option>
+                    <option value="LGA" {% if role_filter == 'LGA' %}selected{% endif %}>LGA Coordinator</option>
+                    <option value="WARD" {% if role_filter == 'WARD' %}selected{% endif %}>Ward Leader</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-2">Zone</label>
+                <select name="zone" class="w-full p-2 border rounded dark:bg-gray-700">
+                    <option value="">All Zones</option>
+                    {% for zone in zones %}
+                    <option value="{{ zone.id }}" {% if zone_filter == zone.id|stringformat:"s" %}selected{% endif %}>{{ zone.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-2">Status</label>
+                <select name="status" class="w-full p-2 border rounded dark:bg-gray-700">
+                    <option value="">All Statuses</option>
+                    <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>Pending</option>
+                    <option value="APPROVED" {% if status_filter == 'APPROVED' %}selected{% endif %}>Approved</option>
+                    <option value="SUSPENDED" {% if status_filter == 'SUSPENDED' %}selected{% endif %}>Suspended</option>
+                    <option value="DISMISSED" {% if status_filter == 'DISMISSED' %}selected{% endif %}>Dismissed</option>
+                </select>
+            </div>
+            <div class="md:col-span-4">
+                <button type="submit" class="bg-kpn-green text-white px-6 py-2 rounded hover:bg-green-600 transition">
+                    <i class="fas fa-search mr-2"></i> Filter
+                </button>
+                <a href="{% url 'staff:manage_staff' %}" class="ml-2 bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 transition inline-block">
+                    <i class="fas fa-redo mr-2"></i> Reset
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase">Role</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase">Location</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase">Joined</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                {% for member in staff %}
+                <tr>
+                    <td class="px-6 py-4">
+                        <div class="font-medium">{{ member.get_full_name }}</div>
+                        <div class="text-sm text-gray-500">{{ member.email }}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if member.role_definition %}
+                            <span class="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded text-sm">
+                                {{ member.role_definition.title }}
+                            </span>
+                        {% else %}
+                            <span class="px-2 py-1 bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 rounded text-sm">
+                                General Member
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">{{ member.get_jurisdiction }}</td>
+                    <td class="px-6 py-4">
+                        {% if member.status == 'APPROVED' %}
+                            <span class="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded text-xs">Approved</span>
+                        {% elif member.status == 'PENDING' %}
+                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded text-xs">Pending</span>
+                        {% elif member.status == 'SUSPENDED' %}
+                            <span class="px-2 py-1 bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 rounded text-xs">Suspended</span>
+                        {% else %}
+                            <span class="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded text-xs">Dismissed</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">{{ member.created_at|date:"M d, Y" }}</td>
+                    <td class="px-6 py-4">
+                        <div class="relative inline-block text-left">
+                            <button onclick="toggleDropdown('dropdown-{{ member.id }}')" class="px-3 py-1 bg-kpn-blue text-white rounded hover:bg-blue-700 transition">
+                                <i class="fas fa-cog mr-1"></i> Actions
+                            </button>
+                            <div id="dropdown-{{ member.id }}" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg z-10">
+                                <div class="py-1">
+                                    <a href="{% url 'staff:edit_member_role' member.id %}" class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
+                                        <i class="fas fa-edit mr-2"></i> Edit Role
+                                    </a>
+                                    {% if member.role != 'STATE' %}
+                                    <a href="{% url 'staff:promote_member' member.id %}" class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
+                                        <i class="fas fa-level-up-alt mr-2"></i> Promote
+                                    </a>
+                                    {% endif %}
+                                    {% if member.role != 'GENERAL' %}
+                                    <a href="{% url 'staff:demote_member' member.id %}" class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
+                                        <i class="fas fa-level-down-alt mr-2"></i> Demote
+                                    </a>
+                                    {% endif %}
+                                    {% if member.status == 'APPROVED' %}
+                                    <a href="{% url 'staff:suspend_member' member.id %}" class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">
+                                        <i class="fas fa-pause-circle mr-2"></i> Suspend
+                                    </a>
+                                    <a href="{% url 'staff:dismiss_member' member.id %}" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600">
+                                        <i class="fas fa-user-times mr-2"></i> Dismiss
+                                    </a>
+                                    {% elif member.status == 'SUSPENDED' or member.status == 'DISMISSED' %}
+                                    <a href="{% url 'staff:reinstate_member' member.id %}" class="block px-4 py-2 text-sm text-green-600 hover:bg-gray-100 dark:hover:bg-gray-600">
+                                        <i class="fas fa-user-check mr-2"></i> Reinstate
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">No staff members found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="mt-6">
+        <a href="{% url 'staff:swap_positions' %}" class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+            <i class="fas fa-exchange-alt mr-2"></i> Swap Member Positions
+        </a>
+    </div>
+</div>
+
+<script>
+function toggleDropdown(id) {
+    const dropdown = document.getElementById(id);
+    const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
+    
+    allDropdowns.forEach(dd => {
+        if (dd.id !== id) {
+            dd.classList.add('hidden');
+        }
+    });
+    
+    dropdown.classList.toggle('hidden');
+}
+
+document.addEventListener('click', function(event) {
+    const isClickInsideDropdown = event.target.closest('[id^="dropdown-"]');
+    const isClickOnButton = event.target.closest('button[onclick^="toggleDropdown"]');
+    
+    if (!isClickInsideDropdown && !isClickOnButton) {
+        const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
+        allDropdowns.forEach(dd => dd.classList.add('hidden'));
+    }
+});
+</script>
+{% endblock %}

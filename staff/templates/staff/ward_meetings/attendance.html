@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Attendance - {{ meeting.title }} - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold">Manage Attendance</h1>
+        <p class="text-gray-600 dark:text-gray-400">{{ meeting.title }} - {{ meeting.date|date:"M d, Y" }} at {{ meeting.time|time:"g:i A" }}</p>
+    </div>
+
+    <form method="post" class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        {% csrf_token %}
+        
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold mb-4">Select Attendees</h3>
+            <div class="space-y-3 max-h-96 overflow-y-auto">
+                {% for member in ward_members %}
+                <label class="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer transition">
+                    <input type="checkbox" name="attendees" value="{{ member.id }}" 
+                           {% if member.id in current_attendees %}checked{% endif %}
+                           class="w-4 h-4 text-kpn-blue border-gray-300 rounded focus:ring-kpn-blue dark:focus:ring-kpn-blue dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                    <div class="ml-3">
+                        <span class="font-medium">{{ member.get_full_name }}</span>
+                        <span class="text-sm text-gray-600 dark:text-gray-400 ml-2">
+                            ({% if member.role_definition %}{{ member.role_definition.title }}{% else %}General Member{% endif %})
+                        </span>
+                    </div>
+                </label>
+                {% empty %}
+                <p class="text-gray-600 dark:text-gray-400">No ward members found.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="flex gap-4 pt-4 border-t dark:border-gray-700">
+            <button type="submit" class="bg-kpn-blue hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+                <i class="fas fa-save mr-2"></i>Save Attendance
+            </button>
+            <a href="{% url 'staff:ward_meetings_list' %}" class="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 px-6 py-3 rounded-lg transition">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

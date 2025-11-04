@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ event.title }} - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold">{{ event.title }}</h1>
+            <p class="text-gray-600 dark:text-gray-400">Event Details</p>
+        </div>
+        {% if user.role == 'ORGANIZING_SECRETARY' %}
+        <div class="space-x-2">
+            <a href="{% url 'events:edit_event' event.pk %}" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition">
+                <i class="fas fa-edit mr-2"></i>Edit
+            </a>
+            <a href="{% url 'events:delete_event' event.pk %}" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
+                <i class="fas fa-trash mr-2"></i>Delete
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">Event Information</h2>
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Description</p>
+                        <p class="mt-1">{{ event.description }}</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Location</p>
+                            <p class="mt-1"><i class="fas fa-map-marker-alt text-kpn-blue mr-2"></i>{{ event.location }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Organized By</p>
+                            <p class="mt-1">{{ event.created_by.get_full_name }}</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Start Date & Time</p>
+                            <p class="mt-1"><i class="fas fa-calendar text-kpn-blue mr-2"></i>{{ event.start_date|date:"M d, Y - g:i A" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">End Date & Time</p>
+                            <p class="mt-1"><i class="fas fa-calendar text-kpn-blue mr-2"></i>{{ event.end_date|date:"M d, Y - g:i A" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold">Attendance ({{ attendances.count }})</h2>
+                    {% if user.role == 'ORGANIZING_SECRETARY' %}
+                    <a href="{% url 'events:manage_attendance' event.pk %}" class="bg-kpn-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-clipboard-check mr-2"></i>Record Attendance
+                    </a>
+                    {% endif %}
+                </div>
+                
+                {% if attendances %}
+                <div class="space-y-2">
+                    {% for attendance in attendances %}
+                    <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div class="flex items-center">
+                            {% if attendance.present %}
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            {% else %}
+                            <i class="fas fa-times-circle text-red-500 mr-3"></i>
+                            {% endif %}
+                            <span>{{ attendance.attendee.get_full_name }}</span>
+                        </div>
+                        <span class="text-sm {% if attendance.present %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if attendance.present %}Present{% else %}Absent{% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-gray-600 dark:text-gray-400 text-center py-4">No attendance recorded yet</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="space-y-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold mb-4">Meeting Minutes</h3>
+                {% if minutes %}
+                    <div class="space-y-3">
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            <i class="fas fa-user mr-2"></i>Recorded by {{ minutes.recorded_by.get_full_name }}
+                        </p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            <i class="fas fa-clock mr-2"></i>{{ minutes.recorded_at|date:"M d, Y - g:i A" }}
+                        </p>
+                        {% if minutes.is_published %}
+                        <span class="inline-block bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs px-3 py-1 rounded-full">
+                            <i class="fas fa-check mr-1"></i>Published
+                        </span>
+                        {% else %}
+                        <span class="inline-block bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs px-3 py-1 rounded-full">
+                            <i class="fas fa-clock mr-1"></i>Draft
+                        </span>
+                        {% endif %}
+                        <a href="{% url 'events:view_meeting_minutes' event.pk %}" class="block mt-4 text-center bg-kpn-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                            View Minutes
+                        </a>
+                        {% if user.role == 'GENERAL_SECRETARY' %}
+                        <a href="{% url 'events:edit_meeting_minutes' event.pk %}" class="block text-center bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                            Edit Minutes
+                        </a>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">No minutes recorded for this event</p>
+                    {% if user.role == 'GENERAL_SECRETARY' %}
+                    <a href="{% url 'events:create_meeting_minutes' event.pk %}" class="block text-center bg-kpn-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        Record Minutes
+                    </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+                <div class="space-y-2">
+                    <a href="{% url 'events:event_calendar' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
+                        <i class="fas fa-calendar-alt mr-2"></i> Back to Calendar
+                    </a>
+                    <a href="{% url 'events:view_attendance_logs' %}" class="block p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
+                        <i class="fas fa-clipboard-list mr-2"></i> View All Attendance Logs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

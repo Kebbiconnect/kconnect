@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Financial Reports - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold">Financial Reports</h1>
+            <p class="text-gray-600 dark:text-gray-400">View all financial summaries and reports</p>
+        </div>
+        <a href="{% url 'donations:create_financial_report' %}" class="bg-kpn-blue text-white px-4 py-2 rounded hover:bg-blue-700 transition inline-block">
+            <i class="fas fa-plus mr-2"></i> Create Report
+        </a>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+        {% if reports %}
+            <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                {% for report in reports %}
+                <div class="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold mb-2">{{ report.title }}</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ report.report_period }}</p>
+                            
+                            <div class="grid grid-cols-2 gap-4 mb-3">
+                                <div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Total Income</p>
+                                    <p class="text-lg font-semibold text-green-600 dark:text-green-400">₦{{ report.total_income|floatformat:2 }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Total Expenses</p>
+                                    <p class="text-lg font-semibold text-red-600 dark:text-red-400">₦{{ report.total_expenses|floatformat:2 }}</p>
+                                </div>
+                            </div>
+                            
+                            <p class="text-gray-700 dark:text-gray-300 mb-3">{{ report.summary|truncatewords:30 }}</p>
+                            
+                            <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                                <span><i class="fas fa-user mr-1"></i> {{ report.prepared_by.get_full_name }}</span>
+                                <span><i class="fas fa-calendar mr-1"></i> {{ report.created_at|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                        
+                        {% if report.report_file %}
+                        <a href="{{ report.report_file.url }}" class="ml-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                            <i class="fas fa-download mr-2"></i> Download
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="px-6 py-12 text-center text-gray-500">
+                <i class="fas fa-chart-line text-4xl mb-3"></i>
+                <p>No financial reports available</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

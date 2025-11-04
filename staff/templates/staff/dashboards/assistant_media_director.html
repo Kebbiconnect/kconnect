@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Assistant Director of Media & Publicity Dashboard - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Reusable Dashboard Header with Typing Animation -->
+    {% include 'staff/dashboards/includes/_role_header.html' with title="Assistant Director of Media & Publicity Dashboard" icon_class="fas fa-broadcast-tower" welcome_messages="Supporting media and publicity operations.|Assisting with content creation.|Amplifying our voice." %}
+    
+    <!-- Profile Section -->
+    {% include 'staff/dashboards/includes/_profile_section.html' %}
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Pending Campaigns</p>
+                    <p class="text-3xl font-bold text-yellow-600">{{ pending_campaigns }}</p>
+                </div>
+                <i class="fas fa-newspaper text-4xl text-yellow-600"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Pending Media</p>
+                    <p class="text-3xl font-bold text-purple-600">{{ pending_media }}</p>
+                </div>
+                <i class="fas fa-photo-video text-4xl text-purple-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <a href="{% url 'campaigns:create_campaign' %}" class="block p-3 bg-kpn-green dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
+                <i class="fas fa-plus-circle mr-2"></i> Create Campaign
+            </a>
+            <a href="{% url 'campaigns:my_campaigns' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
+                <i class="fas fa-list mr-2"></i> My Campaigns
+            </a>
+            <a href="{% url 'campaigns:all_campaigns' %}" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
+                <i class="fas fa-newspaper mr-2"></i> All Campaigns
+            </a>
+            <a href="{% url 'staff:profile' %}" class="block p-3 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                <i class="fas fa-user mr-2"></i> My Profile
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

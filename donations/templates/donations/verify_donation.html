@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify Donation - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <a href="{% url 'donations:treasurer_donations' %}" class="text-kpn-blue hover:underline">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Donations
+        </a>
+        <h1 class="text-3xl font-bold mt-4">Verify Donation</h1>
+        <p class="text-gray-600 dark:text-gray-400">Confirm the authenticity of this donation</p>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
+            <h3 class="font-semibold text-blue-800 dark:text-blue-300 mb-2">
+                <i class="fas fa-info-circle mr-2"></i> Verification Process
+            </h3>
+            <p class="text-blue-700 dark:text-blue-400">
+                Please verify that this donation transaction is legitimate before proceeding. Once verified, it will be forwarded to the Financial Secretary for recording.
+            </p>
+        </div>
+        
+        <div class="space-y-4 mb-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Donor Name</label>
+                <p class="text-lg font-semibold">{{ donation.donor_name }}</p>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Amount</label>
+                <p class="text-2xl font-bold text-green-600 dark:text-green-400">₦{{ donation.amount|floatformat:2 }}</p>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Transaction Reference</label>
+                <p class="text-lg"><code class="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded">{{ donation.reference }}</code></p>
+            </div>
+            
+            {% if donation.notes %}
+            <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Notes</label>
+                <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ donation.notes }}</p>
+            </div>
+            {% endif %}
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Date Received</label>
+                <p class="text-gray-700 dark:text-gray-300">{{ donation.created_at|date:"F d, Y \a\t h:i A" }}</p>
+            </div>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="flex gap-4">
+                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">
+                    <i class="fas fa-check-circle mr-2"></i> Verify Donation
+                </button>
+                <a href="{% url 'donations:treasurer_donations' %}" class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 transition inline-block">
+                    <i class="fas fa-times mr-2"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

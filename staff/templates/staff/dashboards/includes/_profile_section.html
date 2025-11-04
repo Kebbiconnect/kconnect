@@ -1,0 +1,75 @@
+<!-- Quick Profile Edit Section -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold flex items-center">
+            <i class="fas fa-user-edit text-kpn-green mr-2"></i>
+            Quick Profile Update
+        </h3>
+        <a href="{% url 'staff:profile' %}" class="text-kpn-blue hover:text-kpn-green transition">
+            <i class="fas fa-arrow-right mr-1"></i>Full Profile
+        </a>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Profile Photo -->
+        <div class="text-center">
+            <div class="mb-3">
+                {% if user.photo %}
+                <img src="{{ user.photo.url }}" alt="{{ user.get_full_name }}" class="w-32 h-32 rounded-full mx-auto object-cover border-4 border-kpn-green shadow-lg">
+                {% else %}
+                <div class="w-32 h-32 rounded-full mx-auto bg-gradient-to-br from-kpn-green to-kpn-blue flex items-center justify-center text-white text-4xl font-bold shadow-lg">
+                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                </div>
+                {% endif %}
+            </div>
+            <a href="{% url 'staff:profile' %}" class="inline-block bg-kpn-green text-white px-4 py-2 rounded-lg hover:bg-green-600 transition text-sm">
+                <i class="fas fa-camera mr-1"></i>Update Photo
+            </a>
+        </div>
+        
+        <!-- Profile Info -->
+        <div class="md:col-span-2">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                        <i class="fas fa-user mr-1"></i>Full Name
+                    </p>
+                    <p class="font-semibold">{{ user.get_full_name }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                        <i class="fas fa-envelope mr-1"></i>Email
+                    </p>
+                    <p class="font-semibold">{{ user.email }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                        <i class="fas fa-phone mr-1"></i>Phone
+                    </p>
+                    <p class="font-semibold">{{ user.phone }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                        <i class="fas fa-map-marker-alt mr-1"></i>Location
+                    </p>
+                    <p class="font-semibold text-sm">
+                        {% if user.ward %}{{ user.ward.name }}, {% endif %}
+                        {% if user.lga %}{{ user.lga.name }}, {% endif %}
+                        {% if user.zone %}{{ user.zone.name }}{% endif %}
+                    </p>
+                </div>
+            </div>
+            <div class="mt-4 flex gap-3 flex-wrap">
+                <a href="{% url 'staff:generate_id_tag' %}" class="flex-1 bg-kpn-green text-white px-4 py-2 rounded-lg hover:bg-green-600 transition text-center text-sm">
+                    <i class="fas fa-id-card mr-1"></i>Get Your Tag
+                </a>
+                <a href="{% url 'staff:profile' %}" class="flex-1 bg-kpn-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-center text-sm">
+                    <i class="fas fa-edit mr-1"></i>Edit Profile
+                </a>
+                <a href="{% url 'staff:change_password' %}" class="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition text-center text-sm">
+                    <i class="fas fa-lock mr-1"></i>Change Password
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

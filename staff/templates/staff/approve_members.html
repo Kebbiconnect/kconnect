@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Approve Members - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold">Pending Member Approvals</h1>
+        <p class="text-gray-600 dark:text-gray-400">Review and approve member applications</p>
+    </div>
+    
+    {% if user.role == 'STATE' %}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+        <h3 class="text-lg font-semibold mb-4">Filter by Jurisdiction</h3>
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-medium mb-2">Zone</label>
+                <select name="zone" class="w-full p-2 border rounded dark:bg-gray-700">
+                    <option value="">All Zones</option>
+                    {% for zone in zones %}
+                    <option value="{{ zone.id }}" {% if zone_filter == zone.id|stringformat:"s" %}selected{% endif %}>{{ zone.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-2">LGA</label>
+                <select name="lga" class="w-full p-2 border rounded dark:bg-gray-700">
+                    <option value="">All LGAs</option>
+                    {% for lga in lgas %}
+                    <option value="{{ lga.id }}" {% if lga_filter == lga.id|stringformat:"s" %}selected{% endif %}>{{ lga.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-2">Ward</label>
+                <select name="ward" class="w-full p-2 border rounded dark:bg-gray-700">
+                    <option value="">All Wards</option>
+                    {% for ward in wards %}
+                    <option value="{{ ward.id }}" {% if ward_filter == ward.id|stringformat:"s" %}selected{% endif %}>{{ ward.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="md:col-span-3">
+                <button type="submit" class="bg-kpn-green text-white px-6 py-2 rounded hover:bg-green-600 transition">
+                    <i class="fas fa-filter mr-2"></i> Apply Filters
+                </button>
+                <a href="{% url 'staff:approve_members' %}" class="ml-2 bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 transition inline-block">
+                    <i class="fas fa-redo mr-2"></i> Reset
+                </a>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase">Role Applied</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase">Location</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase">Phone</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase">Applied</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    {% for user in pending_users %}
+                    <tr>
+                        <td class="px-6 py-4">
+                            <div class="font-medium">{{ user.get_full_name }}</div>
+                            <div class="text-sm text-gray-500">{{ user.email }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if user.role_definition %}
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded text-sm">
+                                    {{ user.role_definition.title }}
+                                </span>
+                            {% else %}
+                                General Member
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">{{ user.get_jurisdiction }}</td>
+                        <td class="px-6 py-4">{{ user.phone }}</td>
+                        <td class="px-6 py-4">{{ user.created_at|date:"M d, Y" }}</td>
+                        <td class="px-6 py-4">
+                            <a href="{% url 'staff:review_applicant' user.id %}" class="text-kpn-green hover:text-kpn-blue font-medium">
+                                Review →
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                            <i class="fas fa-check-circle text-4xl text-green-500 mb-2"></i>
+                            <p>No pending applications</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

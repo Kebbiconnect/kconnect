@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Reinstate Member - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <a href="{% url 'staff:manage_staff' %}" class="text-kpn-blue hover:text-kpn-green">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Staff Management
+        </a>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h1 class="text-3xl font-bold mb-6 text-green-600">Reinstate Member</h1>
+        
+        <div class="mb-6 p-4 bg-green-50 dark:bg-green-900 rounded-lg">
+            <p class="text-sm"><strong>Member:</strong> {{ member.get_full_name }}</p>
+            <p class="text-sm"><strong>Current Role:</strong> {{ member.role_definition.title|default:"General Member" }}</p>
+            <p class="text-sm"><strong>Current Status:</strong> {{ member.get_status_display }}</p>
+        </div>
+        
+        <div class="mb-6 p-4 bg-blue-50 dark:bg-blue-900 rounded-lg">
+            <p class="text-sm"><i class="fas fa-info-circle mr-2"></i>Reinstating this member will restore their access and set their status to "Approved".</p>
+        </div>
+        
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="flex space-x-4">
+                <button type="submit" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                    <i class="fas fa-user-check mr-2"></i> Confirm Reinstatement
+                </button>
+                <a href="{% url 'staff:manage_staff' %}" class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

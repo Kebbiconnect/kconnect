@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Participants - {{ program.title }} - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <a href="{% url 'staff:youth_programs_list' %}" class="text-kpn-blue hover:underline mb-4 inline-block">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Programs
+        </a>
+        <h1 class="text-3xl font-bold">Manage Participants</h1>
+        <p class="text-gray-600 dark:text-gray-400">{{ program.title }}</p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-4">Select Participants</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Current participants: {{ current_participants|length }} / Target: {{ program.target_participants }}
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                    {% for member in members %}
+                    <div class="flex items-center">
+                        <input type="checkbox" 
+                               name="participants" 
+                               value="{{ member.id }}" 
+                               id="member_{{ member.id }}"
+                               {% if member.id in current_participants %}checked{% endif %}
+                               class="w-4 h-4 text-kpn-blue border-gray-300 rounded focus:ring-kpn-blue">
+                        <label for="member_{{ member.id }}" class="ml-2 text-sm">
+                            {{ member.get_full_name }} 
+                            <span class="text-gray-500">({{ member.get_role_display }})</span>
+                        </label>
+                    </div>
+                    {% empty %}
+                    <p class="text-gray-500">No members available in your jurisdiction.</p>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="flex gap-4">
+                <button type="submit" class="bg-kpn-blue hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+                    <i class="fas fa-save mr-2"></i>Save Participants
+                </button>
+                <a href="{% url 'staff:youth_programs_list' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

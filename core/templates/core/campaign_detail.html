@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ campaign.title }} - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <a href="{% url 'core:campaigns' %}" class="text-kpn-green hover:text-kpn-blue mb-4 inline-block"><i class="fas fa-arrow-left mr-2"></i>Back to Campaigns</a>
+    
+    <article class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+        {% if campaign.featured_image %}
+        <img src="{{ campaign.featured_image.url }}" alt="{{ campaign.title }}" class="w-full h-64 object-cover rounded-lg mb-6">
+        {% endif %}
+        
+        <h1 class="text-4xl font-bold mb-4">{{ campaign.title }}</h1>
+        
+        <div class="flex items-center text-gray-600 dark:text-gray-400 mb-6">
+            <span class="mr-4"><i class="far fa-calendar mr-1"></i> {{ campaign.published_at|date:"M d, Y" }}</span>
+            <span><i class="far fa-eye mr-1"></i> {{ campaign.views }} views</span>
+        </div>
+        
+        <div class="prose dark:prose-invert max-w-none">
+            {{ campaign.content|safe }}
+        </div>
+    </article>
+</div>
+{% endblock %}

@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+
+{% block title %}FAQ - KPN{% endblock %}
+
+{% block content %}
+<section class="bg-gradient-to-r from-kpn-green to-kpn-blue text-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">Frequently Asked Questions</h1>
+        <p class="text-xl">Find answers to common questions about the Kebbi Progressive Network</p>
+    </div>
+</section>
+
+<section class="py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto">
+            <!-- Search Box -->
+            <div class="mb-8">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </span>
+                    <input type="text" class="w-full pl-12 pr-4 py-4 text-lg border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-800 focus:ring-2 focus:ring-kpn-green focus:border-transparent" id="faqSearch" placeholder="Search FAQs...">
+                </div>
+            </div>
+            
+            <!-- FAQ Categories -->
+            <div class="mb-6">
+                <div class="flex flex-wrap justify-center gap-3">
+                    <button type="button" class="px-6 py-2 rounded-lg border-2 border-kpn-green text-kpn-green bg-kpn-green text-white font-semibold transition hover:opacity-90 category-btn active" data-category="all">All</button>
+                    <button type="button" class="px-6 py-2 rounded-lg border-2 border-kpn-green text-kpn-green font-semibold transition hover:bg-kpn-green hover:text-white category-btn" data-category="membership">Membership</button>
+                    <button type="button" class="px-6 py-2 rounded-lg border-2 border-kpn-green text-kpn-green font-semibold transition hover:bg-kpn-green hover:text-white category-btn" data-category="leadership">Leadership</button>
+                    <button type="button" class="px-6 py-2 rounded-lg border-2 border-kpn-green text-kpn-green font-semibold transition hover:bg-kpn-green hover:text-white category-btn" data-category="activities">Activities</button>
+                    <button type="button" class="px-6 py-2 rounded-lg border-2 border-kpn-green text-kpn-green font-semibold transition hover:bg-kpn-green hover:text-white category-btn" data-category="support">Support</button>
+                </div>
+            </div>
+            
+            <!-- FAQ Accordion -->
+            <div class="space-y-4" x-data="{ openFaq: 0 }">
+                <!-- General/Membership Questions -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow faq-item" data-category="membership">
+                    <button @click="openFaq = openFaq === 1 ? 0 : 1" 
+                            class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition">
+                        <span>What is the Kebbi Progressive Network (KPN)?</span>
+                        <i class="fas fa-chevron-down transition-transform" :class="{ 'rotate-180': openFaq === 1 }"></i>
+                    </button>
+                    <div x-show="openFaq === 1" x-cloak class="px-6 pb-4 text-gray-700 dark:text-gray-300">
+                        <p>The Kebbi Progressive Network (KPN) is a state-level digital platform designed to strengthen youth mobilization, promote charity and welfare activities, empower citizens through educational and economic initiatives, and advocate for civic responsibility and good governance across Kebbi State.</p>
+                        <p class="mt-2"><strong>Our motto:</strong> "One Voice, One Change"</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow faq-item" data-category="membership">
+                    <button @click="openFaq = openFaq === 2 ? 0 : 2" 
+                            class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition">
+                        <span>How can I join KPN?</span>
+                        <i class="fas fa-chevron-down transition-transform" :class="{ 'rotate-180': openFaq === 2 }"></i>
+                    </button>
+                    <div x-show="openFaq === 2" x-cloak class="px-6 pb-4 text-gray-700 dark:text-gray-300">
+                        <p class="mb-2">To join KPN:</p>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li>Fill out the <a href="{% url 'staff:register' %}" class="text-kpn-blue hover:underline">registration form</a> on our website</li>
+                            <li>Follow our official Facebook page (required step)</li>
+                            <li>Wait for approval if applying for a leadership position</li>
+                            <li>General membership is automatically approved after Facebook verification</li>
+                        </ol>
+                        <p class="mt-2"><strong>Note:</strong> Following our Facebook page is mandatory for all members.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow faq-item" data-category="membership">
+                    <button @click="openFaq = openFaq === 3 ? 0 : 3" 
+                            class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition">
+                        <span>Is membership free?</span>
+                        <i class="fas fa-chevron-down transition-transform" :class="{ 'rotate-180': openFaq === 3 }"></i>
+                    </button>
+                    <div x-show="openFaq === 3" x-cloak class="px-6 pb-4 text-gray-700 dark:text-gray-300">
+                        <p>Yes, membership in KPN is completely free. There are no membership fees or hidden charges.</p>
+                        <p class="mt-2">However, we welcome voluntary donations to support our community development activities and programs.</p>
+                    </div>
+                </div>
+                
+                <!-- Leadership Questions -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow faq-item" data-category="leadership">
+                    <button @click="openFaq = openFaq === 4 ? 0 : 4" 
+                            class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition">
+                        <span>What leadership positions are available?</span>
+                        <i class="fas fa-chevron-down transition-transform" :class="{ 'rotate-180': openFaq === 4 }"></i>
+                    </button>
+                    <div x-show="openFaq === 4" x-cloak class="px-6 pb-4 text-gray-700 dark:text-gray-300">
+                        <p class="mb-2">KPN has a hierarchical leadership structure:</p>
+                        <ul class="space-y-1">
+                            <li><strong>State Executive Council:</strong> 20 positions (including President, Secretaries, Treasurer, etc.)</li>
+                            <li><strong>Zonal Coordinators:</strong> 3 positions per zone (3 zones total)</li>
+                            <li><strong>LGA Leaders:</strong> 10 positions per LGA (21 LGAs total)</li>
+                            <li><strong>Ward Leaders:</strong> 8 positions per ward (225 wards total)</li>
+                            <li><strong>General Members:</strong> Unlimited</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow faq-item" data-category="leadership">
+                    <button @click="openFaq = openFaq === 5 ? 0 : 5" 
+                            class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition">
+                        <span>How does the leadership approval process work?</span>
+                        <i class="fas fa-chevron-down transition-transform" :class="{ 'rotate-180': openFaq === 5 }"></i>
+                    </button>
+                    <div x-show="openFaq === 5" x-cloak class="px-6 pb-4 text-gray-700 dark:text-gray-300">
+                        <p class="mb-2">Leadership applications require approval from higher-level supervisors:</p>
+                        <ul class="space-y-1">
+                            <li><strong>State Executives:</strong> Approved by President</li>
+                            <li><strong>Zonal Coordinators:</strong> Approved by State Executives</li>
+                            <li><strong>LGA Leaders:</strong> Approved by Zonal Coordinators</li>
+                            <li><strong>Ward Leaders:</strong> Approved by LGA Leaders</li>
+                        </ul>
+                        <p class="mt-2">Applications are reviewed based on commitment, qualifications, and availability of positions.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow faq-item" data-category="leadership">
+                    <button @click="openFaq = openFaq === 6 ? 0 : 6" 
+                            class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition">
+                        <span>What are the responsibilities of leaders?</span>
+                        <i class="fas fa-chevron-down transition-transform" :class="{ 'rotate-180': openFaq === 6 }"></i>
+                    </button>
+                    <div x-show="openFaq === 6" x-cloak class="px-6 pb-4 text-gray-700 dark:text-gray-300">
+                        <p class="mb-2">KPN leaders have specific duties including:</p>
+                        <ul class="space-y-1">
+                            <li>Staff management and approval of subordinate applications</li>
+                            <li>Organizing events and activities in their jurisdiction</li>
+                            <li>Maintaining duty logs and accountability records</li>
+                            <li>Engaging with the official Facebook page</li>
+                            <li>Promoting KPN values and objectives in their communities</li>
+                            <li>Regular reporting to supervisors</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Activities Questions -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow faq-item" data-category="activities">
+                    <button @click="openFaq = openFaq === 7 ? 0 : 7" 
+                            class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition">
+                        <span>What activities does KPN organize?</span>
+                        <i class="fas fa-chevron-down transition-transform" :class="{ 'rotate-180': openFaq === 7 }"></i>
+                    </button>
+                    <div x-show="openFaq === 7" x-cloak class="px-6 pb-4 text-gray-700 dark:text-gray-300">
+                        <p class="mb-2">KPN organizes various activities including:</p>
+                        <ul class="space-y-1">
+                            <li><strong>Youth Mobilization:</strong> Training and empowerment programs</li>
+                            <li><strong>Welfare Activities:</strong> Support for vulnerable communities</li>
+                            <li><strong>Advocacy Campaigns:</strong> Promoting good governance and transparency</li>
+                            <li><strong>Educational Initiatives:</strong> Skill development and civic education</li>
+                            <li><strong>Community Development:</strong> Projects benefiting local communities</li>
+                            <li><strong>Networking Events:</strong> Connecting members across all LGAs</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow faq-item" data-category="activities">
+                    <button @click="openFaq = openFaq === 8 ? 0 : 8" 
+                            class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition">
+                        <span>How can I participate in KPN activities?</span>
+                        <i class="fas fa-chevron-down transition-transform" :class="{ 'rotate-180': openFaq === 8 }"></i>
+                    </button>
+                    <div x-show="openFaq === 8" x-cloak class="px-6 pb-4 text-gray-700 dark:text-gray-300">
+                        <p class="mb-2">As a KPN member, you can participate by:</p>
+                        <ul class="space-y-1">
+                            <li>Following our <a href="https://www.facebook.com/kpnkebbi" target="_blank" class="text-kpn-blue hover:underline">official Facebook page</a> for announcements</li>
+                            <li>Attending events organized in your zone, LGA, or ward</li>
+                            <li>Volunteering for community development projects</li>
+                            <li>Sharing our content and campaigns on social media</li>
+                            <li>Applying for leadership positions to organize activities</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Support Questions -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow faq-item" data-category="support">
+                    <button @click="openFaq = openFaq === 9 ? 0 : 9" 
+                            class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition">
+                        <span>How can I support KPN financially?</span>
+                        <i class="fas fa-chevron-down transition-transform" :class="{ 'rotate-180': openFaq === 9 }"></i>
+                    </button>
+                    <div x-show="openFaq === 9" x-cloak class="px-6 pb-4 text-gray-700 dark:text-gray-300">
+                        <p class="mb-2">You can support KPN through offline donations to our Nigerian bank accounts:</p>
+                        <ul class="space-y-1">
+                            <li>Visit our <a href="{% url 'core:support_us' %}" class="text-kpn-blue hover:underline">Support Us</a> page for complete bank details</li>
+                            <li>Include "KPN DONATION" in your transaction reference</li>
+                            <li>Notify us through our Facebook page after making a donation</li>
+                            <li>All contributions support community development initiatives</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow faq-item" data-category="support">
+                    <button @click="openFaq = openFaq === 10 ? 0 : 10" 
+                            class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition">
+                        <span>How can I contact KPN?</span>
+                        <i class="fas fa-chevron-down transition-transform" :class="{ 'rotate-180': openFaq === 10 }"></i>
+                    </button>
+                    <div x-show="openFaq === 10" x-cloak class="px-6 pb-4 text-gray-700 dark:text-gray-300">
+                        <p class="mb-2">You can reach us through:</p>
+                        <ul class="space-y-1">
+                            <li><strong>Facebook:</strong> <a href="https://www.facebook.com/kpnkebbi" target="_blank" class="text-kpn-blue hover:underline">@kpnkebbi</a></li>
+                            <li><strong>Email:</strong> <a href="mailto:kpn2020@gmail.com" class="text-kpn-blue hover:underline">kpn2020@gmail.com</a></li>
+                            <li><strong>Website Contact Form:</strong> <a href="{% url 'core:contact' %}" class="text-kpn-blue hover:underline">Contact Us page</a></li>
+                        </ul>
+                        <p class="mt-2">We typically respond within 24-48 hours.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow faq-item" data-category="membership">
+                    <button @click="openFaq = openFaq === 11 ? 0 : 11" 
+                            class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition">
+                        <span>Why is following the Facebook page mandatory?</span>
+                        <i class="fas fa-chevron-down transition-transform" :class="{ 'rotate-180': openFaq === 11 }"></i>
+                    </button>
+                    <div x-show="openFaq === 11" x-cloak class="px-6 pb-4 text-gray-700 dark:text-gray-300">
+                        <p class="mb-2">Following our official Facebook page is required because:</p>
+                        <ul class="space-y-1">
+                            <li>It's our primary communication channel for announcements and updates</li>
+                            <li>It helps verify member authenticity and prevents fake registrations</li>
+                            <li>Leaders are expected to engage with official content as part of their duties</li>
+                            <li>It builds a unified community presence across all social media platforms</li>
+                            <li>It ensures members stay informed about important KPN activities and initiatives</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow faq-item" data-category="activities">
+                    <button @click="openFaq = openFaq === 12 ? 0 : 12" 
+                            class="w-full text-left px-6 py-4 flex justify-between items-center font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition">
+                        <span>What is KPN's stance on politics?</span>
+                        <i class="fas fa-chevron-down transition-transform" :class="{ 'rotate-180': openFaq === 12 }"></i>
+                    </button>
+                    <div x-show="openFaq === 12" x-cloak class="px-6 pb-4 text-gray-700 dark:text-gray-300">
+                        <p class="mb-2">KPN is a non-partisan organization focused on:</p>
+                        <ul class="space-y-1">
+                            <li>Good governance advocacy (regardless of political party)</li>
+                            <li>Youth empowerment and civic education</li>
+                            <li>Community development and welfare activities</li>
+                            <li>Transparency and accountability in public service</li>
+                        </ul>
+                        <p class="mt-2">We welcome members from all political backgrounds and focus on issues that benefit all citizens of Kebbi State.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Still have questions section -->
+            <div class="text-center mt-10">
+                <div class="bg-gray-100 dark:bg-gray-800 rounded-lg shadow-lg p-8">
+                    <h4 class="text-2xl font-bold text-kpn-green mb-3">Still Have Questions?</h4>
+                    <p class="mb-6 text-gray-700 dark:text-gray-300">Can't find what you're looking for? We're here to help!</p>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="{% url 'core:contact' %}" class="bg-kpn-green text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition">
+                            <i class="fas fa-envelope"></i> Contact Us
+                        </a>
+                        <a href="https://www.facebook.com/kpnkebbi" target="_blank" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                            <i class="fab fa-facebook-f"></i> Message Us
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchInput = document.getElementById('faqSearch');
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        faqItems.forEach(function(item) {
+            const text = item.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+    
+    // Category filtering
+    const categoryButtons = document.querySelectorAll('.category-btn');
+    
+    categoryButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            const category = this.getAttribute('data-category');
+            
+            // Update active button
+            categoryButtons.forEach(btn => {
+                btn.classList.remove('active', 'bg-kpn-green', 'text-white');
+                btn.classList.add('text-kpn-green');
+            });
+            this.classList.add('active', 'bg-kpn-green', 'text-white');
+            this.classList.remove('text-kpn-green');
+            
+            // Filter items
+            faqItems.forEach(function(item) {
+                const itemCategory = item.getAttribute('data-category');
+                if (category === 'all' || itemCategory === category) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            // Clear search
+            searchInput.value = '';
+        });
+    });
+});
+</script>
+{% endblock %}

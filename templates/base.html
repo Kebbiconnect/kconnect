@@ -1,0 +1,506 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" :class="{ 'dark': darkMode }">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kebbi Progressive Network (KPN){% endblock %}</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Kebbi Progressive Network - Driving Change Across Kebbi State">
+    <meta name="theme-color" content="#28a745">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="KPN">
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/kpn-logo.png' %}">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'kpn-green': '#28a745',
+                        'kpn-blue': '#0066cc',
+                        'kpn-dark': '#1a1a1a',
+                        'kpn-gray': '#f4f4f4',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        @keyframes menuSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .menu-item {
+            animation: menuSlideIn 0.3s ease-out backwards;
+        }
+        
+        .menu-item:nth-child(1) { animation-delay: 0.05s; }
+        .menu-item:nth-child(2) { animation-delay: 0.1s; }
+        .menu-item:nth-child(3) { animation-delay: 0.15s; }
+        .menu-item:nth-child(4) { animation-delay: 0.2s; }
+        .menu-item:nth-child(5) { animation-delay: 0.25s; }
+        .menu-item:nth-child(6) { animation-delay: 0.3s; }
+        .menu-item:nth-child(7) { animation-delay: 0.35s; }
+        .menu-item:nth-child(8) { animation-delay: 0.4s; }
+        
+        @keyframes marqueeScroll {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(-100%);
+            }
+        }
+        
+        .announcement-marquee {
+            white-space: nowrap;
+            animation: marqueeScroll 40s linear infinite;
+            display: inline-block;
+        }
+        
+        .announcement-marquee:hover {
+            animation-play-state: paused;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-white dark:bg-kpn-dark text-gray-900 dark:text-gray-100 transition-colors duration-200">
+    
+    <!-- Navigation -->
+    <nav class="bg-white dark:bg-gray-900 shadow-lg sticky top-0 z-50" x-data="{ mobileMenu: false }">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="{% url 'core:home' %}" class="flex items-center space-x-3">
+                        <img src="{% static 'images/kpn-logo.png' %}" alt="KPN Logo" class="w-10 h-10 rounded-full object-cover">
+                        <span class="text-xl font-bold text-kpn-green">KPN</span>
+                    </a>
+                </div>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="{% url 'core:home' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">Home</a>
+                    <a href="{% url 'core:about' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">About</a>
+                    <a href="{% url 'core:leadership' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">Leadership</a>
+                    <a href="{% url 'core:campaigns' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">News</a>
+                    <a href="{% url 'core:gallery' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">Gallery</a>
+                    <a href="{% url 'core:contact' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">Contact</a>
+                    
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'staff:dashboard' %}" class="bg-kpn-green text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">Dashboard</a>
+                        <a href="{% url 'staff:logout' %}" class="text-gray-700 dark:text-gray-300 hover:text-red-500 transition">Logout</a>
+                    {% else %}
+                        <a href="{% url 'staff:login' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">Login</a>
+                        <a href="{% url 'staff:register' %}" class="bg-kpn-green text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">Join Us</a>
+                    {% endif %}
+                    
+                    <!-- Dark Mode Toggle -->
+                    <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" 
+                            class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:inline"></i>
+                    </button>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center space-x-2">
+                    <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" 
+                            class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:inline"></i>
+                    </button>
+                    <button @click="mobileMenu = !mobileMenu" class="p-2">
+                        <i class="fas fa-bars text-xl" x-show="!mobileMenu"></i>
+                        <i class="fas fa-times text-xl" x-show="mobileMenu" x-cloak></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div x-show="mobileMenu" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform -translate-y-4"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 transform translate-y-0"
+             x-transition:leave-end="opacity-0 transform -translate-y-4"
+             x-cloak 
+             class="md:hidden bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-xl">
+            <div class="px-4 py-3 space-y-1">
+                <a href="{% url 'core:home' %}" class="menu-item block py-3 px-4 text-gray-700 dark:text-gray-300 hover:text-kpn-green hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <i class="fas fa-home mr-2 text-kpn-green"></i>Home
+                </a>
+                <a href="{% url 'core:about' %}" class="menu-item block py-3 px-4 text-gray-700 dark:text-gray-300 hover:text-kpn-green hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <i class="fas fa-info-circle mr-2 text-kpn-blue"></i>About
+                </a>
+                <a href="{% url 'core:leadership' %}" class="menu-item block py-3 px-4 text-gray-700 dark:text-gray-300 hover:text-kpn-green hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <i class="fas fa-users mr-2 text-purple-600"></i>Leadership
+                </a>
+                <a href="{% url 'core:campaigns' %}" class="menu-item block py-3 px-4 text-gray-700 dark:text-gray-300 hover:text-kpn-green hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <i class="fas fa-bullhorn mr-2 text-orange-600"></i>News
+                </a>
+                <a href="{% url 'core:gallery' %}" class="menu-item block py-3 px-4 text-gray-700 dark:text-gray-300 hover:text-kpn-green hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <i class="fas fa-images mr-2 text-pink-600"></i>Gallery
+                </a>
+                <a href="{% url 'core:contact' %}" class="menu-item block py-3 px-4 text-gray-700 dark:text-gray-300 hover:text-kpn-green hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <i class="fas fa-envelope mr-2 text-blue-600"></i>Contact
+                </a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'staff:dashboard' %}" class="menu-item block py-3 px-4 bg-kpn-green text-white rounded-lg font-semibold hover:bg-green-600 transition-all duration-300 transform hover:scale-105 shadow-md">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
+                    <a href="{% url 'staff:logout' %}" class="menu-item block py-3 px-4 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-300 font-semibold">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </a>
+                {% else %}
+                    <a href="{% url 'staff:login' %}" class="menu-item block py-3 px-4 text-gray-700 dark:text-gray-300 hover:text-kpn-green hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                        <i class="fas fa-sign-in-alt mr-2 text-kpn-green"></i>Login
+                    </a>
+                    <a href="{% url 'staff:register' %}" class="menu-item block py-3 px-4 bg-gradient-to-r from-kpn-green to-green-600 text-white rounded-lg text-center hover:from-green-600 hover:to-kpn-green transition-all duration-300 transform hover:scale-105 shadow-md font-semibold">
+                        <i class="fas fa-user-plus mr-2"></i>Join Us
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Announcements Marquee -->
+    {% if user.is_authenticated %}
+    <div id="announcementBar" class="bg-gradient-to-r from-kpn-blue via-purple-600 to-kpn-blue dark:from-blue-900 dark:via-purple-900 dark:to-blue-900 text-white py-2 overflow-hidden relative" style="display: none;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center">
+                <span class="bg-yellow-500 text-gray-900 font-bold px-3 py-1 rounded-full text-xs mr-4 flex-shrink-0">
+                    <i class="fas fa-bullhorn mr-1"></i>ANNOUNCEMENTS
+                </span>
+                <div class="flex-1 overflow-hidden">
+                    <div id="announcementContent" class="announcement-marquee">
+                        <!-- Announcements will be loaded here via JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        {% for message in messages %}
+        <div class="{% if message.tags == 'error' %}bg-red-100 border-red-400 text-red-700{% elif message.tags == 'success' %}bg-green-100 border-green-400 text-green-700{% else %}bg-blue-100 border-blue-400 text-blue-700{% endif %} border px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline">{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gradient-to-b from-gray-900 to-black dark:from-black dark:to-gray-900 text-white mt-16 relative overflow-hidden">
+        <!-- Decorative Elements -->
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-kpn-green via-kpn-blue to-kpn-green"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- About Section -->
+                <div class="col-span-1 md:col-span-2 transform hover:scale-105 transition-transform duration-300">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <img src="{% static 'images/kpn-logo.png' %}" alt="KPN Logo" class="w-12 h-12 rounded-full">
+                        <h3 class="text-2xl font-bold text-kpn-green">Kebbi Progressive Network</h3>
+                    </div>
+                    <p class="text-lg text-kpn-green italic mb-4 font-semibold">"One Voice, One Change"</p>
+                    <p class="text-sm text-gray-400 leading-relaxed">A youth-led movement for civic awareness, digital empowerment, and advocacy across Kebbi State, Nigeria. Together, we're building a progressive future.</p>
+                    
+                    <!-- Stats -->
+                    <div class="mt-6 grid grid-cols-3 gap-4">
+                        <div class="text-center p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition">
+                            <div class="text-kpn-green font-bold text-xl">3</div>
+                            <div class="text-xs text-gray-400">Zones</div>
+                        </div>
+                        <div class="text-center p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition">
+                            <div class="text-kpn-blue font-bold text-xl">21</div>
+                            <div class="text-xs text-gray-400">LGAs</div>
+                        </div>
+                        <div class="text-center p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition">
+                            <div class="text-yellow-500 font-bold text-xl">225</div>
+                            <div class="text-xs text-gray-400">Wards</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div class="transform hover:translate-x-2 transition-transform duration-300">
+                    <h4 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-link text-kpn-green mr-2"></i>
+                        Quick Links
+                    </h4>
+                    <ul class="space-y-3 text-sm">
+                        <li>
+                            <a href="{% url 'core:about' %}" class="text-gray-400 hover:text-kpn-green transition-all duration-300 flex items-center group">
+                                <i class="fas fa-chevron-right mr-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                <span>About Us</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'core:leadership' %}" class="text-gray-400 hover:text-kpn-green transition-all duration-300 flex items-center group">
+                                <i class="fas fa-chevron-right mr-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                <span>Leadership</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'core:support_us' %}" class="text-gray-400 hover:text-kpn-green transition-all duration-300 flex items-center group">
+                                <i class="fas fa-chevron-right mr-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                <span>Support Us</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'core:faq' %}" class="text-gray-400 hover:text-kpn-green transition-all duration-300 flex items-center group">
+                                <i class="fas fa-chevron-right mr-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                <span>FAQ</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'core:code_of_conduct' %}" class="text-gray-400 hover:text-kpn-green transition-all duration-300 flex items-center group">
+                                <i class="fas fa-chevron-right mr-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                <span>Code of Conduct</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Connect -->
+                <div class="transform hover:translate-x-2 transition-transform duration-300">
+                    <h4 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-share-alt text-kpn-green mr-2"></i>
+                        Connect With Us
+                    </h4>
+                    <p class="text-sm text-gray-400 mb-4">Join our growing community on social media</p>
+                    <div class="flex space-x-3">
+                        <a href="https://www.facebook.com/kpnkebbi" target="_blank" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-blue-600 hover:text-white transform hover:scale-110 hover:-rotate-12 transition-all duration-300" title="Follow us on Facebook">
+                            <i class="fab fa-facebook text-xl"></i>
+                        </a>
+                        <a href="https://twitter.com/kpnkebbi" target="_blank" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-blue-400 hover:text-white transform hover:scale-110 hover:rotate-12 transition-all duration-300" title="Follow us on Twitter/X">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="https://wa.me/2348102444491" target="_blank" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-green-500 hover:text-white transform hover:scale-110 hover:-rotate-12 transition-all duration-300" title="Chat on WhatsApp">
+                            <i class="fab fa-whatsapp text-xl"></i>
+                        </a>
+                        <a href="https://www.tiktok.com/@kpn.kb" target="_blank" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-black hover:text-white transform hover:scale-110 hover:rotate-12 transition-all duration-300" title="Follow us on TikTok">
+                            <i class="fab fa-tiktok text-xl"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- Contact Info -->
+                    <div class="mt-6 space-y-2 text-sm text-gray-400">
+                        <p class="flex items-center">
+                            <i class="fas fa-envelope mr-2 text-kpn-green"></i>
+                            kpn.kebbi@gmail.com
+                        </p>
+                        <p class="flex items-center">
+                            <i class="fas fa-envelope mr-2 text-kpn-green"></i>
+                            kpnkebbi@hotmail.com
+                        </p>
+                        <p class="flex items-center">
+                            <i class="fas fa-phone mr-2 text-kpn-green"></i>
+                            +234 8037851112
+                        </p>
+                        <p class="flex items-center">
+                            <i class="fas fa-phone mr-2 text-kpn-green"></i>
+                            +234 806 777 0283
+                        </p>
+                        <p class="flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2 text-kpn-green"></i>
+                           Sani Abacha Bypass Road, Bayan kara, Birnin Kebbi
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Bar -->
+            <div class="border-t border-gray-800 mt-10 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
+                    <p class="mb-4 md:mb-0">
+                        &copy; {% now "Y" %} Kebbi Progressive Network. All rights reserved.
+                    </p>
+                    <div class="flex items-center space-x-4">
+                        <a href="{% url 'core:code_of_conduct' %}" class="hover:text-kpn-green transition">Privacy Policy</a>
+                        <span>|</span>
+                        <a href="{% url 'core:code_of_conduct' %}" class="hover:text-kpn-green transition">Terms of Service</a>
+                        <span>|</span>
+                        <a href="{% url 'core:contact' %}" class="hover:text-kpn-green transition">Contact</a>
+                    </div>
+                </div>
+                
+                <!-- Back to Top Button -->
+                <div class="text-center mt-6">
+                    <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" 
+                       class="inline-flex items-center px-4 py-2 bg-kpn-green text-white rounded-full hover:bg-green-600 transform hover:scale-110 transition-all duration-300">
+                        <i class="fas fa-arrow-up mr-2"></i>
+                        Back to Top
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then((registration) => {
+                        console.log('ServiceWorker registered:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('ServiceWorker registration failed:', error);
+                    });
+            });
+        }
+
+        let deferredPrompt;
+        const installPrompt = document.createElement('div');
+        installPrompt.id = 'install-prompt';
+        installPrompt.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #28a745 0%, #0066cc 100%);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 9999;
+            max-width: 90%;
+            animation: slideUp 0.5s ease-out;
+        `;
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateX(-50%) translateY(100px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(-50%) translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        installPrompt.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-mobile-alt" style="font-size: 24px;"></i>
+                    <span style="font-weight: 600;">Install KPN to Home Screen</span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="install-btn" style="background: white; color: #28a745; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                        <i class="fas fa-download mr-1"></i>Install
+                    </button>
+                    <button id="dismiss-btn" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid white; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.3s;">
+                        <i class="fas fa-times mr-1"></i>Later
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(installPrompt);
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installPrompt.style.display = 'block';
+        });
+
+        document.getElementById('install-btn').addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response: ${outcome}`);
+            deferredPrompt = null;
+            installPrompt.style.display = 'none';
+        });
+
+        document.getElementById('dismiss-btn').addEventListener('click', () => {
+            installPrompt.style.display = 'none';
+        });
+
+        window.addEventListener('appinstalled', () => {
+            console.log('KPN PWA installed successfully!');
+            installPrompt.style.display = 'none';
+        });
+    </script>
+    
+    <!-- Typing Animation Script -->
+    <script src="{% static 'staff/js/typing-hero.js' %}"></script>
+    
+    <!-- Announcements Marquee Script -->
+    {% if user.is_authenticated and user_announcements %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const announcementBar = document.getElementById('announcementBar');
+        const announcementContent = document.getElementById('announcementContent');
+        
+        const announcements = [
+            {% for announcement in user_announcements %}
+            {
+                title: "{{ announcement.title|escapejs }}",
+                content: "{{ announcement.content|escapejs }}",
+                priority: "{{ announcement.priority }}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+        
+        if (announcements.length > 0) {
+            let marqueeHTML = '';
+            announcements.forEach(function(announcement, index) {
+                const priorityIcon = announcement.priority === 'URGENT' ? '🔴' : announcement.priority === 'HIGH' ? '🟠' : '🔵';
+                marqueeHTML += `<span class="mx-12 inline-flex items-center whitespace-nowrap">
+                    <span class="mr-2">${priorityIcon}</span>
+                    <strong class="mr-2">${announcement.title}:</strong>
+                    <span class="mr-4">${announcement.content}</span>
+                    <span class="mx-4 text-yellow-300">|</span>
+                </span>`;
+            });
+            
+            // Duplicate the marquee content multiple times for seamless loop
+            const repeatedContent = marqueeHTML + marqueeHTML + marqueeHTML;
+            announcementContent.innerHTML = repeatedContent;
+            announcementBar.style.display = 'block';
+        }
+    });
+    </script>
+    {% endif %}
+</body>
+</html>

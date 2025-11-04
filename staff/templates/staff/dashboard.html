@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold">Welcome, {{ user.get_full_name }}!</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-2">{{ user.role_definition.title|default:"General Member" }}</p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-2">Your Role</h3>
+            <p class="text-3xl font-bold text-kpn-green">{{ user.get_role_display }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-2">Status</h3>
+            <p class="text-3xl font-bold text-kpn-blue">{{ user.get_status_display }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-2">Jurisdiction</h3>
+            <p class="text-3xl font-bold">{{ user.get_jurisdiction }}</p>
+        </div>
+    </div>
+    
+    {% if user.role == 'STATE' %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-gradient-to-r from-kpn-green to-green-600 text-white rounded-lg shadow p-6">
+            <h3 class="text-lg mb-2">Pending Approvals</h3>
+            <p class="text-4xl font-bold">{{ pending_approvals }}</p>
+        </div>
+        <div class="bg-gradient-to-r from-kpn-blue to-blue-600 text-white rounded-lg shadow p-6">
+            <h3 class="text-lg mb-2">Total Members</h3>
+            <p class="text-4xl font-bold">{{ total_members }}</p>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 class="text-2xl font-bold mb-4">Quick Actions</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="{% url 'staff:profile' %}" class="p-4 border rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                <i class="fas fa-user-circle text-2xl text-kpn-green mb-2"></i>
+                <h3 class="font-semibold">My Profile</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">View and edit your profile</p>
+            </a>
+            {% if user.is_leader %}
+            <a href="#" class="p-4 border rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                <i class="fas fa-users text-2xl text-kpn-blue mb-2"></i>
+                <h3 class="font-semibold">Manage Members</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">View and manage members</p>
+            </a>
+            {% endif %}
+            <a href="{% url 'core:campaigns' %}" class="p-4 border rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                <i class="fas fa-bullhorn text-2xl text-green-600 mb-2"></i>
+                <h3 class="font-semibold">Campaigns</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">View latest campaigns</p>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Approve Media - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold mb-2 text-green-600">Approve Media</h1>
+        <p class="text-gray-600 dark:text-gray-400">Publish this media to the gallery</p>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+        <div class="mb-6">
+            {% if media_item.media_type == 'PHOTO' %}
+            <img src="{{ media_item.file.url }}" alt="{{ media_item.title }}" class="w-full max-w-md rounded-lg mx-auto">
+            {% else %}
+            <video src="{{ media_item.file.url }}" class="w-full max-w-md rounded-lg mx-auto" controls></video>
+            {% endif %}
+        </div>
+        
+        <div class="mb-6">
+            <div class="mb-4">
+                <h3 class="font-semibold text-lg">{{ media_item.uploaded_by.get_full_name }}</h3>
+                {% if media_item.uploaded_by.role_definition %}
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ media_item.uploaded_by.role_definition.title }}</p>
+                {% endif %}
+            </div>
+            <p class="text-gray-600 dark:text-gray-400 mb-2"><strong>Description:</strong></p>
+            <p class="text-gray-600 dark:text-gray-400">{{ media_item.description }}</p>
+        </div>
+        
+        <div class="bg-green-50 dark:bg-green-900 border-l-4 border-green-500 p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-check-circle text-green-500"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-700 dark:text-green-300">
+                        This media will be published to the public gallery and visible to all visitors.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <form method="POST">
+            {% csrf_token %}
+            <div class="flex gap-3">
+                <button type="submit" class="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition">
+                    <i class="fas fa-check mr-2"></i>Yes, Approve & Publish
+                </button>
+                <a href="{% url 'media:review_media' %}" class="flex-1 bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition text-center">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

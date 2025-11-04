@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Submit for Approval - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <a href="{% url 'campaigns:my_campaigns' %}" class="text-kpn-blue hover:text-kpn-green">
+            <i class="fas fa-arrow-left mr-2"></i> Back to My Campaigns
+        </a>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h1 class="text-3xl font-bold mb-6">Submit Campaign for Approval</h1>
+        
+        <div class="mb-6 p-4 bg-blue-50 dark:bg-blue-900 rounded-lg">
+            <p class="mb-2"><strong>Campaign:</strong> {{ campaign.title }}</p>
+            <p class="text-sm">Once submitted, this campaign will be sent to the Director of Media & Publicity for approval before it can be published.</p>
+        </div>
+        
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="flex space-x-4">
+                <button type="submit" class="px-6 py-3 bg-kpn-green text-white rounded-lg hover:bg-green-600 transition">
+                    <i class="fas fa-paper-plane mr-2"></i> Submit for Approval
+                </button>
+                <a href="{% url 'campaigns:my_campaigns' %}" class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

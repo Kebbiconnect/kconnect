@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% block title %}Support Us - KPN{% endblock %}
+
+{% block extra_css %}
+<style>
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+    
+    .slide-in-left {
+        animation: slideInLeft 0.8s ease-out;
+    }
+    
+    .slide-in-right {
+        animation: slideInRight 0.8s ease-out;
+    }
+    
+    .float-animation {
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    .bank-card {
+        transition: all 0.3s ease;
+    }
+    
+    .bank-card:hover {
+        transform: scale(1.02);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    
+    .copy-btn {
+        transition: all 0.3s ease;
+    }
+    
+    .copy-btn:hover {
+        transform: scale(1.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-gradient-to-r from-kpn-green to-kpn-blue text-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="float-animation inline-block mb-4">
+            <i class="fas fa-hand-holding-heart text-6xl"></i>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">Support Our Mission</h1>
+        <p class="text-xl">Help us empower youth and promote civic engagement across Kebbi State</p>
+    </div>
+</section>
+
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Impact Message -->
+    <div class="slide-in-left bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-10">
+        <div class="flex items-start space-x-4">
+            <div class="flex-shrink-0">
+                <div class="w-16 h-16 bg-kpn-green rounded-full flex items-center justify-center">
+                    <i class="fas fa-heart text-white text-2xl"></i>
+                </div>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-kpn-green mb-3">Your Impact Matters</h2>
+                <p class="text-lg text-gray-700 dark:text-gray-300 mb-4">
+                    Your generous support enables us to continue our vital work across all 21 LGAs and 225 wards in Kebbi State.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                    <div class="bg-kpn-green/10 dark:bg-kpn-green/20 p-4 rounded-lg text-center">
+                        <i class="fas fa-users text-3xl text-kpn-green mb-2"></i>
+                        <p class="font-semibold text-gray-900 dark:text-white">Youth Mobilization</p>
+                    </div>
+                    <div class="bg-kpn-blue/10 dark:bg-kpn-blue/20 p-4 rounded-lg text-center">
+                        <i class="fas fa-graduation-cap text-3xl text-kpn-blue mb-2"></i>
+                        <p class="font-semibold text-gray-900 dark:text-white">Education Programs</p>
+                    </div>
+                    <div class="bg-green-600/10 dark:bg-green-600/20 p-4 rounded-lg text-center">
+                        <i class="fas fa-hands-helping text-3xl text-green-600 mb-2"></i>
+                        <p class="font-semibold text-gray-900 dark:text-white">Welfare Activities</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bank Details Card -->
+    <div class="slide-in-right">
+        <h2 class="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-white">
+            <i class="fas fa-university text-kpn-green mr-2"></i>
+            Donation Account Details
+        </h2>
+        
+        <div class="bank-card bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-2xl p-8 border-2 border-kpn-green">
+            <div class="space-y-6">
+                <div class="flex items-center justify-between p-4 bg-kpn-green/10 dark:bg-kpn-green/20 rounded-lg">
+                    <div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Account Name</p>
+                        <p class="text-xl font-bold text-gray-900 dark:text-white">Kebbi Progressive Network</p>
+                    </div>
+                    <i class="fas fa-user-circle text-4xl text-kpn-green"></i>
+                </div>
+                
+                <div class="flex items-center justify-between p-4 bg-kpn-blue/10 dark:bg-kpn-blue/20 rounded-lg">
+                    <div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Bank Name</p>
+                        <p class="text-xl font-bold text-gray-900 dark:text-white">Access Bank Nigeria</p>
+                    </div>
+                    <i class="fas fa-university text-4xl text-kpn-blue"></i>
+                </div>
+                
+                <div class="flex items-center justify-between p-4 bg-yellow-500/10 dark:bg-yellow-500/20 rounded-lg">
+                    <div class="flex-grow">
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Account Number</p>
+                        <p class="text-2xl font-mono font-bold text-gray-900 dark:text-white" id="accountNumber">1234567890</p>
+                    </div>
+                    <button onclick="copyAccountNumber()" class="copy-btn ml-4 p-3 bg-kpn-green text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-kpn-green">
+                        <i class="fas fa-copy text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mt-8 p-6 bg-gradient-to-r from-kpn-green to-kpn-blue rounded-lg text-white">
+                <div class="flex items-start space-x-3">
+                    <i class="fas fa-info-circle text-2xl mt-1"></i>
+                    <div>
+                        <h3 class="font-bold text-lg mb-2">Important Information</h3>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle mr-2 mt-1"></i>
+                                <span>All donations are verified by our Treasurer and recorded by the Financial Secretary</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle mr-2 mt-1"></i>
+                                <span>Funds are used exclusively for KPN activities, programs, and welfare initiatives</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle mr-2 mt-1"></i>
+                                <span>Regular financial reports are published for transparency</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contact Section -->
+    <div class="mt-10 text-center">
+        <p class="text-gray-600 dark:text-gray-400 mb-4">Have questions about donations or need assistance?</p>
+        <a href="{% url 'core:contact' %}" class="inline-flex items-center px-6 py-3 bg-kpn-green text-white rounded-lg font-semibold hover:bg-green-600 transform hover:scale-105 transition-all duration-300 shadow-lg">
+            <i class="fas fa-envelope mr-2"></i>
+            Contact Us
+        </a>
+    </div>
+</div>
+
+<script>
+function copyAccountNumber() {
+    const accountNumber = document.getElementById('accountNumber').innerText;
+    navigator.clipboard.writeText(accountNumber).then(() => {
+        const btn = event.currentTarget;
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check text-xl"></i>';
+        btn.classList.add('bg-green-700');
+        
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('bg-green-700');
+        }, 2000);
+    });
+}
+</script>
+{% endblock %}

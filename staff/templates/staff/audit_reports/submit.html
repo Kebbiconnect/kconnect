@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Submit Audit Report - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+        <div class="text-center mb-6">
+            <i class="fas fa-paper-plane text-6xl text-blue-600 mb-4"></i>
+            <h2 class="text-2xl font-bold mb-4">Submit Audit Report</h2>
+            <p class="text-gray-600 dark:text-gray-400 mb-4">
+                Are you ready to submit this audit report? Once submitted, you will not be able to edit it.
+            </p>
+        </div>
+
+        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-6">
+            <h3 class="font-semibold mb-2">Report Details:</h3>
+            <p class="text-sm"><strong>Title:</strong> {{ audit.title }}</p>
+            <p class="text-sm"><strong>Audit Period:</strong> {{ audit.audit_period }}</p>
+            <p class="text-sm"><strong>Compliance Status:</strong> {{ audit.get_compliance_status_display }}</p>
+            <p class="text-sm"><strong>Submit To:</strong> {{ audit.submitted_to.get_full_name }}</p>
+        </div>
+
+        <div class="bg-yellow-50 dark:bg-yellow-900 p-4 rounded-lg mb-6">
+            <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                <i class="fas fa-info-circle mr-2"></i>
+                This report will be submitted to {{ audit.submitted_to.get_full_name }} ({{ audit.submitted_to.role }}) for review.
+            </p>
+        </div>
+
+        <form method="post" class="flex gap-4 justify-center">
+            {% csrf_token %}
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+                <i class="fas fa-check mr-2"></i>Confirm Submission
+            </button>
+            <a href="{% url 'staff:auditor_general_dashboard' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

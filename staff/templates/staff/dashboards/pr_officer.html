@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Public Relations & Community Engagement Officer Dashboard - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Reusable Dashboard Header with Typing Animation -->
+    {% include 'staff/dashboards/includes/_role_header.html' with title="Public Relations Officer Dashboard" icon_class="fas fa-comments" welcome_messages="Building public trust and engagement.|Managing stakeholder relationships.|Representing KPN with excellence." %}
+    
+    <!-- Profile Section -->
+    {% include 'staff/dashboards/includes/_profile_section.html' %}
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Published Campaigns</p>
+                    <p class="text-3xl font-bold text-kpn-green">{{ published_campaigns }}</p>
+                </div>
+                <i class="fas fa-bullhorn text-4xl text-kpn-green"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Outreach Activities</p>
+                    <p class="text-3xl font-bold text-kpn-blue">{{ total_outreach }}</p>
+                </div>
+                <i class="fas fa-handshake text-4xl text-kpn-blue"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Completed Outreach</p>
+                    <p class="text-3xl font-bold text-green-600">{{ completed_outreach }}</p>
+                </div>
+                <i class="fas fa-check-circle text-4xl text-green-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <a href="{% url 'staff:outreach_list' %}" class="block p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
+                <i class="fas fa-handshake mr-2"></i> Community Outreach Log
+            </a>
+            <a href="{% url 'staff:create_outreach' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
+                <i class="fas fa-plus mr-2"></i> Create Outreach Activity
+            </a>
+            <a href="{% url 'staff:profile' %}" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
+                <i class="fas fa-user mr-2"></i> My Profile
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

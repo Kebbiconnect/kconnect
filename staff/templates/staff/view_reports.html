@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}View Reports - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold">Reports & Analytics</h1>
+        <p class="text-gray-600 dark:text-gray-400">View hierarchical reports from across the organization</p>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-2">Total Reports</h3>
+            <p class="text-3xl font-bold text-kpn-green">{{ reports.count }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-2">Pending Review</h3>
+            <p class="text-3xl font-bold text-yellow-600">{{ reports|length }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-2">This Month</h3>
+            <p class="text-3xl font-bold text-kpn-blue">0</p>
+        </div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-xl font-semibold">All Reports</h3>
+        </div>
+        <div class="divide-y divide-gray-200 dark:divide-gray-700">
+            {% for report in reports %}
+            <div class="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <h4 class="text-lg font-semibold mb-2">{{ report.title }}</h4>
+                        <p class="text-gray-600 dark:text-gray-400 mb-3">{{ report.content|truncatewords:30 }}</p>
+                        <div class="flex items-center gap-4 text-sm text-gray-500">
+                            <span><i class="fas fa-user mr-1"></i> {{ report.submitted_by.get_full_name }}</span>
+                            <span><i class="fas fa-calendar mr-1"></i> {{ report.created_at|date:"M d, Y" }}</span>
+                            <span><i class="fas fa-tag mr-1"></i> {{ report.get_report_type_display }}</span>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        {% if report.is_reviewed %}
+                            <span class="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded text-sm">
+                                <i class="fas fa-check-circle"></i> Reviewed
+                            </span>
+                        {% else %}
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded text-sm">
+                                <i class="fas fa-clock"></i> Pending
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="p-12 text-center text-gray-500">
+                <i class="fas fa-file-alt text-4xl mb-3"></i>
+                <p>No reports available</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

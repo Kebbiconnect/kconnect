@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}My Announcements - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-4xl font-bold">My Announcements</h1>
+        <a href="{% url 'staff:create_announcement' %}" class="bg-kpn-green text-white px-6 py-3 rounded-lg hover:bg-green-600 transition font-semibold">
+            <i class="fas fa-plus mr-2"></i>Create New Announcement
+        </a>
+    </div>
+    
+    {% if announcements %}
+    <div class="grid gap-6">
+        {% for announcement in announcements %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border-l-4 
+            {% if announcement.priority == 'URGENT' %}border-red-500
+            {% elif announcement.priority == 'HIGH' %}border-orange-500
+            {% elif announcement.priority == 'NORMAL' %}border-blue-500
+            {% else %}border-gray-500{% endif %}">
+            
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                        <h3 class="text-2xl font-bold">{{ announcement.title }}</h3>
+                        {% if announcement.is_active %}
+                        <span class="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-sm font-semibold">
+                            <i class="fas fa-check-circle mr-1"></i>Active
+                        </span>
+                        {% else %}
+                        <span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-semibold">
+                            <i class="fas fa-pause-circle mr-1"></i>Inactive
+                        </span>
+                        {% endif %}
+                        
+                        <span class="px-3 py-1 
+                            {% if announcement.priority == 'URGENT' %}bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200
+                            {% elif announcement.priority == 'HIGH' %}bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200
+                            {% elif announcement.priority == 'NORMAL' %}bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200
+                            {% else %}bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200{% endif %}
+                            rounded-full text-sm font-semibold">
+                            {{ announcement.get_priority_display }}
+                        </span>
+                    </div>
+                    
+                    <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-3">
+                        <span><i class="fas fa-bullhorn mr-1"></i>{{ announcement.get_scope_display }}</span>
+                        <span><i class="fas fa-map-marker-alt mr-1"></i>{{ announcement.get_target_display }}</span>
+                        <span><i class="fas fa-clock mr-1"></i>{{ announcement.created_at|date:"M d, Y H:i" }}</span>
+                    </div>
+                </div>
+                
+                <div class="flex gap-2">
+                    <form method="POST" action="{% url 'staff:toggle_announcement' announcement.pk %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="px-4 py-2 {% if announcement.is_active %}bg-yellow-500 hover:bg-yellow-600{% else %}bg-green-500 hover:bg-green-600{% endif %} text-white rounded-lg transition">
+                            {% if announcement.is_active %}
+                                <i class="fas fa-pause mr-1"></i>Deactivate
+                            {% else %}
+                                <i class="fas fa-play mr-1"></i>Activate
+                            {% endif %}
+                        </button>
+                    </form>
+                    
+                    <a href="{% url 'staff:delete_announcement' announcement.pk %}" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                        <i class="fas fa-trash mr-1"></i>Delete
+                    </a>
+                </div>
+            </div>
+            
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <p class="text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{{ announcement.content }}</p>
+            </div>
+            
+            {% if announcement.expires_at %}
+            <div class="mt-3 text-sm text-gray-600 dark:text-gray-400">
+                <i class="fas fa-calendar-times mr-1"></i>Expires: {{ announcement.expires_at|date:"M d, Y H:i" }}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-12 text-center">
+        <i class="fas fa-bullhorn text-6xl text-gray-400 mb-4"></i>
+        <h3 class="text-2xl font-bold mb-2">No Announcements Yet</h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">You haven't created any announcements yet.</p>
+        <a href="{% url 'staff:create_announcement' %}" class="inline-block bg-kpn-green text-white px-6 py-3 rounded-lg hover:bg-green-600 transition font-semibold">
+            <i class="fas fa-plus mr-2"></i>Create Your First Announcement
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

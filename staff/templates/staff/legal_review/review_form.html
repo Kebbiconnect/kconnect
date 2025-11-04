@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Legal Review - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold">Legal Review of Disciplinary Action</h1>
+        <p class="text-gray-600 dark:text-gray-400">Provide your legal opinion on this disciplinary action</p>
+    </div>
+
+    <!-- Action Details -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4">Disciplinary Action Details</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Member</p>
+                <p class="text-lg font-semibold">{{ action.user.get_full_name }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    {{ action.user.get_role_display }}
+                    {% if action.user.lga %} - {{ action.user.lga.name }}{% endif %}
+                </p>
+            </div>
+            
+            <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Proposed Action</p>
+                <p class="text-lg font-semibold">
+                    <span class="px-3 py-1 rounded-full text-sm
+                        {% if action.action_type == 'SUSPENSION' %}bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200
+                        {% else %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200{% endif %}">
+                        {{ action.get_action_type_display }}
+                    </span>
+                </p>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Reason for Disciplinary Action:</p>
+            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                <p class="text-sm">{{ action.reason }}</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Issued By</p>
+                <p class="font-medium">{{ action.issued_by.get_full_name }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ action.issued_by.role_definition.title }}</p>
+            </div>
+            
+            <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Date Issued</p>
+                <p class="font-medium">{{ action.created_at|date:"F d, Y" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legal Review Form -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold mb-4">Your Legal Review</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Legal Opinion <span class="text-red-600">*</span></label>
+                    {{ form.legal_opinion }}
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        Provide your legal analysis of this disciplinary action
+                    </p>
+                    {% if form.legal_opinion.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.legal_opinion.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg">
+                    <label class="flex items-center">
+                        {{ form.legal_approved }}
+                        <span class="ml-3">
+                            <span class="font-medium">Approve this disciplinary action from a legal standpoint</span>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                Check this box if the action complies with KPN's constitution and legal requirements
+                            </p>
+                        </span>
+                    </label>
+                    {% if form.legal_approved.errors %}
+                        <p class="text-red-600 text-sm mt-2">{{ form.legal_approved.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="flex gap-4 mt-8">
+                <button type="submit" class="bg-kpn-blue hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+                    <i class="fas fa-gavel mr-2"></i>Submit Legal Review
+                </button>
+                <a href="{% url 'staff:legal_review_queue' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Queue
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if audit %}Edit{% else %}Create{% endif %} Audit Report - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold">{% if audit %}Edit{% else %}Create New{% endif %} Audit Report</h1>
+        <p class="text-gray-600 dark:text-gray-400">Fill in the audit details below</p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Report Title</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.title.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Audit Period</label>
+                    {{ form.audit_period }}
+                    {% if form.audit_period.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.audit_period.errors.0 }}</p>
+                    {% endif %}
+                    <p class="text-xs text-gray-500 mt-1">e.g., "Q1 2025" or "January 2025"</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Findings</label>
+                    {{ form.findings }}
+                    {% if form.findings.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.findings.errors.0 }}</p>
+                    {% endif %}
+                    <p class="text-xs text-gray-500 mt-1">Describe the audit findings in detail</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Recommendations</label>
+                    {{ form.recommendations }}
+                    {% if form.recommendations.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.recommendations.errors.0 }}</p>
+                    {% endif %}
+                    <p class="text-xs text-gray-500 mt-1">Provide recommendations for improvement</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Compliance Status</label>
+                    {{ form.compliance_status }}
+                    {% if form.compliance_status.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.compliance_status.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Submit To</label>
+                    {{ form.submitted_to }}
+                    {% if form.submitted_to.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.submitted_to.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Report File</label>
+                    {{ form.report_file }}
+                    {% if form.report_file.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.report_file.errors.0 }}</p>
+                    {% endif %}
+                    <p class="text-xs text-gray-500 mt-1">Upload detailed audit report (PDF format)</p>
+                </div>
+            </div>
+
+            <div class="flex gap-4 mt-8">
+                <button type="submit" class="bg-kpn-blue hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+                    <i class="fas fa-save mr-2"></i>Save as Draft
+                </button>
+                <a href="{% url 'staff:auditor_general_dashboard' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

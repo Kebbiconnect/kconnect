@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Attendance - {{ event.title }} - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold">Manage Attendance</h1>
+        <p class="text-gray-600 dark:text-gray-400">{{ event.title }} - {{ event.start_date|date:"M d, Y" }}</p>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold mb-4">Mark Attendance</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Select all leaders who were present at this event</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for field in form %}
+                    {% if 'attendee_' in field.name %}
+                    <div class="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div class="flex items-center h-5">
+                            {{ field }}
+                        </div>
+                        <label for="{{ field.id_for_label }}" class="ml-3 text-sm cursor-pointer">
+                            {{ field.label }}
+                        </label>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            
+            {% if existing_attendances %}
+            <div class="mt-6">
+                <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Previously Marked Present: {{ existing_attendances|length }} member(s)
+                </h3>
+            </div>
+            {% endif %}
+            
+            <div class="flex justify-end space-x-4 mt-8">
+                <a href="{% url 'events:event_detail' event.pk %}" class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                    Cancel
+                </a>
+                <button type="submit" class="bg-kpn-blue text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-save mr-2"></i>Save Attendance
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const existingAttendances = {{ existing_attendances|safe }};
+    existingAttendances.forEach(id => {
+        const checkbox = document.getElementById(`id_attendee_${id}`);
+        if (checkbox) {
+            checkbox.checked = true;
+        }
+    });
+});
+</script>
+{% endblock %}

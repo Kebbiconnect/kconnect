@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Review Report - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <a href="{% url 'staff:dashboard' %}" class="text-kpn-blue hover:text-kpn-green">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+        <h1 class="text-3xl font-bold mb-6">
+            <i class="fas fa-clipboard-check"></i> Review Report
+        </h1>
+        
+        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">{{ report.title }}</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Submitted By</p>
+                    <p class="font-semibold">{{ report.submitted_by.get_full_name }}</p>
+                    <p class="text-sm text-gray-500">{{ report.submitted_by.role_definition.title }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Reporting Period</p>
+                    <p class="font-semibold">{{ report.period|default:"Not specified" }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Status</p>
+                    <p class="font-semibold">
+                        <span class="px-2 py-1 rounded text-sm 
+                            {% if report.status == 'SUBMITTED' %}bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200
+                            {% elif report.status == 'APPROVED' %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                            {% elif report.status == 'FLAGGED' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
+                            {% elif report.status == 'REJECTED' %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                            {% endif %}">
+                            {{ report.get_status_display }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="border-t dark:border-gray-600 pt-4">
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Report Content</p>
+                <div class="prose dark:prose-invert max-w-none">
+                    {{ report.content|linebreaks }}
+                </div>
+            </div>
+            
+            {% if report.deadline %}
+            <div class="mt-4 pt-4 border-t dark:border-gray-600">
+                <p class="text-sm text-gray-600 dark:text-gray-400">Deadline</p>
+                <p class="font-semibold">{{ report.deadline }}</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if not report.is_reviewed %}
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-sm font-medium mb-3">Review Action *</label>
+                {{ form.action }}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">Review Notes</label>
+                {{ form.review_notes }}
+            </div>
+            
+            <div class="flex gap-4">
+                <button type="submit" class="flex-1 bg-kpn-blue text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition">
+                    <i class="fas fa-check"></i> Submit Review
+                </button>
+                <a href="{% url 'staff:dashboard' %}" class="flex-1 text-center bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+        {% else %}
+        <div class="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg p-4">
+            <p class="text-green-800 dark:text-green-200">
+                <i class="fas fa-check-circle"></i> This report has already been reviewed by {{ report.reviewed_by.get_full_name }} on {{ report.reviewed_at|date:"F d, Y" }}.
+            </p>
+            {% if report.review_notes %}
+            <div class="mt-3">
+                <p class="text-sm text-green-700 dark:text-green-300 font-semibold">Review Notes:</p>
+                <p class="text-green-800 dark:text-green-200">{{ report.review_notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

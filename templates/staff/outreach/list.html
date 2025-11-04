@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Community Outreach Activities - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Community Outreach Activities</h1>
+        <a href="{% url 'staff:create_outreach' %}" class="bg-kpn-green text-white px-6 py-2 rounded-lg hover:bg-green-600 transition">
+            <i class="fas fa-plus mr-2"></i>Create Outreach Activity
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                <select name="status" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    <option value="">All Statuses</option>
+                    <option value="PLANNED" {% if selected_status == 'PLANNED' %}selected{% endif %}>Planned</option>
+                    <option value="ONGOING" {% if selected_status == 'ONGOING' %}selected{% endif %}>Ongoing</option>
+                    <option value="COMPLETED" {% if selected_status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                    <option value="FOLLOW_UP" {% if selected_status == 'FOLLOW_UP' %}selected{% endif %}>Follow-up Required</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Engagement Type</label>
+                <select name="engagement_type" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    <option value="">All Types</option>
+                    <option value="MEETING" {% if selected_engagement_type == 'MEETING' %}selected{% endif %}>Meeting</option>
+                    <option value="PARTNERSHIP" {% if selected_engagement_type == 'PARTNERSHIP' %}selected{% endif %}>Partnership Discussion</option>
+                    <option value="EVENT" {% if selected_engagement_type == 'EVENT' %}selected{% endif %}>Community Event</option>
+                    <option value="MEDIA" {% if selected_engagement_type == 'MEDIA' %}selected{% endif %}>Media Engagement</option>
+                    <option value="COLLABORATION" {% if selected_engagement_type == 'COLLABORATION' %}selected{% endif %}>Collaboration</option>
+                    <option value="OTHER" {% if selected_engagement_type == 'OTHER' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="bg-kpn-blue text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition w-full">
+                    <i class="fas fa-filter mr-2"></i>Apply Filters
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Outreach Activities List -->
+    <div class="grid gap-6">
+        {% for outreach in outreach_activities %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ outreach.organization }}</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">{{ outreach.purpose|truncatewords:30 }}</p>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-500 dark:text-gray-400">Date:</span>
+                            <span class="ml-2 text-gray-900 dark:text-white font-medium">{{ outreach.date|date:"M d, Y" }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 dark:text-gray-400">Type:</span>
+                            <span class="ml-2 text-gray-900 dark:text-white font-medium">{{ outreach.get_engagement_type_display }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 dark:text-gray-400">Status:</span>
+                            <span class="ml-2 px-2 py-1 rounded-full text-xs font-semibold
+                                {% if outreach.status == 'COMPLETED' %}bg-green-100 text-green-800{% elif outreach.status == 'ONGOING' %}bg-blue-100 text-blue-800{% elif outreach.status == 'PLANNED' %}bg-yellow-100 text-yellow-800{% elif outreach.status == 'FOLLOW_UP' %}bg-orange-100 text-orange-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ outreach.get_status_display }}
+                            </span>
+                        </div>
+                        {% if outreach.contact_person %}
+                        <div>
+                            <span class="text-gray-500 dark:text-gray-400">Contact:</span>
+                            <span class="ml-2 text-gray-900 dark:text-white font-medium">{{ outreach.contact_person }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if outreach.location %}
+                    <div class="mt-3 text-sm">
+                        <i class="fas fa-map-marker-alt text-gray-500"></i>
+                        <span class="ml-2 text-gray-600 dark:text-gray-400">{{ outreach.location }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="flex space-x-2 ml-4">
+                    <a href="{% url 'staff:edit_outreach' outreach.pk %}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="{% url 'staff:delete_outreach' outreach.pk %}" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
+            <i class="fas fa-handshake text-6xl text-gray-400 mb-4"></i>
+            <p class="text-gray-600 dark:text-gray-400 text-lg">No community outreach activities found.</p>
+            <a href="{% url 'staff:create_outreach' %}" class="inline-block mt-4 text-kpn-green hover:text-green-600">
+                Create your first outreach activity
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="mt-6">
+        <a href="{% url 'staff:pr_officer_dashboard' %}" class="text-kpn-blue hover:text-blue-700">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

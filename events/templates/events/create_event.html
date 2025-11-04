@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Event - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold">Create New Event</h1>
+        <p class="text-gray-600 dark:text-gray-400">Schedule a new organizational event or meeting</p>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">Event Title <span class="text-red-500">*</span></label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.title.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">Description <span class="text-red-500">*</span></label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.description.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">Location <span class="text-red-500">*</span></label>
+                {{ form.location }}
+                {% if form.location.errors %}
+                    <p class="text-red-500 text-sm mt-1">{{ form.location.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Start Date & Time <span class="text-red-500">*</span></label>
+                    {{ form.start_date }}
+                    {% if form.start_date.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.start_date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2">End Date & Time <span class="text-red-500">*</span></label>
+                    {{ form.end_date }}
+                    {% if form.end_date.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.end_date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if form.non_field_errors %}
+                <div class="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-200 px-4 py-3 rounded">
+                    {{ form.non_field_errors.0 }}
+                </div>
+            {% endif %}
+            
+            <div class="flex justify-end space-x-4">
+                <a href="{% url 'events:event_calendar' %}" class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                    Cancel
+                </a>
+                <button type="submit" class="bg-kpn-blue text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-check mr-2"></i>Create Event
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Approval Queue - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold mb-6">Campaign Approval Queue</h1>
+    
+    <div class="grid grid-cols-1 gap-6">
+        {% for campaign in pending_campaigns %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <h3 class="text-xl font-semibold mb-2">{{ campaign.title }}</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">{{ campaign.content|truncatewords:40 }}</p>
+                    <div class="flex items-center space-x-4 text-sm text-gray-500">
+                        <span><i class="fas fa-user mr-1"></i> {{ campaign.author.get_full_name }}</span>
+                        <span><i class="fas fa-calendar mr-1"></i> {{ campaign.created_at|date:"M d, Y" }}</span>
+                        {% if campaign.featured_image %}
+                        <span><i class="fas fa-image mr-1"></i> Has image</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="ml-4 space-y-2">
+                    <a href="{% url 'campaigns:approve_campaign' campaign.id %}" class="block px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition text-center">
+                        <i class="fas fa-check mr-1"></i> Approve & Publish
+                    </a>
+                    <a href="{% url 'campaigns:reject_campaign' campaign.id %}" class="block px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition text-center">
+                        <i class="fas fa-times mr-1"></i> Reject
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
+            <i class="fas fa-check-circle text-6xl text-green-400 mb-4"></i>
+            <p class="text-gray-600 dark:text-gray-400">No campaigns pending approval</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

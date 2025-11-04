@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Donation - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <a href="{% url 'donations:treasurer_donations' %}" class="text-kpn-blue hover:underline">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Donations
+        </a>
+        <h1 class="text-3xl font-bold mt-4">Add New Donation</h1>
+        <p class="text-gray-600 dark:text-gray-400">Record a new donation to the organization</p>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">Donor Name *</label>
+                {{ form.donor_name }}
+                {% if form.donor_name.errors %}
+                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.donor_name.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">Amount (₦) *</label>
+                {{ form.amount }}
+                {% if form.amount.errors %}
+                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.amount.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">Transaction Reference *</label>
+                {{ form.reference }}
+                {% if form.reference.errors %}
+                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.reference.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-2">Notes (Optional)</label>
+                {{ form.notes }}
+                {% if form.notes.errors %}
+                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.notes.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="flex gap-4">
+                <button type="submit" class="bg-kpn-blue text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                    <i class="fas fa-save mr-2"></i> Add Donation
+                </button>
+                <a href="{% url 'donations:treasurer_donations' %}" class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 transition inline-block">
+                    <i class="fas fa-times mr-2"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

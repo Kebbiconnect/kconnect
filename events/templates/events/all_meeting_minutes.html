@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}All Meeting Minutes - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold">All Meeting Minutes</h1>
+        <p class="text-gray-600 dark:text-gray-400">Published meeting minutes from all events</p>
+    </div>
+    
+    {% if all_minutes %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for minutes in all_minutes %}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-start justify-between mb-4">
+                <h3 class="text-xl font-semibold">{{ minutes.event.title }}</h3>
+                <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded">
+                    Published
+                </span>
+            </div>
+            
+            <div class="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                <p><i class="fas fa-calendar mr-2"></i>{{ minutes.event.start_date|date:"M d, Y" }}</p>
+                <p><i class="fas fa-user mr-2"></i>Recorded by {{ minutes.recorded_by.get_full_name }}</p>
+                <p><i class="fas fa-users mr-2"></i>{{ minutes.attendees_present.count }} attendees</p>
+            </div>
+            
+            <p class="text-gray-700 dark:text-gray-300 mb-4">{{ minutes.summary|truncatewords:30 }}</p>
+            
+            <a href="{% url 'events:view_meeting_minutes' minutes.event.pk %}" class="block text-center bg-kpn-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                Read Full Minutes
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-8 text-center">
+        <i class="fas fa-file-alt text-4xl text-gray-400 mb-4"></i>
+        <p class="text-gray-600 dark:text-gray-400">No published meeting minutes available</p>
+    </div>
+    {% endif %}
+    
+    <div class="mt-6">
+        <a href="{% url 'events:event_calendar' %}" class="text-kpn-blue hover:underline">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Event Calendar
+        </a>
+    </div>
+</div>
+{% endblock %}

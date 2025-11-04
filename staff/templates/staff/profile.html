@@ -1,0 +1,336 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - KPN{% endblock %}
+
+{% block extra_css %}
+<style>
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .announcement-card {
+        animation-fill-mode: backwards;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-4xl font-bold">My Profile</h1>
+        <div class="flex gap-3">
+            <a href="{% url 'staff:change_password' %}" class="bg-kpn-blue text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition inline-flex items-center">
+                <i class="fas fa-lock mr-2"></i> Change Password
+            </a>
+        </div>
+    </div>
+    
+    <!-- Announcements Section -->
+    {% if user_announcements %}
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold mb-4 flex items-center">
+            <i class="fas fa-bullhorn text-kpn-green mr-2"></i>
+            Latest Announcements
+        </h2>
+        <div class="grid gap-4">
+            {% for announcement in user_announcements %}
+            <div class="announcement-card bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden border-l-4 
+                {% if announcement.priority == 'URGENT' %}border-red-500
+                {% elif announcement.priority == 'HIGH' %}border-orange-500
+                {% elif announcement.priority == 'NORMAL' %}border-blue-500
+                {% else %}border-gray-500{% endif %}
+                transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
+                style="animation: slideInUp {{ forloop.counter0 }}00ms ease-out;">
+                <div class="p-5">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold mb-1 text-gray-900 dark:text-white">
+                                {{ announcement.title }}
+                            </h3>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="px-2 py-1 text-xs rounded-full font-semibold
+                                    {% if announcement.priority == 'URGENT' %}bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200
+                                    {% elif announcement.priority == 'HIGH' %}bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200
+                                    {% elif announcement.priority == 'NORMAL' %}bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200
+                                    {% else %}bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200{% endif %}">
+                                    {{ announcement.get_priority_display }}
+                                </span>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>{{ announcement.get_target_display }}
+                                </span>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">
+                                    <i class="fas fa-clock mr-1"></i>{{ announcement.created_at|timesince }} ago
+                                </span>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            {% if announcement.priority == 'URGENT' %}
+                            <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+                                <i class="fas fa-exclamation-triangle text-2xl text-red-600 dark:text-red-300"></i>
+                            </div>
+                            {% elif announcement.priority == 'HIGH' %}
+                            <div class="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
+                                <i class="fas fa-exclamation-circle text-2xl text-orange-600 dark:text-orange-300"></i>
+                            </div>
+                            {% else %}
+                            <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                                <i class="fas fa-info-circle text-2xl text-blue-600 dark:text-blue-300"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p class="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{{ announcement.content }}</p>
+                    {% if announcement.expires_at %}
+                    <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">
+                            <i class="fas fa-calendar-times mr-1"></i>Expires: {{ announcement.expires_at|date:"M d, Y" }}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="flex justify-center mb-6">
+                {% if user.photo %}
+                <img src="{{ user.photo.url }}" alt="{{ user.get_full_name }}" class="w-32 h-32 rounded-full object-cover">
+                {% else %}
+                <div class="w-32 h-32 rounded-full bg-kpn-green flex items-center justify-center">
+                    <span class="text-white text-5xl font-bold">{{ user.first_name.0 }}{{ user.last_name.0 }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if can_upload_photo %}
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">Profile Photo</label>
+                <input type="file" name="photo" accept="image/*" class="w-full p-3 border rounded dark:bg-gray-700">
+            </div>
+            {% else %}
+            <div class="mb-6 bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-500 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-blue-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-blue-700 dark:text-blue-300">
+                            Profile photo upload is only available for State Executive and Zonal Coordinator roles.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">Username</label>
+                <input type="text" name="username" value="{{ user.username }}" required class="w-full p-3 border rounded dark:bg-gray-700">
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2">First Name</label>
+                    <input type="text" name="first_name" value="{{ user.first_name }}" required class="w-full p-3 border rounded dark:bg-gray-700">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Last Name</label>
+                    <input type="text" name="last_name" value="{{ user.last_name }}" required class="w-full p-3 border rounded dark:bg-gray-700">
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Email</label>
+                    <input type="email" name="email" value="{{ user.email }}" required class="w-full p-3 border rounded dark:bg-gray-700">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Phone</label>
+                    <input type="tel" name="phone" value="{{ user.phone }}" required class="w-full p-3 border rounded dark:bg-gray-700">
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">Gender</label>
+                <select name="gender" class="w-full p-3 border rounded dark:bg-gray-700">
+                    <option value="">Select Gender</option>
+                    <option value="M" {% if user.gender == 'M' %}selected{% endif %}>Male</option>
+                    <option value="F" {% if user.gender == 'F' %}selected{% endif %}>Female</option>
+                </select>
+            </div>
+            
+            <!-- Location Section -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-3 text-kpn-green">Location</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Zone</label>
+                        <select name="zone" id="zoneSelect" class="w-full p-3 border rounded dark:bg-gray-700">
+                            <option value="">Select Zone</option>
+                            {% for zone in zones %}
+                            <option value="{{ zone.id }}" {% if user.zone and user.zone.id == zone.id %}selected{% endif %}>{{ zone.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">LGA</label>
+                        <select name="lga" id="lgaSelect" class="w-full p-3 border rounded dark:bg-gray-700">
+                            <option value="">Select LGA</option>
+                            {% for lga in lgas %}
+                            <option value="{{ lga.id }}" {% if user.lga and user.lga.id == lga.id %}selected{% endif %} data-zone-id="{{ lga.zone.id }}">{{ lga.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Ward</label>
+                        <select name="ward" id="wardSelect" class="w-full p-3 border rounded dark:bg-gray-700">
+                            <option value="">Select Ward</option>
+                            {% for ward in wards %}
+                            <option value="{{ ward.id }}" {% if user.ward and user.ward.id == ward.id %}selected{% endif %} data-lga-id="{{ ward.lga.id }}">{{ ward.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">Bio</label>
+                <textarea name="bio" rows="4" class="w-full p-3 border rounded dark:bg-gray-700">{{ user.bio }}</textarea>
+            </div>
+            
+            <!-- Social Media Section -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-3 text-kpn-green flex items-center">
+                    <i class="fas fa-share-alt mr-2"></i>
+                    Social Media Links (Optional)
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Add your social media profiles so people can connect with you</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">
+                            <i class="fab fa-facebook text-blue-600 mr-1"></i> Facebook URL
+                        </label>
+                        <input type="url" name="facebook_url" value="{{ user.facebook_url }}" placeholder="https://facebook.com/yourprofile" class="w-full p-3 border rounded dark:bg-gray-700">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">
+                            <i class="fab fa-twitter text-blue-400 mr-1"></i> Twitter/X URL
+                        </label>
+                        <input type="url" name="twitter_url" value="{{ user.twitter_url }}" placeholder="https://twitter.com/yourprofile" class="w-full p-3 border rounded dark:bg-gray-700">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">
+                            <i class="fab fa-instagram text-pink-600 mr-1"></i> Instagram URL
+                        </label>
+                        <input type="url" name="instagram_url" value="{{ user.instagram_url }}" placeholder="https://instagram.com/yourprofile" class="w-full p-3 border rounded dark:bg-gray-700">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">
+                            <i class="fab fa-tiktok mr-1"></i> TikTok URL
+                        </label>
+                        <input type="url" name="tiktok_url" value="{{ user.tiktok_url }}" placeholder="https://tiktok.com/@yourprofile" class="w-full p-3 border rounded dark:bg-gray-700">
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="w-full bg-kpn-green text-white py-3 rounded-lg hover:bg-green-600 transition">Update Profile</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const zoneSelect = document.getElementById('zoneSelect');
+    const lgaSelect = document.getElementById('lgaSelect');
+    const wardSelect = document.getElementById('wardSelect');
+    
+    // Store all options for filtering
+    const allLgas = Array.from(lgaSelect.querySelectorAll('option:not([value=""])'));
+    const allWards = Array.from(wardSelect.querySelectorAll('option:not([value=""])'));
+    
+    // Function to filter LGAs based on selected zone
+    function filterLgas() {
+        const selectedZone = zoneSelect.value;
+        const currentLga = lgaSelect.value;
+        
+        // Clear current LGA options except the default
+        lgaSelect.innerHTML = '<option value="">Select LGA</option>';
+        
+        if (selectedZone) {
+            // Add only LGAs for the selected zone
+            allLgas.forEach(option => {
+                if (option.dataset.zoneId === selectedZone) {
+                    lgaSelect.appendChild(option.cloneNode(true));
+                }
+            });
+        } else {
+            // If no zone selected, show all LGAs
+            allLgas.forEach(option => {
+                lgaSelect.appendChild(option.cloneNode(true));
+            });
+        }
+        
+        // Restore selection if it's still valid
+        if (currentLga) {
+            lgaSelect.value = currentLga;
+        }
+    }
+    
+    // Function to filter Wards based on selected LGA
+    function filterWards() {
+        const selectedLga = lgaSelect.value;
+        const currentWard = wardSelect.value;
+        
+        // Clear current Ward options except the default
+        wardSelect.innerHTML = '<option value="">Select Ward</option>';
+        
+        if (selectedLga) {
+            // Add only wards for the selected LGA
+            allWards.forEach(option => {
+                if (option.dataset.lgaId === selectedLga) {
+                    wardSelect.appendChild(option.cloneNode(true));
+                }
+            });
+        } else {
+            // If no LGA selected, show all wards
+            allWards.forEach(option => {
+                wardSelect.appendChild(option.cloneNode(true));
+            });
+        }
+        
+        // Restore selection if it's still valid
+        if (currentWard) {
+            wardSelect.value = currentWard;
+        }
+    }
+    
+    // Event listeners
+    zoneSelect.addEventListener('change', function() {
+        filterLgas();
+        filterWards();
+    });
+    
+    lgaSelect.addEventListener('change', function() {
+        filterWards();
+    });
+    
+    // Initialize on page load
+    filterLgas();
+    filterWards();
+});
+</script>
+{% endblock %}

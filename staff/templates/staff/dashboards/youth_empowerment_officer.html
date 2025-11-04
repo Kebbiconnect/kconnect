@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Youth Development & Empowerment Officer Dashboard - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Reusable Dashboard Header with Typing Animation -->
+    {% include 'staff/dashboards/includes/_role_header.html' with title="Youth Empowerment Officer Dashboard" icon_class="fas fa-user-graduate" welcome_messages="Empowering youth with skills and opportunities.|Leading youth development programs.|Building the next generation of leaders." %}
+    
+    <!-- Profile Section -->
+    {% include 'staff/dashboards/includes/_profile_section.html' %}
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Members</p>
+                    <p class="text-3xl font-bold text-kpn-green">{{ total_members }}</p>
+                </div>
+                <i class="fas fa-users text-4xl text-kpn-green"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Ongoing Programs</p>
+                    <p class="text-3xl font-bold text-green-600">{{ ongoing_programs }}</p>
+                </div>
+                <i class="fas fa-tasks text-4xl text-green-600"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Planned Programs</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ planned_programs }}</p>
+                </div>
+                <i class="fas fa-calendar-alt text-4xl text-blue-600"></i>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Participants</p>
+                    <p class="text-3xl font-bold text-purple-600">{{ total_participants }}</p>
+                </div>
+                <i class="fas fa-user-graduate text-4xl text-purple-600"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-xl font-semibold mb-4">Recent Youth Programs</h3>
+            {% if youth_programs %}
+            <div class="space-y-3">
+                {% for program in youth_programs %}
+                <div class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold">{{ program.title }}</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ program.get_program_type_display }} - {{ program.get_status_display }}</p>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full {% if program.status == 'ONGOING' %}bg-green-100 text-green-800{% elif program.status == 'PLANNED' %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ program.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500">No programs yet. Create one to get started!</p>
+            {% endif %}
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
+            <div class="space-y-3">
+                <a href="{% url 'staff:youth_programs_list' %}" class="block p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
+                    <i class="fas fa-graduation-cap mr-2"></i> Youth Programs
+                </a>
+                <a href="{% url 'staff:create_youth_program' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
+                    <i class="fas fa-plus mr-2"></i> Create New Program
+                </a>
+                <a href="{% url 'staff:profile' %}" class="block p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+                    <i class="fas fa-user mr-2"></i> My Profile
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
