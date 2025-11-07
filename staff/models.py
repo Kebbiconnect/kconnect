@@ -6,9 +6,9 @@ class User(AbstractUser):
     ROLE_CHOICES = [
         ('GENERAL', 'General Member'),
         ('STATE', 'State Executive'),
-        ('ZONAL', 'Zonal Coordinator'),
-        ('LGA', 'LGA Coordinator'),
-        ('WARD', 'Ward Leader'),
+        ('ZONAL', 'Zonal Excos'),
+        ('LGA', 'LGA Excos'),
+        ('WARD', 'Ward Leaders'),
     ]
     
     STATUS_CHOICES = [

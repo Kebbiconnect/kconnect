@@ -159,9 +159,9 @@ class DemoteMemberForm(forms.Form):
     new_role = forms.ChoiceField(
         choices=[
             ('GENERAL', 'General Member (No Leadership Position)'),
-            ('WARD', 'Ward Leader'),
-            ('LGA', 'LGA Coordinator'),
-            ('ZONAL', 'Zonal Coordinator'),
+            ('WARD', 'Ward Leaders'),
+            ('LGA', 'LGA Excos'),
+            ('ZONAL', 'Zonal Excos'),
         ],
         widget=forms.RadioSelect(attrs={'class': 'form-radio'})
     )
@@ -207,9 +207,9 @@ class DemoteMemberForm(forms.Form):
                 for tier in lower_tiers:
                     if tier != 'GENERAL':
                         tier_label = dict([
-                            ('WARD', 'Ward Leader'),
-                            ('LGA', 'LGA Coordinator'),
-                            ('ZONAL', 'Zonal Coordinator'),
+                            ('WARD', 'Ward Leaders'),
+                            ('LGA', 'LGA Excos'),
+                            ('ZONAL', 'Zonal Excos'),
                         ]).get(tier, tier)
                         choices.append((tier, tier_label))
                 

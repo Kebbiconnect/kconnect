@@ -25,6 +25,7 @@ urlpatterns = [
     path('approve-members/', views.approve_members, name='approve_members'),
     path('review-applicant/<int:user_id>/', views.review_applicant, name='review_applicant'),
     path('manage-staff/', views.manage_staff, name='manage_staff'),
+    path('my-jurisdiction-members/', views.my_jurisdiction_members, name='my_jurisdiction_members'),
     path('view-reports/', views.view_reports, name='view_reports'),
     path('disciplinary-actions/', views.disciplinary_actions, name='disciplinary_actions'),
     path('disciplinary-actions/create/', views.create_disciplinary_action, name='create_disciplinary_action'),

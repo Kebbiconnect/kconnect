@@ -40,9 +40,9 @@ class Ward(models.Model):
 class RoleDefinition(models.Model):
     TIER_CHOICES = [
         ('STATE', 'State Executive'),
-        ('ZONAL', 'Zonal Coordinator'),
-        ('LGA', 'LGA Coordinator'),
-        ('WARD', 'Ward Leader'),
+        ('ZONAL', 'Zonal Excos'),
+        ('LGA', 'LGA Excos'),
+        ('WARD', 'Ward Leaders'),
     ]
     
     title = models.CharField(max_length=200)

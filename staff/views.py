@@ -141,15 +141,15 @@ def register(request):
                     return redirect('staff:register')
             elif role == 'ZONAL':
                 if not zone:
-                    messages.error(request, 'Zone is required for Zonal Coordinator roles.')
+                    messages.error(request, 'Zone is required for Zonal Excos roles.')
                     return redirect('staff:register')
             elif role == 'LGA':
                 if not lga:
-                    messages.error(request, 'LGA is required for LGA Coordinator roles.')
+                    messages.error(request, 'LGA is required for LGA Excos roles.')
                     return redirect('staff:register')
             elif role == 'WARD':
                 if not ward:
-                    messages.error(request, 'Ward is required for Ward Leader roles.')
+                    messages.error(request, 'Ward is required for Ward Leaders roles.')
                     return redirect('staff:register')
             
             existing_holder = User.objects.filter(
@@ -918,6 +918,54 @@ def manage_staff(request):
     }
     
     return render(request, 'staff/manage_staff.html', context)
+
+@approved_leader_required
+def my_jurisdiction_members(request):
+    """View all members in the leader's jurisdiction"""
+    user = request.user
+    
+    search = request.GET.get('search', '')
+    status_filter = request.GET.get('status', 'APPROVED')
+    
+    # Base query - exclude superusers
+    members = User.objects.filter(is_superuser=False).order_by('last_name', 'first_name')
+    
+    # Filter based on user's role/jurisdiction
+    if user.role == 'ZONAL' and user.zone:
+        members = members.filter(zone=user.zone)
+        jurisdiction_name = f"{user.zone.name} Zone"
+    elif user.role == 'LGA' and user.lga:
+        members = members.filter(lga=user.lga)
+        jurisdiction_name = f"{user.lga.name} LGA"
+    elif user.role == 'WARD' and user.ward:
+        members = members.filter(ward=user.ward)
+        jurisdiction_name = f"{user.ward.name} Ward"
+    else:
+        # For state executives or others, show all
+        jurisdiction_name = "All Members"
+    
+    # Apply filters
+    if status_filter:
+        members = members.filter(status=status_filter)
+    
+    if search:
+        members = members.filter(
+            Q(first_name__icontains=search) |
+            Q(last_name__icontains=search) |
+            Q(username__icontains=search) |
+            Q(email__icontains=search) |
+            Q(phone__icontains=search)
+        )
+    
+    context = {
+        'members': members,
+        'jurisdiction_name': jurisdiction_name,
+        'total_count': members.count(),
+        'search': search,
+        'status_filter': status_filter,
+    }
+    
+    return render(request, 'staff/my_jurisdiction_members.html', context)
 
 @approved_leader_required
 def view_reports(request):
@@ -1944,7 +1992,7 @@ def women_members(request):
     return render(request, 'staff/women_members.html', context)
 
 
-@specific_role_required('Director of Mobilization', 'Assistant Director of Mobilization', 'Director of Contact and Mobilization', 'President')
+@specific_role_required('Director of Mobilization', 'Assistant Director of Mobilization', 'Director of Contact and Mobilization', 'President', 'Zonal Coordinator', 'LGA Coordinator', 'Ward Coordinator')
 def member_mobilization(request):
     """Member filtering and contact list generation for mobilization"""
     import csv
@@ -2009,36 +2057,68 @@ def member_mobilization(request):
         from reportlab.lib.units import inch
         from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.enums import TA_LEFT, TA_RIGHT
         from io import BytesIO
         from datetime import datetime
         
         buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=landscape(letter), rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
+        doc = SimpleDocTemplate(buffer, pagesize=landscape(letter), rightMargin=30, leftMargin=30, topMargin=70, bottomMargin=50)
         elements = []
         styles = getSampleStyleSheet()
+        
+        # Letterhead Header Styles
+        header_style = ParagraphStyle(
+            'HeaderStyle',
+            parent=styles['Normal'],
+            fontSize=9,
+            textColor=colors.black,
+            spaceAfter=2,
+            alignment=TA_LEFT
+        )
+        
+        header_right_style = ParagraphStyle(
+            'HeaderRightStyle',
+            parent=styles['Normal'],
+            fontSize=9,
+            textColor=colors.black,
+            spaceAfter=2,
+            alignment=TA_RIGHT
+        )
+        
+        footer_style = ParagraphStyle(
+            'FooterStyle',
+            parent=styles['Normal'],
+            fontSize=8,
+            textColor=colors.HexColor('#333333'),
+            spaceAfter=4,
+            alignment=TA_LEFT
+        )
+        
+        # Add letterhead header
+        header_data = [
+            [Paragraph("Our Ref:", header_style), '', Paragraph(f"Date: {datetime.now().strftime('%B %d, %Y')}", header_right_style)]
+        ]
+        header_table = Table(header_data, colWidths=[2*inch, 4*inch, 3*inch])
+        header_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+            ('ALIGN', (2, 0), (2, 0), 'RIGHT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ]))
+        elements.append(header_table)
+        elements.append(Spacer(1, 0.3*inch))
         
         title_style = ParagraphStyle(
             'CustomTitle',
             parent=styles['Heading1'],
-            fontSize=16,
+            fontSize=14,
             textColor=colors.HexColor('#28a745'),
-            spaceAfter=12,
+            spaceAfter=10,
             alignment=1
         )
         
-        subtitle_style = ParagraphStyle(
-            'CustomSubtitle',
-            parent=styles['Normal'],
-            fontSize=10,
-            textColor=colors.grey,
-            spaceAfter=20,
-            alignment=1
-        )
-        
-        title = Paragraph("Kebbi Progressive Network - Member Contact List", title_style)
-        subtitle = Paragraph(f"Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}", subtitle_style)
+        title = Paragraph("MEMBER CONTACT LIST", title_style)
         elements.append(title)
-        elements.append(subtitle)
+        elements.append(Spacer(1, 0.2*inch))
         
         data = [['Name', 'Phone', 'Role', 'Zone', 'LGA', 'Ward', 'Gender', 'Status']]
         
@@ -2070,6 +2150,18 @@ def member_mobilization(request):
         ]))
         
         elements.append(table)
+        elements.append(Spacer(1, 0.3*inch))
+        
+        # Add letterhead footer
+        footer_text = Paragraph(
+            '<b>kpn.kebbi@gmail.com</b><br/>'
+            'Sani Abacha Bypass Road, Birnin Kebbi &nbsp;&nbsp;&nbsp; '
+            '+2348037851112, +2348067770283<br/>'
+            '<b>www.mykpn.onrender.com</b>',
+            footer_style
+        )
+        elements.append(footer_text)
+        
         doc.build(elements)
         
         buffer.seek(0)
@@ -3102,12 +3194,12 @@ ROLE_SHORTENING = {
     'Director of Media & Publicity': 'Publicity Officer',
     'Assistant Director of Media & Publicity': 'Asst. Publicity',
     'Public Relations & Community Engagement Officer': 'PR Officer',
-    'Zonal Coordinator': 'Zonal Coord.',
+    'Zonal Coordinator': 'Zonal Coordinator.',
     'Zonal Secretary': 'Zonal Secretary',
     'Zonal Publicity Officer': 'Zonal Publicity',
     'LGA Coordinator': 'LGA Coordinator',
     'Secretary': 'Secretary',
-    'Publicity Officer': 'Publicity Officer',
+    'Publicity Officer': 'Publicity',
     'Contact & Mobilization': 'Contact Officer',
     'LGA Supervisor': 'LGA Supervisor',
     'LGA Adviser': 'LGA Adviser',
