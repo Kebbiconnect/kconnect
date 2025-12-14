@@ -35,35 +35,48 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 # --- START: New and Improved ALLOWED_HOSTS logic ---
 # In DEBUG mode, allow all hosts for easier development
+ALLOWED_HOSTS = []
+
+# Render default domain
+RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+# Custom domains
+ALLOWED_HOSTS.extend([
+    "kpn.com.ng",
+    "www.kpn.com.ng",
+])
+
+# Allow Replit preview domains (optional)
+REPLIT_DOMAINS = os.environ.get("REPLIT_DOMAINS")
+if REPLIT_DOMAINS:
+    ALLOWED_HOSTS.extend(REPLIT_DOMAINS.split(","))
+
+# Development convenience
 if DEBUG:
-    ALLOWED_HOSTS = ['*']
-else:
-    ALLOWED_HOSTS = []
-    RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-    if RENDER_EXTERNAL_HOSTNAME:
-        ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-    
-    REPLIT_DOMAINS = os.environ.get('REPLIT_DOMAINS')
-    if REPLIT_DOMAINS:
-        ALLOWED_HOSTS.extend(REPLIT_DOMAINS.split(','))
+    ALLOWED_HOSTS = ["*"]
     
     # This makes sure your local development server still works
     if not RENDER_EXTERNAL_HOSTNAME and not REPLIT_DOMAINS:
         ALLOWED_HOSTS.extend(['localhost', '127.0.0.1'])
 
 # Store these for CSRF_TRUSTED_ORIGINS
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-REPLIT_DOMAINS = os.environ.get('REPLIT_DOMAINS')
-# --- END: New ALLOWED_HOSTS logic ---
+CSRF_TRUSTED_ORIGINS = []
 
-# Keep this section. It is correct for Render.
-CSRF_TRUSTED_ORIGINS = [
-    "https://*.onrender.com",
-]
+# Render default domain
+if RENDER_EXTERNAL_HOSTNAME:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 
-# Add Replit domains to trusted origins
+# Custom domains
+CSRF_TRUSTED_ORIGINS.extend([
+    "https://kpn.com.ng",
+    "https://www.kpn.com.ng",
+])
+
+# Replit preview domains
 if REPLIT_DOMAINS:
-    for domain in REPLIT_DOMAINS.split(','):
+    for domain in REPLIT_DOMAINS.split(","):
         CSRF_TRUSTED_ORIGINS.append(f"https://{domain}")
         CSRF_TRUSTED_ORIGINS.append(f"http://{domain}")
 
