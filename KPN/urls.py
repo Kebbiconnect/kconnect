@@ -28,10 +28,7 @@ urlpatterns = [
     path('events/', include('events.urls')),
     path('finance/', include('donations.urls')),
     path('media/', include(('media.urls', 'media'), namespace='media')),
-    path('sw.js', TemplateView.as_view(
-        template_name="sw.js", 
-        content_type='application/javascript'
-    ), name='sw.js'),
+   
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
