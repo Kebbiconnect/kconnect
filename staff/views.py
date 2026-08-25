@@ -3328,33 +3328,43 @@ def generate_id_tag(request):
     # Fonts
     # We must explicitly load a TTF, no default fallback that ignores size!
     def get_font(size, bold=False, italic=False):
-        font_paths = []
-        # Add primary requested font first
+        from reportlab.pdfbase.ttfonts import TTFont
+        from reportlab.pdfbase import pdfmetrics
+        
+        font_dir = os.path.join(settings.BASE_DIR, 'static', 'fonts')
+        
+        # Determine exact filename based on style
         if bold and italic:
-            font_paths.append(os.path.join(settings.BASE_DIR, 'static', 'fonts', 'Montserrat-BoldItalic.ttf'))
-            font_paths.append('arialbi.ttf')  # Windows Arial Bold Italic
+            filename = 'DejaVuSans-BoldOblique.ttf'
+            font_name = 'DejaVuSans-BoldOblique'
         elif bold:
-            font_paths.append(os.path.join(settings.BASE_DIR, 'static', 'fonts', 'Montserrat-Bold.ttf'))
-            font_paths.append('arialbd.ttf')  # Windows Arial Bold
+            filename = 'DejaVuSans-Bold.ttf'
+            font_name = 'DejaVuSans-Bold'
         elif italic:
-            font_paths.append(os.path.join(settings.BASE_DIR, 'static', 'fonts', 'Montserrat-Italic.ttf'))
-            font_paths.append('ariali.ttf')   # Windows Arial Italic
+            filename = 'DejaVuSans-Oblique.ttf'
+            font_name = 'DejaVuSans-Oblique'
         else:
-            font_paths.append(os.path.join(settings.BASE_DIR, 'static', 'fonts', 'Montserrat-Regular.ttf'))
-            font_paths.append('arial.ttf')    # Windows Arial
+            filename = 'DejaVuSans.ttf'
+            font_name = 'DejaVuSans'
             
-        # Linux standard fallbacks
-        if bold and not italic: font_paths.append('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf')
-        elif italic and bold: font_paths.append('/usr/share/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf')
-        else: font_paths.append('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf')
-
-        for fpath in font_paths:
-            try:
-                return ImageFont.truetype(fpath, size)
-            except IOError:
-                continue
-                
-        raise ValueError(f"Could not load any TrueType fonts. Tried: {font_paths}. Please ensure a valid .ttf font is available.")
+        font_path = os.path.join(font_dir, filename)
+        
+        # Validate existence
+        if not os.path.exists(font_path):
+            raise ValueError(f"Missing required font file in repository: {font_path}. Please run collectstatic or commit the font.")
+            
+        # Register explicitly with ReportLab (per security guidelines)
+        try:
+            pdfmetrics.registerFont(TTFont(font_name, font_path))
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"ReportLab font registration failed for {font_name}: {e}")
+            
+        # Load with PIL for the actual image drawing
+        try:
+            return ImageFont.truetype(font_path, size)
+        except IOError:
+            raise ValueError(f"Failed to load TrueType font using Pillow: {font_path}")
 
     # Apply scaling to font sizes relative to 300 DPI high-res requirements
     try:
