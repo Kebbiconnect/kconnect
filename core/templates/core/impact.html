@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Our Impact - Kebbi Progressive Youth Network{% endblock %}
+
+{% block content %}
+<section class="bg-gradient-to-r from-kpn-green to-kpn-blue text-white py-20 relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Our Impact</h1>
+        <p class="text-xl md:text-2xl max-w-3xl mx-auto opacity-90 font-light">
+            Measuring our progress, community interventions, and civic milestones across Kebbi State in real-time.
+        </p>
+    </div>
+</section>
+
+<section class="py-16 bg-gray-50 dark:bg-gray-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Live Metrics from Database -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-20 -mt-24 relative z-20">
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border-b-4 border-kpn-green text-center">
+                <div class="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">{{ verified_members }}+</div>
+                <div class="text-sm font-bold text-kpn-green uppercase tracking-wide">Verified Members</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border-b-4 border-kpn-blue text-center">
+                <div class="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">{{ lgas_active|default:"0" }} / 21</div>
+                <div class="text-sm font-bold text-kpn-blue uppercase tracking-wide">Active LGAs</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border-b-4 border-yellow-500 text-center">
+                <div class="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">{{ wards_active|default:"0" }} / 225</div>
+                <div class="text-sm font-bold text-yellow-600 uppercase tracking-wide">Active Wards</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border-b-4 border-indigo-500 text-center">
+                <div class="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">{{ communities_reached }}+</div>
+                <div class="text-sm font-bold text-indigo-600 uppercase tracking-wide">Communities Reached</div>
+            </div>
+        </div>
+
+
+        <!-- CTA -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border-l-8 border-kpn-green p-8 md:p-12 text-center mt-12 relative overflow-hidden">
+            <div class="relative z-10">
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">Be Part of the Impact</h2>
+                <p class="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+                    Join {{ verified_members }}+ progressives making a difference across Kebbi State today. One Voice, One Change.
+                </p>
+                <a href="{% url 'staff:register' %}" class="inline-block bg-kpn-green text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition shadow-lg transform hover:-translate-y-1">
+                    Join KPN Today
+                </a>
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}Opportunities Hub - Kebbi Progressive Youth Network{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <!-- Header -->
+    <section class="bg-kpn-blue text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">KPN Opportunities Hub</h1>
+            <p class="text-xl max-w-3xl mx-auto opacity-90">
+                Discover scholarships, grants, jobs, and empowerment programs available to the people of Kebbi State.
+            </p>
+        </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="py-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap gap-2 justify-center">
+                <a href="?category=" class="px-4 py-2 rounded-full text-sm font-semibold transition {% if not request.GET.category %}bg-kpn-green text-white{% else %}bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    All
+                </a>
+                {% for value, label in categories %}
+                <a href="?category={{ value }}" class="px-4 py-2 rounded-full text-sm font-semibold transition {% if request.GET.category == value %}bg-kpn-green text-white{% else %}bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">
+                    {{ label }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {% if not featured_opps and not regular_opps %}
+        <div class="text-center py-20 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-50 dark:bg-blue-900/30 text-kpn-blue mb-6">
+                <i class="fas fa-search text-3xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">No opportunities found</h3>
+            <p class="text-gray-500 dark:text-gray-400">We are currently sourcing new opportunities. Check back soon!</p>
+        </div>
+        {% endif %}
+
+        <!-- Featured Opportunities -->
+        {% if featured_opps and not request.GET.category %}
+        <div class="mb-16">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 border-l-4 border-kpn-green pl-3">Featured Opportunities</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {% for opp in featured_opps %}
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border-t-4 border-kpn-green overflow-hidden flex flex-col transform hover:-translate-y-1 transition duration-300">
+                    <div class="p-6 flex-grow">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="bg-gray-100 dark:bg-gray-700 text-kpn-blue text-xs font-bold px-3 py-1 uppercase tracking-wider rounded">
+                                {{ opp.get_category_display }}
+                            </span>
+                            <span class="{{ opp.get_status_colour }} text-xs font-bold px-2 py-1 rounded">
+                                {{ opp.get_status_display }}
+                            </span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">{{ opp.title }}</h3>
+                        <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-4"><i class="fas fa-building mr-1"></i> {{ opp.provider }}</p>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm line-clamp-3 mb-4">{{ opp.description }}</p>
+                        
+                        {% if opp.deadline %}
+                        <div class="flex items-center text-sm font-medium {% if opp.status == 'CLOSING_SOON' %}text-red-600 dark:text-red-400{% else %}text-gray-500 dark:text-gray-400{% endif %} mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
+                            <i class="far fa-clock mr-2"></i> Deadline: {{ opp.deadline|date:"F j, Y" }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if opp.application_link %}
+                    <div class="px-6 pb-6 mt-auto">
+                        <a href="{{ opp.application_link }}" target="_blank" class="block w-full text-center bg-kpn-green text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition">
+                            Apply Now <i class="fas fa-external-link-alt ml-1"></i>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Regular Opportunities -->
+        {% if regular_opps %}
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 border-l-4 border-kpn-blue pl-3">
+                {% if request.GET.category %}Filtered Opportunities{% else %}Latest Opportunities{% endif %}
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for opp in regular_opps %}
+                {% if not request.GET.category or opp.category == request.GET.category %}
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 flex flex-col hover:shadow-md transition">
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="text-kpn-blue text-xs font-bold uppercase tracking-wider">
+                            {{ opp.get_category_display }}
+                        </span>
+                        <span class="{{ opp.get_status_colour }} text-xs font-bold px-2 py-1 rounded">
+                            {{ opp.get_status_display }}
+                        </span>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-1 leading-snug">{{ opp.title }}</h3>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3"><i class="fas fa-building mr-1"></i> {{ opp.provider }}</p>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-4">{{ opp.description }}</p>
+                    
+                    <div class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                            {% if opp.deadline %}
+                                <i class="far fa-clock mr-1"></i> Ends: {{ opp.deadline|date:"M d, Y" }}
+                            {% endif %}
+                        </div>
+                        {% if opp.application_link %}
+                        <a href="{{ opp.application_link }}" target="_blank" class="text-kpn-green font-bold text-sm hover:underline">
+                            Details & Apply <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </section>
+</div>
+{% endblock %}

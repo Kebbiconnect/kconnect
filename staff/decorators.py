@@ -8,8 +8,8 @@ def role_required(*allowed_roles):
         @wraps(view_func)
         @login_required
         def _wrapped_view(request, *args, **kwargs):
-            if request.user.status != 'APPROVED':
-                messages.error(request, 'Your account is not approved yet.')
+            if request.user.status != 'VERIFIED':
+                messages.error(request, 'Your account is pending verification.')
                 return redirect('core:home')
             
             if request.user.role not in allowed_roles:
@@ -25,11 +25,15 @@ def specific_role_required(*role_titles):
         @wraps(view_func)
         @login_required
         def _wrapped_view(request, *args, **kwargs):
-            if request.user.status != 'APPROVED':
-                messages.error(request, 'Your account is not approved yet.')
+            if request.user.status != 'VERIFIED':
+                messages.error(request, 'Your account is pending verification.')
                 return redirect('core:home')
             
-            if not request.user.role_definition or request.user.role_definition.title not in role_titles:
+            # Super Access for President and Director of Media & Communications
+            super_roles = ['President', 'Director of Media & Communications']
+            has_super_access = request.user.role_definition and request.user.role_definition.title in super_roles
+            
+            if not has_super_access and (not request.user.role_definition or request.user.role_definition.title not in role_titles):
                 messages.error(request, 'You do not have permission to access this page.')
                 return redirect('staff:dashboard')
             
@@ -41,8 +45,8 @@ def approved_leader_required(view_func):
     @wraps(view_func)
     @login_required
     def _wrapped_view(request, *args, **kwargs):
-        if request.user.status != 'APPROVED':
-            messages.error(request, 'Your account is not approved yet.')
+        if request.user.status != 'VERIFIED':
+            messages.error(request, 'Your account is pending verification.')
             return redirect('core:home')
         
         if not request.user.is_leader():

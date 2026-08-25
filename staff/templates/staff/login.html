@@ -87,38 +87,38 @@
 {% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 gradient-bg relative overflow-hidden">
-    <!-- Animated background elements -->
-    <div class="absolute top-10 left-10 w-20 h-20 bg-white opacity-10 rounded-full animate-float"></div>
-    <div class="absolute bottom-20 right-20 w-32 h-32 bg-white opacity-10 rounded-full animate-float" style="animation-delay: 1s;"></div>
-    <div class="absolute top-1/2 right-10 w-16 h-16 bg-white opacity-10 rounded-full animate-float" style="animation-delay: 2s;"></div>
-    
-    <div class="max-w-md w-full space-y-8 animate-fadeInUp">
-        <div class="text-center">
-            <div class="mx-auto w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-2xl animate-float">
-                <i class="fas fa-lock text-kpn-green text-4xl"></i>
+<div class="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900 min-h-[80vh] flex items-center justify-center relative overflow-hidden">
+    <!-- Decorative blobs -->
+    <div class="absolute top-0 left-1/4 w-72 h-72 bg-kpn-green rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10 animate-blob"></div>
+    <div class="absolute top-0 right-1/4 w-72 h-72 bg-kpn-blue rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10 animate-blob animation-delay-2000"></div>
+    <div class="absolute -bottom-8 left-1/3 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10 animate-blob animation-delay-4000"></div>
+
+    <div class="max-w-md w-full relative z-10 animate-fadeInUp">
+        <div class="text-center mb-8">
+            <div class="mx-auto w-20 h-20 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-lg border border-gray-100 dark:border-gray-700 mb-6">
+                <i class="fas fa-shield-alt text-kpn-green text-3xl"></i>
             </div>
-            <h2 class="mt-6 text-4xl font-extrabold text-white animate-slideInRight">
-                Welcome Back!
+            <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white">
+                Welcome Back
             </h2>
-            <p class="mt-2 text-sm text-white/90 animate-slideInRight" style="animation-delay: 0.2s;">
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
                 Sign in to your KPN account to continue
             </p>
         </div>
         
-        <div class="glass-effect rounded-2xl shadow-2xl p-8 space-y-6">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-700">
             <form method="POST" class="space-y-6">
                 {% csrf_token %}
                 
                 <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">
-                        <i class="fas fa-user mr-2 text-kpn-green"></i>Username
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Username
                     </label>
                     <div class="relative">
                         <input type="text" 
                                name="username" 
                                required 
-                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:outline-none input-glow transition-all duration-300 pl-12"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-kpn-green focus:border-transparent transition-all duration-300 pl-11"
                                placeholder="Enter your username">
                         <i class="fas fa-user absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     </div>
@@ -126,8 +126,8 @@
                 
                 <div class="space-y-2">
                     <div class="flex justify-between items-center">
-                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200">
-                            <i class="fas fa-lock mr-2 text-kpn-green"></i>Password
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Password
                         </label>
                         <a href="{% url 'staff:forgot_password' %}" class="text-xs text-kpn-green hover:text-kpn-blue font-semibold transition-colors">
                             Forgot Password?
@@ -138,43 +138,33 @@
                                name="password" 
                                id="loginPassword"
                                required 
-                               class="w-full px-4 py-3 pr-12 border-2 border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:outline-none input-glow transition-all duration-300 pl-12"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-kpn-green focus:border-transparent transition-all duration-300 pl-11 pr-11"
                                placeholder="Enter your password">
                         <i class="fas fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                        <button type="button" onclick="toggleLoginPassword()" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-kpn-green transition-colors">
+                        <button type="button" onclick="toggleLoginPassword()" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-kpn-green transition-colors focus:outline-none">
                             <i class="fas fa-eye" id="loginPasswordIcon"></i>
                         </button>
                     </div>
                 </div>
                 
-                <div>
+                <div class="pt-2">
                     <button type="submit" 
-                            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-bold rounded-lg text-white bg-gradient-to-r from-kpn-green to-green-600 hover:from-green-600 hover:to-kpn-green focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kpn-green transform transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-                            <i class="fas fa-sign-in-alt text-white group-hover:animate-pulse"></i>
-                        </span>
+                            class="w-full flex justify-center items-center py-3 px-4 border border-transparent text-base font-bold rounded-lg text-white bg-kpn-green hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-kpn-green transform transition-all duration-300 hover:shadow-lg">
+                        <i class="fas fa-sign-in-alt mr-2"></i>
                         Sign In
                     </button>
                 </div>
             </form>
             
-            <div class="text-center pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div class="text-center pt-6 mt-6 border-t border-gray-100 dark:border-gray-700">
                 <p class="text-sm text-gray-600 dark:text-gray-400">
                     Don't have an account? 
                     <a href="{% url 'staff:register' %}" 
-                       class="font-bold text-kpn-green hover:text-kpn-blue transition-colors duration-300 hover:underline">
-                        Join KPN Today <i class="fas fa-arrow-right ml-1"></i>
+                       class="font-bold text-kpn-blue hover:text-blue-700 transition-colors duration-300">
+                        Join KPN Today
                     </a>
                 </p>
             </div>
-        </div>
-        
-        <!-- KPN Branding -->
-        <div class="text-center">
-            <p class="text-white text-sm font-semibold animate-pulse-slow">
-                <i class="fas fa-shield-alt mr-2"></i>Secure Login Portal
-            </p>
-            <p class="text-white/80 text-xs mt-2">"One Voice, One Change"</p>
         </div>
     </div>
 </div>

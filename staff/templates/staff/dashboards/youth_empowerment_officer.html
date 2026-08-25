@@ -1,95 +1,56 @@
 {% extends 'base.html' %}
-
-{% block title %}Youth Development & Empowerment Officer Dashboard - KPN{% endblock %}
-
+{% block title %}Youth Empowerment Officer Dashboard - KPN{% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Reusable Dashboard Header with Typing Animation -->
-    {% include 'staff/dashboards/includes/_role_header.html' with title="Youth Empowerment Officer Dashboard" icon_class="fas fa-user-graduate" welcome_messages="Empowering youth with skills and opportunities.|Leading youth development programs.|Building the next generation of leaders." %}
-    
-    <!-- Profile Section -->
+    {% include 'staff/dashboards/includes/_role_header.html' with title="Youth Empowerment Officer Dashboard" icon_class="fas fa-rocket" welcome_messages="Connecting youth to opportunities and growth.|Driving skills development across Kebbi State.|Empowering the next generation of leaders." %}
     {% include 'staff/dashboards/includes/_profile_section.html' %}
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Members</p>
-                    <p class="text-3xl font-bold text-kpn-green">{{ total_members }}</p>
-                </div>
-                <i class="fas fa-users text-4xl text-kpn-green"></i>
+
+    <div class="mb-8">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-chart-pie mr-2 text-kpn-blue"></i> My Statistics</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Opportunities Shared</div>
+                <div class="text-3xl font-bold text-kpn-green">{{ opportunities_count|default:0 }}</div>
             </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Ongoing Programs</p>
-                    <p class="text-3xl font-bold text-green-600">{{ ongoing_programs }}</p>
-                </div>
-                <i class="fas fa-tasks text-4xl text-green-600"></i>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Youth Enrolled</div>
+                <div class="text-3xl font-bold text-kpn-blue">{{ youth_enrolled|default:0 }}</div>
             </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Planned Programs</p>
-                    <p class="text-3xl font-bold text-blue-600">{{ planned_programs }}</p>
-                </div>
-                <i class="fas fa-calendar-alt text-4xl text-blue-600"></i>
-            </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Participants</p>
-                    <p class="text-3xl font-bold text-purple-600">{{ total_participants }}</p>
-                </div>
-                <i class="fas fa-user-graduate text-4xl text-purple-600"></i>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Active Programs</div>
+                <div class="text-3xl font-bold text-purple-600">{{ active_programs|default:0 }}</div>
             </div>
         </div>
     </div>
-    
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 class="text-xl font-semibold mb-4">Recent Youth Programs</h3>
-            {% if youth_programs %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-tasks mr-2 text-green-500"></i> My Tasks</h2>
             <div class="space-y-3">
-                {% for program in youth_programs %}
-                <div class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h4 class="font-semibold">{{ program.title }}</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ program.get_program_type_display }} - {{ program.get_status_display }}</p>
-                        </div>
-                        <span class="text-xs px-2 py-1 rounded-full {% if program.status == 'ONGOING' %}bg-green-100 text-green-800{% elif program.status == 'PLANNED' %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-800{% endif %}">
-                            {{ program.get_status_display }}
-                        </span>
-                    </div>
-                </div>
-                {% endfor %}
+                <a href="{% url 'core:opportunities' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-green-50 group transition border border-transparent hover:border-green-200">
+                    <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-4"><i class="fas fa-briefcase"></i></div>
+                    <div><div class="font-bold text-gray-900 dark:text-white">Opportunities Hub</div><div class="text-xs text-gray-500">Browse and share jobs, scholarships, and grants</div></div>
+                </a>
+                <a href="{% url 'staff:manage_staff' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-blue-50 group transition border border-transparent hover:border-blue-200">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-4"><i class="fas fa-users"></i></div>
+                    <div><div class="font-bold text-gray-900 dark:text-white">Youth Members</div><div class="text-xs text-gray-500">View youth members and their engagement</div></div>
+                </a>
+                <a href="{% url 'staff:view_reports' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-purple-50 group transition border border-transparent hover:border-purple-200">
+                    <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mr-4"><i class="fas fa-chart-line"></i></div>
+                    <div><div class="font-bold text-gray-900 dark:text-white">Empowerment Reports</div><div class="text-xs text-gray-500">Track youth program participation</div></div>
+                </a>
             </div>
-            {% else %}
-            <p class="text-gray-500">No programs yet. Create one to get started!</p>
-            {% endif %}
         </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
-            <div class="space-y-3">
-                <a href="{% url 'staff:youth_programs_list' %}" class="block p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
-                    <i class="fas fa-graduation-cap mr-2"></i> Youth Programs
-                </a>
-                <a href="{% url 'staff:create_youth_program' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
-                    <i class="fas fa-plus mr-2"></i> Create New Program
-                </a>
-                <a href="{% url 'staff:profile' %}" class="block p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
-                    <i class="fas fa-user mr-2"></i> My Profile
-                </a>
-            </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-clipboard-list mr-2 text-purple-500"></i> My Responsibilities</h2>
+            <ul class="space-y-4">
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">1</div><span class="text-gray-700 dark:text-gray-300"><strong>Opportunities Distribution:</strong> Source, verify, and distribute scholarships, grants, internships, and employment opportunities.</span></li>
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">2</div><span class="text-gray-700 dark:text-gray-300"><strong>Skills Programs:</strong> Organize and promote vocational training and skills acquisition programs for youth.</span></li>
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">3</div><span class="text-gray-700 dark:text-gray-300"><strong>Youth Engagement:</strong> Develop strategies to increase youth participation in KPN activities and civic life.</span></li>
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">4</div><span class="text-gray-700 dark:text-gray-300"><strong>Partnership Building:</strong> Build partnerships with NGOs, government agencies, and private sector for youth programs.</span></li>
+            </ul>
         </div>
     </div>
+    <div class="text-right"><a href="{% url 'staff:profile' %}" class="inline-flex items-center text-sm text-gray-500 hover:text-kpn-green font-semibold transition"><i class="fas fa-user-edit mr-2"></i> Edit My Profile</a></div>
 </div>
 {% endblock %}

@@ -32,16 +32,18 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
-            if user.status == 'APPROVED':
+            if user.status == 'VERIFIED':
                 login(request, user)
                 messages.success(request, f'Welcome back, {user.get_full_name()}!')
                 return redirect('staff:dashboard')
             elif user.status == 'PENDING':
-                messages.warning(request, 'Your account is pending approval. Please wait for admin approval.')
+                messages.warning(request, 'Your account is pending verification. Please wait for admin approval.')
+            elif user.status == 'UNDER_REVIEW':
+                messages.warning(request, 'Your account is currently under review by the verification team.')
+            elif user.status == 'REJECTED':
+                messages.error(request, 'Your account registration was rejected. Please contact support.')
             elif user.status == 'SUSPENDED':
                 messages.error(request, 'Your account has been suspended. Contact admin for more information.')
-            elif user.status == 'DISMISSED':
-                messages.error(request, 'Your account has been dismissed.')
         else:
             messages.error(request, 'Invalid username or password.')
     
@@ -84,6 +86,12 @@ def register(request):
             messages.error(request, 'Profile photo is required for registration.')
             return redirect('staff:register')
         
+        # Enforce 400KB maximum file size for profile photo
+        photo_file = request.FILES['photo']
+        if photo_file.size > 400 * 1024:  # 400KB in bytes
+            messages.error(request, 'Profile photo must not exceed 400KB. Please compress or resize your image and try again.')
+            return redirect('staff:register')
+        
         if password1 != password2:
             messages.error(request, 'Passwords do not match.')
             return redirect('staff:register')
@@ -123,7 +131,7 @@ def register(request):
         
         role = 'GENERAL'
         role_definition = None
-        status = 'APPROVED'
+        status = 'PENDING'
         
         if role_definition_id:
             try:
@@ -154,7 +162,7 @@ def register(request):
             
             existing_holder = User.objects.filter(
                 role_definition=role_definition,
-                status='APPROVED'
+                status='VERIFIED'
             )
             
             if role == 'ZONAL':
@@ -209,7 +217,7 @@ def register(request):
             return redirect('staff:register')
         
         # Registration successful - show appropriate message
-        if status == 'APPROVED':
+        if status == 'VERIFIED':
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             if photo_uploaded:
                 messages.success(request, 'Registration successful! Welcome to KPN.')
@@ -240,8 +248,8 @@ def register(request):
 def dashboard(request):
     user = request.user
     
-    if user.status != 'APPROVED':
-        messages.warning(request, 'Your account is pending approval.')
+    if user.status != 'VERIFIED':
+        messages.warning(request, 'Your account is pending verification.')
         return render(request, 'staff/pending_approval.html')
     
     if user.role == 'GENERAL':
@@ -251,39 +259,52 @@ def dashboard(request):
         role_title = user.role_definition.title
         
         role_mapping = {
-            'President': 'president_dashboard',
-            'Vice President': 'vice_president_dashboard',
-            'General Secretary': 'general_secretary_dashboard',
-            'Assistant General Secretary': 'assistant_general_secretary_dashboard',
-            'State Supervisor': 'state_supervisor_dashboard',
-            'Legal & Ethics Adviser': 'legal_ethics_adviser_dashboard',
-            'Treasurer': 'treasurer_dashboard' if user.role == 'STATE' else 'lga_treasurer_dashboard' if user.role == 'LGA' else 'ward_treasurer_dashboard',
-            'Financial Secretary': 'financial_secretary_dashboard' if user.role == 'STATE' else 'ward_financial_secretary_dashboard',
-            'Director of Mobilization': 'director_of_mobilization_dashboard',
-            'Assistant Director of Mobilization': 'assistant_director_of_mobilization_dashboard',
-            'Organizing Secretary': 'organizing_secretary_dashboard' if user.role == 'STATE' else 'lga_organizing_secretary_dashboard' if user.role == 'LGA' else 'ward_organizing_secretary_dashboard',
-            'Assistant Organizing Secretary': 'assistant_organizing_secretary_dashboard',
-            'Auditor General': 'auditor_general_dashboard',
-            'Welfare Officer': 'welfare_officer_dashboard' if user.role == 'STATE' else 'lga_welfare_officer_dashboard',
-            'Youth Development & Empowerment Officer': 'youth_empowerment_officer_dashboard',
-            'Women Leader': 'women_leader_dashboard' if user.role == 'STATE' else 'lga_women_leader_dashboard',
-            'Assistant Women Leader': 'assistant_women_leader_dashboard',
-            'Director of Media & Publicity': 'media_director_dashboard',
-            'Assistant Director of Media & Publicity': 'assistant_media_director_dashboard',
-            'Public Relations & Community Engagement Officer': 'pr_officer_dashboard',
-            'Zonal Coordinator': 'zonal_coordinator_dashboard',
-            'Zonal Secretary': 'zonal_secretary_dashboard',
-            'Zonal Publicity Officer': 'zonal_publicity_officer_dashboard',
-            'LGA Coordinator': 'lga_coordinator_dashboard',
-            'Secretary': 'lga_secretary_dashboard' if user.role == 'LGA' else 'ward_secretary_dashboard',
-            'Publicity Officer': 'lga_publicity_officer_dashboard' if user.role == 'LGA' else 'ward_publicity_officer_dashboard',
-            'LGA Supervisor': 'lga_supervisor_dashboard',
-            'Director of Contact and Mobilization': 'lga_contact_mobilization_dashboard',
-            'LGA Adviser': 'lga_adviser_dashboard',
-            'Ward Coordinator': 'ward_coordinator_dashboard',
-            'Ward Supervisor': 'ward_supervisor_dashboard',
-            'Ward Adviser': 'ward_adviser_dashboard',
-        }
+        # ── State Executive Team ──────────────────────────────────────────
+        'President':                                    'president_dashboard',
+        'Vice President':                               'vice_president_dashboard',
+        'General Secretary':                            'general_secretary_dashboard',
+        'Assistant General Secretary':                  'assistant_general_secretary_dashboard',
+        'Director of Monitoring & Compliance':          'state_supervisor_dashboard',
+        'Director of Legal Affairs & Ethics':           'legal_ethics_adviser_dashboard',
+        'Director of Finance':                          'treasurer_dashboard',
+        'Finance Operations Officer':                   'financial_secretary_dashboard',
+        'Director of Community Engagement':             'director_of_mobilization_dashboard',
+        'Assistant Director of Community Engagement':   'assistant_director_of_mobilization_dashboard',
+        'Director of Programmes & Events':              'organizing_secretary_dashboard',
+        'Assistant Director of Programmes & Events':    'assistant_organizing_secretary_dashboard',
+        'Director of Audit & Accountability':           'auditor_general_dashboard',
+        'Director of Member Support & Welfare':         'welfare_officer_dashboard',
+        'Director of Youth Development':                'youth_empowerment_officer_dashboard',
+        'Director of Women\'s Development':             'women_leader_dashboard',
+        'Assistant Director of Women\'s Development':   'assistant_women_leader_dashboard',
+        'Director of Media & Communications':           'media_director_dashboard',
+        'Assistant Director of Media & Communications': 'assistant_media_director_dashboard',
+        'Director of Public Relations & Partnerships':  'pr_officer_dashboard',
+        # ── Senatorial (Zonal) Level ─────────────────────────────────────
+        'Senatorial Director':                          'zonal_coordinator_dashboard',
+        'Senatorial Administrative Officer':            'zonal_secretary_dashboard',
+        'Senatorial Communications Officer':            'zonal_publicity_officer_dashboard',
+        # ── LGA Level ────────────────────────────────────────────────────
+        'LGA Network Lead':                             'lga_coordinator_dashboard',
+        'LGA Administrative Officer':                   'lga_secretary_dashboard',
+        'LGA Programmes Officer':                       'lga_organizing_secretary_dashboard',
+        'LGA Finance Officer':                          'lga_treasurer_dashboard',
+        'LGA Communications Officer':                   'lga_publicity_officer_dashboard',
+        'LGA Monitoring Officer':                       'lga_supervisor_dashboard',
+        'LGA Women\'s Development Officer':             'lga_women_leader_dashboard',
+        'LGA Member Support Officer':                   'lga_welfare_officer_dashboard',
+        'LGA Community Engagement Officer':             'lga_contact_mobilization_dashboard',
+        'LGA Adviser':                                  'lga_adviser_dashboard',
+        # ── Ward Level ───────────────────────────────────────────────────
+        'Ward Community Lead':                          'ward_coordinator_dashboard',
+        'Ward Administrative Officer':                  'ward_secretary_dashboard',
+        'Ward Programmes Officer':                      'ward_organizing_secretary_dashboard',
+        'Ward Finance Officer':                         'ward_treasurer_dashboard',
+        'Ward Communications Officer':                  'ward_publicity_officer_dashboard',
+        'Ward Monitoring Officer':                      'ward_supervisor_dashboard',
+        'Ward Community Support Officer':               'ward_financial_secretary_dashboard',
+        'Ward Adviser':                                 'ward_adviser_dashboard',
+    }
         
         dashboard_name = role_mapping.get(role_title)
         if dashboard_name:
@@ -301,8 +322,8 @@ def general_member_dashboard(request):
     """Dashboard for general members with announcements and motivational content"""
     user = request.user
     
-    if user.status != 'APPROVED':
-        messages.warning(request, 'Your account is pending approval.')
+    if user.status != 'VERIFIED':
+        messages.warning(request, 'Your account is pending verification.')
         return render(request, 'staff/pending_approval.html')
     
     if user.role != 'GENERAL':
@@ -357,12 +378,17 @@ def profile(request):
         
         # Allow all users to upload profile photos
         if request.FILES.get('photo'):
+            profile_photo = request.FILES['photo']
+            # Enforce 400KB maximum file size for profile photo
+            if profile_photo.size > 400 * 1024:  # 400KB in bytes
+                messages.error(request, 'Profile photo must not exceed 400KB. Please compress or resize your image and try again.')
+                return redirect('staff:profile')
             logger.info(f"📸 Photo upload started for user {request.user.id}")
-            logger.info(f"   File name: {request.FILES['photo'].name}")
-            logger.info(f"   File size: {request.FILES['photo'].size} bytes")
-            logger.info(f"   Content type: {request.FILES['photo'].content_type}")
+            logger.info(f"   File name: {profile_photo.name}")
+            logger.info(f"   File size: {profile_photo.size} bytes")
+            logger.info(f"   Content type: {profile_photo.content_type}")
             
-            request.user.photo = request.FILES['photo']
+            request.user.photo = profile_photo
             logger.info(f"   Photo field set: {request.user.photo}")
         
         try:
@@ -409,8 +435,8 @@ def change_password(request):
             messages.error(request, 'New passwords do not match.')
             return redirect('staff:change_password')
         
-        if len(new_password1) < 8:
-            messages.error(request, 'Password must be at least 8 characters long.')
+        if len(new_password1) < 6:
+            messages.error(request, 'Password must be at least 6 characters long.')
             return redirect('staff:change_password')
         
         request.user.set_password(new_password1)
@@ -451,7 +477,7 @@ If you did not request this password reset, please ignore this email.
 This link will expire in 24 hours.
 
 Best regards,
-Kebbi Progressive Network Team
+Kebbi Progressive Youth Network Team
             '''
             
             try:
@@ -491,8 +517,8 @@ def reset_password(request, uidb64, token):
                 messages.error(request, 'Passwords do not match.')
                 return redirect('staff:reset_password', uidb64=uidb64, token=token)
             
-            if len(password1) < 8:
-                messages.error(request, 'Password must be at least 8 characters long.')
+            if len(password1) < 6:
+                messages.error(request, 'Password must be at least 6 characters long.')
                 return redirect('staff:reset_password', uidb64=uidb64, token=token)
             
             user.set_password(password1)
@@ -559,7 +585,7 @@ def check_vacant_roles(request):
         for role in state_roles:
             existing = User.objects.filter(
                 role_definition=role,
-                status='APPROVED'
+                status='VERIFIED'
             ).exists()
             if not existing:
                 vacant_roles.append({
@@ -574,7 +600,7 @@ def check_vacant_roles(request):
             existing = User.objects.filter(
                 role_definition=role,
                 zone=zone,
-                status='APPROVED'
+                status='VERIFIED'
             ).exists()
             if not existing:
                 vacant_roles.append({
@@ -589,7 +615,7 @@ def check_vacant_roles(request):
             existing = User.objects.filter(
                 role_definition=role,
                 lga=lga,
-                status='APPROVED'
+                status='VERIFIED'
             ).exists()
             if not existing:
                 vacant_roles.append({
@@ -604,7 +630,7 @@ def check_vacant_roles(request):
             existing = User.objects.filter(
                 role_definition=role,
                 ward=ward,
-                status='APPROVED'
+                status='VERIFIED'
             ).exists()
             if not existing:
                 vacant_roles.append({
@@ -623,16 +649,21 @@ def president_dashboard(request):
     from campaigns.models import Campaign
     from events.models import Event
     from donations.models import Donation, Expense
-    from core.models import FAQ
+    from core.models import FAQ, CommunityReport
     from staff.models import WomensProgram, YouthProgram, WelfareProgram
     from django.db.models import Sum
     
     # Member statistics
     pending_approvals = User.objects.filter(status='PENDING').count()
-    total_members = User.objects.filter(status='APPROVED').count()
-    total_leaders = User.objects.filter(status='APPROVED').exclude(role='GENERAL').count()
-    male_members = User.objects.filter(status='APPROVED', gender='M').count()
-    female_members = User.objects.filter(status='APPROVED', gender='F').count()
+    total_members = User.objects.filter(status='VERIFIED').count()
+    total_leaders = User.objects.filter(status='VERIFIED').exclude(role='GENERAL').count()
+    male_members = User.objects.filter(status='VERIFIED', gender='M').count()
+    female_members = User.objects.filter(status='VERIFIED', gender='F').count()
+    
+    # Calculate member growth for this month
+    now = timezone.now()
+    first_day_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    member_growth_this_month = User.objects.filter(status='VERIFIED', created_at__gte=first_day_of_month).count()
     
     # Campaign statistics
     total_campaigns = Campaign.objects.count()
@@ -670,12 +701,23 @@ def president_dashboard(request):
     
     pending_applicants = User.objects.filter(status='PENDING').order_by('-created_at')[:10]
     
+    # Weekly growth data for Chart.js
+    import json
+    weeks_data = []
+    for i in range(4, -1, -1):
+        start = now - timezone.timedelta(days=i*7 + 7)
+        end = now - timezone.timedelta(days=i*7)
+        count = User.objects.filter(status='VERIFIED', created_at__range=(start, end)).count()
+        weeks_data.append(count)
+    
     context = {
         'pending_approvals': pending_approvals,
         'total_members': total_members,
         'total_leaders': total_leaders,
         'male_members': male_members,
         'female_members': female_members,
+        'member_growth_this_month': member_growth_this_month,
+        'chart_data': json.dumps(weeks_data),
         'total_campaigns': total_campaigns,
         'active_campaigns': active_campaigns,
         'pending_campaigns': pending_campaigns,
@@ -695,6 +737,9 @@ def president_dashboard(request):
         'total_welfare_programs': total_welfare_programs,
         'total_faqs': total_faqs,
         'pending_applicants': pending_applicants,
+        'trusted_reporters_count': User.objects.filter(is_trusted_reporter=True).count(),
+        'community_reports': CommunityReport.objects.all().order_by('-created_at')[:20],
+        'community_reports_pending': CommunityReport.objects.filter(status='PENDING').count(),
         'recent_activities': [],
     }
     
@@ -705,7 +750,7 @@ def export_members_csv(request):
     import csv
     from django.http import HttpResponse
     
-    members = User.objects.filter(status='APPROVED').order_by('last_name', 'first_name')
+    members = User.objects.filter(status='VERIFIED').order_by('last_name', 'first_name')
     
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="kpn_all_members.csv"'
@@ -737,7 +782,7 @@ def export_members_pdf(request):
     from reportlab.lib.units import inch
     from io import BytesIO
     
-    members = User.objects.filter(status='APPROVED').order_by('last_name', 'first_name')
+    members = User.objects.filter(status='VERIFIED').order_by('last_name', 'first_name')
     
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), topMargin=0.5*inch, bottomMargin=0.5*inch)
@@ -865,6 +910,17 @@ def review_applicant(request, user_id):
             applicant.approved_by = request.user
             applicant.date_approved = timezone.now()
             applicant.save()
+            
+            # Send in-app notification
+            from core.notifications import notify
+            notify(
+                applicant,
+                notif_type='SUCCESS',
+                title='Membership Approved',
+                message='Congratulations! Your KPN membership has been approved.',
+                link='/account/dashboard/'
+            )
+            
             messages.success(request, f'{applicant.get_full_name()} has been approved.')
             return redirect('staff:approve_members')
         
@@ -975,7 +1031,7 @@ def view_reports(request):
     filter_status = request.GET.get('status', 'all')
     
     is_president = user.role_definition and user.role_definition.title == 'President'
-    is_state_supervisor = user.role_definition and user.role_definition.title == 'State Supervisor'
+    is_state_supervisor = user.role_definition and user.role_definition.title == 'Director of Monitoring & Compliance'
     
     if is_president or is_state_supervisor:
         base_reports = Report.objects.all()
@@ -989,7 +1045,7 @@ def view_reports(request):
     elif filter_status == 'reviewed':
         reports = reports.filter(is_reviewed=True)
     elif filter_status == 'approved':
-        reports = reports.filter(status='APPROVED')
+        reports = reports.filter(status='VERIFIED')
     elif filter_status == 'flagged':
         reports = reports.filter(status='FLAGGED')
     elif filter_status == 'rejected':
@@ -1008,7 +1064,7 @@ def view_reports(request):
     
     pending_count = base_reports.filter(status='SUBMITTED', is_reviewed=False).count()
     reviewed_count = base_reports.filter(is_reviewed=True).count()
-    approved_count = base_reports.filter(status='APPROVED').count()
+    approved_count = base_reports.filter(status='VERIFIED').count()
     flagged_count = base_reports.filter(status='FLAGGED').count()
     rejected_count = base_reports.filter(status='REJECTED').count()
     escalated_count = base_reports.filter(status='ESCALATED').count()
@@ -1155,8 +1211,11 @@ def reject_disciplinary_action(request, action_id):
     
     return render(request, 'staff/reject_disciplinary_action.html', context)
 
-@specific_role_required('Director of Media & Publicity')
+@specific_role_required('Director of Media & Communications')
 def media_director_dashboard(request):
+    from core.models import CommunityReport
+    from campaigns.models import Campaign
+    from media.models import MediaItem
     pending_campaigns = Campaign.objects.filter(status='PENDING').count()
     pending_media = MediaItem.objects.filter(status='PENDING').count()
     pending_members = User.objects.filter(status='PENDING').count()
@@ -1165,11 +1224,13 @@ def media_director_dashboard(request):
         'pending_campaigns': pending_campaigns,
         'pending_media': pending_media,
         'pending_members': pending_members,
+        'trusted_reporters_count': User.objects.filter(is_trusted_reporter=True).count(),
+        'community_reports': CommunityReport.objects.all().order_by('-created_at')[:30],
     }
     
     return render(request, 'staff/dashboards/media_director.html', context)
 
-@specific_role_required('Treasurer')
+@specific_role_required('Director of Finance')
 def treasurer_dashboard(request):
     from donations.models import Donation
     unverified_donations = Donation.objects.filter(status='UNVERIFIED').count()
@@ -1195,7 +1256,7 @@ def financial_secretary_dashboard(request):
     
     return render(request, 'staff/dashboards/financial_secretary.html', context)
 
-@specific_role_required('Organizing Secretary')
+@specific_role_required('Director of Programmes & Events')
 def organizing_secretary_dashboard(request):
     from events.models import MeetingMinutes
     upcoming_events = Event.objects.filter(start_date__gte=timezone.now()).count()
@@ -1222,12 +1283,12 @@ def general_secretary_dashboard(request):
     }
     return render(request, 'staff/dashboards/general_secretary.html', context)
 
-@specific_role_required('Zonal Coordinator')
+@specific_role_required('Senatorial Director')
 def zonal_coordinator_dashboard(request):
     lgas_in_zone = LGA.objects.filter(zone=request.user.zone).count()
-    members_in_zone = User.objects.filter(zone=request.user.zone, status='APPROVED').count()
+    members_in_zone = User.objects.filter(zone=request.user.zone, status='VERIFIED').count()
     
-    # Get pending reports submitted to Zonal Coordinator
+    # Get pending reports submitted to Senatorial Director
     pending_reports = Report.objects.filter(
         submitted_to=request.user,
         status='SUBMITTED'
@@ -1241,12 +1302,13 @@ def zonal_coordinator_dashboard(request):
     
     return render(request, 'staff/dashboards/zonal_coordinator.html', context)
 
-@specific_role_required('LGA Coordinator')
+@specific_role_required('LGA Network Lead')
 def lga_coordinator_dashboard(request):
+    from core.models import CommunityReport
     wards_in_lga = Ward.objects.filter(lga=request.user.lga).count()
-    members_in_lga = User.objects.filter(lga=request.user.lga, status='APPROVED').count()
+    members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count()
     
-    # Get pending reports submitted to LGA Coordinator
+    # Get pending reports submitted to LGA Network Lead
     pending_reports = Report.objects.filter(
         submitted_to=request.user,
         status='SUBMITTED'
@@ -1256,13 +1318,16 @@ def lga_coordinator_dashboard(request):
         'wards_in_lga': wards_in_lga,
         'members_in_lga': members_in_lga,
         'pending_reports': pending_reports,
+    
+        'community_reports': CommunityReport.objects.filter(lga=request.user.lga).order_by('-created_at')[:20] if request.user.lga else [],
     }
     
     return render(request, 'staff/dashboards/lga_coordinator.html', context)
 
-@specific_role_required('Ward Coordinator')
+@specific_role_required('Ward Community Lead')
 def ward_coordinator_dashboard(request):
-    members_in_ward = User.objects.filter(ward=request.user.ward, status='APPROVED').count()
+    from core.models import CommunityReport
+    members_in_ward = User.objects.filter(ward=request.user.ward, status='VERIFIED').count()
     total_meetings = WardMeeting.objects.filter(ward=request.user.ward).count() if request.user.ward else 0
     reports_submitted = Report.objects.filter(submitted_by=request.user).count()
     
@@ -1270,6 +1335,8 @@ def ward_coordinator_dashboard(request):
         'members_in_ward': members_in_ward,
         'total_meetings': total_meetings,
         'reports_submitted': reports_submitted,
+    
+        'community_reports': CommunityReport.objects.filter(ward=request.user.ward).order_by('-created_at')[:20] if request.user.ward else [],
     }
     
     return render(request, 'staff/dashboards/ward_coordinator.html', context)
@@ -1285,8 +1352,8 @@ def vice_president_dashboard(request):
     
     for zone in zones:
         # Exclude superusers from statistics
-        total_members = User.objects.filter(zone=zone, status='APPROVED', is_superuser=False).count()
-        leaders = User.objects.filter(zone=zone, status='APPROVED', is_superuser=False).exclude(role='GENERAL').count()
+        total_members = User.objects.filter(zone=zone, status='VERIFIED', is_superuser=False).count()
+        leaders = User.objects.filter(zone=zone, status='VERIFIED', is_superuser=False).exclude(role='GENERAL').count()
         lgas = zone.lgas.count()
         
         zone_stats.append({
@@ -1303,8 +1370,8 @@ def vice_president_dashboard(request):
     ).order_by('-created_at')[:10]
     
     # Overall statistics - exclude superusers
-    total_members = User.objects.filter(status='APPROVED', is_superuser=False).count()
-    total_leaders = User.objects.filter(status='APPROVED', is_superuser=False).exclude(role='GENERAL').count()
+    total_members = User.objects.filter(status='VERIFIED', is_superuser=False).count()
+    total_leaders = User.objects.filter(status='VERIFIED', is_superuser=False).exclude(role='GENERAL').count()
     pending_members = User.objects.filter(status='PENDING', is_superuser=False).count()
     
     context = {
@@ -1334,12 +1401,12 @@ def assistant_general_secretary_dashboard(request):
     }
     return render(request, 'staff/dashboards/assistant_general_secretary.html', context)
 
-@specific_role_required('State Supervisor')
+@specific_role_required('Director of Monitoring & Compliance')
 def state_supervisor_dashboard(request):
     total_zones = Zone.objects.count()
     total_lgas = LGA.objects.count()
     
-    # Get pending reports submitted to State Supervisor
+    # Get pending reports submitted to Director of Monitoring & Compliance
     pending_reports = Report.objects.filter(
         submitted_to=request.user,
         status='SUBMITTED'
@@ -1365,9 +1432,9 @@ def legal_ethics_adviser_dashboard(request):
     
     return render(request, 'staff/dashboards/legal_ethics_adviser.html', context)
 
-@specific_role_required('Director of Mobilization')
+@specific_role_required('Director of Membership & Mobilization')
 def director_of_mobilization_dashboard(request):
-    total_members = User.objects.filter(status='APPROVED').count()
+    total_members = User.objects.filter(status='VERIFIED').count()
     total_zones = Zone.objects.count()
     
     context = {
@@ -1377,9 +1444,9 @@ def director_of_mobilization_dashboard(request):
     
     return render(request, 'staff/dashboards/director_of_mobilization.html', context)
 
-@specific_role_required('Assistant Director of Mobilization')
+@specific_role_required('Assistant Director of Membership & Mobilization')
 def assistant_director_of_mobilization_dashboard(request):
-    total_members = User.objects.filter(status='APPROVED').count()
+    total_members = User.objects.filter(status='VERIFIED').count()
     
     context = {
         'total_members': total_members,
@@ -1387,7 +1454,7 @@ def assistant_director_of_mobilization_dashboard(request):
     
     return render(request, 'staff/dashboards/assistant_director_of_mobilization.html', context)
 
-@specific_role_required('Assistant Organizing Secretary')
+@specific_role_required('Assistant Director of Programmes & Events')
 def assistant_organizing_secretary_dashboard(request):
     upcoming_events = Event.objects.filter(start_date__gte=timezone.now()).count()
     
@@ -1424,11 +1491,11 @@ def auditor_general_dashboard(request):
     
     return render(request, 'staff/dashboards/auditor_general.html', context)
 
-@specific_role_required('Welfare Officer')
+@specific_role_required('Director of Welfare & Community Support')
 def welfare_officer_dashboard(request):
     from .models import WelfareProgram
     
-    total_members = User.objects.filter(status='APPROVED').count()
+    total_members = User.objects.filter(status='VERIFIED').count()
     
     # Get welfare programs based on user's jurisdiction
     if request.user.role == 'STATE':
@@ -1457,11 +1524,11 @@ def welfare_officer_dashboard(request):
     
     return render(request, 'staff/dashboards/welfare_officer.html', context)
 
-@specific_role_required('Youth Development & Empowerment Officer')
+@specific_role_required('Director of Youth Development & Empowerment')
 def youth_empowerment_officer_dashboard(request):
     from .models import YouthProgram
     
-    total_members = User.objects.filter(status='APPROVED').count()
+    total_members = User.objects.filter(status='VERIFIED').count()
     
     # Get youth programs based on user's jurisdiction
     if request.user.role == 'STATE':
@@ -1490,15 +1557,15 @@ def youth_empowerment_officer_dashboard(request):
     
     return render(request, 'staff/dashboards/youth_empowerment_officer.html', context)
 
-@specific_role_required('Women Leader')
+@specific_role_required('Director of Women Development')
 def women_leader_dashboard(request):
     # Filter only female members
     if request.user.role == 'STATE':
-        female_members = User.objects.filter(status='APPROVED', gender='F')
+        female_members = User.objects.filter(status='VERIFIED', gender='F')
     elif request.user.role == 'ZONAL':
-        female_members = User.objects.filter(status='APPROVED', gender='F', zone=request.user.zone)
+        female_members = User.objects.filter(status='VERIFIED', gender='F', zone=request.user.zone)
     elif request.user.role == 'LGA':
-        female_members = User.objects.filter(status='APPROVED', gender='F', lga=request.user.lga)
+        female_members = User.objects.filter(status='VERIFIED', gender='F', lga=request.user.lga)
     else:
         female_members = User.objects.none()
     
@@ -1523,15 +1590,15 @@ def women_leader_dashboard(request):
     
     return render(request, 'staff/dashboards/women_leader.html', context)
 
-@specific_role_required('Assistant Women Leader')
+@specific_role_required('Assistant Director of Women Development')
 def assistant_women_leader_dashboard(request):
     # Filter only female members
     if request.user.role == 'STATE':
-        female_members = User.objects.filter(status='APPROVED', gender='F')
+        female_members = User.objects.filter(status='VERIFIED', gender='F')
     elif request.user.role == 'ZONAL':
-        female_members = User.objects.filter(status='APPROVED', gender='F', zone=request.user.zone)
+        female_members = User.objects.filter(status='VERIFIED', gender='F', zone=request.user.zone)
     elif request.user.role == 'LGA':
-        female_members = User.objects.filter(status='APPROVED', gender='F', lga=request.user.lga)
+        female_members = User.objects.filter(status='VERIFIED', gender='F', lga=request.user.lga)
     else:
         female_members = User.objects.none()
     
@@ -1544,7 +1611,7 @@ def assistant_women_leader_dashboard(request):
     
     return render(request, 'staff/dashboards/assistant_women_leader.html', context)
 
-@specific_role_required('Assistant Director of Media & Publicity')
+@specific_role_required('Assistant Director of Media & Communications')
 def assistant_media_director_dashboard(request):
     pending_campaigns = Campaign.objects.filter(status='PENDING').count()
     pending_media = MediaItem.objects.filter(status='PENDING').count()
@@ -1556,7 +1623,7 @@ def assistant_media_director_dashboard(request):
     
     return render(request, 'staff/dashboards/assistant_media_director.html', context)
 
-@specific_role_required('Public Relations & Community Engagement Officer')
+@specific_role_required('Director of Public Relations & Community Engagement')
 def pr_officer_dashboard(request):
     published_campaigns = Campaign.objects.filter(status='PUBLISHED').count()
     total_outreach = CommunityOutreach.objects.count()
@@ -1570,10 +1637,10 @@ def pr_officer_dashboard(request):
     
     return render(request, 'staff/dashboards/pr_officer.html', context)
 
-@specific_role_required('Zonal Secretary')
+@specific_role_required('Senatorial Administrative Officer')
 def zonal_secretary_dashboard(request):
     lgas_in_zone = LGA.objects.filter(zone=request.user.zone).count() if request.user.zone else 0
-    members_in_zone = User.objects.filter(zone=request.user.zone, status='APPROVED').count() if request.user.zone else 0
+    members_in_zone = User.objects.filter(zone=request.user.zone, status='VERIFIED').count() if request.user.zone else 0
     
     context = {
         'lgas_in_zone': lgas_in_zone,
@@ -1582,9 +1649,9 @@ def zonal_secretary_dashboard(request):
     
     return render(request, 'staff/dashboards/zonal_secretary.html', context)
 
-@specific_role_required('Zonal Publicity Officer')
+@specific_role_required('Senatorial Communications Officer')
 def zonal_publicity_officer_dashboard(request):
-    members_in_zone = User.objects.filter(zone=request.user.zone, status='APPROVED').count() if request.user.zone else 0
+    members_in_zone = User.objects.filter(zone=request.user.zone, status='VERIFIED').count() if request.user.zone else 0
     
     context = {
         'members_in_zone': members_in_zone,
@@ -1592,10 +1659,10 @@ def zonal_publicity_officer_dashboard(request):
     
     return render(request, 'staff/dashboards/zonal_publicity_officer.html', context)
 
-@specific_role_required('Secretary')
+@specific_role_required('LGA Administrative Officer')
 def lga_secretary_dashboard(request):
     wards_in_lga = Ward.objects.filter(lga=request.user.lga).count() if request.user.lga else 0
-    members_in_lga = User.objects.filter(lga=request.user.lga, status='APPROVED').count() if request.user.lga else 0
+    members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count() if request.user.lga else 0
     
     context = {
         'wards_in_lga': wards_in_lga,
@@ -1604,9 +1671,9 @@ def lga_secretary_dashboard(request):
     
     return render(request, 'staff/dashboards/lga_secretary.html', context)
 
-@specific_role_required('Organizing Secretary')
+@specific_role_required('LGA Programmes Officer')
 def lga_organizing_secretary_dashboard(request):
-    members_in_lga = User.objects.filter(lga=request.user.lga, status='APPROVED').count() if request.user.lga else 0
+    members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count() if request.user.lga else 0
     
     context = {
         'members_in_lga': members_in_lga,
@@ -1614,9 +1681,9 @@ def lga_organizing_secretary_dashboard(request):
     
     return render(request, 'staff/dashboards/lga_organizing_secretary.html', context)
 
-@specific_role_required('Treasurer')
+@specific_role_required('LGA Finance Officer')
 def lga_treasurer_dashboard(request):
-    members_in_lga = User.objects.filter(lga=request.user.lga, status='APPROVED').count() if request.user.lga else 0
+    members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count() if request.user.lga else 0
     
     context = {
         'members_in_lga': members_in_lga,
@@ -1624,9 +1691,9 @@ def lga_treasurer_dashboard(request):
     
     return render(request, 'staff/dashboards/lga_treasurer.html', context)
 
-@specific_role_required('Publicity Officer')
+@specific_role_required('LGA Communications Officer')
 def lga_publicity_officer_dashboard(request):
-    members_in_lga = User.objects.filter(lga=request.user.lga, status='APPROVED').count() if request.user.lga else 0
+    members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count() if request.user.lga else 0
     
     context = {
         'members_in_lga': members_in_lga,
@@ -1634,7 +1701,7 @@ def lga_publicity_officer_dashboard(request):
     
     return render(request, 'staff/dashboards/lga_publicity_officer.html', context)
 
-@specific_role_required('LGA Supervisor')
+@specific_role_required('LGA Monitoring Officer')
 def lga_supervisor_dashboard(request):
     wards_in_lga = Ward.objects.filter(lga=request.user.lga).count() if request.user.lga else 0
     
@@ -1644,9 +1711,9 @@ def lga_supervisor_dashboard(request):
     
     return render(request, 'staff/dashboards/lga_supervisor.html', context)
 
-@specific_role_required('Women Leader')
+@specific_role_required('LGA Women Development Officer')
 def lga_women_leader_dashboard(request):
-    members_in_lga = User.objects.filter(lga=request.user.lga, status='APPROVED').count() if request.user.lga else 0
+    members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count() if request.user.lga else 0
     
     context = {
         'members_in_lga': members_in_lga,
@@ -1654,9 +1721,9 @@ def lga_women_leader_dashboard(request):
     
     return render(request, 'staff/dashboards/lga_women_leader.html', context)
 
-@specific_role_required('Welfare Officer')
+@specific_role_required('LGA Community Support Officer')
 def lga_welfare_officer_dashboard(request):
-    members_in_lga = User.objects.filter(lga=request.user.lga, status='APPROVED').count() if request.user.lga else 0
+    members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count() if request.user.lga else 0
     
     context = {
         'members_in_lga': members_in_lga,
@@ -1664,9 +1731,9 @@ def lga_welfare_officer_dashboard(request):
     
     return render(request, 'staff/dashboards/lga_welfare_officer.html', context)
 
-@specific_role_required('Director of Contact and Mobilization')
+@specific_role_required('LGA Community Engagement Officer')
 def lga_contact_mobilization_dashboard(request):
-    members_in_lga = User.objects.filter(lga=request.user.lga, status='APPROVED').count() if request.user.lga else 0
+    members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count() if request.user.lga else 0
     
     context = {
         'members_in_lga': members_in_lga,
@@ -1676,7 +1743,7 @@ def lga_contact_mobilization_dashboard(request):
 
 @specific_role_required('LGA Adviser')
 def lga_adviser_dashboard(request):
-    members_in_lga = User.objects.filter(lga=request.user.lga, status='APPROVED').count() if request.user.lga else 0
+    members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count() if request.user.lga else 0
     
     context = {
         'members_in_lga': members_in_lga,
@@ -1684,9 +1751,9 @@ def lga_adviser_dashboard(request):
     
     return render(request, 'staff/dashboards/lga_adviser.html', context)
 
-@specific_role_required('Secretary')
+@specific_role_required('Ward Administrative Officer')
 def ward_secretary_dashboard(request):
-    members_in_ward = User.objects.filter(ward=request.user.ward, status='APPROVED').count() if request.user.ward else 0
+    members_in_ward = User.objects.filter(ward=request.user.ward, status='VERIFIED').count() if request.user.ward else 0
     total_meetings = WardMeeting.objects.filter(ward=request.user.ward).count() if request.user.ward else 0
     
     context = {
@@ -1696,9 +1763,9 @@ def ward_secretary_dashboard(request):
     
     return render(request, 'staff/dashboards/ward_secretary.html', context)
 
-@specific_role_required('Organizing Secretary')
+@specific_role_required('Ward Programmes Officer')
 def ward_organizing_secretary_dashboard(request):
-    members_in_ward = User.objects.filter(ward=request.user.ward, status='APPROVED').count() if request.user.ward else 0
+    members_in_ward = User.objects.filter(ward=request.user.ward, status='VERIFIED').count() if request.user.ward else 0
     
     context = {
         'members_in_ward': members_in_ward,
@@ -1706,9 +1773,9 @@ def ward_organizing_secretary_dashboard(request):
     
     return render(request, 'staff/dashboards/ward_organizing_secretary.html', context)
 
-@specific_role_required('Treasurer')
+@specific_role_required('Ward Finance Officer')
 def ward_treasurer_dashboard(request):
-    members_in_ward = User.objects.filter(ward=request.user.ward, status='APPROVED').count() if request.user.ward else 0
+    members_in_ward = User.objects.filter(ward=request.user.ward, status='VERIFIED').count() if request.user.ward else 0
     
     context = {
         'members_in_ward': members_in_ward,
@@ -1716,9 +1783,9 @@ def ward_treasurer_dashboard(request):
     
     return render(request, 'staff/dashboards/ward_treasurer.html', context)
 
-@specific_role_required('Publicity Officer')
+@specific_role_required('Ward Communications Officer')
 def ward_publicity_officer_dashboard(request):
-    members_in_ward = User.objects.filter(ward=request.user.ward, status='APPROVED').count() if request.user.ward else 0
+    members_in_ward = User.objects.filter(ward=request.user.ward, status='VERIFIED').count() if request.user.ward else 0
     
     context = {
         'members_in_ward': members_in_ward,
@@ -1726,9 +1793,9 @@ def ward_publicity_officer_dashboard(request):
     
     return render(request, 'staff/dashboards/ward_publicity_officer.html', context)
 
-@specific_role_required('Financial Secretary')
+@specific_role_required('Ward Community Support Officer')
 def ward_financial_secretary_dashboard(request):
-    members_in_ward = User.objects.filter(ward=request.user.ward, status='APPROVED').count() if request.user.ward else 0
+    members_in_ward = User.objects.filter(ward=request.user.ward, status='VERIFIED').count() if request.user.ward else 0
     
     context = {
         'members_in_ward': members_in_ward,
@@ -1736,9 +1803,9 @@ def ward_financial_secretary_dashboard(request):
     
     return render(request, 'staff/dashboards/ward_financial_secretary.html', context)
 
-@specific_role_required('Ward Supervisor')
+@specific_role_required('Ward Monitoring Officer')
 def ward_supervisor_dashboard(request):
-    members_in_ward = User.objects.filter(ward=request.user.ward, status='APPROVED').count() if request.user.ward else 0
+    members_in_ward = User.objects.filter(ward=request.user.ward, status='VERIFIED').count() if request.user.ward else 0
     
     context = {
         'members_in_ward': members_in_ward,
@@ -1748,7 +1815,7 @@ def ward_supervisor_dashboard(request):
 
 @specific_role_required('Ward Adviser')
 def ward_adviser_dashboard(request):
-    members_in_ward = User.objects.filter(ward=request.user.ward, status='APPROVED').count() if request.user.ward else 0
+    members_in_ward = User.objects.filter(ward=request.user.ward, status='VERIFIED').count() if request.user.ward else 0
     
     context = {
         'members_in_ward': members_in_ward,
@@ -1955,14 +2022,14 @@ def swap_positions(request):
 
 
 
-@specific_role_required('Women Leader', 'Assistant Women Leader')
+@specific_role_required('Director of Women Development', 'Assistant Director of Women Development')
 def women_members(request):
     """Female members dashboard for Women Leader"""
     search = request.GET.get('search', '')
     zone_filter = request.GET.get('zone', '')
     lga_filter = request.GET.get('lga', '')
     
-    female_members = User.objects.filter(status='APPROVED', gender='F').order_by('last_name', 'first_name')
+    female_members = User.objects.filter(status='VERIFIED', gender='F').order_by('last_name', 'first_name')
     
     if search:
         female_members = female_members.filter(
@@ -1992,7 +2059,7 @@ def women_members(request):
     return render(request, 'staff/women_members.html', context)
 
 
-@specific_role_required('Director of Mobilization', 'Assistant Director of Mobilization', 'Director of Contact and Mobilization', 'President', 'Zonal Coordinator', 'LGA Coordinator', 'Ward Coordinator')
+@specific_role_required('Director of Membership & Mobilization', 'Assistant Director of Membership & Mobilization', 'LGA Community Engagement Officer', 'President', 'Senatorial Director', 'LGA Network Lead', 'Ward Community Lead')
 def member_mobilization(request):
     """Member filtering and contact list generation for mobilization"""
     import csv
@@ -2026,7 +2093,7 @@ def member_mobilization(request):
             members = members.filter(status=form.cleaned_data['status'])
         else:
             # If no status filter selected, default to APPROVED members only
-            members = members.filter(status='APPROVED')
+            members = members.filter(status='VERIFIED')
     
     # Handle CSV export
     if 'export' in request.GET and request.GET['export'] == 'csv':
@@ -2187,7 +2254,7 @@ def member_mobilization(request):
 
 # Women's Program Management Views
 
-@specific_role_required('Women Leader', 'Assistant Women Leader')
+@specific_role_required('Director of Women Development', 'Assistant Director of Women Development')
 def womens_programs_list(request):
     """List all women's programs"""
     user = request.user
@@ -2214,7 +2281,7 @@ def womens_programs_list(request):
     return render(request, 'staff/womens_programs/list.html', context)
 
 
-@specific_role_required('Women Leader', 'Assistant Women Leader')
+@specific_role_required('Director of Women Development', 'Assistant Director of Women Development')
 def create_womens_program(request):
     """Create a new women's program"""
     from .forms import WomensProgramForm
@@ -2244,7 +2311,7 @@ def create_womens_program(request):
     return render(request, 'staff/womens_programs/form.html', context)
 
 
-@specific_role_required('Women Leader', 'Assistant Women Leader')
+@specific_role_required('Director of Women Development', 'Assistant Director of Women Development')
 def edit_womens_program(request, program_id):
     """Edit an existing women's program"""
     from .forms import WomensProgramForm
@@ -2267,7 +2334,7 @@ def edit_womens_program(request, program_id):
     return render(request, 'staff/womens_programs/form.html', context)
 
 
-@specific_role_required('Women Leader', 'Assistant Women Leader')
+@specific_role_required('Director of Women Development', 'Assistant Director of Women Development')
 def delete_womens_program(request, program_id):
     """Delete a women's program"""
     program = get_object_or_404(WomensProgram, pk=program_id)
@@ -2284,24 +2351,24 @@ def delete_womens_program(request, program_id):
     return render(request, 'staff/womens_programs/delete.html', context)
 
 
-@specific_role_required('Women Leader', 'Assistant Women Leader')
+@specific_role_required('Director of Women Development', 'Assistant Director of Women Development')
 def manage_program_participants(request, program_id):
     """Manage participants for a women's program"""
     
     # Filter programs by jurisdiction to prevent IDOR
     if request.user.role == 'STATE':
         programs = WomensProgram.objects.all()
-        female_members = User.objects.filter(status='APPROVED', gender='F')
+        female_members = User.objects.filter(status='VERIFIED', gender='F')
     elif request.user.role == 'ZONAL':
         programs = WomensProgram.objects.filter(
             models.Q(zone=request.user.zone) | models.Q(zone__isnull=True, lga__isnull=True)
         )
-        female_members = User.objects.filter(status='APPROVED', gender='F', zone=request.user.zone)
+        female_members = User.objects.filter(status='VERIFIED', gender='F', zone=request.user.zone)
     elif request.user.role == 'LGA':
         programs = WomensProgram.objects.filter(
             models.Q(lga=request.user.lga) | models.Q(zone=request.user.zone, lga__isnull=True) | models.Q(zone__isnull=True, lga__isnull=True)
         )
-        female_members = User.objects.filter(status='APPROVED', gender='F', lga=request.user.lga)
+        female_members = User.objects.filter(status='VERIFIED', gender='F', lga=request.user.lga)
     else:
         programs = WomensProgram.objects.none()
         female_members = User.objects.none()
@@ -2580,17 +2647,17 @@ def manage_youth_participants(request, program_id):
     # Filter programs by jurisdiction to prevent IDOR
     if request.user.role == 'STATE':
         programs = YouthProgram.objects.all()
-        members = User.objects.filter(status='APPROVED')
+        members = User.objects.filter(status='VERIFIED')
     elif request.user.role == 'ZONAL':
         programs = YouthProgram.objects.filter(
             models.Q(zone=request.user.zone) | models.Q(zone__isnull=True, lga__isnull=True)
         )
-        members = User.objects.filter(status='APPROVED', zone=request.user.zone)
+        members = User.objects.filter(status='VERIFIED', zone=request.user.zone)
     elif request.user.role == 'LGA':
         programs = YouthProgram.objects.filter(
             models.Q(lga=request.user.lga) | models.Q(zone=request.user.zone, lga__isnull=True) | models.Q(zone__isnull=True, lga__isnull=True)
         )
-        members = User.objects.filter(status='APPROVED', lga=request.user.lga)
+        members = User.objects.filter(status='VERIFIED', lga=request.user.lga)
     else:
         programs = YouthProgram.objects.none()
         members = User.objects.none()
@@ -2721,17 +2788,17 @@ def manage_welfare_beneficiaries(request, program_id):
     # Filter programs by jurisdiction to prevent IDOR
     if request.user.role == 'STATE':
         programs = WelfareProgram.objects.all()
-        members = User.objects.filter(status='APPROVED')
+        members = User.objects.filter(status='VERIFIED')
     elif request.user.role == 'ZONAL':
         programs = WelfareProgram.objects.filter(
             models.Q(zone=request.user.zone) | models.Q(zone__isnull=True, lga__isnull=True)
         )
-        members = User.objects.filter(status='APPROVED', zone=request.user.zone)
+        members = User.objects.filter(status='VERIFIED', zone=request.user.zone)
     elif request.user.role == 'LGA':
         programs = WelfareProgram.objects.filter(
             models.Q(lga=request.user.lga) | models.Q(zone=request.user.zone, lga__isnull=True) | models.Q(zone__isnull=True, lga__isnull=True)
         )
-        members = User.objects.filter(status='APPROVED', lga=request.user.lga)
+        members = User.objects.filter(status='VERIFIED', lga=request.user.lga)
     else:
         programs = WelfareProgram.objects.none()
         members = User.objects.none()
@@ -2774,7 +2841,7 @@ def create_audit_report(request):
             # Get President as submitted_to
             president = User.objects.filter(
                 role_definition__title='President',
-                status='APPROVED'
+                status='VERIFIED'
             ).first()
             audit.submitted_to = president
             audit.save()
@@ -2986,7 +3053,7 @@ def delete_outreach(request, pk):
 
 # Ward Meeting Management
 
-@specific_role_required('Ward Coordinator', 'Ward Secretary')
+@specific_role_required('Ward Community Lead', 'Ward Administrative Officer')
 def create_ward_meeting(request):
     """Create a new ward meeting"""
     if request.method == 'POST':
@@ -3006,7 +3073,7 @@ def create_ward_meeting(request):
     return render(request, 'staff/ward_meetings/create.html', context)
 
 
-@specific_role_required('Ward Coordinator', 'Ward Secretary', 'Ward Organizing Secretary')
+@specific_role_required('Ward Community Lead', 'Ward Administrative Officer', 'Ward Programmes Officer')
 def ward_meetings_list(request):
     """List all ward meetings for the user's ward"""
     if request.user.ward:
@@ -3020,7 +3087,7 @@ def ward_meetings_list(request):
     return render(request, 'staff/ward_meetings/list.html', context)
 
 
-@specific_role_required('Ward Coordinator', 'Ward Secretary')
+@specific_role_required('Ward Community Lead', 'Ward Administrative Officer')
 def edit_ward_meeting(request, pk):
     """Edit an existing ward meeting"""
     meeting = get_object_or_404(WardMeeting, pk=pk, ward=request.user.ward)
@@ -3041,7 +3108,7 @@ def edit_ward_meeting(request, pk):
     return render(request, 'staff/ward_meetings/edit.html', context)
 
 
-@specific_role_required('Ward Coordinator', 'Ward Secretary', 'Ward Organizing Secretary')
+@specific_role_required('Ward Community Lead', 'Ward Administrative Officer', 'Ward Programmes Officer')
 def manage_ward_meeting_attendance(request, pk):
     """Manage attendance for a ward meeting"""
     meeting = get_object_or_404(WardMeeting, pk=pk, ward=request.user.ward)
@@ -3086,7 +3153,7 @@ def manage_ward_meeting_attendance(request, pk):
     return render(request, 'staff/ward_meetings/manage_attendance.html', context)
 
 
-@specific_role_required('Ward Coordinator', 'Ward Secretary')
+@specific_role_required('Ward Community Lead', 'Ward Administrative Officer')
 def delete_ward_meeting(request, pk):
     """Delete a ward meeting"""
     meeting = get_object_or_404(WardMeeting, pk=pk, ward=request.user.ward)
@@ -3176,227 +3243,567 @@ def delete_announcement(request, pk):
 ROLE_SHORTENING = {
     'President': 'President',
     'Vice President': 'Vice President',
-    'General Secretary': 'General Secretary',
+    'General Secretary': 'Gen. Secretary',
     'Assistant General Secretary': 'Asst. Secretary',
-    'State Supervisor': 'State Supervisor',
+    'Director of Monitoring & Compliance': 'Dir. Monitoring',
     'Legal & Ethics Adviser': 'Legal Adviser',
-    'Treasurer': 'Treasurer',
-    'Financial Secretary': 'Finance Secretary',
-    'Director of Mobilization': 'Mobilization Dir.',
-    'Assistant Director of Mobilization': 'Asst. Mobilization',
-    'Organizing Secretary': 'Organizer',
-    'Assistant Organizing Secretary': 'Asst. Organizer',
+    'Director of Finance': 'Dir. Finance',
+    'Financial Secretary': 'Fin. Secretary',
+    'Director of Membership & Mobilization': 'Dir. Mobilization',
+    'Assistant Director of Membership & Mobilization': 'Asst. Mobilization',
+    'Director of Programmes & Events': 'Dir. Programmes',
+    'Assistant Director of Programmes & Events': 'Asst. Programmes',
     'Auditor General': 'Auditor General',
-    'Welfare Officer': 'Welfare Officer',
-    'Youth Development & Empowerment Officer': 'Youth Officer',
-    'Women Leader': 'Women Leader',
-    'Assistant Women Leader': 'Asst. Women Lead',
-    'Director of Media & Publicity': 'Publicity Officer',
-    'Assistant Director of Media & Publicity': 'Asst. Publicity',
-    'Public Relations & Community Engagement Officer': 'PR Officer',
-    'Zonal Coordinator': 'Zonal Coordinator.',
-    'Zonal Secretary': 'Zonal Secretary',
-    'Zonal Publicity Officer': 'Zonal Publicity',
-    'LGA Coordinator': 'LGA Coordinator',
-    'Secretary': 'Secretary',
-    'Publicity Officer': 'Publicity',
-    'Contact & Mobilization': 'Contact Officer',
-    'LGA Supervisor': 'LGA Supervisor',
+    'Director of Welfare & Community Support': 'Dir. Welfare',
+    'Director of Youth Development & Empowerment': 'Dir. Youth',
+    'Director of Women Development': 'Dir. Women',
+    'Assistant Director of Women Development': 'Asst. Women',
+    'Director of Media & Communications': 'Dir. Media',
+    'Assistant Director of Media & Communications': 'Asst. Media',
+    'Director of Public Relations & Community Engagement': 'PR Director',
+    'Senatorial Director': 'Sen. Director',
+    'Senatorial Administrative Officer': 'Sen. Admin',
+    'Senatorial Communications Officer': 'Sen. Comms',
+    'LGA Network Lead': 'LGA Lead',
+    'LGA Administrative Officer': 'LGA Admin',
+    'LGA Communications Officer': 'LGA Comms',
+    'LGA Monitoring Officer': 'LGA Monitor',
+    'LGA Community Engagement Officer': 'LGA Engagement',
     'LGA Adviser': 'LGA Adviser',
-    'Ward Coordinator': 'Ward Coordinator',
-    'Ward Supervisor': 'Ward Supervisor',
+    'LGA Programmes Officer': 'LGA Programs',
+    'LGA Community Support Officer': 'LGA Support',
+    'LGA Women Development Officer': 'LGA Women',
+    'LGA Finance Officer': 'LGA Finance',
+    'Ward Community Lead': 'Ward Lead',
+    'Ward Monitoring Officer': 'Ward Monitor',
     'Ward Adviser': 'Ward Adviser',
+    'Ward Administrative Officer': 'Ward Admin',
+    'Ward Communications Officer': 'Ward Comms',
+    'Ward Programmes Officer': 'Ward Programs',
+    'Ward Finance Officer': 'Ward Finance',
+    'Ward Community Support Officer': 'Ward Support',
 }
 
 @login_required
 def generate_id_tag(request):
-    '''Generate an ID tag for the logged-in user as PDF'''
+    '''Generate an ID card for the logged-in user as a 2-page PDF'''
     from PIL import Image, ImageDraw, ImageFont
     from io import BytesIO
     from django.urls import reverse
     import qrcode
     import os
-    from reportlab.lib.pagesizes import letter
+    from django.conf import settings
     from reportlab.pdfgen import canvas as pdf_canvas
-    
+    from django.http import HttpResponse
+    from django.contrib import messages
+    from django.shortcuts import redirect
+    import uuid
+
     user = request.user
     
-    # Get the tag template
-    template_path = os.path.join(settings.STATIC_ROOT, 'images', 'id_tag_template.png')
-    if not os.path.exists(template_path):
-        template_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'id_tag_template.png')
-    
-    #  the template
-    try:
-        tag = Image.open(template_path).convert('RGB')
-    except Exception as e:
-        messages.error(request, f'Error loading tag template: {str(e)}')
-        return Openredirect('staff:dashboard')
-    
-    draw = ImageDraw.Draw(tag)
-    
-    # Define positions for text (adjusted for better layout)
-    # Template size is around 458 x 812 pixels
-    photo_center = (239, 385)  # Center of the white circle for photo
-    photo_radius = 169  # Increased radius for better fit
-    
-    # Text positions - moved all text higher and closer together
-    name_y = 577  # Moved up significantly
-    position_y = 637  # Moved up
-    address_y = 687  # Moved up
-    text_x = 229  # Center X for all text
-    
-    # QR code position (white square at bottom left) - increased size to fill properly
-    qr_position = (11, 720)
-    qr_size = 99  # Increased size to fill the white square better
-    
-    # Try to load a font - use default if not available
-    try:
-        # Use clean, professional fonts with better sizing
-        font_large = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 24)
-        font_medium = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 20)
-        font_small = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 18)
-    except:
-        # Fallback to default font
-        font_large = ImageFont.load_default()
-        font_medium = ImageFont.load_default()
-        font_small = ImageFont.load_default()
-    
-    # Get user information
-    full_name = user.get_full_name() or user.username
-    
-    # Get position/role
+    # Block GENERAL members
     if user.role == 'GENERAL':
-        position = 'Member'
-    else:
-        if user.role_definition:
-            role_title = user.role_definition.title
-            position = ROLE_SHORTENING.get(role_title, role_title)
+        messages.error(request, 'General members are not authorized to generate ID cards.')
+        return redirect('staff:dashboard')
+
+    # Load templates
+    front_path = os.path.join(settings.STATIC_ROOT, 'images', 'id_card_front.png')
+    back_path = os.path.join(settings.STATIC_ROOT, 'images', 'id_card_back.png')
+    
+    if not os.path.exists(front_path):
+        front_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'id_card_front.png')
+    if not os.path.exists(back_path):
+        back_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'id_card_back.png')
+        
+    try:
+        front_card = Image.open(front_path).convert('RGBA')
+        back_card = Image.open(back_path).convert('RGBA')
+    except Exception as e:
+        messages.error(request, f'Error loading ID card templates: {str(e)}. Please ensure id_card_front.png and id_card_back.png exist in static/images/.')
+        return redirect('staff:dashboard')
+        
+    draw_front = ImageDraw.Draw(front_card)
+    draw_back = ImageDraw.Draw(back_card)
+
+    # Fonts
+    # We must explicitly load a TTF, no default fallback that ignores size!
+    def get_font(size, bold=False, italic=False):
+        font_paths = []
+        # Add primary requested font first
+        if bold and italic:
+            font_paths.append(os.path.join(settings.BASE_DIR, 'static', 'fonts', 'Montserrat-BoldItalic.ttf'))
+            font_paths.append('arialbi.ttf')  # Windows Arial Bold Italic
+        elif bold:
+            font_paths.append(os.path.join(settings.BASE_DIR, 'static', 'fonts', 'Montserrat-Bold.ttf'))
+            font_paths.append('arialbd.ttf')  # Windows Arial Bold
+        elif italic:
+            font_paths.append(os.path.join(settings.BASE_DIR, 'static', 'fonts', 'Montserrat-Italic.ttf'))
+            font_paths.append('ariali.ttf')   # Windows Arial Italic
         else:
-            position = user.get_role_display()
+            font_paths.append(os.path.join(settings.BASE_DIR, 'static', 'fonts', 'Montserrat-Regular.ttf'))
+            font_paths.append('arial.ttf')    # Windows Arial
+            
+        # Linux standard fallbacks
+        if bold and not italic: font_paths.append('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf')
+        elif italic and bold: font_paths.append('/usr/share/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf')
+        else: font_paths.append('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf')
+
+        for fpath in font_paths:
+            try:
+                return ImageFont.truetype(fpath, size)
+            except IOError:
+                continue
+                
+        raise ValueError(f"Could not load any TrueType fonts. Tried: {font_paths}. Please ensure a valid .ttf font is available.")
+
+    # Apply scaling to font sizes relative to 300 DPI high-res requirements
+    try:
+        font_name = get_font(28, bold=True)      # Scaled up from 22
+        font_pos = get_font(26, bold=True)       # Scaled up from 20
+        font_branch = get_font(26, bold=True)    # Scaled up from 20
+        font_type = get_font(26, bold=True)      # Scaled up from 20
+        font_id = get_font(42, bold=True)        # Scaled up from 32
+        font_date = get_font(24, bold=True, italic=True) # Scaled up from 18
+    except ValueError as e:
+        messages.error(request, str(e))
+        return redirect('staff:dashboard')
+
+    # 1. ID Number
+    if user.role == 'STATE':
+        abbr = 'SHQ'
+    elif user.role == 'ZONAL' and user.zone:
+        z_name = user.zone.name.lower()
+        if 'north' in z_name: abbr = 'NTH'
+        elif 'central' in z_name: abbr = 'CTR'
+        elif 'south' in z_name: abbr = 'STH'
+        else: abbr = user.zone.name[:3].upper()
+    elif user.lga:
+        abbr = user.lga.name[:3].upper()
+    else:
+        abbr = 'KPN'
     
-    # Get address
-    address_parts = []
-    if user.ward:
-        address_parts.append(user.ward.name)
-    if user.lga:
-        address_parts.append(user.lga.name)
-    if user.zone:
-        address_parts.append(user.zone.name)
+    id_number = f"KPN-{abbr}-{user.id:04d}"
+
+    # 2. Member Type
+    member_type_map = {
+        'STATE': 'State Team',
+        'ZONAL': 'Zonal Team',
+        'LGA': 'LGA Team',
+        'WARD': 'Ward Team'
+    }
+    member_type = member_type_map.get(user.role, 'Team Member')
+
+    # 3. Branch
+    if user.role == 'STATE':
+        branch = 'State Head Office'
+    elif user.role == 'ZONAL' and user.zone:
+        branch = f"{user.zone.name}"
+    elif user.role == 'LGA' and user.lga:
+        branch = f"{user.lga.name} LGA"
+    elif user.role == 'WARD' and user.ward and user.lga:
+        branch = f"{user.ward.name} Ward - {user.lga.name}"
+    else:
+        branch = "Kebbi State"
+
+    # 4. Position
+    if user.role_definition:
+        role_title = user.role_definition.title
+        position = ROLE_SHORTENING.get(role_title, role_title[:20])
+    else:
+        position = user.get_role_display()
+
+    full_name_raw = user.get_full_name().title()
+    name_parts = full_name_raw.split()
+    if len(name_parts) >= 3:
+        # e.g. "Maryam Sani Magini" -> "Maryam S. Magini"
+        full_name = f"{name_parts[0]} {name_parts[1][0]}. {' '.join(name_parts[2:])}"
+    else:
+        full_name = full_name_raw
+
+    # --- DRAW FRONT CARD ---
     
-    address = ', '.join(address_parts) if address_parts else 'Kebbi State'
-    
-    # Add user photo to the white circle
+    # Draw photo (146, 211) to (400, 482) => size 254x271
+    target_w = 266
+    target_h = 281
+    x_offset = 138
+    y_offset = 206
+    corner_radius = 20
+
     if user.photo:
         try:
-            # Open user photo
-            if hasattr(user.photo, 'url'):
-                # Handle both local and cloud storage
-                if user.photo.url.startswith('http'):
-                    import requests
-                    response = requests.get(user.photo.url)
-                    user_photo = Image.open(BytesIO(response.content))
-                else:
-                    user_photo_path = os.path.join(settings.BASE_DIR, user.photo.url.lstrip('/'))
-                    user_photo = Image.open(user_photo_path)
+            if hasattr(user.photo, 'url') and user.photo.url.startswith('http'):
+                import requests
+                response = requests.get(user.photo.url)
+                user_photo = Image.open(BytesIO(response.content))
             else:
-                user_photo = Image.open(user.photo)
+                user_photo_path = os.path.join(settings.BASE_DIR, user.photo.url.lstrip('/'))
+                user_photo = Image.open(user_photo_path)
             
-            # Convert to RGB
-            user_photo = user_photo.convert('RGB')
+            user_photo = user_photo.convert('RGBA')
             
-            # Crop photo to square before resizing
+            # Crop center to match target aspect ratio
             width, height = user_photo.size
-            min_dimension = min(width, height)
-            left = (width - min_dimension) // 2
-            top = (height - min_dimension) // 2
-            right = left + min_dimension
-            bottom = top + min_dimension
-            user_photo = user_photo.crop((left, top, right, bottom))
+            target_ratio = target_w / float(target_h)
+            current_ratio = width / float(height)
             
-            # Resize to fit circle perfectly
-            size = photo_radius * 2
-            user_photo = user_photo.resize((size, size), Image.Resampling.LANCZOS)
+            if current_ratio > target_ratio:
+                # too wide
+                new_width = int(target_ratio * height)
+                left = (width - new_width) // 2
+                user_photo = user_photo.crop((left, 0, left + new_width, height))
+            else:
+                # too tall
+                new_height = int(width / target_ratio)
+                top = (height - new_height) // 2
+                user_photo = user_photo.crop((0, top, width, top + new_height))
+                
+            # Resize exactly to target dimensions
+            user_photo = user_photo.resize((target_w, target_h), Image.Resampling.LANCZOS)
             
-            # Create a circular mask
-            mask = Image.new('L', (size, size), 0)
+            # Create rounded rectangle mask
+            mask = Image.new("L", (target_w, target_h), 0)
             mask_draw = ImageDraw.Draw(mask)
-            mask_draw.ellipse((0, 0, size, size), fill=255)
+            mask_draw.rounded_rectangle((0, 0, target_w, target_h), radius=corner_radius, fill=255)
             
-            # Apply mask to create circular photo
-            output = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-            output.paste(user_photo, (0, 0))
-            output.putalpha(mask)
+            # Paste using mask
+            front_card.paste(user_photo, (x_offset, y_offset), mask=mask)
             
-            # Paste circular photo onto tag (centered properly)
-            tag.paste(output, (photo_center[0] - photo_radius, photo_center[1] - photo_radius), output)
         except Exception as e:
-            # If photo fails to load, continue without it
-            pass
-    
-    # Generate QR code with link to user profile
+            # Optionally log error, but continue building the card
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error drawing photo on ID card: {e}")
+            
+    # Draw Vertical ID (X: 24, Y: 227)
+    id_img = Image.new('RGBA', (400, 100), (255, 255, 255, 0))
+    id_draw = ImageDraw.Draw(id_img)
+    id_draw.text((0, 0), id_number, fill=(255, 255, 255, 255), font=font_id) # White
+    # Crop to exact text bounding box
+    bbox = id_draw.textbbox((0, 0), id_number, font=font_id)
+    id_img = id_img.crop(bbox)
+    id_img = id_img.rotate(90, expand=True)
+    x_pos = 24 + (63 - id_img.size[0]) // 2
+    front_card.paste(id_img, (x_pos, 242), id_img)
+
+    # Draw Text fields
+    draw_front.text((278, 532), full_name, fill=(0, 0, 0, 255), font=font_name)
+    draw_front.text((304, 587), position.title(), fill=(0, 0, 0, 255), font=font_pos)
+    draw_front.text((304, 637), branch.title(), fill=(0, 0, 0, 255), font=font_branch)
+    draw_front.text((375, 693), member_type.title(), fill=(0, 0, 0, 255), font=font_type)
+
+    # --- DRAW BACK CARD ---
+    # QR Code (53, 750) Size 119x113
     profile_url = request.build_absolute_uri(reverse('core:view_profile', args=[user.id]))
-    qr = qrcode.QRCode(version=1, box_size=10, border=0)  # No border for better fit
+    qr = qrcode.QRCode(version=1, box_size=10, border=0)
     qr.add_data(profile_url)
     qr.make(fit=True)
-    qr_img = qr.make_image(fill_color='black', back_color='white')
-    qr_img = qr_img.resize((qr_size, qr_size), Image.Resampling.LANCZOS)
-    
-    # Paste QR code onto tag
-    tag.paste(qr_img, qr_position)
-    
-    # Draw text on tag (navy blue color to match template)
-    text_color = (30, 58, 79)  # Navy blue from template
-    
-    # Draw name
-    name_bbox = draw.textbbox((0, 0), full_name, font=font_large)
-    name_width = name_bbox[2] - name_bbox[0]
-    draw.text((text_x - name_width//2, name_y), full_name, fill=text_color, font=font_large)
-    
-    # Draw position
-    pos_bbox = draw.textbbox((0, 0), position, font=font_medium)
-    pos_width = pos_bbox[2] - pos_bbox[0]
-    draw.text((text_x - pos_width//2, position_y), position, fill=text_color, font=font_medium)
-    
-    # Draw address
-    addr_bbox = draw.textbbox((0, 0), address, font=font_small)
-    addr_width = addr_bbox[2] - addr_bbox[0]
-    draw.text((text_x - addr_width//2, address_y), address, fill=text_color, font=font_small)
-    
-    # Save tag image to a temporary buffer for PDF conversion
-    img_buffer = BytesIO()
-    tag.save(img_buffer, format='PNG', quality=95)
-    img_buffer.seek(0)
-    
-    # Create PDF with the tag image
+    qr_img = qr.make_image(fill_color='black', back_color='white').convert('RGBA')
+    qr_img = qr_img.resize((119, 113), Image.Resampling.LANCZOS)
+    back_card.paste(qr_img, (53, 750), qr_img)
+
+    # Issue Date (159, 950)
+    if user.date_approved:
+        issue_date_str = user.date_approved.strftime('%d %b %Y')
+    else:
+        issue_date_str = user.created_at.strftime('%d %b %Y')
+    draw_back.text((159, 943), issue_date_str, fill=(255, 255, 255, 255), font=font_date)
+
+    # --- PDF GENERATION ---
     pdf_buffer = BytesIO()
     
-    # Set page size to match ID tag dimensions (scale up for print quality)
-    tag_width, tag_height = tag.size
-    page_width = tag_width * 1.5  # Scale for better print quality
-    page_height = tag_height * 1.5
+    # High-resolution sizes
+    page_width, page_height = front_card.size
     
+    # Increase DPI/Scale for print quality to standard 300 DPI sizes
     c = pdf_canvas.Canvas(pdf_buffer, pagesize=(page_width, page_height))
     
-    # Save the image to a temporary file to embed in PDF
-    temp_img_path = os.path.join(settings.BASE_DIR, 'temp_tag.png')
-    tag.save(temp_img_path, format='PNG', quality=95)
+    # Temp files
+    uid = str(uuid.uuid4())
+    temp_front = os.path.join(settings.BASE_DIR, f'temp_id_front_{uid}.png')
+    temp_back = os.path.join(settings.BASE_DIR, f'temp_id_back_{uid}.png')
     
-    # Draw the image on PDF (fill entire page)
-    c.drawImage(temp_img_path, 0, 0, width=page_width, height=page_height, preserveAspectRatio=True)
+    # Save with specific 300 DPI metadata
+    front_card.save(temp_front, format='PNG', dpi=(300, 300), quality=100)
+    back_card.save(temp_back, format='PNG', dpi=(300, 300), quality=100)
     
-    # Finalize PDF
+    # Page 1 (Front)
+    c.drawImage(temp_front, 0, 0, width=page_width, height=page_height, preserveAspectRatio=True)
+    c.showPage()
+    
+    # Page 2 (Back)
+    c.drawImage(temp_back, 0, 0, width=page_width, height=page_height, preserveAspectRatio=True)
     c.showPage()
     c.save()
     
-    # Clean up temporary image file
-    if os.path.exists(temp_img_path):
-        os.remove(temp_img_path)
+    # Cleanup
+    if os.path.exists(temp_front): os.remove(temp_front)
+    if os.path.exists(temp_back): os.remove(temp_back)
     
-    # Return PDF as response
     pdf_buffer.seek(0)
     response = HttpResponse(pdf_buffer, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{user.username}_id_tag.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="{user.username}_id_card.pdf"'
     
     return response
 
+# ──────────────────────────────────────────────────────────────────────────────
+# TRUSTED REPORTER SYSTEM
+# Only President and Director of Media & Communications can grant/revoke
+# ──────────────────────────────────────────────────────────────────────────────
+
+@specific_role_required('President', 'Director of Media & Communications')
+def trusted_reporters_list(request):
+    """View all Community Reporters eligible for promotion to Trusted Reporter."""
+    community_reporters = User.objects.filter(
+        status='VERIFIED',
+        reporter_level='COMMUNITY_REPORTER'
+    ).order_by('last_name', 'first_name')
+    
+    trusted_reporters = User.objects.filter(
+        status='VERIFIED',
+        is_trusted_reporter=True
+    ).order_by('last_name', 'first_name')
+    
+    context = {
+        'community_reporters': community_reporters,
+        'trusted_reporters': trusted_reporters,
+    }
+    return render(request, 'staff/trusted_reporters.html', context)
+
+
+@specific_role_required('President', 'Director of Media & Communications')
+def promote_to_community_reporter(request, user_id):
+    """Promote a verified member to Community Reporter level."""
+    if request.method == 'POST':
+        member = get_object_or_404(User, id=user_id, status='VERIFIED')
+        member.reporter_level = 'COMMUNITY_REPORTER'
+        member.save()
+        messages.success(request, f'{member.get_full_name()} has been promoted to Community Reporter.')
+    return redirect('staff:trusted_reporters_list')
+
+
+@specific_role_required('President', 'Director of Media & Communications')
+def promote_to_trusted_reporter(request, user_id):
+    """Promote a Community Reporter to Trusted Reporter. Requires POST for CSRF safety."""
+    if request.method == 'POST':
+        member = get_object_or_404(User, id=user_id, status='VERIFIED')
+        member.reporter_level = 'TRUSTED_REPORTER'
+        member.is_trusted_reporter = True
+        member.save()
+        messages.success(request, f'{member.get_full_name()} is now a KPN Trusted Reporter.')
+    return redirect('staff:trusted_reporters_list')
+
+
+@specific_role_required('President', 'Director of Media & Communications')
+def revoke_trusted_reporter(request, user_id):
+    """Revoke Trusted Reporter status. Demotes back to Community Reporter."""
+    if request.method == 'POST':
+        member = get_object_or_404(User, id=user_id, is_trusted_reporter=True)
+        member.reporter_level = 'COMMUNITY_REPORTER'
+        member.is_trusted_reporter = False
+        member.save()
+        messages.warning(request, f'Trusted Reporter status has been revoked from {member.get_full_name()}.')
+    return redirect('staff:trusted_reporters_list')
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# COMMUNITY REPORTS NEWSROOM WORKFLOW
+# Only Media Director and President can review community reports
+# ──────────────────────────────────────────────────────────────────────────────
+
+@specific_role_required('President', 'Director of Media & Communications')
+def community_report_review(request, report_id):
+    """Newsroom workflow for verifying and publishing community reports."""
+    from core.models import CommunityReport
+    
+    report = get_object_or_404(CommunityReport, id=report_id)
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        info_status = request.POST.get('info_status')
+        internal_notes = request.POST.get('internal_notes')
+        
+        # Update notes
+        if internal_notes:
+            report.internal_notes = internal_notes
+            
+        # Handle approval/rejection
+        if action == 'approve':
+            report.status = 'APPROVED'
+            if info_status:
+                report.info_status = info_status
+            messages.success(request, f"Report approved and marked as {info_status or 'VERIFIED'}.")
+        elif action == 'reject':
+            report.status = 'REJECTED'
+            messages.warning(request, "Report has been rejected.")
+        elif action == 'under_review':
+            report.status = 'UNDER_REVIEW'
+            messages.info(request, "Report is now marked as under review.")
+            
+        report.save()
+        return redirect('staff:media_director_dashboard')
+        
+    context = {
+        'report': report,
+    }
+    return render(request, 'staff/community_report_review.html', context)
+
+
+from core.models import Opportunity, CommunityInitiative, AdvocacyCampaign
+from staff.forms import OpportunityForm, CommunityInitiativeForm, AdvocacyCampaignForm
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+
+# --- MEDIA DIRECTOR / PRESIDENT MANAGEMENT VIEWS ---
+
+def media_director_or_president_required(view_func):
+    """Decorator for views that requires user to be President or Director of Media"""
+    from django.core.exceptions import PermissionDenied
+    from functools import wraps
+    
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('account:login')
+        if request.user.is_superuser:
+            return view_func(request, *args, **kwargs)
+        if request.user.role_definition and request.user.role_definition.title in ['President', 'Director of Media & Communications']:
+            return view_func(request, *args, **kwargs)
+        raise PermissionDenied("You do not have permission to access this page.")
+    return _wrapped_view
+
+@media_director_or_president_required
+def manage_opportunities(request):
+    opportunities = Opportunity.objects.all().order_by('-created_at')
+    context = {'opportunities': opportunities}
+    return render(request, 'staff/manage_opportunities.html', context)
+
+@media_director_or_president_required
+def create_opportunity(request):
+    if request.method == 'POST':
+        form = OpportunityForm(request.POST, request.FILES)
+        if form.is_valid():
+            opportunity = form.save()
+            messages.success(request, 'Opportunity created successfully.')
+            return redirect('staff:manage_opportunities')
+    else:
+        form = OpportunityForm()
+    
+    context = {'form': form, 'title': 'Create Opportunity'}
+    return render(request, 'staff/form_template.html', context)
+
+@media_director_or_president_required
+def edit_opportunity(request, pk):
+    opportunity = get_object_or_404(Opportunity, pk=pk)
+    if request.method == 'POST':
+        form = OpportunityForm(request.POST, request.FILES, instance=opportunity)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Opportunity updated successfully.')
+            return redirect('staff:manage_opportunities')
+    else:
+        form = OpportunityForm(instance=opportunity)
+    
+    context = {'form': form, 'title': 'Edit Opportunity'}
+    return render(request, 'staff/form_template.html', context)
+
+@media_director_or_president_required
+def delete_opportunity(request, pk):
+    opportunity = get_object_or_404(Opportunity, pk=pk)
+    if request.method == 'POST':
+        opportunity.delete()
+        messages.success(request, 'Opportunity deleted successfully.')
+        return redirect('staff:manage_opportunities')
+    context = {'object': opportunity, 'cancel_url': 'staff:manage_opportunities', 'title': 'Delete Opportunity'}
+    return render(request, 'staff/confirm_delete.html', context)
+
+
+@media_director_or_president_required
+def manage_community_initiatives(request):
+    initiatives = CommunityInitiative.objects.all().order_by('-created_at')
+    context = {'initiatives': initiatives}
+    return render(request, 'staff/manage_community_initiatives.html', context)
+
+@media_director_or_president_required
+def create_community_initiative(request):
+    if request.method == 'POST':
+        form = CommunityInitiativeForm(request.POST, request.FILES)
+        if form.is_valid():
+            initiative = form.save()
+            messages.success(request, 'Community Initiative created successfully.')
+            return redirect('staff:manage_community_initiatives')
+    else:
+        form = CommunityInitiativeForm()
+    
+    context = {'form': form, 'title': 'Create Community Initiative'}
+    return render(request, 'staff/form_template.html', context)
+
+@media_director_or_president_required
+def edit_community_initiative(request, pk):
+    initiative = get_object_or_404(CommunityInitiative, pk=pk)
+    if request.method == 'POST':
+        form = CommunityInitiativeForm(request.POST, request.FILES, instance=initiative)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Community Initiative updated successfully.')
+            return redirect('staff:manage_community_initiatives')
+    else:
+        form = CommunityInitiativeForm(instance=initiative)
+    
+    context = {'form': form, 'title': 'Edit Community Initiative'}
+    return render(request, 'staff/form_template.html', context)
+
+@media_director_or_president_required
+def delete_community_initiative(request, pk):
+    initiative = get_object_or_404(CommunityInitiative, pk=pk)
+    if request.method == 'POST':
+        initiative.delete()
+        messages.success(request, 'Community Initiative deleted successfully.')
+        return redirect('staff:manage_community_initiatives')
+    context = {'object': initiative, 'cancel_url': 'staff:manage_community_initiatives', 'title': 'Delete Community Initiative'}
+    return render(request, 'staff/confirm_delete.html', context)
+
+
+@media_director_or_president_required
+def manage_advocacy_campaigns(request):
+    campaigns = AdvocacyCampaign.objects.all().order_by('-created_at')
+    context = {'campaigns': campaigns}
+    return render(request, 'staff/manage_advocacy_campaigns.html', context)
+
+@media_director_or_president_required
+def create_advocacy_campaign(request):
+    if request.method == 'POST':
+        form = AdvocacyCampaignForm(request.POST, request.FILES)
+        if form.is_valid():
+            campaign = form.save()
+            messages.success(request, 'Advocacy Campaign created successfully.')
+            return redirect('staff:manage_advocacy_campaigns')
+    else:
+        form = AdvocacyCampaignForm()
+    
+    context = {'form': form, 'title': 'Create Advocacy Campaign'}
+    return render(request, 'staff/form_template.html', context)
+
+@media_director_or_president_required
+def edit_advocacy_campaign(request, pk):
+    campaign = get_object_or_404(AdvocacyCampaign, pk=pk)
+    if request.method == 'POST':
+        form = AdvocacyCampaignForm(request.POST, request.FILES, instance=campaign)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Advocacy Campaign updated successfully.')
+            return redirect('staff:manage_advocacy_campaigns')
+    else:
+        form = AdvocacyCampaignForm(instance=campaign)
+    
+    context = {'form': form, 'title': 'Edit Advocacy Campaign'}
+    return render(request, 'staff/form_template.html', context)
+
+@media_director_or_president_required
+def delete_advocacy_campaign(request, pk):
+    campaign = get_object_or_404(AdvocacyCampaign, pk=pk)
+    if request.method == 'POST':
+        campaign.delete()
+        messages.success(request, 'Advocacy Campaign deleted successfully.')
+        return redirect('staff:manage_advocacy_campaigns')
+    context = {'object': campaign, 'cancel_url': 'staff:manage_advocacy_campaigns', 'title': 'Delete Advocacy Campaign'}
+    return render(request, 'staff/confirm_delete.html', context)

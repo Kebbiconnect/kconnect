@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}KPN Community | Kebbi Progressive Youth Network{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="relative py-20 bg-gradient-to-r from-blue-900 to-indigo-800 text-white overflow-hidden">
+    <!-- Decorative SVG pattern -->
+    <div class="absolute inset-0 opacity-10">
+        <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M0,0 L100,100 M100,0 L0,100" stroke="white" stroke-width="0.5"/>
+        </svg>
+    </div>
+    
+    <div class="container mx-auto px-4 relative z-10 text-center">
+        <h1 class="text-4xl md:text-5xl font-extrabold mb-6 animate-fade-in-up">KPN Community Hub</h1>
+        <p class="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto font-light leading-relaxed mb-8">
+            Welfare, Humanitarian Aid, and Grassroots Volunteering across Kebbi State.
+        </p>
+    </div>
+</section>
+
+<!-- Content Section -->
+<section class="py-16 bg-gray-50 dark:bg-gray-900">
+    <div class="container mx-auto px-4">
+        
+        <div class="mb-12 text-center">
+            <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-4">Ongoing Initiatives</h2>
+            <div class="w-24 h-1 bg-kpn-green mx-auto rounded"></div>
+        </div>
+
+        {% if initiatives %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for init in initiatives %}
+                    <div class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 flex flex-col h-full border border-gray-100 dark:border-gray-700">
+                        {% if init.image %}
+                            <img src="{{ init.image.url }}" alt="{{ init.title }}" class="w-full h-48 object-cover">
+                        {% else %}
+                            <div class="w-full h-48 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                <i class="fas fa-users text-4xl text-gray-400"></i>
+                            </div>
+                        {% endif %}
+                        <div class="p-6 flex-grow flex flex-col">
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                    {{ init.get_category_display }}
+                                </span>
+                                <span class="text-xs text-gray-500 font-semibold flex items-center">
+                                    <i class="fas fa-circle text-[8px] mr-1 {% if init.status == 'ACTIVE' %}text-green-500{% elif init.status == 'COMPLETED' %}text-blue-500{% else %}text-yellow-500{% endif %}"></i>
+                                    {{ init.get_status_display }}
+                                </span>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2 line-clamp-2 hover:text-kpn-green transition">
+                                {{ init.title }}
+                            </h3>
+                            <div class="text-gray-500 text-sm mb-4 flex items-center">
+                                <i class="fas fa-map-marker-alt mr-2 text-red-500"></i> {{ init.location_text }}
+                            </div>
+                            <p class="text-gray-600 dark:text-gray-400 mb-6 line-clamp-3 text-sm">
+                                {{ init.description }}
+                            </p>
+                            <div class="mt-auto border-t border-gray-100 dark:border-gray-700 pt-4 flex justify-between items-center text-sm font-semibold">
+                                <span class="text-kpn-blue dark:text-blue-400"><i class="fas fa-hands-helping mr-1"></i> People Reached:</span>
+                                <span class="text-gray-800 dark:text-gray-200">{{ init.people_reached }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-12 text-center shadow border border-gray-100 dark:border-gray-700">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-500 mb-4">
+                    <i class="fas fa-hands-helping text-2xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">No Active Initiatives</h3>
+                <p class="text-gray-600 dark:text-gray-400">We are currently planning our next community initiatives. Check back soon!</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -70,8 +70,8 @@ class Command(BaseCommand):
             (15, 'Youth Development & Empowerment Officer'),
             (16, 'Women Leader'),
             (17, 'Assistant Women Leader'),
-            (18, 'Director of Media & Publicity'),
-            (19, 'Assistant Director of Media & Publicity'),
+            (18, 'Director of Media & Communications'),
+            (19, 'Assistant Director of Media & Communications'),
             (20, 'Public Relations & Community Engagement Officer'),
         ]
         

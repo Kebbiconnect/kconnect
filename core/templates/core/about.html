@@ -1,119 +1,136 @@
 {% extends 'base.html' %}
 
-{% block title %}About Us - KPN{% endblock %}
+{% block title %}About Us - Kebbi Progressive Youth Network{% endblock %}
 
 {% block content %}
-<section class="bg-gradient-to-r from-kpn-green to-kpn-blue text-white py-16">
+<section class="bg-gradient-to-r from-kpn-green to-kpn-blue text-white py-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-4xl md:text-5xl font-bold mb-4">About Kebbi Progressive Network</h1>
-        <p class="text-xl">Strengthening youth mobilization and promoting good governance across Kebbi State</p>
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">About Kebbi Progressive Youth Network</h1>
+        <p class="text-xl md:text-2xl max-w-3xl mx-auto opacity-90 font-light">
+            A modern civic network, community media, advocacy, development, and opportunities platform for the people of Kebbi State.
+        </p>
     </div>
 </section>
 
-<section class="py-12">
+<section class="py-16 bg-white dark:bg-gray-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="max-w-5xl mx-auto">
-            <h2 class="text-3xl font-bold text-kpn-green mb-6">Our Constitution & Preamble</h2>
-                <p>The Kebbi Progressive Network (KPN) is a youth-driven organization dedicated to building unity, transparency, and sustainable development across Kebbi State. We believe in collective action, civic awareness, and empowerment as tools to move our communities forward and make the voices of our people count in governance and decision-making.</p>
+        <div class="max-w-4xl mx-auto text-center mb-16">
+            <h2 class="text-kpn-green font-bold tracking-widest uppercase text-sm mb-2">Our Motto</h2>
+            <p class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white italic">"One Voice, One Change."</p>
             
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6">
-                <div class="bg-kpn-green text-white px-6 py-4 rounded-t-lg">
-                    <h5 class="text-xl font-semibold"><i class="fas fa-bullseye"></i> Our Vision</h5>
+            <div class="mt-12 text-lg text-gray-600 dark:text-gray-300 leading-relaxed text-left space-y-6">
+                <p>
+                    The <strong>Kebbi Progressive Youth Network (KPN)</strong> is a youth-driven, state-wide organization dedicated to building unity, transparency, and sustainable development across all 21 Local Government Areas of Kebbi State. 
+                </p>
+                <p>
+                    We believe in collective action, civic awareness, and grassroots empowerment as the ultimate tools to move our communities forward and ensure the voices of our people count in governance and decision-making. 
+                    Through our extensive network of leaders down to the Ward level, we bridge the gap between the government and the governed.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Mission & Vision -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition">
+                <div class="w-14 h-14 bg-kpn-green text-white rounded-full flex items-center justify-center text-2xl mb-6 shadow-lg">
+                    <i class="fas fa-bullseye"></i>
                 </div>
-                <div class="px-6 py-4">
-                    <p class="mb-0">To build a progressive, transparent, and united Kebbi State where every citizen has equal opportunities for growth, development, and meaningful participation in governance and societal advancement.</p>
-                </div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Our Vision</h3>
+                <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    To build a progressive, transparent, and united Kebbi State where every citizen has equal opportunities for growth, development, and meaningful participation in governance and societal advancement.
+                </p>
             </div>
             
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6">
-                <div class="bg-kpn-blue text-white px-6 py-4 rounded-t-lg">
-                    <h5 class="text-xl font-semibold"><i class="fas fa-rocket"></i> Our Mission</h5>
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition">
+                <div class="w-14 h-14 bg-kpn-blue text-white rounded-full flex items-center justify-center text-2xl mb-6 shadow-lg">
+                    <i class="fas fa-rocket"></i>
                 </div>
-                <div class="px-6 py-4">
-                    <p class="mb-0">Our main mission is to build a strong, connected social media and community network across Kebbi State a platform where our collective voice will matter and influence the future of our state. Through this network, we aim to mobilize, empower, and unite the youth and citizens of Kebbi State through advocacy, education, welfare activities, and civic engagement that promote good governance, transparency, and sustainable development in all local government areas.</p>
-                </div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Our Mission</h3>
+                <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    To build a strong, connected civic network across Kebbi State—a platform where our collective voice influences the future of our state. We mobilize and empower citizens through advocacy, education, and community engagement.
+                </p>
+            </div>
+        </div>
+        
+        <!-- 5 Core Pillars of KPN 2.0 -->
+        <div class="mb-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">The Five Pillars of KPN</h2>
+                <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">Our work is categorized into five core functions that drive progress across the state.</p>
             </div>
             
-            <h3 class="text-2xl font-bold text-kpn-green mb-4 mt-8">Our Aims & Objectives</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h6 class="text-lg font-semibold text-kpn-green mb-3">
-                        <i class="fas fa-users"></i> Youth Mobilization
-                    </h6>
-                    <p>Mobilize and organize young people across all 21 LGAs in Kebbi State for positive civic engagement and community development.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Media -->
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <h4 class="text-xl font-bold text-kpn-green mb-3"><i class="fas fa-newspaper mr-2"></i> KPN MEDIA</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                        The KPN Newsroom provides verified, grassroots reporting, community alerts, and development news from all 225 wards in Kebbi State.
+                    </p>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h6 class="text-lg font-semibold text-kpn-green mb-3">
-                        <i class="fas fa-heart"></i> Welfare Activities
-                    </h6>
-                    <p>Promote charity and welfare activities to support vulnerable communities and provide assistance to those in need.</p>
+                
+                <!-- Civic -->
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <h4 class="text-xl font-bold text-kpn-blue mb-3"><i class="fas fa-landmark mr-2"></i> KPN CIVIC</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                        Promoting good governance, voter education, and holding leadership accountable at the local, zonal, and state levels.
+                    </p>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h6 class="text-lg font-semibold text-kpn-green mb-3">
-                        <i class="fas fa-graduation-cap"></i> Education & Empowerment
-                    </h6>
-                    <p>Empower citizens through educational initiatives, skill development programs, and economic empowerment opportunities.</p>
+                
+                <!-- Community -->
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <h4 class="text-xl font-bold text-yellow-600 mb-3"><i class="fas fa-users mr-2"></i> KPN COMMUNITY</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                        Welfare programs, charity drives, and direct community interventions designed to support the vulnerable and build local resilience.
+                    </p>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h6 class="text-lg font-semibold text-kpn-green mb-3">
-                        <i class="fas fa-balance-scale"></i> Good Governance
-                    </h6>
-                    <p>Advocate for civic responsibility, transparency, accountability, and good governance at all levels of government.</p>
+                
+                <!-- Opportunities -->
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <h4 class="text-xl font-bold text-indigo-600 mb-3"><i class="fas fa-briefcase mr-2"></i> KPN OPPORTUNITIES</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                        A centralized hub connecting the youth of Kebbi State to scholarships, grants, jobs, and empowerment fellowships.
+                    </p>
                 </div>
-            </div>
-            
-            <h3 class="text-2xl font-bold text-kpn-green mb-4 mt-10">Our Organizational Structure</h3>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-kpn-green text-white p-6 rounded-lg text-center">
-                    <i class="fas fa-crown text-4xl mb-3"></i>
-                    <h6 class="font-semibold text-lg">State Executive</h6>
-                    <p class="text-sm">20 positions covering entire Kebbi State</p>
-                </div>
-                <div class="bg-kpn-blue text-white p-6 rounded-lg text-center">
-                    <i class="fas fa-map-marked-alt text-4xl mb-3"></i>
-                    <h6 class="font-semibold text-lg">Zonal Coordinators</h6>
-                    <p class="text-sm">3 zones with 3 coordinators each</p>
-                </div>
-                <div class="bg-green-600 text-white p-6 rounded-lg text-center">
-                    <i class="fas fa-building text-4xl mb-3"></i>
-                    <h6 class="font-semibold text-lg">LGA Leaders</h6>
-                    <p class="text-sm">21 LGAs with 10 leaders each</p>
-                </div>
-                <div class="bg-yellow-500 text-gray-900 p-6 rounded-lg text-center">
-                    <i class="fas fa-home text-4xl mb-3"></i>
-                    <h6 class="font-semibold text-lg">Ward Leaders</h6>
-                    <p class="text-sm">225 wards with 8 leaders each</p>
-                </div>
-            </div>
-            
-            <div class="mt-10">
-                <h3 class="text-2xl font-bold text-kpn-green mb-4">Our Principles</h3>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
-                    <ul class="divide-y divide-gray-200 dark:divide-gray-700">
-                        <li class="px-6 py-4">
-                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                            <strong>Unity:</strong> One Voice, One Change - We believe in the power of collective action
-                        </li>
-                        <li class="px-6 py-4">
-                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                            <strong>Transparency:</strong> All our activities and decisions are open and accountable
-                        </li>
-                        <li class="px-6 py-4">
-                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                            <strong>Inclusivity:</strong> We welcome all citizens regardless of background or affiliation
-                        </li>
-                        <li class="px-6 py-4">
-                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                            <strong>Progress:</strong> We are committed to moving Kebbi State forward through innovation and development
-                        </li>
-                        <li class="px-6 py-4">
-                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                            <strong>Service:</strong> We exist to serve our communities and promote the common good
-                        </li>
-                    </ul>
+                
+                <!-- Advocacy -->
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm lg:col-span-2">
+                    <h4 class="text-xl font-bold text-red-600 mb-3"><i class="fas fa-bullhorn mr-2"></i> KPN ADVOCACY</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                        Championing policy changes, infrastructural development, and social justice campaigns that directly impact the lives of Kebbi citizens.
+                    </p>
                 </div>
             </div>
         </div>
+        
+        <!-- Network Structure -->
+        <div>
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Our Network Structure</h2>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-kpn-green text-white p-6 rounded-xl text-center shadow-lg">
+                    <i class="fas fa-sitemap text-4xl mb-4 opacity-80"></i>
+                    <h6 class="font-bold text-xl mb-1">State Executive</h6>
+                    <p class="text-sm font-medium opacity-90">State-wide Leadership</p>
+                </div>
+                <div class="bg-kpn-blue text-white p-6 rounded-xl text-center shadow-lg">
+                    <i class="fas fa-map-marked-alt text-4xl mb-4 opacity-80"></i>
+                    <h6 class="font-bold text-xl mb-1">Senatorial Zones</h6>
+                    <p class="text-sm font-medium opacity-90">3 Zonal Teams</p>
+                </div>
+                <div class="bg-gray-800 text-white p-6 rounded-xl text-center shadow-lg">
+                    <i class="fas fa-building text-4xl mb-4 opacity-80"></i>
+                    <h6 class="font-bold text-xl mb-1">LGA Network</h6>
+                    <p class="text-sm font-medium opacity-90">21 Local Governments</p>
+                </div>
+                <div class="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white p-6 rounded-xl text-center shadow-lg">
+                    <i class="fas fa-home text-4xl mb-4 opacity-60"></i>
+                    <h6 class="font-bold text-xl mb-1">Ward Communities</h6>
+                    <p class="text-sm font-medium opacity-80">225 Wards</p>
+                </div>
+            </div>
+        </div>
+
     </div>
 </section>
 {% endblock %}

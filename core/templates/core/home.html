@@ -1,43 +1,88 @@
 {% extends 'base.html' %}
 
-{% block title %}Home - Kebbi Progressive Network{% endblock %}
+{% block title %}Home - Kebbi Progressive Youth Network{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
-<section class="bg-gradient-to-r from-kpn-green to-kpn-blue text-white py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<section class="bg-gradient-to-br from-kpn-green via-green-700 to-kpn-blue text-white py-24 relative overflow-hidden">
+    <!-- Decorative background elements -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+        <div class="absolute w-96 h-96 bg-white opacity-5 rounded-full -top-10 -left-10 mix-blend-overlay"></div>
+        <div class="absolute w-64 h-64 bg-white opacity-5 rounded-full bottom-20 right-10 mix-blend-overlay"></div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="text-center">
-            <h1 class="text-4xl md:text-6xl font-bold mb-6">Kebbi Progressive Network</h1>
-            <p class="text-xl md:text-2xl mb-4 italic">"One Voice, One Change"</p>
-            <p class="text-lg md:text-xl mb-8 max-w-3xl mx-auto">
-                A youth-led movement for civic awareness, digital empowerment, and advocacy across Kebbi State, Nigeria.
+            <h1 class="text-4xl md:text-6xl font-bold mb-4 tracking-tight drop-shadow-md">Kebbi Progressive Youth Network</h1>
+            <p class="text-xl md:text-2xl mb-8 font-medium italic text-green-100">"One Voice, One Change."</p>
+            <p class="text-lg md:text-xl mb-10 max-w-3xl mx-auto text-gray-100 font-light leading-relaxed">
+                Connecting communities, amplifying civic voices, sharing opportunities, and promoting positive development across Kebbi State.
             </p>
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="{% url 'staff:register' %}" class="bg-white text-kpn-green px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">Join Us Today</a>
-                <a href="{% url 'core:about' %}" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-kpn-green transition">Learn More</a>
+            <div class="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+                <a href="{% url 'staff:register' %}" class="bg-white text-kpn-green px-8 py-3 rounded-lg font-semibold hover:bg-green-50 transition transform hover:-translate-y-1 shadow-lg flex items-center justify-center">
+                    <i class="fas fa-user-plus mr-2"></i> Join the Network
+                </a>
+                <a href="{% url 'campaigns:newsroom' %}" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-kpn-green transition transform hover:-translate-y-1 shadow-lg flex items-center justify-center">
+                    <i class="fas fa-newspaper mr-2"></i> Explore the Newsroom
+                </a>
             </div>
+            
+
         </div>
     </div>
 </section>
-<!-- Features Section -->
-<section class="py-16">
+
+<!-- Our 5 Pillars (What We Do) -->
+<section class="py-16 bg-gray-50 dark:bg-gray-900 -mt-8 relative z-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-3xl font-bold mb-8 text-center">Our Core Values</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="text-center">
-                <i class="fas fa-users text-5xl text-kpn-green mb-4"></i>
-                <h3 class="text-xl font-semibold mb-2">Civic Awareness</h3>
-                <p class="text-gray-600 dark:text-gray-400">Empowering citizens with knowledge of their rights and responsibilities.</p>
+        <div class="text-center mb-12">
+            <h2 class="text-sm font-bold text-kpn-green tracking-widest uppercase mb-2">The KPN Ecosystem</h2>
+            <h3 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Our 5 Core Pillars</h3>
+        </div>
+        
+        <div class="flex flex-wrap justify-center gap-6">
+            <!-- Pillar 1 -->
+            <div class="bg-white dark:bg-gray-800 w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(20%-20px)] rounded-xl shadow-xl p-6 border-t-4 border-kpn-green transform hover:-translate-y-2 transition duration-300 flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 text-kpn-green rounded-full flex items-center justify-center text-2xl mb-4">
+                    <i class="fas fa-broadcast-tower"></i>
+                </div>
+                <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Media & Information</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Verified grassroots reporting, breaking news, and combating misinformation.</p>
             </div>
-            <div class="text-center">
-                <i class="fas fa-laptop text-5xl text-kpn-green mb-4"></i>
-                <h3 class="text-xl font-semibold mb-2">Digital Empowerment</h3>
-                <p class="text-gray-600 dark:text-gray-400">Providing digital skills and access to technology for all.</p>
+            
+            <!-- Pillar 2 -->
+            <div class="bg-white dark:bg-gray-800 w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(20%-20px)] rounded-xl shadow-xl p-6 border-t-4 border-kpn-blue transform hover:-translate-y-2 transition duration-300 flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-kpn-blue rounded-full flex items-center justify-center text-2xl mb-4">
+                    <i class="fas fa-hands-helping"></i>
+                </div>
+                <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Community Development</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Interventions, welfare programs, and driving localized positive change.</p>
             </div>
-            <div class="text-center">
-                <i class="fas fa-bullhorn text-5xl text-kpn-green mb-4"></i>
-                <h3 class="text-xl font-semibold mb-2">Advocacy</h3>
-                <p class="text-gray-600 dark:text-gray-400">Championing the needs and aspirations of Kebbi State through proactive advocacy.</p>
+            
+            <!-- Pillar 3 -->
+            <div class="bg-white dark:bg-gray-800 w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(20%-20px)] rounded-xl shadow-xl p-6 border-t-4 border-purple-500 transform hover:-translate-y-2 transition duration-300 flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-full flex items-center justify-center text-2xl mb-4">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Youth Empowerment</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Mentorship, leadership training, and skill acquisition for the next generation.</p>
+            </div>
+            
+            <!-- Pillar 4 -->
+            <div class="bg-white dark:bg-gray-800 w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(20%-20px)] rounded-xl shadow-xl p-6 border-t-4 border-orange-500 transform hover:-translate-y-2 transition duration-300 flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center text-2xl mb-4">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Opportunities Hub</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Connecting youth to jobs, grants, scholarships, and training programs.</p>
+            </div>
+            
+            <!-- Pillar 5 (New) -->
+            <div class="bg-white dark:bg-gray-800 w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(20%-20px)] rounded-xl shadow-xl p-6 border-t-4 border-red-500 transform hover:-translate-y-2 transition duration-300 flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-full flex items-center justify-center text-2xl mb-4">
+                    <i class="fas fa-vote-yea"></i>
+                </div>
+                <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Civic Engagement</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Voter education, grassroots mobilization, and policy advocacy.</p>
             </div>
         </div>
     </div>
@@ -52,8 +97,8 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             {% for campaign in featured_campaigns %}
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
-                {% if campaign.featured_image %}
-                <img src="{{ campaign.featured_image.url }}" alt="{{ campaign.title }}" class="w-full h-48 object-cover">
+                {% if campaign.image %}
+                <img src="{{ campaign.image.url }}" alt="{{ campaign.title }}" class="w-full h-48 object-cover">
                 {% else %}
                 <div class="w-full h-48 bg-kpn-green flex items-center justify-center">
                     <i class="fas fa-bullhorn text-white text-5xl"></i>
@@ -61,8 +106,8 @@
                 {% endif %}
                 <div class="p-6">
                     <h3 class="text-xl font-semibold mb-2">{{ campaign.title }}</h3>
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">{{ campaign.content|truncatewords:20|safe }}</p>
-                    <a href="{% url 'core:campaign_detail' campaign.slug %}" class="text-kpn-green hover:text-kpn-blue font-semibold">Read More <i class="fas fa-arrow-right ml-1"></i></a>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">{{ campaign.issue|truncatewords:20|safe }}</p>
+                    <a href="{% url 'core:advocacy' %}" class="text-kpn-green hover:text-kpn-blue font-semibold">View Campaign <i class="fas fa-arrow-right ml-1"></i></a>
                 </div>
             </div>
             {% endfor %}
@@ -77,7 +122,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center mb-8">
             <h2 class="text-3xl font-bold">Latest News</h2>
-            <a href="{% url 'core:campaigns' %}" class="text-kpn-green hover:text-kpn-blue font-semibold">View All <i class="fas fa-arrow-right ml-1"></i></a>
+            <a href="{% url 'campaigns:newsroom' %}" class="text-kpn-green hover:text-kpn-blue font-semibold">View All <i class="fas fa-arrow-right ml-1"></i></a>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for news in latest_news %}
@@ -87,8 +132,14 @@
                     {{ news.published_at|date:"M d, Y" }}
                 </div>
                 <h3 class="text-lg font-semibold mb-2">{{ news.title|truncatewords:10 }}</h3>
-                <p class="text-gray-600 dark:text-gray-400 mb-3">{{ news.content|truncatewords:15|safe }}</p>
-                <a href="{% url 'core:campaign_detail' news.slug %}" class="text-kpn-green hover:text-kpn-blue font-semibold text-sm">Read More</a>
+                <p class="text-gray-600 dark:text-gray-400 mb-3">
+                    {% if news.subheadline %}
+                        {{ news.subheadline|truncatewords:15 }}
+                    {% else %}
+                        {{ news.content|truncatewords:15|safe }}
+                    {% endif %}
+                </p>
+                <a href="{% url 'campaigns:article_detail' news.slug %}" class="text-kpn-green hover:text-kpn-blue font-semibold text-sm">Read More</a>
             </div>
             {% endfor %}
         </div>
@@ -100,7 +151,7 @@
 <section class="py-16 bg-kpn-green text-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 class="text-3xl font-bold mb-4">Ready to Make a Difference?</h2>
-        <p class="text-xl mb-8">Join Kebbi Progressive Network and be part of the change.</p>
+        <p class="text-xl mb-8">Join Kebbi Progressive Youth Network and be part of the change.</p>
         <a href="{% url 'staff:register' %}" class="bg-white text-kpn-green px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition inline-block">Get Started</a>
     </div>
 </section>

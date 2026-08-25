@@ -46,6 +46,8 @@ if RENDER_EXTERNAL_HOSTNAME:
 ALLOWED_HOSTS.extend([
     "kpn.com.ng",
     "www.kpn.com.ng",
+    "127.0.0.1",
+    "localhost"
 ])
 
 # Allow Replit preview domains (optional)
@@ -56,10 +58,6 @@ if REPLIT_DOMAINS:
 # Development convenience
 if DEBUG:
     ALLOWED_HOSTS = ["*"]
-    
-    # This makes sure your local development server still works
-    if not RENDER_EXTERNAL_HOSTNAME and not REPLIT_DOMAINS:
-        ALLOWED_HOSTS.extend(['localhost', '127.0.0.1'])
 
 # Store these for CSRF_TRUSTED_ORIGINS
 CSRF_TRUSTED_ORIGINS = []
@@ -133,6 +131,7 @@ TEMPLATES = [
                 'django.template.context_processors.media',
                 'django.template.context_processors.static',
                 'staff.context_processors.announcements',
+                'core.context_processors.notifications_processor',
             ],
         },
     },
@@ -143,10 +142,10 @@ WSGI_APPLICATION = 'KPN.wsgi.application'
 # Database configuration
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Use PostgreSQL database from DATABASE_URL environment variable
+# Use PostgreSQL database from DATABASE_URL environment variable, fallback to sqlite3
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL'),
+        default=os.getenv('DATABASE_URL', f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
         conn_max_age=600,
         conn_health_checks=True,
     )
@@ -241,7 +240,8 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@kpn.org')
 
 # Security Settings
 # HTTPS/SSL Configuration
-SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=not DEBUG, cast=bool)
+# Force SSL redirect off if we're on local dev (even if DEBUG is False in env)
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_HSTS_SECONDS = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
@@ -262,22 +262,13 @@ SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = 'DENY'
 SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 
-# Password Validation - Enhanced
+# Password Validation - Simplified for easier memorable passwords
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
         'OPTIONS': {
-            'min_length': 8,
+            'min_length': 6,
         }
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
 

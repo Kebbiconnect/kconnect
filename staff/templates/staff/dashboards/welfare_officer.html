@@ -1,95 +1,52 @@
 {% extends 'base.html' %}
-
 {% block title %}Welfare Officer Dashboard - KPN{% endblock %}
-
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Reusable Dashboard Header with Typing Animation -->
-    {% include 'staff/dashboards/includes/_role_header.html' with title="Welfare Officer Dashboard" icon_class="fas fa-hands-helping" welcome_messages="Supporting member welfare and wellbeing.|Coordinating support programs.|Caring for our community." %}
-    
-    <!-- Profile Section -->
+    {% include 'staff/dashboards/includes/_role_header.html' with title="Welfare Officer Dashboard" icon_class="fas fa-hand-holding-heart" welcome_messages="Supporting KPN members in times of need.|Building a caring and supportive network.|Welfare is the foundation of unity." %}
     {% include 'staff/dashboards/includes/_profile_section.html' %}
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Members</p>
-                    <p class="text-3xl font-bold text-kpn-green">{{ total_members }}</p>
-                </div>
-                <i class="fas fa-users text-4xl text-kpn-green"></i>
+
+    <div class="mb-8">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-chart-pie mr-2 text-kpn-blue"></i> My Statistics</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Active Welfare Cases</div>
+                <div class="text-3xl font-bold text-kpn-blue">{{ active_welfare_cases|default:0 }}</div>
             </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Ongoing Programs</p>
-                    <p class="text-3xl font-bold text-green-600">{{ ongoing_programs }}</p>
-                </div>
-                <i class="fas fa-tasks text-4xl text-green-600"></i>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Resolved Cases</div>
+                <div class="text-3xl font-bold text-kpn-green">{{ resolved_welfare_cases|default:0 }}</div>
             </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Planned Programs</p>
-                    <p class="text-3xl font-bold text-blue-600">{{ planned_programs }}</p>
-                </div>
-                <i class="fas fa-calendar-alt text-4xl text-blue-600"></i>
-            </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Beneficiaries</p>
-                    <p class="text-3xl font-bold text-purple-600">{{ total_beneficiaries }}</p>
-                </div>
-                <i class="fas fa-hands-helping text-4xl text-purple-600"></i>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Total Members</div>
+                <div class="text-3xl font-bold text-purple-600">{{ total_members|default:0 }}</div>
             </div>
         </div>
     </div>
-    
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 class="text-xl font-semibold mb-4">Recent Welfare Programs</h3>
-            {% if welfare_programs %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-tasks mr-2 text-blue-500"></i> My Tasks</h2>
             <div class="space-y-3">
-                {% for program in welfare_programs %}
-                <div class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h4 class="font-semibold">{{ program.title }}</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ program.get_program_type_display }} - {{ program.get_status_display }}</p>
-                        </div>
-                        <span class="text-xs px-2 py-1 rounded-full {% if program.status == 'ONGOING' %}bg-green-100 text-green-800{% elif program.status == 'PLANNED' %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-800{% endif %}">
-                            {{ program.get_status_display }}
-                        </span>
-                    </div>
-                </div>
-                {% endfor %}
+                <a href="{% url 'staff:welfare_cases' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-blue-50 group transition border border-transparent hover:border-blue-200">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-4"><i class="fas fa-file-medical"></i></div>
+                    <div><div class="font-bold text-gray-900 dark:text-white">Welfare Cases</div><div class="text-xs text-gray-500">View and manage active welfare requests</div></div>
+                </a>
+                <a href="{% url 'staff:manage_staff' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-green-50 group transition border border-transparent hover:border-green-200">
+                    <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-4"><i class="fas fa-users"></i></div>
+                    <div><div class="font-bold text-gray-900 dark:text-white">Member Directory</div><div class="text-xs text-gray-500">Browse all KPN members and their status</div></div>
+                </a>
             </div>
-            {% else %}
-            <p class="text-gray-500">No programs yet. Create one to get started!</p>
-            {% endif %}
         </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
-            <div class="space-y-3">
-                <a href="{% url 'staff:welfare_programs_list' %}" class="block p-3 bg-red-50 dark:bg-red-900 rounded-lg hover:bg-red-100 dark:hover:bg-red-800 transition">
-                    <i class="fas fa-heart mr-2"></i> Welfare Programs
-                </a>
-                <a href="{% url 'staff:create_welfare_program' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
-                    <i class="fas fa-plus mr-2"></i> Create New Program
-                </a>
-                <a href="{% url 'staff:profile' %}" class="block p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
-                    <i class="fas fa-user mr-2"></i> My Profile
-                </a>
-            </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-clipboard-list mr-2 text-purple-500"></i> My Responsibilities</h2>
+            <ul class="space-y-4">
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">1</div><span class="text-gray-700 dark:text-gray-300"><strong>Welfare Case Management:</strong> Receive, investigate, and resolve welfare requests submitted by KPN members.</span></li>
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">2</div><span class="text-gray-700 dark:text-gray-300"><strong>Member Support:</strong> Coordinate emergency support for members experiencing hardship, illness, or bereavement.</span></li>
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">3</div><span class="text-gray-700 dark:text-gray-300"><strong>Welfare Fund Oversight:</strong> Manage the disbursement of welfare funds in line with approved KPN guidelines.</span></li>
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">4</div><span class="text-gray-700 dark:text-gray-300"><strong>Welfare Reporting:</strong> Submit quarterly welfare reports to the General Secretary and State Executive.</span></li>
+            </ul>
         </div>
     </div>
+    <div class="text-right"><a href="{% url 'staff:profile' %}" class="inline-flex items-center text-sm text-gray-500 hover:text-kpn-green font-semibold transition"><i class="fas fa-user-edit mr-2"></i> Edit My Profile</a></div>
 </div>
 {% endblock %}

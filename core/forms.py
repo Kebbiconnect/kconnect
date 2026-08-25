@@ -78,6 +78,34 @@ class ReportReviewForm(forms.ModelForm):
             'review_notes': forms.Textarea(attrs={
                 'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white',
                 'rows': 5,
-                'placeholder': 'Provide feedback or notes on this report...'
+                'placeholder': 'Enter your review comments, instructions for revision, or approval notes...'
             }),
+        }
+
+from .models import CommunityReport
+
+class CommunityReportForm(forms.ModelForm):
+    class Meta:
+        model = CommunityReport
+        fields = [
+            'reporter_name', 'reporter_phone', 'category', 
+            'lga', 'ward', 'location_details',
+            'incident_date', 'incident_time',
+            'what_happened', 'who_was_involved', 'why_is_it_important',
+            'evidence_image', 'evidence_video'
+        ]
+        widgets = {
+            'reporter_name': forms.TextInput(attrs={'class': 'w-full px-4 py-2 border rounded-lg'}),
+            'reporter_phone': forms.TextInput(attrs={'class': 'w-full px-4 py-2 border rounded-lg'}),
+            'category': forms.Select(attrs={'class': 'w-full px-4 py-2 border rounded-lg'}),
+            'lga': forms.Select(attrs={'class': 'w-full px-4 py-2 border rounded-lg'}),
+            'ward': forms.Select(attrs={'class': 'w-full px-4 py-2 border rounded-lg'}),
+            'location_details': forms.TextInput(attrs={'class': 'w-full px-4 py-2 border rounded-lg'}),
+            'incident_date': forms.DateInput(attrs={'class': 'w-full px-4 py-2 border rounded-lg', 'type': 'date'}),
+            'incident_time': forms.TimeInput(attrs={'class': 'w-full px-4 py-2 border rounded-lg', 'type': 'time'}),
+            'what_happened': forms.Textarea(attrs={'class': 'w-full px-4 py-2 border rounded-lg', 'rows': 4}),
+            'who_was_involved': forms.Textarea(attrs={'class': 'w-full px-4 py-2 border rounded-lg', 'rows': 2}),
+            'why_is_it_important': forms.Textarea(attrs={'class': 'w-full px-4 py-2 border rounded-lg', 'rows': 2}),
+            'evidence_image': forms.FileInput(attrs={'class': 'w-full px-4 py-2 border rounded-lg'}),
+            'evidence_video': forms.FileInput(attrs={'class': 'w-full px-4 py-2 border rounded-lg'}),
         }

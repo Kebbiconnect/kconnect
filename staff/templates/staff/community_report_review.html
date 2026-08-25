@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}Review Community Report - KPN Newsroom{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
+                <i class="fas fa-file-signature text-orange-500 mr-3"></i> Review Community Report
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">Verify and publish reports from Trusted Reporters.</p>
+        </div>
+        <a href="{% url 'staff:media_director_dashboard' %}" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg transition font-medium">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Report Details -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+        <div class="p-6 border-b border-gray-100 dark:border-gray-700 bg-orange-50/50 dark:bg-orange-900/10">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ report.what_happened|truncatewords:15 }}</h2>
+                    <div class="flex flex-wrap gap-2 text-sm">
+                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full"><i class="fas fa-tag mr-1"></i> {{ report.get_category_display }}</span>
+                        <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-1 rounded-full"><i class="far fa-clock mr-1"></i> {{ report.created_at|date:"F d, Y h:i A" }}</span>
+                        <span class="px-2 py-1 rounded-full font-semibold
+                            {% if report.status == 'PENDING' %}bg-yellow-100 text-yellow-800
+                            {% elif report.status == 'APPROVED' %}bg-green-100 text-green-800
+                            {% elif report.status == 'REJECTED' %}bg-red-100 text-red-800
+                            {% elif report.status == 'UNDER_REVIEW' %}bg-blue-100 text-blue-800
+                            {% else %}bg-gray-100 text-gray-700{% endif %}">
+                            <i class="fas fa-circle text-[10px] mr-1"></i> {{ report.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <!-- Reporter Info -->
+            <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg mb-6">
+                <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-user-shield text-green-600 text-xl"></i>
+                </div>
+                <div>
+                    <p class="font-bold text-gray-900 dark:text-white">{{ report.reporter_name }}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        <i class="fas fa-phone mr-1"></i> {{ report.reporter_phone }} | 
+                        <i class="fas fa-map-marker-alt mr-1"></i> 
+                        {% if report.ward %}{{ report.ward.name }} Ward, {% endif %}{% if report.lga %}{{ report.lga.name }}{% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">What Happened</h3>
+                    <p class="text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg whitespace-pre-wrap">{{ report.what_happened }}</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Who was Involved</h3>
+                    <p class="text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg whitespace-pre-wrap">{{ report.who_was_involved }}</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Why is it Important</h3>
+                    <p class="text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg whitespace-pre-wrap">{{ report.why_is_it_important }}</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Incident Date/Time</h3>
+                        <p class="text-gray-800 dark:text-gray-200">{{ report.incident_date }} {{ report.incident_time|default:"" }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Location Details</h3>
+                        <p class="text-gray-800 dark:text-gray-200">{{ report.location_details }}</p>
+                    </div>
+                </div>
+
+                <!-- Media Evidence -->
+                {% if report.evidence_image or report.evidence_video %}
+                <div>
+                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3"><i class="fas fa-paperclip mr-1"></i> Attached Evidence</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {% if report.evidence_image %}
+                        <div class="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                            <img src="{{ report.evidence_image.url }}" alt="Evidence Image" class="w-full h-48 object-cover">
+                            <div class="p-2 bg-gray-50 dark:bg-gray-800 text-xs text-center">Image Evidence</div>
+                        </div>
+                        {% endif %}
+                        {% if report.evidence_video %}
+                        <div class="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                            <video src="{{ report.evidence_video.url }}" controls class="w-full h-48 object-cover"></video>
+                            <div class="p-2 bg-gray-50 dark:bg-gray-800 text-xs text-center">Video Evidence</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Action Panel -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-t-4 border-orange-500">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-gavel text-orange-500 mr-2"></i> Official Review Decision</h2>
+        
+        <form method="POST" action="{% url 'staff:community_report_review' report.id %}">
+            {% csrf_token %}
+            
+            <!-- Internal Notes -->
+            <div class="mb-6">
+                <label for="internal_notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Internal Notes (Not public)</label>
+                <textarea id="internal_notes" name="internal_notes" rows="3" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-orange-500 focus:ring-orange-500" placeholder="Add notes about verification calls, sources checked, etc...">{{ report.internal_notes|default:"" }}</textarea>
+            </div>
+
+            <!-- Publish Status (Only shown if approving) -->
+            <div class="mb-6 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                <label class="block text-sm font-bold text-gray-800 dark:text-gray-200 mb-3">If approving, what is the verification level?</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <label class="flex items-start p-3 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/20 transition">
+                        <input type="radio" name="info_status" value="VERIFIED" class="mt-1 text-orange-500 focus:ring-orange-500" {% if report.info_status == 'VERIFIED' or not report.info_status %}checked{% endif %}>
+                        <div class="ml-3">
+                            <span class="block font-bold text-green-600">KPN VERIFIED <i class="fas fa-check-circle"></i></span>
+                            <span class="block text-xs text-gray-500 mt-1">Full investigation complete. Story is 100% factual.</span>
+                        </div>
+                    </label>
+                    <label class="flex items-start p-3 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/20 transition">
+                        <input type="radio" name="info_status" value="CONFIRMED" class="mt-1 text-orange-500 focus:ring-orange-500" {% if report.info_status == 'CONFIRMED' %}checked{% endif %}>
+                        <div class="ml-3">
+                            <span class="block font-bold text-blue-600">KPN CONFIRMED</span>
+                            <span class="block text-xs text-gray-500 mt-1">Multiple sources confirm the event occurred.</span>
+                        </div>
+                    </label>
+                    <label class="flex items-start p-3 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/20 transition">
+                        <input type="radio" name="info_status" value="DEVELOPING" class="mt-1 text-orange-500 focus:ring-orange-500" {% if report.info_status == 'DEVELOPING' %}checked{% endif %}>
+                        <div class="ml-3">
+                            <span class="block font-bold text-yellow-600">KPN DEVELOPING</span>
+                            <span class="block text-xs text-gray-500 mt-1">Ongoing situation. Facts are still emerging.</span>
+                        </div>
+                    </label>
+                    <label class="flex items-start p-3 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/20 transition">
+                        <input type="radio" name="info_status" value="ALERT" class="mt-1 text-orange-500 focus:ring-orange-500" {% if report.info_status == 'ALERT' %}checked{% endif %}>
+                        <div class="ml-3">
+                            <span class="block font-bold text-red-600">KPN COMMUNITY ALERT</span>
+                            <span class="block text-xs text-gray-500 mt-1">Urgent warning or notice for public safety.</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap gap-3">
+                <button type="submit" name="action" value="approve" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition flex items-center justify-center">
+                    <i class="fas fa-check mr-2"></i> Approve & Publish
+                </button>
+                <button type="submit" name="action" value="under_review" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition flex items-center justify-center">
+                    <i class="fas fa-search mr-2"></i> Keep Under Review
+                </button>
+                <button type="submit" name="action" value="reject" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition flex items-center justify-center" onclick="return confirm('Are you sure you want to reject this report?');">
+                    <i class="fas fa-times mr-2"></i> Reject Report
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

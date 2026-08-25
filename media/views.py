@@ -18,10 +18,11 @@ def publicity_officer_required(view_func):
             return redirect('core:home')
         
         publicity_roles = [
-            'Director of Media & Publicity',
-            'Assistant Director of Media & Publicity',
-            'Zonal Publicity Officer',
-            'Publicity Officer',
+            'Director of Media & Communications',
+            'Assistant Director of Media & Communications',
+            'Senatorial Communications Officer',
+            'LGA Communications Officer',
+            'Ward Communications Officer',
         ]
         
         if not request.user.role_definition or request.user.role_definition.title not in publicity_roles:
@@ -43,7 +44,7 @@ def create_media(request):
             caption = form.cleaned_data['caption']
             uploaded_count = 0
             
-            is_director = request.user.role_definition and request.user.role_definition.title == 'Director of Media & Publicity'
+            is_director = request.user.role_definition and request.user.role_definition.title == 'Director of Media & Communications'
             
             for file in files:
                 # Determine media type based on file extension
@@ -75,7 +76,7 @@ def create_media(request):
                 if is_director:
                     messages.success(request, f'Successfully uploaded {uploaded_count} media file(s) to the gallery!')
                 else:
-                    messages.success(request, f'Successfully uploaded {uploaded_count} media file(s). They are pending approval by the Director of Media & Publicity.')
+                    messages.success(request, f'Successfully uploaded {uploaded_count} media file(s). They are pending approval by the Director of Media & Communications.')
                 return redirect('media:my_media')
             else:
                 messages.error(request, 'No valid media files were uploaded.')
@@ -136,7 +137,7 @@ def delete_media(request, pk):
     return render(request, 'media/delete_media.html', context)
 
 
-@specific_role_required('Director of Media & Publicity')
+@specific_role_required('Director of Media & Communications')
 def review_media(request):
     """Review pending media submissions from publicity officers"""
     pending_media = MediaItem.objects.filter(status='PENDING').order_by('-created_at')
@@ -147,7 +148,7 @@ def review_media(request):
     return render(request, 'media/review_media.html', context)
 
 
-@specific_role_required('Director of Media & Publicity')
+@specific_role_required('Director of Media & Communications')
 def approve_media(request, pk):
     """Approve a pending media item"""
     media_item = get_object_or_404(MediaItem, pk=pk, status='PENDING')
@@ -165,7 +166,7 @@ def approve_media(request, pk):
     return render(request, 'media/approve_media.html', context)
 
 
-@specific_role_required('Director of Media & Publicity')
+@specific_role_required('Director of Media & Communications')
 def reject_media(request, pk):
     """Reject a pending media item"""
     media_item = get_object_or_404(MediaItem, pk=pk, status='PENDING')

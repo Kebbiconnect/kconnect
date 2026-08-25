@@ -4,36 +4,11 @@
 
 {% block extra_css %}
 <style>
-    @keyframes fadeInScale {
-        from {
-            opacity: 0;
-            transform: scale(0.95);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-    
-    .animate-fadeInScale {
-        animation: fadeInScale 0.6s ease-out;
-    }
-    
     @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
     }
-    
-    .stat-card {
-        animation: slideUp 0.5s ease-out backwards;
-    }
-    
+    .stat-card { animation: slideUp 0.5s ease-out backwards; }
     .stat-card:nth-child(1) { animation-delay: 0.1s; }
     .stat-card:nth-child(2) { animation-delay: 0.2s; }
     .stat-card:nth-child(3) { animation-delay: 0.3s; }
@@ -43,235 +18,348 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Reusable Dashboard Header with Typing Animation -->
-    {% include 'staff/dashboards/includes/_role_header.html' with title="President Dashboard" icon_class="fas fa-crown" welcome_messages="You have full oversight of the organization.|Leading KPN toward progress and change.|Empowering youth across Kebbi State.|One Voice, One Change. 🌟" %}
-    
-    <!-- Profile Section -->
+
+    {% include 'staff/dashboards/includes/_role_header.html' with title="President Dashboard" icon_class="fas fa-crown" welcome_messages="You have full oversight of the organisation.|Leading KPN toward progress and change.|Empowering youth across Kebbi State.|One Voice, One Change. 🌟" %}
+
     {% include 'staff/dashboards/includes/_profile_section.html' %}
-    
-    <!-- Platform Overview -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="stat-card bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Members</p>
-                    <p class="text-3xl font-bold text-kpn-green">{{ total_members }}</p>
-                    <p class="text-xs text-gray-500">M: {{ male_members }} | F: {{ female_members }}</p>
+
+    <!-- ── SECTION 1: Network Overview ─────────────────────────────────── -->
+    <h2 class="text-lg font-bold text-gray-700 dark:text-gray-200 mb-4 mt-2 flex items-center">
+        <i class="fas fa-globe-africa text-kpn-green mr-2"></i> Network Overview
+    </h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4 hover:shadow-lg transition">
+            <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                <i class="fas fa-users text-kpn-green text-xl"></i>
+            </div>
+            <div>
+                <div class="flex items-center">
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_members }}</p>
+                    <span class="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-800 flex items-center">
+                        <i class="fas fa-arrow-up mr-1"></i> {{ member_growth_this_month }} this month
+                    </span>
                 </div>
-                <i class="fas fa-users text-4xl text-kpn-green"></i>
+                <p class="text-xs text-gray-500">Verified Members</p>
+                <p class="text-xs text-gray-400">M: {{ male_members }} | F: {{ female_members }}</p>
             </div>
         </div>
-        
-        <div class="stat-card bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Leaders</p>
-                    <p class="text-3xl font-bold text-kpn-blue">{{ total_leaders }}</p>
-                    <p class="text-xs text-gray-500">Pending: {{ pending_approvals }}</p>
-                </div>
-                <i class="fas fa-user-tie text-4xl text-kpn-blue"></i>
+        <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4 hover:shadow-lg transition">
+            <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                <i class="fas fa-user-tie text-kpn-blue text-xl"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_leaders }}</p>
+                <p class="text-xs text-gray-500">Active Leaders</p>
+                <p class="text-xs text-yellow-500">{{ pending_approvals }} Pending</p>
             </div>
         </div>
-        
-        <div class="stat-card bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Campaigns</p>
-                    <p class="text-3xl font-bold text-purple-600">{{ total_campaigns }}</p>
-                    <p class="text-xs text-gray-500">Active: {{ active_campaigns }}</p>
-                </div>
-                <i class="fas fa-bullhorn text-4xl text-purple-600"></i>
+        <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4 hover:shadow-lg transition">
+            <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center">
+                <i class="fas fa-star text-indigo-600 text-xl"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ trusted_reporters_count|default:"0" }}</p>
+                <p class="text-xs text-gray-500">Trusted Reporters</p>
             </div>
         </div>
-        
-        <div class="stat-card bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Events</p>
-                    <p class="text-3xl font-bold text-orange-600">{{ total_events }}</p>
-                    <p class="text-xs text-gray-500">Upcoming: {{ upcoming_events }}</p>
-                </div>
-                <i class="fas fa-calendar text-4xl text-orange-600"></i>
+        <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4 hover:shadow-lg transition">
+            <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                <i class="fas fa-sitemap text-purple-600 text-xl"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_zones }}</p>
+                <p class="text-xs text-gray-500">Zones</p>
+                <p class="text-xs text-gray-400">{{ total_lgas }} LGAs | {{ total_wards }} Wards</p>
             </div>
         </div>
     </div>
-    
-    <!-- Financial & Programs Overview -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Donations</p>
-                    <p class="text-2xl font-bold text-green-600">₦{{ total_donations|floatformat:0 }}</p>
-                    <p class="text-xs text-gray-500">Pending: {{ pending_donations }}</p>
-                </div>
-                <i class="fas fa-donate text-4xl text-green-600"></i>
-            </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Expenses</p>
-                    <p class="text-2xl font-bold text-red-600">₦{{ total_expenses|floatformat:0 }}</p>
-                </div>
-                <i class="fas fa-money-bill-wave text-4xl text-red-600"></i>
-            </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Programs</p>
-                    <p class="text-3xl font-bold text-teal-600">{{ total_womens_programs|add:total_youth_programs|add:total_welfare_programs }}</p>
-                    <p class="text-xs text-gray-500">W: {{ total_womens_programs }} | Y: {{ total_youth_programs }} | Wf: {{ total_welfare_programs }}</p>
-                </div>
-                <i class="fas fa-tasks text-4xl text-teal-600"></i>
-            </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Structure</p>
-                    <p class="text-3xl font-bold text-indigo-600">{{ total_zones }}</p>
-                    <p class="text-xs text-gray-500">{{ total_lgas }} LGAs | {{ total_wards }} Wards</p>
-                </div>
-                <i class="fas fa-sitemap text-4xl text-indigo-600"></i>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Alerts & Actions -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Pending Approvals</p>
-                    <p class="text-3xl font-bold text-yellow-600">{{ pending_approvals }}</p>
-                </div>
-                <i class="fas fa-user-clock text-4xl text-yellow-600"></i>
-            </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Pending Reports</p>
-                    <p class="text-3xl font-bold text-blue-600">{{ pending_reports }}</p>
-                    <p class="text-xs text-gray-500">Total: {{ total_reports }}</p>
-                </div>
-                <i class="fas fa-file-alt text-4xl text-blue-600"></i>
-            </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Disciplinary</p>
-                    <p class="text-3xl font-bold text-red-600">{{ pending_disciplinary }}</p>
-                </div>
-                <i class="fas fa-gavel text-4xl text-red-600"></i>
-            </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">FAQs</p>
-                    <p class="text-3xl font-bold text-gray-600">{{ total_faqs }}</p>
-                </div>
-                <i class="fas fa-question-circle text-4xl text-gray-600"></i>
-            </div>
-        </div>
-    </div>
-    
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-            <h3 class="text-xl font-semibold mb-4 flex items-center">
-                <i class="fas fa-bolt text-yellow-500 mr-2"></i>Quick Actions
-            </h3>
-            <div class="space-y-3">
-                <a href="{% url 'staff:approve_members' %}" class="block p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800 rounded-lg hover:from-yellow-100 hover:to-yellow-200 dark:hover:from-yellow-800 dark:hover:to-yellow-700 transition-all transform hover:scale-105">
-                    <i class="fas fa-user-check mr-2 text-yellow-600"></i> Approve Member Applications
-                </a>
-                <a href="{% url 'staff:manage_staff' %}" class="block p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 rounded-lg hover:from-blue-100 hover:to-blue-200 dark:hover:from-blue-800 dark:hover:to-blue-700 transition-all transform hover:scale-105">
-                    <i class="fas fa-users-cog mr-2 text-blue-600"></i> Manage All Staff
-                </a>
-                <a href="{% url 'staff:view_reports' %}" class="block p-4 bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 rounded-lg hover:from-purple-100 hover:to-purple-200 dark:hover:from-purple-800 dark:hover:to-purple-700 transition-all transform hover:scale-105">
-                    <i class="fas fa-chart-line mr-2 text-purple-600"></i> View Reports & Analytics
-                </a>
-                <a href="{% url 'staff:disciplinary_actions' %}" class="block p-4 bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900 dark:to-red-800 rounded-lg hover:from-red-100 hover:to-red-200 dark:hover:from-red-800 dark:hover:to-red-700 transition-all transform hover:scale-105">
-                    <i class="fas fa-gavel mr-2 text-red-600"></i> Disciplinary Actions
-                </a>
-                <a href="{% url 'staff:export_members_csv' %}" class="block p-4 bg-gradient-to-r from-teal-50 to-teal-100 dark:from-teal-900 dark:to-teal-800 rounded-lg hover:from-teal-100 hover:to-teal-200 dark:hover:from-teal-800 dark:hover:to-teal-700 transition-all transform hover:scale-105">
-                    <i class="fas fa-file-csv mr-2 text-teal-600"></i> Export Members List (CSV)
-                </a>
-                <a href="{% url 'staff:export_members_pdf' %}" class="block p-4 bg-gradient-to-r from-pink-50 to-pink-100 dark:from-pink-900 dark:to-pink-800 rounded-lg hover:from-pink-100 hover:to-pink-200 dark:hover:from-pink-800 dark:hover:to-pink-700 transition-all transform hover:scale-105">
-                    <i class="fas fa-file-pdf mr-2 text-pink-600"></i> Export Members List (PDF)
-                </a>
-                <a href="{% url 'staff:profile' %}" class="block p-4 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 rounded-lg hover:from-green-100 hover:to-green-200 dark:hover:from-green-800 dark:hover:to-green-700 transition-all transform hover:scale-105">
-                    <i class="fas fa-user-edit mr-2 text-green-600"></i> Edit Profile
-                </a>
-            </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-            <h3 class="text-xl font-semibold mb-4 flex items-center">
-                <i class="fas fa-clock text-kpn-blue mr-2"></i>Recent Activity
-            </h3>
-            <div class="space-y-3">
-                {% for activity in recent_activities %}
-                <div class="flex items-start p-3 bg-gray-50 dark:bg-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition">
-                    <i class="fas fa-info-circle mt-1 mr-3 text-kpn-blue"></i>
-                    <div class="flex-1">
-                        <p class="text-sm">{{ activity.description }}</p>
-                        <p class="text-xs text-gray-500 mt-1">{{ activity.timestamp|timesince }} ago</p>
-                    </div>
-                </div>
-                {% empty %}
-                <p class="text-gray-500 text-sm">No recent activity</p>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-    
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-        <h3 class="text-xl font-semibold mb-4 flex items-center">
-            <i class="fas fa-user-clock text-yellow-600 mr-2"></i>Pending Member Approvals
+
+    <!-- Membership Growth Chart -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow mb-8 p-6">
+        <h3 class="font-bold text-gray-800 dark:text-white mb-4 flex items-center">
+            <i class="fas fa-chart-line text-kpn-blue mr-2"></i> Membership Growth (Last 5 Weeks)
         </h3>
+        <div class="w-full h-64">
+            <canvas id="growthChart"></canvas>
+        </div>
+    </div>
+
+    <!-- ── SECTION 2: Media & Reports ─────────────────────────────────── -->
+    <h2 class="text-lg font-bold text-gray-700 dark:text-gray-200 mb-4 flex items-center">
+        <i class="fas fa-newspaper text-orange-500 mr-2"></i> Newsroom & Reports
+    </h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4">
+            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-clock text-yellow-600 text-xl"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ community_reports_pending|default:"0" }}</p>
+                <p class="text-xs text-gray-500">Reports Pending</p>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_campaigns }}</p>
+                <p class="text-xs text-gray-500">Published Articles</p>
+                <p class="text-xs text-gray-400">Active: {{ active_campaigns }}</p>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4">
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-file-alt text-blue-600 text-xl"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ pending_reports }}</p>
+                <p class="text-xs text-gray-500">Internal Reports</p>
+                <p class="text-xs text-gray-400">Total: {{ total_reports }}</p>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4">
+            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-calendar text-orange-600 text-xl"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_events }}</p>
+                <p class="text-xs text-gray-500">Events</p>
+                <p class="text-xs text-gray-400">Upcoming: {{ upcoming_events }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SECTION 3: Finance & Programs ──────────────────────────────── -->
+    <h2 class="text-lg font-bold text-gray-700 dark:text-gray-200 mb-4 flex items-center">
+        <i class="fas fa-chart-bar text-teal-600 mr-2"></i> Finance & Programs
+    </h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-donate text-green-600 text-xl"></i>
+            </div>
+            <div>
+                <p class="text-xl font-bold text-gray-900 dark:text-white">₦{{ total_donations|floatformat:0 }}</p>
+                <p class="text-xs text-gray-500">Total Donations</p>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4">
+            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-money-bill text-red-600 text-xl"></i>
+            </div>
+            <div>
+                <p class="text-xl font-bold text-gray-900 dark:text-white">₦{{ total_expenses|floatformat:0 }}</p>
+                <p class="text-xs text-gray-500">Total Expenses</p>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4">
+            <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-tasks text-teal-600 text-xl"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_womens_programs|add:total_youth_programs|add:total_welfare_programs }}</p>
+                <p class="text-xs text-gray-500">Total Programs</p>
+                <p class="text-xs text-gray-400">W:{{ total_womens_programs }} Y:{{ total_youth_programs }} Wf:{{ total_welfare_programs }}</p>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4">
+            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-gavel text-red-600 text-xl"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ pending_disciplinary }}</p>
+                <p class="text-xs text-gray-500">Disciplinary Pending</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SECTION 4: Quick Actions + Pending Applications ────────────── -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Quick Actions -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+            <h3 class="font-bold text-gray-800 dark:text-white mb-4 flex items-center">
+                <i class="fas fa-bolt text-yellow-500 mr-2"></i> Quick Actions
+            </h3>
+            <div class="space-y-2">
+                <a href="{% url 'staff:approve_members' %}" class="flex items-center p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/30 hover:bg-yellow-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
+                    <i class="fas fa-user-check w-5 text-yellow-600 mr-2"></i> Approve Applications
+                    {% if pending_approvals %}<span class="ml-auto bg-yellow-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pending_approvals }}</span>{% endif %}
+                </a>
+                <a href="{% url 'staff:manage_opportunities' %}" class="flex items-center p-3 rounded-lg bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
+                    <i class="fas fa-briefcase w-5 text-orange-600 mr-2"></i> Manage Opportunities Hub
+                </a>
+                <a href="{% url 'staff:manage_community_initiatives' %}" class="flex items-center p-3 rounded-lg bg-cyan-50 dark:bg-cyan-900/30 hover:bg-cyan-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
+                    <i class="fas fa-hands-helping w-5 text-cyan-600 mr-2"></i> Manage Community Hub
+                </a>
+                <a href="{% url 'staff:manage_advocacy_campaigns' %}" class="flex items-center p-3 rounded-lg bg-pink-50 dark:bg-pink-900/30 hover:bg-pink-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
+                    <i class="fas fa-vote-yea w-5 text-pink-600 mr-2"></i> Manage Advocacy Hub
+                </a>
+                <a href="{% url 'staff:trusted_reporters_list' %}" class="flex items-center p-3 rounded-lg bg-green-50 dark:bg-green-900/30 hover:bg-green-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
+                    <i class="fas fa-user-shield w-5 text-green-600 mr-2"></i> Manage Trusted Reporters
+                </a>
+                <a href="{% url 'staff:manage_staff' %}" class="flex items-center p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
+                    <i class="fas fa-users-cog w-5 text-blue-600 mr-2"></i> Manage All Staff
+                </a>
+                <a href="{% url 'staff:view_reports' %}" class="flex items-center p-3 rounded-lg bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
+                    <i class="fas fa-chart-line w-5 text-purple-600 mr-2"></i> View All Reports
+                </a>
+                <a href="{% url 'staff:disciplinary_actions' %}" class="flex items-center p-3 rounded-lg bg-red-50 dark:bg-red-900/30 hover:bg-red-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
+                    <i class="fas fa-gavel w-5 text-red-600 mr-2"></i> Disciplinary Actions
+                </a>
+                <a href="{% url 'staff:announcements_list' %}" class="flex items-center p-3 rounded-lg bg-green-50 dark:bg-green-900/30 hover:bg-green-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
+                    <i class="fas fa-bullhorn w-5 text-green-600 mr-2"></i> Manage Announcements
+                </a>
+                <a href="{% url 'staff:export_members_csv' %}" class="flex items-center p-3 rounded-lg bg-teal-50 dark:bg-teal-900/30 hover:bg-teal-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
+                    <i class="fas fa-file-csv w-5 text-teal-600 mr-2"></i> Export Members CSV
+                </a>
+            </div>
+        </div>
+
+        <!-- Pending Applicants -->
+        <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+            <h3 class="font-bold text-gray-800 dark:text-white mb-4 flex items-center">
+                <i class="fas fa-user-clock text-yellow-600 mr-2"></i> Pending Member Applications
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-left text-xs text-gray-500 uppercase border-b dark:border-gray-700">
+                            <th class="pb-3 pr-4">Name</th>
+                            <th class="pb-3 pr-4">Role</th>
+                            <th class="pb-3 pr-4">Location</th>
+                            <th class="pb-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        {% for applicant in pending_applicants %}
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                            <td class="py-3 pr-4 font-medium text-gray-900 dark:text-white">{{ applicant.get_full_name }}</td>
+                            <td class="py-3 pr-4 text-gray-600 dark:text-gray-400 text-xs">
+                                {% if applicant.role_definition %}{{ applicant.role_definition.title }}{% else %}{{ applicant.get_role_display }}{% endif %}
+                            </td>
+                            <td class="py-3 pr-4 text-gray-600 dark:text-gray-400 text-xs">{{ applicant.get_jurisdiction }}</td>
+                            <td class="py-3">
+                                <a href="{% url 'staff:review_applicant' applicant.id %}" class="inline-flex items-center px-3 py-1 bg-kpn-green text-white text-xs rounded-lg hover:bg-green-600 transition">
+                                    <i class="fas fa-search mr-1"></i> Review
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="py-6 text-center text-gray-400 text-sm">
+                                <i class="fas fa-check-circle text-green-400 mr-2"></i> No pending applications
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SECTION 5: Community Reports Queue ────────────────────────── -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow mb-8">
+        <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+            <h3 class="font-bold text-gray-800 dark:text-white flex items-center">
+                <i class="fas fa-file-alt text-orange-500 mr-2"></i> Community Report Submissions
+            </h3>
+            <a href="{% url 'staff:media_director_dashboard' %}" class="text-sm text-kpn-green hover:underline">
+                Open in Newsroom <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
         <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase">Name</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase">Role</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase">Location</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase">Applied</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase">Actions</th>
+            {% if community_reports %}
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-700 text-xs text-gray-500 uppercase">
+                        <th class="p-4 text-left">Story</th>
+                        <th class="p-4 text-left">Reporter</th>
+                        <th class="p-4 text-left">Location</th>
+                        <th class="p-4 text-left">Status</th>
+                        <th class="p-4 text-left">Date</th>
+                        <th class="p-4 text-right">Action</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                    {% for applicant in pending_applicants %}
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                    {% for report in community_reports %}
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                        <td class="px-4 py-3">{{ applicant.get_full_name }}</td>
-                        <td class="px-4 py-3">{{ applicant.role_definition.title }}</td>
-                        <td class="px-4 py-3">{{ applicant.get_jurisdiction }}</td>
-                        <td class="px-4 py-3">{{ applicant.created_at|date:"M d, Y" }}</td>
-                        <td class="px-4 py-3">
-                            <a href="{% url 'staff:review_applicant' applicant.id %}" class="inline-flex items-center px-3 py-1 bg-kpn-green text-white rounded-lg hover:bg-green-600 transition">
-                                <i class="fas fa-search mr-1"></i>Review
+                        <td class="p-4 font-medium text-gray-900 dark:text-white">{{ report.what_happened|truncatewords:8 }}</td>
+                        <td class="p-4 text-gray-600 dark:text-gray-400">{{ report.reporter_name }}</td>
+                        <td class="p-4 text-gray-600 dark:text-gray-400">
+                            {% if report.ward %}{{ report.ward.name }}, {% endif %}{% if report.lga %}{{ report.lga.name }}{% endif %}
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold
+                                {% if report.status == 'PENDING' %}bg-yellow-100 text-yellow-800
+                                {% elif report.status == 'APPROVED' %}bg-green-100 text-green-800
+                                {% elif report.status == 'REJECTED' %}bg-red-100 text-red-800
+                                {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                {{ report.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="p-4 text-gray-500 text-xs">{{ report.created_at|date:"M d, Y" }}</td>
+                        <td class="p-4 text-right">
+                            <a href="{% url 'staff:community_report_review' report.id %}" class="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-700 hover:bg-orange-200 text-xs font-bold rounded-lg transition">
+                                <i class="fas fa-search mr-1"></i> Review
                             </a>
                         </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="px-4 py-3 text-center text-gray-500">No pending applications</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+            {% else %}
+            <div class="p-8 text-center text-gray-400">
+                <i class="fas fa-folder-open text-4xl mb-3 text-gray-300"></i>
+                <p>No community reports submitted yet.</p>
+            </div>
+            {% endif %}
         </div>
     </div>
+
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('growthChart').getContext('2d');
+        const rawData = {{ chart_data|safe }};
+        
+        // Generate labels for the last 5 weeks
+        const labels = [];
+        for (let i = 4; i >= 0; i--) {
+            if (i === 0) labels.push('This Week');
+            else if (i === 1) labels.push('Last Week');
+            else labels.push(i + ' Weeks Ago');
+        }
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'New Verified Members',
+                    data: rawData,
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}

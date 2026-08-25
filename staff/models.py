@@ -12,10 +12,11 @@ class User(AbstractUser):
     ]
     
     STATUS_CHOICES = [
-        ('PENDING', 'Pending Approval'),
-        ('APPROVED', 'Approved'),
+        ('PENDING', 'Pending'),
+        ('UNDER_REVIEW', 'Under Review'),
+        ('VERIFIED', 'Verified'),
+        ('REJECTED', 'Rejected'),
         ('SUSPENDED', 'Suspended'),
-        ('DISMISSED', 'Dismissed'),
     ]
     
     GENDER_CHOICES = [
@@ -34,8 +35,18 @@ class User(AbstractUser):
     instagram_url = models.URLField(max_length=200, blank=True, help_text="Your Instagram profile URL")
     tiktok_url = models.URLField(max_length=200, blank=True, help_text="Your TikTok profile URL")
     
+    REPORTER_LEVEL_CHOICES = [
+        ('MEMBER', 'Member'),
+        ('COMMUNITY_REPORTER', 'Community Reporter'),
+        ('TRUSTED_REPORTER', 'Trusted Reporter'),
+    ]
+    
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='GENERAL')
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    
+    # Trusted Reporter System
+    reporter_level = models.CharField(max_length=20, choices=REPORTER_LEVEL_CHOICES, default='MEMBER')
+    is_trusted_reporter = models.BooleanField(default=False, help_text="Manually granted by President or Director of Media & Communications")
     
     zone = models.ForeignKey(Zone, on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
     lga = models.ForeignKey(LGA, on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
@@ -69,7 +80,7 @@ class User(AbstractUser):
         return self.role in ['STATE', 'ZONAL', 'LGA', 'WARD']
     
     def can_approve_members(self):
-        return self.role in ['STATE', 'ZONAL', 'LGA'] and self.status == 'APPROVED'
+        return self.role in ['STATE', 'ZONAL', 'LGA'] and self.status == 'VERIFIED'
     
     def get_jurisdiction(self):
         if self.role == 'STATE':

@@ -4,90 +4,166 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Reusable Dashboard Header with Typing Animation -->
+    <!-- Header -->
     {% include 'staff/dashboards/includes/_role_header.html' with title="Ward Coordinator Dashboard" icon_class="fas fa-users-cog" welcome_messages="Leading at the grassroots level.|Mobilizing your community for change.|Making a difference where it matters most." %}
     
     <!-- Profile Section -->
     {% include 'staff/dashboards/includes/_profile_section.html' %}
     
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Members in Ward</p>
-                    <p class="text-3xl font-bold text-kpn-green">{{ members_in_ward }}</p>
-                </div>
-                <i class="fas fa-users text-4xl text-kpn-green"></i>
+    <!-- My Statistics -->
+    <div class="mb-8">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-chart-pie mr-2 text-kpn-blue"></i> My Statistics</h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-center">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">My Ward</div>
+                <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ user.ward.name|default:"N/A" }}</div>
             </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Ward Meetings</p>
-                    <p class="text-3xl font-bold text-kpn-blue">{{ total_meetings }}</p>
-                </div>
-                <i class="fas fa-clipboard-list text-4xl text-kpn-blue"></i>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-center">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Ward Members</div>
+                <div class="text-3xl font-bold text-kpn-green">{{ members_in_ward }}</div>
             </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Reports Submitted</p>
-                    <p class="text-3xl font-bold text-purple-600">{{ reports_submitted }}</p>
-                </div>
-                <i class="fas fa-file-alt text-4xl text-purple-600"></i>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-center">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Meetings Held</div>
+                <div class="text-3xl font-bold text-purple-600">{{ total_meetings }}</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-center">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Reports Sent</div>
+                <div class="text-3xl font-bold text-orange-600">{{ reports_submitted }}</div>
             </div>
         </div>
     </div>
     
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        
+        <!-- My Tasks (Quick Actions) -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-tasks mr-2 text-orange-500"></i> My Tasks</h2>
             <div class="space-y-3">
-                <a href="{% url 'staff:manage_staff' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
-                    <i class="fas fa-users mr-2"></i> View Ward Members
+                <a href="{% url 'staff:create_ward_meeting' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-900/20 group transition border border-transparent hover:border-teal-200 dark:hover:border-teal-800">
+                    <div class="w-10 h-10 rounded-full bg-teal-100 dark:bg-teal-900 text-teal-600 dark:text-teal-400 flex items-center justify-center mr-4 group-hover:scale-110 transition">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-gray-900 dark:text-white">Record Meeting</div>
+                        <div class="text-xs text-gray-500">Log attendance for a recent ward gathering</div>
+                    </div>
                 </a>
-                <a href="{% url 'staff:ward_meetings_list' %}" class="block p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
-                    <i class="fas fa-clipboard-list mr-2"></i> Ward Meeting Logbook
+                
+                <a href="{% url 'core:submit_report' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 group transition border border-transparent hover:border-purple-200 dark:hover:border-purple-800">
+                    <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 flex items-center justify-center mr-4 group-hover:scale-110 transition">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-gray-900 dark:text-white">Submit Ward Report</div>
+                        <div class="text-xs text-gray-500">Send activity report to LGA Coordinator</div>
+                    </div>
                 </a>
-                <a href="{% url 'staff:create_ward_meeting' %}" class="block p-3 bg-teal-50 dark:bg-teal-900 rounded-lg hover:bg-teal-100 dark:hover:bg-teal-800 transition">
-                    <i class="fas fa-plus mr-2"></i> Create Meeting Record
-                </a>
-                <a href="{% url 'core:submit_report' %}" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
-                    <i class="fas fa-paper-plane mr-2"></i> Submit Activity Report to LGA
-                </a>
-                <a href="{% url 'staff:disciplinary_actions' %}" class="block p-3 bg-yellow-50 dark:bg-yellow-900 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-800 transition">
-                    <i class="fas fa-exclamation-triangle mr-2"></i> Report Misconduct
-                </a>
-                <a href="{% url 'staff:profile' %}" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
-                    <i class="fas fa-user mr-2"></i> My Profile
+                
+                <a href="{% url 'staff:disciplinary_actions' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 group transition border border-transparent hover:border-red-200 dark:hover:border-red-800">
+                    <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 flex items-center justify-center mr-4 group-hover:scale-110 transition">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-gray-900 dark:text-white">Report Misconduct</div>
+                        <div class="text-xs text-gray-500">Flag members violating KPN constitution</div>
+                    </div>
                 </a>
             </div>
         </div>
         
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 class="text-xl font-semibold mb-4">My Responsibilities</h3>
-            <ul class="space-y-2 text-sm">
+        <!-- My Responsibilities -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-clipboard-list mr-2 text-purple-500"></i> My Responsibilities</h2>
+            <ul class="space-y-4">
                 <li class="flex items-start">
-                    <i class="fas fa-check text-kpn-green mt-1 mr-2"></i>
-                    <span>Supervise all staff and members in {{ user.ward.name }} Ward</span>
+                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">1</div>
+                    <span class="text-gray-700 dark:text-gray-300"><strong>Grassroots Mobilization:</strong> Coordinate recruitment and direct engagement campaigns within {{ user.ward.name }} Ward.</span>
                 </li>
                 <li class="flex items-start">
-                    <i class="fas fa-check text-kpn-green mt-1 mr-2"></i>
-                    <span>Ensure local campaign and welfare activities</span>
+                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">2</div>
+                    <span class="text-gray-700 dark:text-gray-300"><strong>Meeting Management:</strong> Organize regular ward meetings, record attendance, and document community concerns.</span>
                 </li>
                 <li class="flex items-start">
-                    <i class="fas fa-check text-kpn-green mt-1 mr-2"></i>
-                    <span>Maintain attendance logs for local meetings</span>
+                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">3</div>
+                    <span class="text-gray-700 dark:text-gray-300"><strong>Welfare Oversight:</strong> Monitor member welfare and identify community intervention opportunities for the state executive.</span>
                 </li>
                 <li class="flex items-start">
-                    <i class="fas fa-check text-kpn-green mt-1 mr-2"></i>
-                    <span>Submit weekly reports to LGA Coordinator</span>
+                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">4</div>
+                    <span class="text-gray-700 dark:text-gray-300"><strong>LGA Reporting:</strong> Submit consistent progress and activity reports to your LGA Coordinator.</span>
                 </li>
             </ul>
         </div>
+        
     </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        
+        <!-- My Team -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white"><i class="fas fa-users mr-2 text-kpn-green"></i> My Team (Ward Members)</h2>
+                <a href="{% url 'staff:manage_staff' %}" class="text-sm font-semibold text-kpn-green hover:underline">View All</a>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 text-center border border-dashed border-gray-300 dark:border-gray-700">
+                <p class="text-gray-500 text-sm">View all registered and verified members in your ward.</p>
+                <a href="{% url 'staff:manage_staff' %}" class="mt-3 inline-block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-50 transition">Open Members List</a>
+            </div>
+        </div>
+        
+        <!-- My Reports & Meetings -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white"><i class="fas fa-book mr-2 text-indigo-500"></i> Meeting Logbook</h2>
+                <a href="{% url 'staff:ward_meetings_list' %}" class="text-sm font-semibold text-indigo-500 hover:underline">View Logbook</a>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 text-center border border-dashed border-gray-300 dark:border-gray-700">
+                <p class="text-gray-500 text-sm">Review past ward meetings, attendances, and agendas.</p>
+                <a href="{% url 'staff:ward_meetings_list' %}" class="mt-3 inline-block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-50 transition">Open Logbook</a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Recent Activity (Community Reports) -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden mt-8 border-t-4 border-orange-500">
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-gray-800"><i class="fas fa-rss text-orange-500 mr-2"></i> Recent Activity (Community News)</h2>
+        </div>
+        <div class="p-0">
+            {% if community_reports %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-600 text-sm">
+                            <th class="p-4 border-b font-semibold">Category</th>
+                            <th class="p-4 border-b font-semibold">Reporter</th>
+                            <th class="p-4 border-b font-semibold">Location</th>
+                            <th class="p-4 border-b font-semibold">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                        {% for report in community_reports|slice:":5" %}
+                        <tr class="border-b hover:bg-gray-50 transition">
+                            <td class="p-4 font-bold text-gray-900">{{ report.get_category_display }}</td>
+                            <td class="p-4 text-gray-600">{{ report.reporter_name }}</td>
+                            <td class="p-4 text-gray-600">
+                                {% if report.ward %}{{ report.ward.name }} Ward, {% endif %}
+                                {% if report.lga %}{{ report.lga.name }}{% endif %}
+                            </td>
+                            <td class="p-4 text-gray-600">{{ report.created_at|date:"M d, Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-8 text-center text-gray-500">
+                <i class="fas fa-newspaper text-4xl mb-3 text-gray-300"></i>
+                <p>No community news reported in your ward yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
 </div>
 {% endblock %}

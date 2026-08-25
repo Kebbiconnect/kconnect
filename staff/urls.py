@@ -147,4 +147,29 @@ urlpatterns = [
     path('announcements/create/', views.create_announcement, name='create_announcement'),
     path('announcements/<int:pk>/toggle/', views.toggle_announcement, name='toggle_announcement'),
     path('announcements/<int:pk>/delete/', views.delete_announcement, name='delete_announcement'),
+    
+    # Trusted Reporter Management (President & Media Director only)
+    path('trusted-reporters/', views.trusted_reporters_list, name='trusted_reporters_list'),
+    path('trusted-reporters/<int:user_id>/promote-community/', views.promote_to_community_reporter, name='promote_to_community_reporter'),
+    path('trusted-reporters/<int:user_id>/promote-trusted/', views.promote_to_trusted_reporter, name='promote_to_trusted_reporter'),
+    path('trusted-reporters/<int:user_id>/revoke/', views.revoke_trusted_reporter, name='revoke_trusted_reporter'),
+    
+    # Community Reports Review Workflow
+    path('community-report-review/<int:report_id>/', views.community_report_review, name='community_report_review'),
+    
+    # Hub Management URLs (Opportunities, Initiatives, Advocacy)
+    path('manage-opportunities/', views.manage_opportunities, name='manage_opportunities'),
+    path('manage-opportunities/create/', views.create_opportunity, name='create_opportunity'),
+    path('manage-opportunities/<int:pk>/edit/', views.edit_opportunity, name='edit_opportunity'),
+    path('manage-opportunities/<int:pk>/delete/', views.delete_opportunity, name='delete_opportunity'),
+    
+    path('manage-initiatives/', views.manage_community_initiatives, name='manage_community_initiatives'),
+    path('manage-initiatives/create/', views.create_community_initiative, name='create_community_initiative'),
+    path('manage-initiatives/<int:pk>/edit/', views.edit_community_initiative, name='edit_community_initiative'),
+    path('manage-initiatives/<int:pk>/delete/', views.delete_community_initiative, name='delete_community_initiative'),
+    
+    path('manage-advocacy/', views.manage_advocacy_campaigns, name='manage_advocacy_campaigns'),
+    path('manage-advocacy/create/', views.create_advocacy_campaign, name='create_advocacy_campaign'),
+    path('manage-advocacy/<int:pk>/edit/', views.edit_advocacy_campaign, name='edit_advocacy_campaign'),
+    path('manage-advocacy/<int:pk>/delete/', views.delete_advocacy_campaign, name='delete_advocacy_campaign'),
 ]

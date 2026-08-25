@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Trusted Reporter Management - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
+                <i class="fas fa-user-shield text-kpn-green mr-3"></i> Trusted Reporter System
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-2">Manage Community Reporters and grant Trusted Reporter status.</p>
+        </div>
+        <a href="{% url 'staff:dashboard' %}" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition font-medium">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Trusted Reporters Section -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg mb-8">
+        <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gradient-to-r from-green-50 to-white dark:from-green-900/20 dark:to-gray-800 rounded-t-xl">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center">
+                <i class="fas fa-star text-green-600 mr-2"></i> Active Trusted Reporters
+            </h2>
+            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold">{{ trusted_reporters|length }}</span>
+        </div>
+        <div class="p-6">
+            {% if trusted_reporters %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for reporter in trusted_reporters %}
+                <div class="border border-green-200 dark:border-green-800 rounded-lg p-4 bg-green-50/30 dark:bg-green-900/10">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="font-bold text-lg text-gray-900 dark:text-white">{{ reporter.get_full_name }}</div>
+                        <i class="fas fa-check-circle text-green-500 text-xl" title="Verified Trusted Reporter"></i>
+                    </div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        <p><i class="fas fa-map-marker-alt w-5"></i> {{ reporter.get_jurisdiction }}</p>
+                        <p><i class="fas fa-phone w-5"></i> {{ reporter.phone_number }}</p>
+                    </div>
+                    <form action="{% url 'staff:revoke_trusted_reporter' reporter.id %}" method="POST" onsubmit="return confirm('Are you sure you want to revoke Trusted Reporter status from {{ reporter.get_full_name }}?');">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full bg-white border border-red-200 text-red-600 hover:bg-red-50 py-2 rounded-lg text-sm font-semibold transition">
+                            <i class="fas fa-user-minus mr-1"></i> Revoke Status
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-user-shield text-4xl mb-3 text-gray-300"></i>
+                <p>No Trusted Reporters currently assigned.</p>
+                <p class="text-sm mt-2">Promote members from the Community Reporters list below.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Community Reporters Section (Eligible for Promotion) -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+        <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center">
+                <i class="fas fa-users text-blue-600 mr-2"></i> Eligible Community Reporters
+            </h2>
+            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">{{ community_reporters|length }}</span>
+        </div>
+        <div class="p-6">
+            {% if community_reporters %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50 dark:bg-gray-700 text-xs text-gray-500 uppercase">
+                            <th class="p-4 text-left">Member Name</th>
+                            <th class="p-4 text-left">Location</th>
+                            <th class="p-4 text-left">Joined</th>
+                            <th class="p-4 text-left">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        {% for reporter in community_reporters %}
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                            <td class="p-4 font-medium text-gray-900 dark:text-white">{{ reporter.get_full_name }}</td>
+                            <td class="p-4 text-gray-600 dark:text-gray-400">{{ reporter.get_jurisdiction }}</td>
+                            <td class="p-4 text-gray-500 text-xs">{{ reporter.date_joined|date:"M Y" }}</td>
+                            <td class="p-4">
+                                <form action="{% url 'staff:promote_to_trusted_reporter' reporter.id %}" method="POST" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="bg-kpn-green hover:bg-green-600 text-white px-3 py-1 rounded shadow text-xs font-semibold transition" title="Promote to Trusted Reporter">
+                                        <i class="fas fa-arrow-up mr-1"></i> Promote to Trusted
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-users text-4xl mb-3 text-gray-300"></i>
+                <p>No eligible Community Reporters found.</p>
+                <p class="text-sm mt-2">Members must first be assigned the Community Reporter level.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

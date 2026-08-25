@@ -9,12 +9,13 @@ from campaigns.models import Campaign
 from media.models import MediaItem
 from staff.models import User
 from leadership.models import Zone, LGA, Ward
-from .models import FAQ, Report
+from .models import FAQ, Report, Opportunity
 from .forms import WardReportForm, LGAReportForm, ZonalReportForm, ReportReviewForm
 from staff.decorators import approved_leader_required
 
 def home(request):
-    featured_campaigns = Campaign.objects.filter(status='PUBLISHED').order_by('-published_at')[:3]
+    from .models import AdvocacyCampaign
+    featured_campaigns = AdvocacyCampaign.objects.filter(is_active=True).order_by('-created_at')[:3]
     latest_news = Campaign.objects.filter(status='PUBLISHED').order_by('-published_at')[:6]
     context = {
         'featured_campaigns': featured_campaigns,
@@ -40,7 +41,7 @@ def leadership(request):
         for role in state_roles:
             holder = User.objects.filter(
                 role_definition=role, 
-                status='APPROVED',
+                status='VERIFIED',
                 is_superuser=False
             ).first()
             leadership_positions.append({
@@ -58,7 +59,7 @@ def leadership(request):
             holder = User.objects.filter(
                 role_definition=role, 
                 zone=zone, 
-                status='APPROVED',
+                status='VERIFIED',
                 is_superuser=False
             ).first()
             leadership_positions.append({
@@ -77,7 +78,7 @@ def leadership(request):
             holder = User.objects.filter(
                 role_definition=role, 
                 lga=lga, 
-                status='APPROVED',
+                status='VERIFIED',
                 is_superuser=False
             ).first()
             leadership_positions.append({
@@ -96,7 +97,7 @@ def leadership(request):
             holder = User.objects.filter(
                 role_definition=role, 
                 ward=ward, 
-                status='APPROVED',
+                status='VERIFIED',
                 is_superuser=False
             ).first()
             leadership_positions.append({
@@ -140,7 +141,7 @@ def leadership(request):
             for role in state_roles:
                 holder_query = User.objects.filter(
                     role_definition=role, 
-                    status='APPROVED',
+                    status='VERIFIED',
                     is_superuser=False
                 )
                 
@@ -172,7 +173,7 @@ def leadership(request):
                 holder = User.objects.filter(
                     role_definition=role, 
                     zone=zone, 
-                    status='APPROVED',
+                    status='VERIFIED',
                     is_superuser=False
                 ).first()
                 leadership_positions.append({
@@ -189,7 +190,7 @@ def leadership(request):
                 holder = User.objects.filter(
                     role_definition=role, 
                     lga=lga, 
-                    status='APPROVED',
+                    status='VERIFIED',
                     is_superuser=False
                 ).first()
                 leadership_positions.append({
@@ -206,7 +207,7 @@ def leadership(request):
                 holder = User.objects.filter(
                     role_definition=role, 
                     ward=ward, 
-                    status='APPROVED',
+                    status='VERIFIED',
                     is_superuser=False
                 ).first()
                 leadership_positions.append({
@@ -232,32 +233,66 @@ def leadership(request):
     return render(request, 'core/leadership.html', context)
 
 def view_profile(request, user_id):
-    profile_user = get_object_or_404(User, id=user_id, status='APPROVED', is_superuser=False)
+    profile_user = get_object_or_404(User, id=user_id, status='VERIFIED', is_superuser=False)
     
     context = {
         'profile_user': profile_user,
     }
     return render(request, 'core/view_profile.html', context)
 
-def campaigns(request):
-    all_campaigns = Campaign.objects.filter(status='PUBLISHED').order_by('-published_at')
+def impact(request):
+    from .models import ImpactStory, CommunityReport
+    from leadership.models import LGA, Ward
+    
+    # Auto-calculated from DB
+    verified_members = User.objects.filter(status='VERIFIED').count()
+    trusted_reporters = User.objects.filter(is_trusted_reporter=True).count()
+    reports_submitted = CommunityReport.objects.count()
+    reports_verified = CommunityReport.objects.filter(status='APPROVED').count()
+    opportunities_shared = Opportunity.objects.count()
+    
+    # Calculate communities reached from ImpactStory and CommunityInitiative
+    from django.db.models import Sum
+    impact_stories = ImpactStory.objects.filter(is_published=True).order_by('-date_achieved')
+    
+    communities_reached_from_stories = impact_stories.aggregate(Sum('communities_reached'))['communities_reached__sum'] or 0
+    communities_reached = max(50, communities_reached_from_stories)  # Base baseline
+    
+    lgas_active = LGA.objects.filter(members__status='VERIFIED').distinct().count()
+    wards_active = Ward.objects.filter(members__status='VERIFIED').distinct().count()
+    
     context = {
-        'campaigns': all_campaigns,
+        'verified_members': verified_members,
+        'trusted_reporters': trusted_reporters,
+        'reports_submitted': reports_submitted,
+        'reports_verified': reports_verified,
+        'opportunities_shared': opportunities_shared,
+        'communities_reached': communities_reached,
+        'lgas_active': lgas_active,
+        'wards_active': wards_active,
+        'impact_stories': impact_stories,
     }
-    return render(request, 'core/campaigns.html', context)
+    
+    return render(request, 'core/impact.html', context)
 
-def campaign_detail(request, slug):
-    campaign = get_object_or_404(Campaign, slug=slug, status='PUBLISHED')
-    campaign.views += 1
-    campaign.save(update_fields=['views'])
+def opportunities(request):
+    featured = Opportunity.objects.filter(
+        status__in=['OPEN', 'CLOSING_SOON'], 
+        is_featured=True
+    ).order_by('-created_at')[:3]
     
-    related_campaigns = Campaign.objects.filter(status='PUBLISHED').exclude(id=campaign.id).order_by('-published_at')[:3]
+    regular = Opportunity.objects.filter(
+        status__in=['OPEN', 'CLOSING_SOON']
+    ).exclude(
+        id__in=[f.id for f in featured]
+    ).order_by('-created_at')
     
     context = {
-        'campaign': campaign,
-        'related_campaigns': related_campaigns,
+        'featured_opps': featured,
+        'regular_opps': regular,
+        'categories': Opportunity.CATEGORY_CHOICES,
     }
-    return render(request, 'core/campaign_detail.html', context)
+    return render(request, 'core/opportunities.html', context)
 
 def gallery(request):
     media_type = request.GET.get('type', 'all')
@@ -343,7 +378,7 @@ def submit_report(request):
         lga_coordinator = User.objects.filter(
             role='LGA',
             lga=user.ward.lga,
-            role_definition__title='LGA Coordinator',
+            role_definition__title='LGA Network Lead',
             status='APPROVED'
         ).first()
         submitted_to = lga_coordinator
@@ -356,7 +391,7 @@ def submit_report(request):
         zonal_coordinator = User.objects.filter(
             role='ZONAL',
             zone=user.lga.zone,
-            role_definition__title='Zonal Coordinator',
+            role_definition__title='Senatorial Director',
             status='APPROVED'
         ).first()
         submitted_to = zonal_coordinator
@@ -365,7 +400,7 @@ def submit_report(request):
         report_type = 'ZONAL_TO_STATE'
         state_supervisor = User.objects.filter(
             role='STATE',
-            role_definition__title='State Supervisor',
+            role_definition__title='Director of Monitoring & Compliance',
             status='APPROVED'
         ).first()
         submitted_to = state_supervisor
@@ -489,14 +524,14 @@ def _escalate_report(original_report, reviewer):
         next_supervisor = User.objects.filter(
             role='ZONAL',
             zone=submitter_zone,
-            role_definition__title='Zonal Coordinator',
+            role_definition__title='Senatorial Director',
             status='APPROVED'
         ).first()
     elif original_report.report_type == 'LGA_TO_ZONAL':
         next_report_type = 'ZONAL_TO_STATE'
         next_supervisor = User.objects.filter(
             role='STATE',
-            role_definition__title='State Supervisor',
+            role_definition__title='Director of Monitoring & Compliance',
             status='APPROVED'
         ).first()
     else:
@@ -529,12 +564,24 @@ def _escalate_report(original_report, reviewer):
 
 
 def _send_report_notification(report, notification_type):
-    """Send email notification for report submission or review"""
+    """Send email and in-app notification for report submission or review"""
+    from core.notifications import notify
     try:
         if notification_type == 'submitted':
-            if report.submitted_to and report.submitted_to.email:
-                subject = f'New Report Submitted: {report.title}'
-                message = f"""
+            if report.submitted_to:
+                # In-app notification
+                notify(
+                    report.submitted_to,
+                    notif_type='INFO',
+                    title='New Report Submitted',
+                    message=f"{report.submitted_by.get_full_name()} submitted a {report.get_report_type_display()}.",
+                    link=f'/review-report/{report.id}/'
+                )
+                
+                # Email notification
+                if report.submitted_to.email:
+                    subject = f'New Report Submitted: {report.title}'
+                    message = f"""
 Dear {report.submitted_to.get_full_name()},
 
 A new report has been submitted for your review:
@@ -549,20 +596,34 @@ Please log in to the KPN platform to review this report.
 
 Best regards,
 KPN Management System
-                """
-                send_mail(
-                    subject,
-                    message,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [report.submitted_to.email],
-                    fail_silently=True,
-                )
+                    """
+                    send_mail(
+                        subject,
+                        message,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [report.submitted_to.email],
+                        fail_silently=True,
+                    )
         
         elif notification_type == 'reviewed':
-            if report.submitted_by and report.submitted_by.email:
+            if report.submitted_by:
                 status_text = report.get_status_display()
-                subject = f'Report {status_text}: {report.title}'
-                message = f"""
+                
+                # In-app notification
+                notif_type_map = {'APPROVED': 'SUCCESS', 'REJECTED': 'ACTION', 'FLAGGED': 'WARNING'}
+                n_type = notif_type_map.get(report.status, 'INFO')
+                notify(
+                    report.submitted_by,
+                    notif_type=n_type,
+                    title=f'Report {status_text}',
+                    message=f"Your report '{report.title}' was reviewed by {report.reviewed_by.get_full_name() if report.reviewed_by else 'a supervisor'}.",
+                    link='#'
+                )
+                
+                # Email notification
+                if report.submitted_by.email:
+                    subject = f'Report {status_text}: {report.title}'
+                    message = f"""
 Dear {report.submitted_by.get_full_name()},
 
 Your report has been reviewed:
@@ -576,13 +637,125 @@ Please log in to the KPN platform to view the full details.
 
 Best regards,
 KPN Management System
-                """
-                send_mail(
-                    subject,
-                    message,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [report.submitted_by.email],
-                    fail_silently=True,
-                )
+                    """
+                    send_mail(
+                        subject,
+                        message,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [report.submitted_by.email],
+                        fail_silently=True,
+                    )
     except Exception as e:
         pass
+
+from .models import CommunityInitiative, AdvocacyCampaign
+from .forms import CommunityReportForm
+
+def community(request):
+    initiatives = CommunityInitiative.objects.all()
+    return render(request, 'core/community.html', {'initiatives': initiatives})
+
+def advocacy(request):
+    campaigns = AdvocacyCampaign.objects.filter(is_active=True)
+    return render(request, 'core/advocacy.html', {'advocacy_campaigns': campaigns})
+
+def civic(request):
+    return render(request, 'core/civic.html')
+
+from django.contrib.auth.decorators import login_required
+
+@login_required(login_url='staff:login')
+def report_a_story(request):
+    if request.user.status != 'VERIFIED':
+        messages.error(request, 'Only verified KPN members can access this feature.')
+        return redirect('core:home')
+    
+    # Only Trusted Reporters and Leaders can submit official community reports
+    can_report = request.user.is_trusted_reporter or request.user.is_leader()
+    if not can_report:
+        messages.warning(
+            request,
+            'Only KPN Trusted Reporters and Leaders can submit community reports. '
+            'Build your reporting record first and your LGA or Senatorial Team can recommend you for Trusted Reporter status.'
+        )
+        return redirect('core:home')
+        
+    if request.method == 'POST':
+        form = CommunityReportForm(request.POST, request.FILES)
+        if form.is_valid():
+            report = form.save()
+            messages.success(request, 'Your story has been submitted successfully and is pending review. Thank you!')
+            return redirect('core:home')
+    else:
+        initial_data = {
+            'reporter_name': request.user.get_full_name() or request.user.username,
+            'reporter_phone': getattr(request.user, 'phone', ''),
+            'zone': getattr(request.user, 'zone', None),
+            'lga': getattr(request.user, 'lga', None),
+            'ward': getattr(request.user, 'ward', None),
+        }
+        form = CommunityReportForm(initial=initial_data)
+    
+    return render(request, 'core/report_a_story.html', {'form': form})
+
+# ──────────────────────────────────────────────────────────────────────────────
+# NETWORK RANKINGS
+# ──────────────────────────────────────────────────────────────────────────────
+
+def network_rankings(request):
+    from django.db.models import Count, Q
+    from staff.models import User
+    from leadership.models import LGA, Ward
+    from core.models import CommunityReport
+    
+    # PUBLIC RANKINGS (Positive only)
+    # Top Active LGAs (by verified members)
+    top_lgas = LGA.objects.annotate(
+        active_members=Count('members', filter=Q(members__status='VERIFIED'))
+    ).filter(active_members__gt=0).order_by('-active_members')[:5]
+    
+    # Top Active Wards
+    top_wards = Ward.objects.annotate(
+        active_members=Count('members', filter=Q(members__status='VERIFIED'))
+    ).filter(active_members__gt=0).order_by('-active_members')[:5]
+    
+    # Top Community Reporters (by approved reports)
+    # We don't have a direct FK from report to user, only reporter_name.
+    # So we'll just show Trusted Reporters as the top list for now.
+    trusted_reporters = User.objects.filter(status='VERIFIED', is_trusted_reporter=True)
+    
+    # INTERNAL RANKINGS (Only for leaders)
+    internal_data = None
+    if request.user.is_authenticated and request.user.is_leader():
+        # Find LGAs with ZERO verified members
+        inactive_lgas = LGA.objects.annotate(
+            active_members=Count('members', filter=Q(members__status='VERIFIED'))
+        ).filter(active_members=0).order_by('name')
+        
+        # Pending community reports count
+        pending_reports = CommunityReport.objects.filter(status='PENDING').count()
+        
+        internal_data = {
+            'inactive_lgas': inactive_lgas,
+            'pending_reports': pending_reports,
+        }
+        
+    context = {
+        'top_lgas': top_lgas,
+        'top_wards': top_wards,
+        'trusted_reporters': trusted_reporters,
+        'internal_data': internal_data,
+    }
+    
+    return render(request, 'core/network_rankings.html', context)
+
+
+# ── Notification Views ────────────────────────────────────────────────
+
+@login_required
+def mark_notifications_read(request):
+    """Mark all of the logged-in user's notifications as read and redirect back."""
+    from .models import Notification
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    next_url = request.GET.get('next', '/')
+    return redirect(next_url)

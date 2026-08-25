@@ -1,77 +1,56 @@
 {% extends 'base.html' %}
-
 {% block title %}Treasurer Dashboard - KPN{% endblock %}
-
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Reusable Dashboard Header with Typing Animation -->
-    {% include 'staff/dashboards/includes/_role_header.html' with title="Treasurer Dashboard" icon_class="fas fa-wallet" welcome_messages="Safeguarding organizational finances.|Managing budgets and expenditures.|Ensuring financial sustainability." %}
-    
-    <!-- Profile Section -->
+    {% include 'staff/dashboards/includes/_role_header.html' with title="Treasurer Dashboard" icon_class="fas fa-coins" welcome_messages="Managing KPN finances with integrity.|Ensuring transparent fund management.|Building fiscal accountability." %}
     {% include 'staff/dashboards/includes/_profile_section.html' %}
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Unverified Donations</p>
-                    <p class="text-3xl font-bold text-yellow-600">{{ unverified_donations }}</p>
-                </div>
-                <i class="fas fa-money-bill-wave text-4xl text-yellow-600"></i>
+
+    <div class="mb-8">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-chart-pie mr-2 text-kpn-blue"></i> My Statistics</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Total Income (₦)</div>
+                <div class="text-3xl font-bold text-kpn-green">{{ total_income|default:0 }}</div>
             </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Verified</p>
-                    <p class="text-3xl font-bold text-kpn-green">{{ verified_donations }}</p>
-                </div>
-                <i class="fas fa-check-circle text-4xl text-kpn-green"></i>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Total Expenses (₦)</div>
+                <div class="text-3xl font-bold text-red-600">{{ total_expenses|default:0 }}</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Balance (₦)</div>
+                <div class="text-3xl font-bold text-kpn-blue">{{ balance|default:0 }}</div>
             </div>
         </div>
     </div>
-    
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-tasks mr-2 text-green-500"></i> My Tasks</h2>
             <div class="space-y-3">
-                <a href="{% url 'donations:treasurer_donations' %}" class="block p-3 bg-yellow-50 dark:bg-yellow-900 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-800 transition">
-                    <i class="fas fa-check-double mr-2"></i> Verify Incoming Donations
+                <a href="{% url 'staff:treasurer_income_list' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-green-50 group transition border border-transparent hover:border-green-200">
+                    <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-4"><i class="fas fa-plus-circle"></i></div>
+                    <div><div class="font-bold text-gray-900 dark:text-white">Record Income</div><div class="text-xs text-gray-500">Log new dues, levies, or donations received</div></div>
                 </a>
-                <a href="{% url 'donations:add_donation' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
-                    <i class="fas fa-plus-circle mr-2"></i> Add New Donation
+                <a href="{% url 'staff:treasurer_expense_list' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-red-50 group transition border border-transparent hover:border-red-200">
+                    <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center mr-4"><i class="fas fa-minus-circle"></i></div>
+                    <div><div class="font-bold text-gray-900 dark:text-white">Record Expense</div><div class="text-xs text-gray-500">Log a KPN expenditure or disbursement</div></div>
                 </a>
-                <a href="{% url 'donations:financial_reports' %}" class="block p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
-                    <i class="fas fa-chart-bar mr-2"></i> View Financial Reports
-                </a>
-                <a href="{% url 'staff:profile' %}" class="block p-4 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 rounded-lg hover:from-green-100 hover:to-green-200 dark:hover:from-green-800 dark:hover:to-green-700 transition-all transform hover:scale-105">
-                    <i class="fas fa-user-edit mr-2 text-green-600"></i> Edit Profile
+                <a href="{% url 'staff:view_reports' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-blue-50 group transition border border-transparent hover:border-blue-200">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-4"><i class="fas fa-chart-pie"></i></div>
+                    <div><div class="font-bold text-gray-900 dark:text-white">Financial Reports</div><div class="text-xs text-gray-500">View income vs expense reports</div></div>
                 </a>
             </div>
         </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 class="text-xl font-semibold mb-4">My Responsibilities</h3>
-            <ul class="space-y-2 text-sm">
-                <li class="flex items-start">
-                    <i class="fas fa-check text-kpn-green mt-1 mr-2"></i>
-                    <span>Verify offline donations against bank statements</span>
-                </li>
-                <li class="flex items-start">
-                    <i class="fas fa-check text-kpn-green mt-1 mr-2"></i>
-                    <span>Mark donations as "Verified" after confirmation</span>
-                </li>
-                <li class="flex items-start">
-                    <i class="fas fa-check text-kpn-green mt-1 mr-2"></i>
-                    <span>Submit verification reports to Financial Secretary</span>
-                </li>
-                <li class="flex items-start">
-                    <i class="fas fa-check text-kpn-green mt-1 mr-2"></i>
-                    <span>Keep track of all organizational funds</span>
-                </li>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-clipboard-list mr-2 text-purple-500"></i> My Responsibilities</h2>
+            <ul class="space-y-4">
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">1</div><span class="text-gray-700 dark:text-gray-300"><strong>Fund Management:</strong> Receive, record, and safeguard all financial contributions made to KPN.</span></li>
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">2</div><span class="text-gray-700 dark:text-gray-300"><strong>Expenditure Control:</strong> Authorize and document all KPN expenses with proper approvals and receipts.</span></li>
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">3</div><span class="text-gray-700 dark:text-gray-300"><strong>Financial Reporting:</strong> Prepare and present monthly and quarterly financial statements to the executive.</span></li>
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">4</div><span class="text-gray-700 dark:text-gray-300"><strong>Dues Collection:</strong> Monitor and track member dues, levies, and special contribution collections.</span></li>
             </ul>
         </div>
     </div>
+    <div class="text-right"><a href="{% url 'staff:profile' %}" class="inline-flex items-center text-sm text-gray-500 hover:text-kpn-green font-semibold transition"><i class="fas fa-user-edit mr-2"></i> Edit My Profile</a></div>
 </div>
 {% endblock %}

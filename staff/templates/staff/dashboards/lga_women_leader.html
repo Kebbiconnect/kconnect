@@ -4,31 +4,83 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Reusable Dashboard Header with Typing Animation -->
-    {% include 'staff/dashboards/includes/_role_header.html' with title="LGA Women Leader Dashboard" icon_class="fas fa-female" welcome_messages="Leading women programs in LGA.|Empowering local women.|Championing gender equality locally." %}
-    
-    <!-- Profile Section -->
+    {% include 'staff/dashboards/includes/_role_header.html' with title="LGA Women Leader Dashboard" icon_class="fas fa-female" welcome_messages="Leading women in your LGA.|Advocating for women's empowerment locally.|Every woman's voice matters." %}
     {% include 'staff/dashboards/includes/_profile_section.html' %}
-    
-    <div class="grid grid-cols-1 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Members in LGA</p>
-                    <p class="text-3xl font-bold text-kpn-green">{{ members_in_lga }}</p>
-                </div>
-                <i class="fas fa-female text-4xl text-kpn-green"></i>
+
+    <!-- My Statistics -->
+    <div class="mb-8">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-chart-pie mr-2 text-kpn-blue"></i> My Statistics</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-center">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">LGA</div>
+                <div class="text-3xl font-bold text-kpn-blue">{{user.lga.name|default:'N/A'}}</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-center">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Women Members</div>
+                <div class="text-3xl font-bold text-kpn-green">{{women_count|default:0}}</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-center">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Welfare Cases</div>
+                <div class="text-3xl font-bold text-purple-600">{{welfare_cases|default:0}}</div>
             </div>
         </div>
     </div>
-    
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <a href="{% url 'staff:profile' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
-                <i class="fas fa-user mr-2"></i> My Profile
-            </a>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- My Tasks -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-tasks mr-2 text-purple-500"></i> My Tasks</h2>
+            <div class="space-y-3">
+                <a href="{% url 'staff:manage_staff' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 group transition border border-transparent hover:border-purple-200 dark:hover:border-purple-800">
+                    <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 flex items-center justify-center mr-4 group-hover:scale-110 transition">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-gray-900 dark:text-white">Women Members</div>
+                        <div class="text-xs text-gray-500">View all women members in your LGA</div>
+                    </div>
+                </a>
+                <a href="{% url 'staff:view_reports' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 group transition border border-transparent hover:border-blue-200 dark:hover:border-blue-800">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 flex items-center justify-center mr-4 group-hover:scale-110 transition">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-gray-900 dark:text-white">Reports</div>
+                        <div class="text-xs text-gray-500">View LGA women's activity records</div>
+                    </div>
+                </a>
+            </div>
         </div>
+
+        <!-- My Responsibilities -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-clipboard-list mr-2 text-purple-500"></i> My Responsibilities</h2>
+            <ul class="space-y-4">
+                <li class="flex items-start">
+                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">1</div>
+                    <span class="text-gray-700 dark:text-gray-300"><strong>Local Women's Advocacy:</strong> Champion the rights and active participation of women within the LGA.</span>
+                </li>
+                <li class="flex items-start">
+                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">2</div>
+                    <span class="text-gray-700 dark:text-gray-300"><strong>Welfare Coordination:</strong> Coordinate welfare support for women members facing difficulties in the LGA.</span>
+                </li>
+                <li class="flex items-start">
+                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">3</div>
+                    <span class="text-gray-700 dark:text-gray-300"><strong>Empowerment Events:</strong> Organize local women's training, workshops, and empowerment gatherings.</span>
+                </li>
+                <li class="flex items-start">
+                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">4</div>
+                    <span class="text-gray-700 dark:text-gray-300"><strong>Reporting to State:</strong> Report LGA women's activities and welfare cases to the state Women Leader.</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Quick Profile Link -->
+    <div class="text-right">
+        <a href="{% url 'staff:profile' %}" class="inline-flex items-center text-sm text-gray-500 hover:text-kpn-green font-semibold transition">
+            <i class="fas fa-user-edit mr-2"></i> Edit My Profile
+        </a>
     </div>
 </div>
 {% endblock %}

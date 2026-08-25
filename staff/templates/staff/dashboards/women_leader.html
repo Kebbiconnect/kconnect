@@ -1,88 +1,52 @@
 {% extends 'base.html' %}
-
 {% block title %}Women Leader Dashboard - KPN{% endblock %}
-
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Reusable Dashboard Header with Typing Animation -->
-    {% include 'staff/dashboards/includes/_role_header.html' with title="Women Leader Dashboard" icon_class="fas fa-female" welcome_messages="Empowering women across the organization.|Leading women-focused initiatives.|Championing gender equality and inclusion." %}
-    
-    <!-- Profile Section -->
+    {% include 'staff/dashboards/includes/_role_header.html' with title="Women Leader Dashboard" icon_class="fas fa-female" welcome_messages="Championing women's participation in KPN.|Empowering women across Kebbi State.|Leading with compassion and purpose." %}
     {% include 'staff/dashboards/includes/_profile_section.html' %}
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Female Members</p>
-                    <p class="text-3xl font-bold text-pink-600">{{ total_members }}</p>
-                </div>
-                <i class="fas fa-female text-4xl text-pink-600"></i>
+
+    <div class="mb-8">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-chart-pie mr-2 text-kpn-blue"></i> My Statistics</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Women Members</div>
+                <div class="text-3xl font-bold text-kpn-green">{{ women_members_count|default:0 }}</div>
             </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Female Leaders</p>
-                    <p class="text-3xl font-bold text-purple-600">{{ state_female_count|add:zonal_female_count|add:lga_female_count|add:ward_female_count }}</p>
-                </div>
-                <i class="fas fa-user-tie text-4xl text-purple-600"></i>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Welfare Cases</div>
+                <div class="text-3xl font-bold text-purple-600">{{ welfare_cases|default:0 }}</div>
             </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">General Members</p>
-                    <p class="text-3xl font-bold text-kpn-green">{{ general_female_count }}</p>
-                </div>
-                <i class="fas fa-users text-4xl text-kpn-green"></i>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Empowerment Events</div>
+                <div class="text-3xl font-bold text-kpn-blue">{{ empowerment_events|default:0 }}</div>
             </div>
         </div>
     </div>
-    
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 class="text-xl font-semibold mb-4">Female Members by Role</h3>
-            <div class="space-y-2">
-                <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
-                    <span>State Executives</span>
-                    <span class="font-bold text-kpn-blue">{{ state_female_count }}</span>
-                </div>
-                <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
-                    <span>Zonal Coordinators</span>
-                    <span class="font-bold text-kpn-blue">{{ zonal_female_count }}</span>
-                </div>
-                <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
-                    <span>LGA Leaders</span>
-                    <span class="font-bold text-kpn-blue">{{ lga_female_count }}</span>
-                </div>
-                <div class="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
-                    <span>Ward Leaders</span>
-                    <span class="font-bold text-kpn-blue">{{ ward_female_count }}</span>
-                </div>
-                <div class="flex justify-between items-center py-2">
-                    <span>General Members</span>
-                    <span class="font-bold text-kpn-blue">{{ general_female_count }}</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-tasks mr-2 text-purple-500"></i> My Tasks</h2>
             <div class="space-y-3">
-                <a href="{% url 'staff:womens_programs_list' %}" class="block p-3 bg-pink-50 dark:bg-pink-900 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-800 transition">
-                    <i class="fas fa-calendar-check mr-2"></i> Women's Programs
+                <a href="{% url 'staff:manage_staff' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-purple-50 group transition border border-transparent hover:border-purple-200">
+                    <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mr-4"><i class="fas fa-users"></i></div>
+                    <div><div class="font-bold text-gray-900 dark:text-white">Women Members</div><div class="text-xs text-gray-500">View all registered women in KPN</div></div>
                 </a>
-                <a href="{% url 'staff:women_members' %}" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
-                    <i class="fas fa-users mr-2"></i> View All Female Members
-                </a>
-                <a href="{% url 'staff:profile' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
-                    <i class="fas fa-user mr-2"></i> My Profile
+                <a href="{% url 'staff:view_reports' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-blue-50 group transition border border-transparent hover:border-blue-200">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-4"><i class="fas fa-chart-line"></i></div>
+                    <div><div class="font-bold text-gray-900 dark:text-white">Reports</div><div class="text-xs text-gray-500">View activity reports and welfare cases</div></div>
                 </a>
             </div>
         </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-clipboard-list mr-2 text-purple-500"></i> My Responsibilities</h2>
+            <ul class="space-y-4">
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">1</div><span class="text-gray-700 dark:text-gray-300"><strong>Women's Advocacy:</strong> Champion the rights and interests of women members across all levels of KPN.</span></li>
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">2</div><span class="text-gray-700 dark:text-gray-300"><strong>Welfare Support:</strong> Identify and facilitate welfare support for women facing social or economic hardship.</span></li>
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">3</div><span class="text-gray-700 dark:text-gray-300"><strong>Empowerment Programs:</strong> Organize and coordinate skills acquisition, mentorship, and empowerment events for women.</span></li>
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">4</div><span class="text-gray-700 dark:text-gray-300"><strong>Representation:</strong> Ensure that women have adequate representation and voice in all KPN decision-making processes.</span></li>
+            </ul>
+        </div>
     </div>
+    <div class="text-right"><a href="{% url 'staff:profile' %}" class="inline-flex items-center text-sm text-gray-500 hover:text-kpn-green font-semibold transition"><i class="fas fa-user-edit mr-2"></i> Edit My Profile</a></div>
 </div>
 {% endblock %}

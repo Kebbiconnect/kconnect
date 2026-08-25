@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if mode == 'edit' %}Edit Article{% else %}Write Article{% endif %} - KPN Newsroom{% endblock %}
+
+{% block extra_css %}
+<!-- Editor.js and Plugins — served locally -->
+<script src="{% static 'js/editorjs/editorjs.umd.js' %}"></script>
+<script src="{% static 'js/editorjs/header.umd.js' %}"></script>
+<script src="{% static 'js/editorjs/list.umd.js' %}"></script>
+<script src="{% static 'js/editorjs/image.umd.js' %}"></script>
+<script src="{% static 'js/editorjs/quote.umd.js' %}"></script>
+<script src="{% static 'js/editorjs/delimiter.umd.js' %}"></script>
+<script src="{% static 'js/editorjs/warning.umd.js' %}"></script>
+<script src="{% static 'js/editorjs/checklist.umd.js' %}"></script>
+<script src="{% static 'js/editorjs/embed.umd.js' %}"></script>
+
+<style>
+    /* Editor.js Theme Overrides for KPN Dark Mode and Newsroom Feel */
+    .ce-block__content, .ce-toolbar__content { max-width: 800px; margin: 0 auto; }
+    .dark .ce-block--selected .ce-block__content { background: rgba(255, 255, 255, 0.1); }
+    .dark .ce-toolbar__plus, .dark .ce-toolbar__settings-btn { color: #fff; }
+    .dark .ce-toolbar__plus:hover, .dark .ce-toolbar__settings-btn:hover { background-color: #374151; }
+    .dark .ce-popover, .dark .ce-settings { background-color: #1f2937; border-color: #374151; color: #f3f4f6; }
+    .dark .ce-popover__item:hover, .dark .ce-settings__button:hover { background-color: #374151; }
+    .dark .cdx-input { background-color: #374151; border-color: #4b5563; color: white; }
+    .dark .ce-inline-toolbar { background-color: #1f2937; border-color: #374151; color: white; }
+    .dark .ce-inline-tool:hover { background-color: #374151; }
+    
+    /* Clean newsroom typography */
+    #editorjs { font-family: 'Georgia', serif; font-size: 1.15rem; line-height: 1.8; padding-top: 1rem; }
+    .ce-header { font-family: 'Inter', sans-serif; font-weight: 700; color: #111827; }
+    .dark .ce-header { color: #f9fafb; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-8">
+    <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                <i class="fas fa-edit text-kpn-green mr-2"></i> Newsroom Workspace
+            </h1>
+            <div class="flex items-center gap-3">
+                <span id="save-status" class="text-sm font-medium text-gray-500 mr-2"></span>
+                <a href="{% url 'campaigns:my_articles' %}" class="px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded hover:bg-gray-50 shadow-sm transition">
+                    Cancel
+                </a>
+                <button type="button" onclick="previewArticle()" class="px-4 py-2 text-kpn-blue bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 shadow-sm transition font-medium">
+                    <i class="fas fa-eye mr-1"></i> Preview
+                </button>
+                <button type="button" onclick="submitArticle()" class="px-5 py-2 bg-kpn-green text-white font-bold rounded shadow hover:bg-green-700 transition">
+                    <i class="fas fa-save mr-1"></i> Save Draft
+                </button>
+            </div>
+        </div>
+
+        {% if article and article.status == 'REJECTED' %}
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded">
+            <h3 class="text-red-800 font-bold"><i class="fas fa-exclamation-circle mr-2"></i> Returned for Revision</h3>
+            <p class="text-red-700 mt-1">{{ article.rejection_note }}</p>
+        </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data" id="article-form" class="flex flex-col lg:flex-row gap-8">
+            {% csrf_token %}
+            
+            <!-- Left: Editor Canvas (75% width on desktop) -->
+            <div class="w-full lg:w-3/4">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6 md:p-10 min-h-[700px]">
+                    <!-- Headline & Subheadline -->
+                    <div class="mb-8 border-b pb-6 dark:border-gray-700">
+                        {{ form.title }}
+                        <div class="text-red-500 text-sm mt-1">{{ form.title.errors }}</div>
+                        
+                        {{ form.subheadline }}
+                        <div class="text-red-500 text-sm mt-1">{{ form.subheadline.errors }}</div>
+                    </div>
+                    
+                    <!-- Editor.js Container -->
+                    <div id="editorjs" class="text-gray-800 dark:text-gray-200 min-h-[400px]"></div>
+                    
+                    <!-- Hidden field where Editor.js JSON is saved -->
+                    {{ form.content_json }}
+                </div>
+            </div>
+
+            <!-- Right: Settings Sidebar (25% width on desktop) -->
+            <div class="w-full lg:w-1/4 space-y-6">
+                
+                <!-- Classification Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 space-y-4">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2 border-b pb-2">Classification</h3>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                        {{ form.category }}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Verification Status</label>
+                        {{ form.verification_status }}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Reporter Credit</label>
+                        {{ form.reporter_credit }}
+                    </div>
+                </div>
+
+                <!-- Location Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 space-y-4">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2 border-b pb-2">Location</h3>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">LGA</label>
+                        {{ form.lga }}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Ward</label>
+                        {{ form.ward }}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Specific Location</label>
+                        {{ form.location }}
+                    </div>
+                </div>
+
+                <!-- Media & SEO Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 space-y-4">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2 border-b pb-2">Media & SEO</h3>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Cover Image</label>
+                        <div class="flex items-center space-x-2">
+                            <label for="id_featured_image" class="cursor-pointer bg-gray-100 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded text-sm font-medium transition w-full text-center">
+                                <i class="fas fa-upload mr-1"></i> Choose File
+                            </label>
+                        </div>
+                        <div id="file-name" class="text-sm text-gray-500 mt-2 truncate text-center">No file chosen</div>
+                        {{ form.featured_image }}
+                        {% if article and article.featured_image %}
+                            <p class="text-xs text-green-600 mt-2 text-center bg-green-50 p-1 rounded"><i class="fas fa-check"></i> Image currently uploaded</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">SEO Description</label>
+                        {{ form.meta_description }}
+                    </div>
+                </div>
+                
+                {% if article and article.pk %}
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 text-center">
+                     <a href="{% url 'campaigns:submit_for_review' article.pk %}" class="block w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded transition">
+                         Submit for Review <i class="fas fa-arrow-right ml-1"></i>
+                     </a>
+                </div>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // 1. AJAX Ward loading based on LGA
+    document.getElementById('id_lga').addEventListener('change', function() {
+        const lgaId = this.value;
+        const wardSelect = document.getElementById('id_ward');
+        wardSelect.innerHTML = '<option value="">— Select Ward (optional) —</option>';
+        if (lgaId) {
+            fetch(`{% url 'campaigns:get_wards_for_lga' %}?lga_id=${lgaId}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.wards.forEach(ward => {
+                        const option = document.createElement('option');
+                        option.value = ward.id;
+                        option.textContent = ward.name;
+                        wardSelect.appendChild(option);
+                    });
+                })
+                .catch(err => console.error('Error fetching wards:', err));
+        }
+    });
+
+    // 2. UI Helpers
+    const imageInput = document.getElementById('id_featured_image');
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || "No file chosen";
+            document.getElementById('file-name').textContent = fileName;
+        });
+    }
+
+    // 3. Initialize Editor.js
+    const initialDataRaw = '{{ existing_content_json|escapejs }}';
+    let initialData = undefined;
+    if (initialDataRaw && initialDataRaw.trim() !== '' && initialDataRaw !== 'None' && initialDataRaw !== '{}') {
+        try {
+            const parsed = JSON.parse(initialDataRaw);
+            if (parsed && parsed.blocks && parsed.blocks.length > 0) {
+                initialData = parsed;
+            }
+        } catch (e) { console.error("Could not parse existing content.", e); }
+    }
+
+    let editor;
+    let autosaveTimer;
+    
+    try {
+        editor = new EditorJS({
+            holder: 'editorjs',
+            placeholder: 'Start writing your article...',
+            data: initialData,
+            onChange: (api, event) => {
+                document.getElementById('save-status').textContent = 'Unsaved changes';
+                document.getElementById('save-status').classList.remove('text-green-600');
+                document.getElementById('save-status').classList.add('text-orange-500');
+            },
+            tools: {
+                header: {
+                    class: window.Header,
+                    config: { placeholder: 'Enter a heading', levels: [2, 3, 4], defaultLevel: 2 }
+                },
+                list: { class: window.List, inlineToolbar: true },
+                quote: { class: window.Quote, inlineToolbar: true, config: { quotePlaceholder: 'Enter a quote', captionPlaceholder: 'Quote author' }},
+                delimiter: window.Delimiter,
+                warning: { class: window.Warning, inlineToolbar: true, config: { titlePlaceholder: 'Title', messagePlaceholder: 'Message' }},
+                checklist: { class: window.Checklist, inlineToolbar: true },
+                embed: { class: window.Embed, config: { services: { youtube: true, twitter: true, facebook: true }}},
+                image: {
+                    class: window.ImageTool,
+                    config: {
+                        endpoints: {
+                            byFile: "{% url 'campaigns:image_upload' %}",
+                        },
+                        additionalRequestHeaders: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        }
+                    }
+                }
+            }
+        });
+    } catch (e) {
+        console.error("EditorJS failed to initialize:", e);
+        document.getElementById('editorjs').innerHTML = '<div class="p-4 bg-red-100 text-red-800 rounded"><strong>Error loading the text editor:</strong><br>' + e.message + '<br><pre class="mt-2 text-xs overflow-auto">' + e.stack + '</pre></div>';
+    }
+
+    // 4. Submit Logic
+    function submitArticle() {
+        if (!editor) {
+            alert('Editor is not loaded properly. Cannot save.');
+            return;
+        }
+        document.getElementById('save-status').textContent = 'Saving...';
+        
+        editor.save().then((outputData) => {
+            document.getElementById('content-json-field').value = JSON.stringify(outputData);
+            document.getElementById('article-form').submit();
+        }).catch((error) => {
+            console.error('Saving failed: ', error);
+            alert('Error saving article content. Please try again.');
+        });
+    }
+    
+    function previewArticle() {
+        alert("Please Save Draft first to preview the latest changes.");
+        {% if article and article.slug %}
+        window.open("{% url 'campaigns:article_detail' article.slug %}", "_blank");
+        {% endif %}
+    }
+</script>
+{% endblock %}

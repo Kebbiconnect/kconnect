@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Kebbi Progressive Network (KPN){% endblock %}</title>
+    <title>{% block title %}Kebbi Progressive Youth Network (KPN){% endblock %}</title>
     
     <!-- PWA Meta Tags -->
-    <meta name="description" content="Kebbi Progressive Network - Driving Change Across Kebbi State">
+    <meta name="description" content="Kebbi Progressive Youth Network - Driving Change Across Kebbi State">
     <meta name="theme-color" content="#28a745">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -100,21 +100,89 @@
                 
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex items-center space-x-6">
-                    <a href="{% url 'core:home' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">Home</a>
-                    <a href="{% url 'core:about' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">About</a>
-                    <a href="{% url 'core:leadership' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">Leadership</a>
-                    <a href="{% url 'core:campaigns' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">News</a>
-                    <a href="{% url 'core:gallery' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">Gallery</a>
-                    <a href="{% url 'core:contact' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">Contact</a>
+                    <a href="{% url 'core:home' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition font-medium">Home</a>
+                    <a href="{% url 'campaigns:newsroom' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition font-medium">Newsroom</a>
+                    <a href="{% url 'core:community' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition font-medium">Community</a>
+                    <a href="{% url 'core:opportunities' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition font-medium">Opportunities</a>
+                    <a href="{% url 'core:civic' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition font-medium">Civic</a>
+                    <a href="{% url 'core:advocacy' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition font-medium">Advocacy</a>
+                    
+                    <!-- KPN Network Dropdown -->
+                    <div class="relative group" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
+                        <button class="flex items-center text-gray-700 dark:text-gray-300 hover:text-kpn-green transition font-medium">
+                            KPN Network <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-1" class="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-50" x-cloak>
+                            <div class="py-1">
+                                <a href="{% url 'core:leadership' %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-gray-700 hover:text-kpn-green">Leadership Directory</a>
+                                <a href="{% url 'core:code_of_conduct' %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-gray-700 hover:text-kpn-green">Code of Conduct</a>
+                                <a href="{% url 'core:impact' %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-gray-700 hover:text-kpn-green">Impact & Metrics</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="{% url 'core:about' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition font-medium">About</a>
                     
                     {% if user.is_authenticated %}
-                        <a href="{% url 'staff:dashboard' %}" class="bg-kpn-green text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">Dashboard</a>
-                        <a href="{% url 'staff:logout' %}" class="text-gray-700 dark:text-gray-300 hover:text-red-500 transition">Logout</a>
+                        <a href="{% url 'core:report_a_story' %}" class="text-kpn-blue dark:text-blue-400 hover:text-blue-600 transition font-medium"><i class="fas fa-bullhorn mr-1"></i>Report a Story</a>
+                        <a href="{% url 'staff:dashboard' %}" class="bg-kpn-green text-white px-4 py-2 rounded-lg hover:bg-green-600 transition font-medium shadow-sm">Dashboard</a>
+                        
+                        <!-- Notification Bell -->
+                        <div class="relative" x-data="{ bellOpen: false }" @click.outside="bellOpen = false">
+                            <button @click="bellOpen = !bellOpen" class="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                                <i class="fas fa-bell text-gray-600 dark:text-gray-300 text-lg"></i>
+                                {% if unread_notifications_count %}
+                                <span class="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                                    {{ unread_notifications_count }}
+                                </span>
+                                {% endif %}
+                            </button>
+                            <!-- Bell Dropdown -->
+                            <div x-show="bellOpen" x-cloak
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 translate-y-1"
+                                 x-transition:enter-end="opacity-100 translate-y-0"
+                                 class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+                                <div class="p-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                                    <h4 class="font-bold text-gray-800 dark:text-white text-sm">Notifications</h4>
+                                    {% if unread_notifications_count %}
+                                    <a href="{% url 'core:mark_notifications_read' %}" class="text-xs text-kpn-blue hover:underline">Mark all read</a>
+                                    {% endif %}
+                                </div>
+                                <div class="max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
+                                    {% for notif in recent_notifications %}
+                                    <a href="{{ notif.link|default:'#' }}" class="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition {% if not notif.is_read %}bg-green-50 dark:bg-green-900/20{% endif %}">
+                                        <div class="flex items-start gap-3">
+                                            <div class="mt-1 w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0
+                                                {% if notif.notif_type == 'SUCCESS' %}bg-green-100 text-green-600
+                                                {% elif notif.notif_type == 'WARNING' %}bg-yellow-100 text-yellow-600
+                                                {% elif notif.notif_type == 'ACTION' %}bg-red-100 text-red-600
+                                                {% else %}bg-blue-100 text-blue-600{% endif %}">
+                                                <i class="fas {% if notif.notif_type == 'SUCCESS' %}fa-check{% elif notif.notif_type == 'WARNING' %}fa-exclamation{% elif notif.notif_type == 'ACTION' %}fa-bolt{% else %}fa-info{% endif %} text-xs"></i>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-semibold text-gray-800 dark:text-white truncate">{{ notif.title }}</p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ notif.message|truncatechars:60 }}</p>
+                                                <p class="text-xs text-gray-400 mt-1">{{ notif.created_at|timesince }} ago</p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                    {% empty %}
+                                    <div class="p-6 text-center text-gray-400 dark:text-gray-500">
+                                        <i class="fas fa-bell-slash text-2xl mb-2 block"></i>
+                                        <p class="text-sm">No notifications yet</p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <a href="{% url 'staff:logout' %}" class="text-gray-700 dark:text-gray-300 hover:text-red-500 transition font-medium">Logout</a>
                     {% else %}
-                        <a href="{% url 'staff:login' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition">Login</a>
-                        <a href="{% url 'staff:register' %}" class="bg-kpn-green text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">Join Us</a>
+                        <a href="{% url 'staff:login' %}" class="text-gray-700 dark:text-gray-300 hover:text-kpn-green transition font-medium">Login</a>
+                        <a href="{% url 'staff:register' %}" class="bg-kpn-green text-white px-5 py-2 rounded-lg hover:bg-green-600 transition font-medium shadow-sm">Join Us</a>
                     {% endif %}
-                    
+
                     <!-- Dark Mode Toggle -->
                     <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" 
                             class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
@@ -150,24 +218,48 @@
              class="md:hidden bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-xl">
             <div class="px-4 py-3 space-y-1">
                 <a href="{% url 'core:home' %}" class="menu-item block py-3 px-4 text-gray-700 dark:text-gray-300 hover:text-kpn-green hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 transform hover:translate-x-2">
-                    <i class="fas fa-home mr-2 text-kpn-green"></i>Home
+                    <i class="fas fa-home mr-2 text-kpn-green w-5 text-center"></i>Home
                 </a>
+                <a href="{% url 'campaigns:newsroom' %}" class="menu-item block py-3 px-4 text-gray-700 dark:text-gray-300 hover:text-kpn-green hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <i class="fas fa-newspaper mr-2 text-orange-600 w-5 text-center"></i>Newsroom
+                </a>
+                <a href="{% url 'core:community' %}" class="menu-item block py-3 px-4 text-gray-700 dark:text-gray-300 hover:text-kpn-green hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <i class="fas fa-users mr-2 text-blue-500 w-5 text-center"></i>Community
+                </a>
+                <a href="{% url 'core:opportunities' %}" class="menu-item block py-3 px-4 text-gray-700 dark:text-gray-300 hover:text-kpn-green hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <i class="fas fa-briefcase mr-2 text-indigo-600 w-5 text-center"></i>Opportunities
+                </a>
+                <a href="{% url 'core:civic' %}" class="menu-item block py-3 px-4 text-gray-700 dark:text-gray-300 hover:text-kpn-green hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <i class="fas fa-landmark mr-2 text-gray-600 w-5 text-center"></i>Civic
+                </a>
+                <a href="{% url 'core:advocacy' %}" class="menu-item block py-3 px-4 text-gray-700 dark:text-gray-300 hover:text-kpn-green hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <i class="fas fa-bullhorn mr-2 text-red-500 w-5 text-center"></i>Advocacy
+                </a>
+                
+                <!-- Mobile Our Network Group -->
+                <div class="menu-item py-2 px-4 text-sm font-semibold text-gray-400 uppercase tracking-wider mt-2">
+                    KPN Network
+                </div>
+                <div class="pl-4 border-l-2 border-green-100 dark:border-gray-700 ml-4 mb-2 space-y-1">
+                    <a href="{% url 'core:leadership' %}" class="block py-2 px-4 text-gray-600 dark:text-gray-400 hover:text-kpn-green hover:bg-green-50 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm">
+                        <i class="fas fa-sitemap mr-2 w-4 text-center"></i>Leadership Directory
+                    </a>
+                    <a href="{% url 'core:code_of_conduct' %}" class="block py-2 px-4 text-gray-600 dark:text-gray-400 hover:text-kpn-green hover:bg-green-50 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm">
+                        <i class="fas fa-file-contract mr-2 w-4 text-center"></i>Code of Conduct
+                    </a>
+                    <a href="{% url 'core:impact' %}" class="block py-2 px-4 text-gray-600 dark:text-gray-400 hover:text-kpn-green hover:bg-green-50 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm">
+                        <i class="fas fa-chart-line mr-2 w-4 text-center"></i>Impact & Metrics
+                    </a>
+                </div>
+
                 <a href="{% url 'core:about' %}" class="menu-item block py-3 px-4 text-gray-700 dark:text-gray-300 hover:text-kpn-green hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 transform hover:translate-x-2">
-                    <i class="fas fa-info-circle mr-2 text-kpn-blue"></i>About
+                    <i class="fas fa-info-circle mr-2 text-kpn-blue w-5 text-center"></i>About KPN
                 </a>
-                <a href="{% url 'core:leadership' %}" class="menu-item block py-3 px-4 text-gray-700 dark:text-gray-300 hover:text-kpn-green hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 transform hover:translate-x-2">
-                    <i class="fas fa-users mr-2 text-purple-600"></i>Leadership
-                </a>
-                <a href="{% url 'core:campaigns' %}" class="menu-item block py-3 px-4 text-gray-700 dark:text-gray-300 hover:text-kpn-green hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 transform hover:translate-x-2">
-                    <i class="fas fa-bullhorn mr-2 text-orange-600"></i>News
-                </a>
-                <a href="{% url 'core:gallery' %}" class="menu-item block py-3 px-4 text-gray-700 dark:text-gray-300 hover:text-kpn-green hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 transform hover:translate-x-2">
-                    <i class="fas fa-images mr-2 text-pink-600"></i>Gallery
-                </a>
-                <a href="{% url 'core:contact' %}" class="menu-item block py-3 px-4 text-gray-700 dark:text-gray-300 hover:text-kpn-green hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300 transform hover:translate-x-2">
-                    <i class="fas fa-envelope mr-2 text-blue-600"></i>Contact
-                </a>
+
                 {% if user.is_authenticated %}
+                    <a href="{% url 'core:report_a_story' %}" class="menu-item block py-3 px-4 text-blue-600 font-semibold bg-blue-50 dark:bg-blue-900/20 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-sm">
+                        <i class="fas fa-bullhorn mr-2"></i>Report a Story
+                    </a>
                     <a href="{% url 'staff:dashboard' %}" class="menu-item block py-3 px-4 bg-kpn-green text-white rounded-lg font-semibold hover:bg-green-600 transition-all duration-300 transform hover:scale-105 shadow-md">
                         <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
                     </a>
@@ -231,26 +323,12 @@
                 <div class="col-span-1 md:col-span-2 transform hover:scale-105 transition-transform duration-300">
                     <div class="flex items-center space-x-3 mb-4">
                         <img src="{% static 'images/kpn-logo.png' %}" alt="KPN Logo" class="w-12 h-12 rounded-full">
-                        <h3 class="text-2xl font-bold text-kpn-green">Kebbi Progressive Network</h3>
+                        <h3 class="text-2xl font-bold text-kpn-green">Kebbi Progressive Youth Network</h3>
                     </div>
                     <p class="text-lg text-kpn-green italic mb-4 font-semibold">One Voice, One Change</p>
-                    <p class="text-sm text-gray-400 leading-relaxed">Kebbi Progressive Network (KPN) is a youth movement committed to promoting unity, civic participation, and development throughout Kebbi State. We believe in the power of collective action and social connectivity to make positive change happen.</p>
+                    <p class="text-sm text-gray-400 leading-relaxed">Kebbi Progressive Youth Network (KPN) is a youth movement committed to promoting unity, civic participation, and development throughout Kebbi State. We believe in the power of collective action and social connectivity to make positive change happen.</p>
                     
-                    <!-- Stats -->
-                    <div class="mt-6 grid grid-cols-3 gap-4">
-                        <div class="text-center p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition">
-                            <div class="text-kpn-green font-bold text-xl">3</div>
-                            <div class="text-xs text-gray-400">Zones</div>
-                        </div>
-                        <div class="text-center p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition">
-                            <div class="text-kpn-blue font-bold text-xl">21</div>
-                            <div class="text-xs text-gray-400">LGAs</div>
-                        </div>
-                        <div class="text-center p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition">
-                            <div class="text-yellow-500 font-bold text-xl">225</div>
-                            <div class="text-xs text-gray-400">Wards</div>
-                        </div>
-                    </div>
+
                 </div>
                 
                 <!-- Quick Links -->
@@ -345,7 +423,7 @@
             <div class="border-t border-gray-800 mt-10 pt-8">
                 <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
                     <p class="mb-4 md:mb-0">
-                        &copy; {% now "Y" %} Kebbi Progressive Network. All rights reserved.
+                        &copy; {% now "Y" %} Kebbi Progressive Youth Network. All rights reserved.
                     </p>
                     <div class="flex items-center space-x-4">
                         <a href="{% url 'core:code_of_conduct' %}" class="hover:text-kpn-green transition">Privacy Policy</a>

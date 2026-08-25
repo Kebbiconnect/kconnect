@@ -1,115 +1,52 @@
 {% extends 'base.html' %}
-
 {% block title %}Auditor General Dashboard - KPN{% endblock %}
-
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Reusable Dashboard Header with Typing Animation -->
-    {% include 'staff/dashboards/includes/_role_header.html' with title="Auditor General Dashboard" icon_class="fas fa-balance-scale" welcome_messages="Ensuring financial compliance and integrity.|Conducting thorough audits and reviews.|Maintaining fiscal accountability." %}
-    
-    <!-- Profile Section -->
+    {% include 'staff/dashboards/includes/_role_header.html' with title="Auditor General Dashboard" icon_class="fas fa-search-dollar" welcome_messages="Ensuring financial integrity and transparency.|Safeguarding KPN resources.|Auditing for accountability." %}
     {% include 'staff/dashboards/includes/_profile_section.html' %}
-    
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Financial Reports</p>
-                    <p class="text-3xl font-bold text-kpn-green">{{ total_financial_reports }}</p>
-                </div>
-                <i class="fas fa-file-invoice text-4xl text-kpn-green"></i>
+
+    <div class="mb-8">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-chart-pie mr-2 text-kpn-blue"></i> My Statistics</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Audits Conducted</div>
+                <div class="text-3xl font-bold text-kpn-blue">{{ audits_count|default:0 }}</div>
             </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">My Audit Reports</p>
-                    <p class="text-3xl font-bold text-kpn-blue">{{ total_audit_reports }}</p>
-                </div>
-                <i class="fas fa-clipboard-check text-4xl text-kpn-blue"></i>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Reports Reviewed</div>
+                <div class="text-3xl font-bold text-kpn-green">{{ financial_reports_count|default:0 }}</div>
             </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Draft Reports</p>
-                    <p class="text-3xl font-bold text-yellow-600">{{ draft_audits }}</p>
-                </div>
-                <i class="fas fa-file-alt text-4xl text-yellow-600"></i>
-            </div>
-        </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Submitted Reports</p>
-                    <p class="text-3xl font-bold text-green-600">{{ submitted_audits }}</p>
-                </div>
-                <i class="fas fa-check-circle text-4xl text-green-600"></i>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Pending Audits</div>
+                <div class="text-3xl font-bold text-yellow-600">{{ pending_audits|default:0 }}</div>
             </div>
         </div>
     </div>
-    
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 class="text-xl font-semibold mb-4">Recent Financial Reports</h3>
-            {% if financial_reports %}
-            <div class="space-y-3 max-h-64 overflow-y-auto">
-                {% for report in financial_reports %}
-                <div class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h4 class="font-semibold">{{ report.title }}</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ report.period }}</p>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-tasks mr-2 text-yellow-500"></i> My Tasks</h2>
+            <div class="space-y-3">
+                <a href="{% url 'staff:view_reports' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-blue-50 group transition border border-transparent hover:border-blue-200">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-4"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <div><div class="font-bold text-gray-900 dark:text-white">Financial Reports</div><div class="text-xs text-gray-500">Review all submitted financial records</div></div>
+                </a>
+                <a href="{% url 'staff:manage_staff' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-green-50 group transition border border-transparent hover:border-green-200">
+                    <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-4"><i class="fas fa-users"></i></div>
+                    <div><div class="font-bold text-gray-900 dark:text-white">Staff Directory</div><div class="text-xs text-gray-500">View all officials and their roles</div></div>
+                </a>
             </div>
-            {% else %}
-            <p class="text-gray-500">No financial reports available.</p>
-            {% endif %}
         </div>
-        
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 class="text-xl font-semibold mb-4">Recent Audit Reports</h3>
-            {% if audit_reports %}
-            <div class="space-y-3 max-h-64 overflow-y-auto">
-                {% for audit in audit_reports %}
-                <div class="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h4 class="font-semibold">{{ audit.title }}</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ audit.audit_period }}</p>
-                        </div>
-                        <span class="text-xs px-2 py-1 rounded-full {% if audit.status == 'SUBMITTED' %}bg-green-100 text-green-800{% elif audit.status == 'DRAFT' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}">
-                            {{ audit.get_status_display }}
-                        </span>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <p class="text-gray-500">No audit reports yet.</p>
-            {% endif %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-clipboard-list mr-2 text-purple-500"></i> My Responsibilities</h2>
+            <ul class="space-y-4">
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">1</div><span class="text-gray-700 dark:text-gray-300"><strong>Financial Auditing:</strong> Conduct thorough audits of KPN income, expenditure, and financial records at all levels.</span></li>
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">2</div><span class="text-gray-700 dark:text-gray-300"><strong>Compliance Reporting:</strong> Prepare audit reports and present findings to the state executive committee.</span></li>
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">3</div><span class="text-gray-700 dark:text-gray-300"><strong>Fraud Prevention:</strong> Identify and flag irregular financial activities, ensuring KPN funds are not misappropriated.</span></li>
+                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">4</div><span class="text-gray-700 dark:text-gray-300"><strong>Quarterly Review:</strong> Conduct quarterly financial reviews and publish audit summaries for executive transparency.</span></li>
+            </ul>
         </div>
     </div>
-    
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 class="text-xl font-semibold mb-4">Quick Actions</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <a href="{% url 'staff:create_audit_report' %}" class="block p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition">
-                <i class="fas fa-file-medical mr-2"></i> Create Audit Report
-            </a>
-            <a href="{% url 'staff:auditor_general_dashboard' %}" class="block p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition">
-                <i class="fas fa-chart-bar mr-2"></i> View All Financial Reports
-            </a>
-            <a href="{% url 'staff:profile' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
-                <i class="fas fa-user mr-2"></i> My Profile
-            </a>
-        </div>
-    </div>
+    <div class="text-right"><a href="{% url 'staff:profile' %}" class="inline-flex items-center text-sm text-gray-500 hover:text-kpn-green font-semibold transition"><i class="fas fa-user-edit mr-2"></i> Edit My Profile</a></div>
 </div>
 {% endblock %}
