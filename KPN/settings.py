@@ -31,7 +31,7 @@ load_dotenv(BASE_DIR / '.env')
 SECRET_KEY = config('SESSION_SECRET', default='django-insecure-dev-key-replace-in-production-123456789')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 # --- START: New and Improved ALLOWED_HOSTS logic ---
 # In DEBUG mode, allow all hosts for easier development
