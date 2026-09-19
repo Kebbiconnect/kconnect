@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Our Patrons - Kebbi Progressive Youth Network{% endblock %}
+
+{% block content %}
+<section class="bg-gradient-to-r from-kpn-green to-kpn-blue text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Our Patrons</h1>
+        <p class="text-xl md:text-2xl max-w-3xl mx-auto opacity-90 font-light">
+            The visionary leaders and mentors guiding the Kebbi Progressive Youth Network towards sustainable development.
+        </p>
+    </div>
+</section>
+
+<section class="py-16 bg-white dark:bg-gray-900 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {% if grand_patron %}
+        <!-- Grand Patron Section -->
+        <div class="mb-20">
+            <div class="text-center mb-12">
+                <h2 class="text-kpn-green font-bold tracking-widest uppercase text-sm mb-2">Grand Patron</h2>
+                <div class="w-16 h-1 bg-kpn-green mx-auto rounded"></div>
+            </div>
+            
+            <div class="max-w-4xl mx-auto bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 md:p-12 border border-gray-100 dark:border-gray-700 shadow-xl flex flex-col md:flex-row items-center gap-10">
+                <div class="w-48 h-48 md:w-64 md:h-64 flex-shrink-0 relative">
+                    {% if grand_patron.photo %}
+                    <img src="{{ grand_patron.photo.url }}" alt="{{ grand_patron.full_name }}" class="w-full h-full object-cover rounded-full shadow-lg border-4 border-white dark:border-gray-700">
+                    {% else %}
+                    <div class="w-full h-full bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center text-6xl text-gray-400">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    {% endif %}
+                    <div class="absolute -bottom-4 -right-4 bg-kpn-green text-white p-4 rounded-full shadow-lg">
+                        <i class="fas fa-crown text-xl"></i>
+                    </div>
+                </div>
+                
+                <div class="text-center md:text-left flex-1">
+                    <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ grand_patron.full_name }}</h3>
+                    <p class="text-lg text-kpn-blue font-semibold mb-6">{{ grand_patron.title }}</p>
+                    
+                    <div class="text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+                        {{ grand_patron.bio|default:"No biography available." }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if patrons %}
+        <!-- Patrons Grid Section -->
+        <div>
+            <div class="text-center mb-12">
+                <h2 class="text-kpn-blue font-bold tracking-widest uppercase text-sm mb-2">Our Patrons</h2>
+                <div class="w-16 h-1 bg-kpn-blue mx-auto rounded"></div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for patron in patrons %}
+                <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition group flex flex-col h-full">
+                    <div class="h-64 bg-gray-200 dark:bg-gray-700 relative overflow-hidden">
+                        {% if patron.photo %}
+                        <img src="{{ patron.photo.url }}" alt="{{ patron.full_name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-6xl text-gray-400">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        {% endif %}
+                        <div class="absolute top-4 right-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-kpn-blue shadow">
+                            Patron
+                        </div>
+                    </div>
+                    <div class="p-6 flex-1 flex flex-col">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">{{ patron.full_name }}</h3>
+                        <p class="text-sm font-medium text-kpn-green mb-4">{{ patron.title }}</p>
+                        <div class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed flex-1">
+                            {{ patron.bio|truncatewords:40|default:"No biography available." }}
+                        </div>
+                        {% if patron.bio|wordcount > 40 %}
+                        <button onclick="document.getElementById('modal-{{ patron.id }}').classList.remove('hidden')" class="mt-4 text-kpn-blue hover:text-kpn-green font-medium text-sm flex items-center transition">
+                            Read more <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Modal for full bio -->
+                {% if patron.bio|wordcount > 40 %}
+                <div id="modal-{{ patron.id }}" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative">
+                        <button onclick="document.getElementById('modal-{{ patron.id }}').classList.add('hidden')" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 hover:text-gray-900 dark:hover:text-white transition">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <div class="p-8">
+                            <div class="flex items-center gap-6 mb-6">
+                                <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+                                    {% if patron.photo %}
+                                    <img src="{{ patron.photo.url }}" alt="{{ patron.full_name }}" class="w-full h-full object-cover">
+                                    {% else %}
+                                    <div class="w-full h-full flex items-center justify-center text-3xl text-gray-400"><i class="fas fa-user"></i></div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ patron.full_name }}</h3>
+                                    <p class="text-kpn-green font-medium">{{ patron.title }}</p>
+                                </div>
+                            </div>
+                            <div class="text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line text-sm md:text-base">
+                                {{ patron.bio }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if not grand_patron and not patrons %}
+        <div class="text-center py-20 text-gray-500 dark:text-gray-400">
+            <i class="fas fa-users text-6xl mb-4 text-gray-300 dark:text-gray-600"></i>
+            <h3 class="text-xl font-medium">Patrons Coming Soon</h3>
+            <p class="mt-2">The list of KPN Patrons is currently being updated.</p>
+        </div>
+        {% endif %}
+        
+    </div>
+</section>
+{% endblock %}

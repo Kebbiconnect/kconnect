@@ -847,7 +847,7 @@ def export_members_pdf(request):
 def approve_members(request):
     if request.user.role == 'STATE':
         # Exclude superusers from approval listings
-        pending_users = User.objects.filter(status='PENDING', is_superuser=False).order_by('-created_at')
+        pending_users = User.objects.filter(status__in=['PENDING', 'UNDER_REVIEW'], is_superuser=False).order_by('-created_at')
         
         zone_filter = request.GET.get('zone')
         lga_filter = request.GET.get('lga')
@@ -866,7 +866,7 @@ def approve_members(request):
         
     elif request.user.role == 'ZONAL':
         pending_users = User.objects.filter(
-            status='PENDING',
+            status__in=['PENDING', 'UNDER_REVIEW'],
             zone=request.user.zone,
             is_superuser=False
         ).order_by('-created_at')
@@ -875,7 +875,7 @@ def approve_members(request):
         
     elif request.user.role == 'LGA':
         pending_users = User.objects.filter(
-            status='PENDING',
+            status__in=['PENDING', 'UNDER_REVIEW'],
             lga=request.user.lga,
             is_superuser=False
         ).order_by('-created_at')
@@ -906,7 +906,7 @@ def review_applicant(request, user_id):
         action = request.POST.get('action')
         
         if action == 'approve':
-            applicant.status = 'APPROVED'
+            applicant.status = 'VERIFIED'
             applicant.approved_by = request.user
             applicant.date_approved = timezone.now()
             applicant.save()
@@ -1243,7 +1243,7 @@ def treasurer_dashboard(request):
     
     return render(request, 'staff/dashboards/treasurer.html', context)
 
-@specific_role_required('Financial Secretary')
+@specific_role_required('Finance Operations Officer')
 def financial_secretary_dashboard(request):
     from donations.models import Donation, FinancialReport
     verified_donations = Donation.objects.filter(status='VERIFIED').count()
@@ -1372,7 +1372,7 @@ def vice_president_dashboard(request):
     # Overall statistics - exclude superusers
     total_members = User.objects.filter(status='VERIFIED', is_superuser=False).count()
     total_leaders = User.objects.filter(status='VERIFIED', is_superuser=False).exclude(role='GENERAL').count()
-    pending_members = User.objects.filter(status='PENDING', is_superuser=False).count()
+    pending_members = User.objects.filter(status__in=['PENDING', 'UNDER_REVIEW'], is_superuser=False).count()
     
     context = {
         'zone_stats': zone_stats,
@@ -1420,7 +1420,7 @@ def state_supervisor_dashboard(request):
     
     return render(request, 'staff/dashboards/state_supervisor.html', context)
 
-@specific_role_required('Legal & Ethics Adviser')
+@specific_role_required('Director of Legal Affairs & Ethics')
 def legal_ethics_adviser_dashboard(request):
     disciplinary_actions = DisciplinaryAction.objects.all().count()
     pending_actions = DisciplinaryAction.objects.filter(is_approved=False).count()
@@ -1432,7 +1432,7 @@ def legal_ethics_adviser_dashboard(request):
     
     return render(request, 'staff/dashboards/legal_ethics_adviser.html', context)
 
-@specific_role_required('Director of Membership & Mobilization')
+@specific_role_required('Director of Community Engagement')
 def director_of_mobilization_dashboard(request):
     total_members = User.objects.filter(status='VERIFIED').count()
     total_zones = Zone.objects.count()
@@ -1444,7 +1444,7 @@ def director_of_mobilization_dashboard(request):
     
     return render(request, 'staff/dashboards/director_of_mobilization.html', context)
 
-@specific_role_required('Assistant Director of Membership & Mobilization')
+@specific_role_required('Assistant Director of Community Engagement')
 def assistant_director_of_mobilization_dashboard(request):
     total_members = User.objects.filter(status='VERIFIED').count()
     
@@ -1464,7 +1464,7 @@ def assistant_organizing_secretary_dashboard(request):
     
     return render(request, 'staff/dashboards/assistant_organizing_secretary.html', context)
 
-@specific_role_required('Auditor General')
+@specific_role_required('Director of Audit & Accountability')
 def auditor_general_dashboard(request):
     from donations.models import FinancialReport, AuditReport
     
@@ -1491,7 +1491,7 @@ def auditor_general_dashboard(request):
     
     return render(request, 'staff/dashboards/auditor_general.html', context)
 
-@specific_role_required('Director of Welfare & Community Support')
+@specific_role_required('Director of Member Support & Welfare')
 def welfare_officer_dashboard(request):
     from .models import WelfareProgram
     
@@ -1524,7 +1524,7 @@ def welfare_officer_dashboard(request):
     
     return render(request, 'staff/dashboards/welfare_officer.html', context)
 
-@specific_role_required('Director of Youth Development & Empowerment')
+@specific_role_required('Director of Youth Development')
 def youth_empowerment_officer_dashboard(request):
     from .models import YouthProgram
     
@@ -1557,7 +1557,7 @@ def youth_empowerment_officer_dashboard(request):
     
     return render(request, 'staff/dashboards/youth_empowerment_officer.html', context)
 
-@specific_role_required('Director of Women Development')
+@specific_role_required("Director of Women's Development")
 def women_leader_dashboard(request):
     # Filter only female members
     if request.user.role == 'STATE':
@@ -1590,7 +1590,7 @@ def women_leader_dashboard(request):
     
     return render(request, 'staff/dashboards/women_leader.html', context)
 
-@specific_role_required('Assistant Director of Women Development')
+@specific_role_required("Assistant Director of Women's Development")
 def assistant_women_leader_dashboard(request):
     # Filter only female members
     if request.user.role == 'STATE':
@@ -1623,7 +1623,7 @@ def assistant_media_director_dashboard(request):
     
     return render(request, 'staff/dashboards/assistant_media_director.html', context)
 
-@specific_role_required('Director of Public Relations & Community Engagement')
+@specific_role_required('Director of Public Relations & Partnerships')
 def pr_officer_dashboard(request):
     published_campaigns = Campaign.objects.filter(status='PUBLISHED').count()
     total_outreach = CommunityOutreach.objects.count()
@@ -1711,7 +1711,7 @@ def lga_supervisor_dashboard(request):
     
     return render(request, 'staff/dashboards/lga_supervisor.html', context)
 
-@specific_role_required('LGA Women Development Officer')
+@specific_role_required("LGA Women's Development Officer")
 def lga_women_leader_dashboard(request):
     members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count() if request.user.lga else 0
     
@@ -1721,7 +1721,7 @@ def lga_women_leader_dashboard(request):
     
     return render(request, 'staff/dashboards/lga_women_leader.html', context)
 
-@specific_role_required('LGA Community Support Officer')
+@specific_role_required('LGA Member Support Officer')
 def lga_welfare_officer_dashboard(request):
     members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count() if request.user.lga else 0
     
@@ -1965,7 +1965,7 @@ def reinstate_member(request, user_id):
     member = get_object_or_404(User, pk=user_id)
     
     if request.method == 'POST':
-        member.status = 'APPROVED'
+        member.status = 'VERIFIED'
         member.date_approved = timezone.now()
         member.approved_by = request.user
         member.save()
@@ -2918,7 +2918,7 @@ def vice_president_staff_directory(request):
     zone_id = request.GET.get('zone')
     lga_id = request.GET.get('lga')
     role = request.GET.get('role')
-    status = request.GET.get('status', 'APPROVED')
+    status = request.GET.get('status', 'VERIFIED')
     
     # Base queryset
     members = User.objects.filter(status=status).order_by('zone__name', 'lga__name', 'last_name')
@@ -3816,4 +3816,54 @@ def delete_advocacy_campaign(request, pk):
         messages.success(request, 'Advocacy Campaign deleted successfully.')
         return redirect('staff:manage_advocacy_campaigns')
     context = {'object': campaign, 'cancel_url': 'staff:manage_advocacy_campaigns', 'title': 'Delete Advocacy Campaign'}
+    return render(request, 'staff/confirm_delete.html', context)
+
+@media_director_or_president_required
+def manage_patrons(request):
+    from core.models import Patron
+    patrons = Patron.objects.all().order_by('patron_type', 'order')
+    context = {'patrons': patrons}
+    return render(request, 'staff/patrons/list.html', context)
+
+@media_director_or_president_required
+def create_patron(request):
+    from staff.forms import PatronForm
+    if request.method == 'POST':
+        form = PatronForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Patron created successfully.')
+            return redirect('staff:manage_patrons')
+    else:
+        form = PatronForm()
+    
+    context = {'form': form, 'title': 'Create Patron', 'cancel_url': 'staff:manage_patrons'}
+    return render(request, 'staff/form_template.html', context)
+
+@media_director_or_president_required
+def edit_patron(request, pk):
+    from core.models import Patron
+    from staff.forms import PatronForm
+    patron = get_object_or_404(Patron, pk=pk)
+    if request.method == 'POST':
+        form = PatronForm(request.POST, request.FILES, instance=patron)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Patron updated successfully.')
+            return redirect('staff:manage_patrons')
+    else:
+        form = PatronForm(instance=patron)
+    
+    context = {'form': form, 'title': 'Edit Patron', 'cancel_url': 'staff:manage_patrons'}
+    return render(request, 'staff/form_template.html', context)
+
+@media_director_or_president_required
+def delete_patron(request, pk):
+    from core.models import Patron
+    patron = get_object_or_404(Patron, pk=pk)
+    if request.method == 'POST':
+        patron.delete()
+        messages.success(request, 'Patron deleted successfully.')
+        return redirect('staff:manage_patrons')
+    context = {'object': patron, 'cancel_url': 'staff:manage_patrons', 'title': 'Delete Patron'}
     return render(request, 'staff/confirm_delete.html', context)

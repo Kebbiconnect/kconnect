@@ -57,7 +57,6 @@ class Report(models.Model):
     submitted_at = models.DateTimeField(null=True, blank=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
     escalated_at = models.DateTimeField(null=True, blank=True, help_text="When this report was escalated")
-    
     class Meta:
         ordering = ['-created_at']
         indexes = [
@@ -348,3 +347,20 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"[{self.notif_type}] {self.title} → {self.user}"
+class Patron(models.Model):
+    PATRON_TYPE = [('GRAND', 'Grand Patron'), ('PATRON', 'Patron')]
+    patron_type = models.CharField(max_length=10, choices=PATRON_TYPE, default='PATRON')
+    full_name = models.CharField(max_length=200)
+    title = models.CharField(max_length=200, help_text="Official title/designation")
+    bio = models.TextField(blank=True)
+    photo = models.ImageField(upload_to='patrons/', blank=True, null=True)
+    is_published = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0, help_text="Display order (lower = higher)")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['patron_type', 'order', 'full_name']
+        
+    def __str__(self):
+        return self.full_name

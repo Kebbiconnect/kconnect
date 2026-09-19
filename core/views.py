@@ -26,6 +26,17 @@ def home(request):
 def about(request):
     return render(request, 'core/about.html')
 
+def patrons(request):
+    from .models import Patron
+    grand_patron = Patron.objects.filter(patron_type='GRAND', is_published=True).first()
+    patrons_list = Patron.objects.filter(patron_type='PATRON', is_published=True)
+    
+    context = {
+        'grand_patron': grand_patron,
+        'patrons': patrons_list,
+    }
+    return render(request, 'core/patrons.html', context)
+
 def leadership(request):
     zone_filter = request.GET.get('zone')
     lga_filter = request.GET.get('lga')

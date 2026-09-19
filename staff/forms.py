@@ -1,7 +1,21 @@
 from django import forms
 from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram, CommunityOutreach, WardMeeting, WardMeetingAttendance, Announcement
 from leadership.models import RoleDefinition, Zone, LGA, Ward
-from core.models import FAQ
+from core.models import FAQ, Patron
+
+class PatronForm(forms.ModelForm):
+    class Meta:
+        model = Patron
+        fields = ['patron_type', 'full_name', 'title', 'bio', 'photo', 'is_published', 'order']
+        widgets = {
+            'patron_type': forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600'}),
+            'full_name': forms.TextInput(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600', 'placeholder': 'Full Name'}),
+            'title': forms.TextInput(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600', 'placeholder': 'Official Title'}),
+            'bio': forms.Textarea(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600', 'rows': 4}),
+            'photo': forms.FileInput(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600'}),
+            'order': forms.NumberInput(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600'}),
+            'is_published': forms.CheckboxInput(attrs={'class': 'rounded text-kpn-green focus:ring-kpn-green'}),
+        }
 
 
 class EditMemberRoleForm(forms.ModelForm):

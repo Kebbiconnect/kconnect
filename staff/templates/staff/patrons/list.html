@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Patrons - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Manage Patrons</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-2">Manage the Grand Patron and Patrons for the public page.</p>
+        </div>
+        <a href="{% url 'staff:create_patron' %}" class="bg-kpn-green text-white px-6 py-2 rounded-lg hover:bg-green-700 transition font-medium flex items-center">
+            <i class="fas fa-plus mr-2"></i> Add New Patron
+        </a>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden border border-gray-100 dark:border-gray-700">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-700 text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100 dark:border-gray-600">
+                        <th class="p-4 text-left">Photo</th>
+                        <th class="p-4 text-left">Name & Title</th>
+                        <th class="p-4 text-left">Type</th>
+                        <th class="p-4 text-left">Order</th>
+                        <th class="p-4 text-left">Status</th>
+                        <th class="p-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                    {% for patron in patrons %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition group">
+                        <td class="p-4">
+                            {% if patron.photo %}
+                            <img src="{{ patron.photo.url }}" alt="Photo" class="w-12 h-12 rounded-full object-cover">
+                            {% else %}
+                            <div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-gray-400">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="p-4">
+                            <div class="font-bold text-gray-900 dark:text-white">{{ patron.full_name }}</div>
+                            <div class="text-xs text-gray-500 mt-1">{{ patron.title }}</div>
+                        </td>
+                        <td class="p-4">
+                            {% if patron.patron_type == 'GRAND' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                <i class="fas fa-crown mr-1"></i> Grand Patron
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                Patron
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="p-4 text-gray-600 dark:text-gray-400">
+                            {{ patron.order }}
+                        </td>
+                        <td class="p-4">
+                            {% if patron.is_published %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Published
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                Hidden
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="p-4 text-right">
+                            <div class="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition">
+                                <a href="{% url 'staff:edit_patron' patron.id %}" class="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'staff:delete_patron' patron.id %}" class="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="p-8 text-center text-gray-500">
+                            <i class="fas fa-user-friends text-4xl mb-3 text-gray-300 dark:text-gray-600"></i>
+                            <p>No patrons found.</p>
+                            <a href="{% url 'staff:create_patron' %}" class="text-kpn-green hover:underline text-sm font-medium mt-2 inline-block">Add the first patron</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

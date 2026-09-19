@@ -172,4 +172,9 @@ urlpatterns = [
     path('manage-advocacy/create/', views.create_advocacy_campaign, name='create_advocacy_campaign'),
     path('manage-advocacy/<int:pk>/edit/', views.edit_advocacy_campaign, name='edit_advocacy_campaign'),
     path('manage-advocacy/<int:pk>/delete/', views.delete_advocacy_campaign, name='delete_advocacy_campaign'),
+    
+    path('patrons/', views.manage_patrons, name='manage_patrons'),
+    path('patrons/create/', views.create_patron, name='create_patron'),
+    path('patrons/<int:pk>/edit/', views.edit_patron, name='edit_patron'),
+    path('patrons/<int:pk>/delete/', views.delete_patron, name='delete_patron'),
 ]
