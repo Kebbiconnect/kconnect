@@ -1,22 +1,24 @@
 {% extends 'base.html' %}
 {% block title %}Welfare Officer Dashboard - KPN{% endblock %}
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page">
     {% include 'staff/dashboards/includes/_role_header.html' with title="Welfare Officer Dashboard" icon_class="fas fa-hand-holding-heart" welcome_messages="Supporting KPN members in times of need.|Building a caring and supportive network.|Welfare is the foundation of unity." %}
     {% include 'staff/dashboards/includes/_profile_section.html' %}
 
     <div class="mb-8">
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-chart-pie mr-2 text-kpn-blue"></i> My Statistics</h2>
+        <h2 class="kpn-section-label mt-6">
+    <i class="fas fa-chart-pie mr-2 text-kpn-blue"></i> My Statistics
+</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <div class="kpn-card">
                 <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Active Welfare Cases</div>
                 <div class="text-3xl font-bold text-kpn-blue">{{ active_welfare_cases|default:0 }}</div>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <div class="kpn-card">
                 <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Resolved Cases</div>
                 <div class="text-3xl font-bold text-kpn-green">{{ resolved_welfare_cases|default:0 }}</div>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <div class="kpn-card">
                 <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Total Members</div>
                 <div class="text-3xl font-bold text-purple-600">{{ total_members|default:0 }}</div>
             </div>
@@ -24,21 +26,25 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-tasks mr-2 text-blue-500"></i> My Tasks</h2>
-            <div class="space-y-3">
+        <div class="kpn-card">
+            <h2 class="kpn-section-label mt-6">
+    <i class="fas fa-tasks mr-2 text-blue-500"></i> My Tasks
+</h2>
+            <div class="flex flex-col gap-1">
                 <a href="{% url 'staff:welfare_cases' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-blue-50 group transition border border-transparent hover:border-blue-200">
                     <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-4"><i class="fas fa-file-medical"></i></div>
-                    <div><div class="font-bold text-gray-900 dark:text-white">Welfare Cases</div><div class="text-xs text-gray-500">View and manage active welfare requests</div></div>
+                    <div><span>Welfare Cases</span><span class="text-xs text-gray-500">View and manage active welfare requests</span></div>
                 </a>
                 <a href="{% url 'staff:manage_staff' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-green-50 group transition border border-transparent hover:border-green-200">
                     <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-4"><i class="fas fa-users"></i></div>
-                    <div><div class="font-bold text-gray-900 dark:text-white">Member Directory</div><div class="text-xs text-gray-500">Browse all KPN members and their status</div></div>
+                    <div><span>Member Directory</span><span class="text-xs text-gray-500">Browse all KPN members and their status</span></div>
                 </a>
             </div>
         </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-clipboard-list mr-2 text-purple-500"></i> My Responsibilities</h2>
+        <div class="kpn-card">
+            <h2 class="kpn-section-label mt-6">
+    <i class="fas fa-clipboard-list mr-2 text-purple-500"></i> My Responsibilities
+</h2>
             <ul class="space-y-4">
                 <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">1</div><span class="text-gray-700 dark:text-gray-300"><strong>Welfare Case Management:</strong> Receive, investigate, and resolve welfare requests submitted by KPN members.</span></li>
                 <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">2</div><span class="text-gray-700 dark:text-gray-300"><strong>Member Support:</strong> Coordinate emergency support for members experiencing hardship, illness, or bereavement.</span></li>

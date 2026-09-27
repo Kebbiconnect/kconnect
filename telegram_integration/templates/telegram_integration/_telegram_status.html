@@ -1,0 +1,100 @@
+{# Reusable Telegram status partial. Include in any dashboard template. #}
+{# Usage: {% include 'telegram_integration/_telegram_status.html' with telegram_required=True %} #}
+
+{% load static %}
+
+{% with tm=request.user.telegram_membership %}
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 mb-6">
+    <h3 class="text-base font-bold text-gray-900 dark:text-white mb-3">
+        <i class="fab fa-telegram mr-2 text-blue-500"></i>KPN Telegram Status
+    </h3>
+
+    {% if tm and tm.is_verified %}
+    <!-- ACTIVE / VERIFIED -->
+    <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center">
+            <span class="inline-flex items-center px-3 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-sm font-bold">
+                <i class="fas fa-circle text-xs mr-1"></i> ACTIVE
+            </span>
+            <span class="ml-3 text-sm text-gray-600 dark:text-gray-400">
+                Connected as
+                {% if tm.telegram_username %}
+                    <strong>@{{ tm.telegram_username }}</strong>
+                {% else %}
+                    <strong>{{ tm.get_display_name }}</strong>
+                {% endif %}
+            </span>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'telegram_integration:verify' %}"
+               class="text-xs text-blue-500 hover:underline">
+                <i class="fas fa-sync-alt mr-1"></i>Re-verify
+            </a>
+            <form method="post" action="{% url 'telegram_integration:disconnect' %}" class="inline"
+                  onsubmit="return confirm('Are you sure you want to disconnect your Telegram account?');">
+                {% csrf_token %}
+                <button type="submit" class="text-xs text-red-400 hover:underline">
+                    <i class="fas fa-unlink mr-1"></i>Disconnect
+                </button>
+            </form>
+        </div>
+    </div>
+    {% if telegram_required %}
+    <p class="text-xs text-gray-400 mt-2">
+        <i class="fas fa-shield-alt mr-1 text-green-400"></i>
+        Telegram membership verified — dashboard access granted.
+    </p>
+    {% endif %}
+
+    {% elif tm and not tm.is_verified %}
+    <!-- CONNECTED BUT NOT VERIFIED / LEFT CHANNEL -->
+    <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center">
+            <span class="inline-flex items-center px-3 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 text-sm font-bold">
+                <i class="fas fa-circle text-xs mr-1"></i> INACTIVE
+            </span>
+            <span class="ml-3 text-sm text-gray-600 dark:text-gray-400">
+                Connected but not an active channel member
+            </span>
+        </div>
+    </div>
+    <p class="text-xs text-gray-500 mt-2 mb-3">
+        Join <a href="https://t.me/officialkpn" target="_blank" class="text-blue-500 hover:underline font-semibold">@officialkpn</a>
+        then click Re-verify below.
+    </p>
+    <div class="flex gap-2 flex-wrap">
+        <a href="https://t.me/officialkpn" target="_blank"
+           class="inline-flex items-center px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-lg transition">
+            <i class="fab fa-telegram mr-1"></i> Join Channel
+        </a>
+        <a href="{% url 'telegram_integration:verify' %}"
+           class="inline-flex items-center px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-semibold rounded-lg transition">
+            <i class="fas fa-sync-alt mr-1"></i> Re-verify
+        </a>
+    </div>
+
+    {% else %}
+    <!-- NOT CONNECTED -->
+    <div class="flex items-center mb-3">
+        <span class="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-sm font-bold">
+            <i class="fas fa-circle text-xs mr-1"></i> NOT CONNECTED
+        </span>
+        {% if not telegram_required %}
+        <span class="ml-3 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 px-2 py-0.5 rounded">Status: INACTIVE</span>
+        {% endif %}
+    </div>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+        Connect your Telegram account to verify KPN channel membership.
+        {% if telegram_required %}
+        <strong class="text-red-500">Required for your role.</strong>
+        {% else %}
+        Optional — shown as INACTIVE until connected.
+        {% endif %}
+    </p>
+    <a href="{% url 'telegram_integration:connect' %}"
+       class="inline-flex items-center px-4 py-2 bg-kpn-green hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition">
+        <i class="fab fa-telegram mr-2"></i> Connect Telegram Account
+    </a>
+    {% endif %}
+</div>
+{% endwith %}

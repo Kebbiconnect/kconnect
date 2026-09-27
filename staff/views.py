@@ -75,11 +75,7 @@ def register(request):
         ward_id = request.POST.get('ward')
         role_definition_id = request.POST.get('role_definition')
         
-        facebook_verified = request.POST.get('facebook_verified') == 'on'
-        
-        if not facebook_verified:
-            messages.error(request, 'You must follow our Facebook page to complete registration.')
-            return redirect('staff:register')
+        facebook_verified = False
         
         # Check if photo is uploaded
         if not request.FILES.get('photo'):
@@ -133,48 +129,52 @@ def register(request):
         role_definition = None
         status = 'PENDING'
         
-        if role_definition_id:
-            try:
-                role_definition = RoleDefinition.objects.get(id=role_definition_id)
-            except (RoleDefinition.DoesNotExist, ValueError, TypeError):
-                messages.error(request, 'Invalid role selection.')
+        # GENERAL role is disabled for new registrations, so role_definition is required
+        if not role_definition_id:
+            messages.error(request, 'Please select a leadership position.')
+            return redirect('staff:register')
+            
+        try:
+            role_definition = RoleDefinition.objects.get(id=role_definition_id)
+        except (RoleDefinition.DoesNotExist, ValueError, TypeError):
+            messages.error(request, 'Invalid role selection.')
+            return redirect('staff:register')
+            
+        role = role_definition.tier
+        status = 'PENDING'
+        
+        if role == 'STATE':
+            if not zone or not lga:
+                messages.error(request, 'Zone and LGA are required for State Executive roles.')
                 return redirect('staff:register')
-            
-            role = role_definition.tier
-            status = 'PENDING'
-            
-            if role == 'STATE':
-                if not zone or not lga:
-                    messages.error(request, 'Zone and LGA are required for State Executive roles.')
-                    return redirect('staff:register')
-            elif role == 'ZONAL':
-                if not zone:
-                    messages.error(request, 'Zone is required for Zonal Excos roles.')
-                    return redirect('staff:register')
-            elif role == 'LGA':
-                if not lga:
-                    messages.error(request, 'LGA is required for LGA Excos roles.')
-                    return redirect('staff:register')
-            elif role == 'WARD':
-                if not ward:
-                    messages.error(request, 'Ward is required for Ward Leaders roles.')
-                    return redirect('staff:register')
-            
-            existing_holder = User.objects.filter(
-                role_definition=role_definition,
-                status='VERIFIED'
-            )
-            
-            if role == 'ZONAL':
-                existing_holder = existing_holder.filter(zone=zone)
-            elif role == 'LGA':
-                existing_holder = existing_holder.filter(lga=lga)
-            elif role == 'WARD':
-                existing_holder = existing_holder.filter(ward=ward)
-            
-            if existing_holder.exists():
-                messages.error(request, 'This position is already filled.')
+        elif role == 'ZONAL':
+            if not zone:
+                messages.error(request, 'Zone is required for Zonal Excos roles.')
                 return redirect('staff:register')
+        elif role == 'LGA':
+            if not lga:
+                messages.error(request, 'LGA is required for LGA Excos roles.')
+                return redirect('staff:register')
+        elif role == 'WARD':
+            if not ward:
+                messages.error(request, 'Ward is required for Ward Leaders roles.')
+                return redirect('staff:register')
+        
+        existing_holder = User.objects.filter(
+            role_definition=role_definition,
+            status='VERIFIED'
+        )
+        
+        if role == 'ZONAL':
+            existing_holder = existing_holder.filter(zone=zone)
+        elif role == 'LGA':
+            existing_holder = existing_holder.filter(lga=lga)
+        elif role == 'WARD':
+            existing_holder = existing_holder.filter(ward=ward)
+        
+        if existing_holder.exists():
+            messages.error(request, 'This position is already filled.')
+            return redirect('staff:register')
         
         try:
             user = User.objects.create_user(
@@ -217,18 +217,18 @@ def register(request):
             return redirect('staff:register')
         
         # Registration successful - show appropriate message
-        if status == 'VERIFIED':
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            if photo_uploaded:
-                messages.success(request, 'Registration successful! Welcome to KPN.')
-            else:
-                messages.warning(request, 'Registration successful! Welcome to KPN. Note: Your profile photo could not be uploaded. You can update it later in your profile.')
-            return redirect('staff:dashboard')
+        from telegram_integration.permissions import requires_telegram
+        tg_req = requires_telegram(user)
+        
+        if photo_uploaded:
+            messages.success(request, 'Registration successful! Your application is pending approval.')
         else:
-            if photo_uploaded:
-                messages.success(request, 'Registration successful! Your application is pending approval.')
-            else:
-                messages.warning(request, 'Registration successful! Your application is pending approval. Note: Your profile photo could not be uploaded. You can update it after approval.')
+            messages.warning(request, 'Registration successful! Your application is pending approval. Note: Your profile photo could not be uploaded. You can update it after approval.')
+            
+        if tg_req:
+            # Render a special informational template for Telegram-required roles
+            return render(request, 'telegram_integration/post_register_telegram.html', {'user': user})
+        else:
             return redirect('staff:login')
     
     zones = Zone.objects.all()
@@ -248,9 +248,15 @@ def register(request):
 def dashboard(request):
     user = request.user
     
-    if user.status != 'VERIFIED':
-        messages.warning(request, 'Your account is pending verification.')
-        return render(request, 'staff/pending_approval.html')
+    from telegram_integration.permissions import check_dashboard_access
+    access = check_dashboard_access(user)
+    
+    if not access['allowed']:
+        if access['reason'] == 'not_verified':
+            messages.warning(request, 'Your account is pending verification.')
+            return render(request, 'staff/pending_approval.html')
+        elif access['reason'] == 'telegram_required':
+            return render(request, 'telegram_integration/gate.html', {'user': user})
     
     if user.role == 'GENERAL':
         return redirect('staff:general_member_dashboard')
@@ -449,55 +455,82 @@ def change_password(request):
     
     return render(request, 'staff/change_password.html')
 
-@ratelimit(key='ip', rate='3/h', method='POST', block=True)
+@ratelimit(key='ip', rate='5/h', method='POST', block=True)
 def forgot_password(request):
+    import logging
+    logger = logging.getLogger(__name__)
+
     if request.method == 'POST':
-        email = request.POST.get('email')
-        
+        email = request.POST.get('email', '').strip().lower()
+
         try:
-            user = User.objects.get(email=email)
-            
+            user = User.objects.get(email__iexact=email)
+
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            
-            reset_link = request.build_absolute_uri(
-                f'/account/reset-password/{uid}/{token}/'
-            )
-            
-            message = f'''
-Hello {user.get_full_name()},
 
-You have requested to reset your password for your KPN account.
+            # Build reset link — use SITE_URL env var in production to ensure correct domain
+            site_url = getattr(settings, 'SITE_URL', '').rstrip('/')
+            if site_url:
+                reset_link = f'{site_url}/account/reset-password/{uid}/{token}/'
+            else:
+                reset_link = request.build_absolute_uri(
+                    f'/account/reset-password/{uid}/{token}/'
+                )
 
-Please click the link below to reset your password:
+            full_name = user.get_full_name() or user.username
+
+            message = f"""Hello {full_name},
+
+You requested a password reset for your KPN account.
+
+Click the link below to set a new password:
+
 {reset_link}
 
-If you did not request this password reset, please ignore this email.
-
-This link will expire in 24 hours.
+This link expires in 24 hours. If you did not request this reset, you can safely ignore this email.
 
 Best regards,
-Kebbi Progressive Youth Network Team
-            '''
-            
+Kebbi Progressive Youth Network (KPN)
+{site_url or 'https://kpn.com.ng'}
+"""
+
             try:
+                from django.core.mail import send_mail
                 send_mail(
-                    'KPN Password Reset Request',
-                    message,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [email],
+                    subject='KPN Password Reset Request',
+                    message=message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
                     fail_silently=False,
                 )
-                messages.success(request, 'Password reset instructions have been sent to your email.')
-            except Exception as e:
-                messages.error(request, 'Unable to send email. Please contact support.')
-            
-            return redirect('staff:login')
-            
+                logger.info('Password reset email sent to user pk=%s', user.pk)
+            except Exception:
+                # Log a sanitized error — never expose credentials or provider details
+                logger.exception(
+                    'Password reset email delivery failed for user pk=%s. '
+                    'Check email backend configuration and LOCKALLY_* environment variables.',
+                    user.pk,
+                )
+                messages.error(
+                    request,
+                    'We could not deliver the reset email at this time. '
+                    'Please try again later or contact support.'
+                )
+                return redirect('staff:forgot_password')
+
         except User.DoesNotExist:
-            messages.error(request, 'No account found with this email address.')
-            return redirect('staff:forgot_password')
-    
+            # Return the same generic message to prevent email enumeration
+            pass
+
+        # Always show the same success message regardless of whether the email exists
+        # This prevents user enumeration attacks
+        messages.success(
+            request,
+            'If an account with that email exists, password reset instructions have been sent.'
+        )
+        return redirect('staff:login')
+
     return render(request, 'staff/forgot_password.html')
 
 @ratelimit(key='ip', rate='5/h', method='POST', block=True)
@@ -2221,7 +2254,7 @@ def member_mobilization(request):
         
         # Add letterhead footer
         footer_text = Paragraph(
-            '<b>kpn.kebbi@gmail.com</b><br/>'
+            '<b>info@kpn.com.ng</b><br/>'
             'Sani Abacha Bypass Road, Birnin Kebbi &nbsp;&nbsp;&nbsp; '
             '+2348037851112, +2348067770283<br/>'
             '<b>www.mykpn.onrender.com</b>',

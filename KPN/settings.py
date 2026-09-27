@@ -81,6 +81,11 @@ if REPLIT_DOMAINS:
 # Application definition
 
 INSTALLED_APPS = [
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'drf_spectacular',
+    'corsheaders',
+    'rest_api',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -96,6 +101,7 @@ INSTALLED_APPS = [
     # KPN Apps
     'core',
     'staff',
+    'telegram_integration',
     'leadership',
     'campaigns',
     'donations',
@@ -104,6 +110,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -155,7 +162,7 @@ DATABASES = {
 if DATABASES['default'].get('ENGINE') == 'django.db.backends.postgresql':
     if 'OPTIONS' not in DATABASES['default']:
         DATABASES['default']['OPTIONS'] = {}
-    DATABASES['default']['OPTIONS']['connect_timeout'] = 10
+    DATABASES['default']['OPTIONS']['connect_timeout'] = 30
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -227,16 +234,38 @@ LOGIN_URL = 'staff:login'
 LOGIN_REDIRECT_URL = 'staff:dashboard'
 LOGOUT_REDIRECT_URL = 'core:home'
 
+# Production site URL — used to build absolute URLs in emails (e.g. password reset links).
+# Set this in your Render environment variables.
+# Example: SITE_URL=https://kpn.com.ng
+SITE_URL = config('SITE_URL', default='')
+
 # Email Configuration
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+# ─────────────────────────────────────────────────────────────────────────────
+# Lockally Sending API (primary email delivery for production)
+LOCKALLY_API_KEY = config('LOCKALLY_API_KEY', default='')
+LOCKALLY_API_URL = config('LOCKALLY_API_URL', default='')
+LOCKALLY_FROM_EMAIL = config('LOCKALLY_FROM_EMAIL', default='')
+LOCKALLY_FROM_NAME = config('LOCKALLY_FROM_NAME', default='KPN - Kebbi Progressive Network')
+
+# Select email backend:
+#   1. Lockally backend  — when LOCKALLY_API_KEY + LOCKALLY_API_URL are both set (production)
+#   2. Console backend   — fallback for local development / when Lockally not configured
+_lockally_configured = bool(LOCKALLY_API_KEY and LOCKALLY_API_URL)
+
+EMAIL_BACKEND = config(
+    'EMAIL_BACKEND',
+    default='staff.lockally_backend.LockallyEmailBackend' if _lockally_configured
+            else 'django.core.mail.backends.console.EmailBackend'
+)
+
+# SMTP settings retained for reference / manual override (not used when Lockally is active)
 EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-# Handle empty EMAIL_PORT gracefully - cast only if non-empty
 _email_port = config('EMAIL_PORT', default='587')
 EMAIL_PORT = int(_email_port) if _email_port else 587
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@kpn.org')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@kpn.com.ng')
 
 # Security Settings
 # HTTPS/SSL Configuration
@@ -286,3 +315,56 @@ AXES_LOCKOUT_TEMPLATE = None  # Use default lockout behavior
 AXES_LOCKOUT_PARAMETERS = [['username', 'ip_address']]
 AXES_ENABLE_ACCESS_FAILURE_LOG = True
 AXES_RESET_COOL_OFF_ON_FAILURE_DURING_LOCKOUT = True
+
+# Telegram & AI Configuration
+TELEGRAM_BOT_TOKEN = config('TELEGRAM_BOT_TOKEN', default='')
+TELEGRAM_CHANNEL_ID = config('TELEGRAM_CHANNEL_ID', default='-1002364023770') # Can be @officialkpn or numeric ID
+TELEGRAM_WEBHOOK_SECRET = config('TELEGRAM_WEBHOOK_SECRET', default='')
+TELEGRAM_BOT_USERNAME = config('TELEGRAM_BOT_USERNAME', default='KPNKebbiBot')
+
+OPENROUTER_API_KEY = config('OPENROUTER_API_KEY', default='')
+OPENROUTER_MODEL = config('OPENROUTER_MODEL', default='google/gemma-3-27b-it:free')
+GOOGLE_AI_API_KEY = config('GOOGLE_AI_API_KEY', default='')
+
+AI_PROVIDERS = config('AI_PROVIDERS', default='openrouter,google')
+AI_MAX_REQUESTS_PER_HOUR = config('AI_MAX_REQUESTS_PER_HOUR', default=20, cast=int)
+AI_MAX_REQUESTS_PER_DAY = config('AI_MAX_REQUESTS_PER_DAY', default=100, cast=int)
+
+TELEGRAM_REQUIRED_ROLE_TITLES = [
+    'President', 'Vice President', 'General Secretary', 'Assistant General Secretary',
+    'Director of Monitoring & Compliance', 'Director of Legal Affairs & Ethics',
+    'Director of Finance', 'Finance Operations Officer',
+    'Director of Community Engagement', 'Assistant Director of Community Engagement',
+    'Director of Programmes & Events', 'Assistant Director of Programmes & Events',
+    'Director of Audit & Accountability', 'Director of Member Support & Welfare',
+    'Director of Youth Development', "Director of Women's Development",
+    "Assistant Director of Women's Development", 'Director of Media & Communications',
+    'Assistant Director of Media & Communications', 'Director of Public Relations & Partnerships',
+    'Senatorial Director', 'Senatorial Administrative Officer', 'Senatorial Communications Officer',
+    'LGA Network Lead',
+    'Ward Community Lead',
+]
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'KPN API',
+    'DESCRIPTION': 'KPN Mobile App API',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
+
+CORS_ALLOW_ALL_ORIGINS = True
+

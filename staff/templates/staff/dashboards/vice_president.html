@@ -3,7 +3,7 @@
 {% block title %}Vice President Dashboard - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page">
     <!-- Header -->
     {% include 'staff/dashboards/includes/_role_header.html' with title="Vice President Dashboard" icon_class="fas fa-user-shield" welcome_messages="Supporting the President in organizational leadership.|Ensuring smooth operations across all zones.|Committed to youth empowerment and progress." %}
     
@@ -12,68 +12,94 @@
     
     <!-- My Statistics -->
     <div class="mb-8">
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-chart-pie mr-2 text-kpn-blue"></i> Network Statistics</h2>
+        <h2 class="kpn-section-label mt-6">
+    <i class="fas fa-chart-pie mr-2 text-kpn-blue"></i> Network Statistics
+</h2>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-center">
-                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Total Members</div>
-                <div class="text-3xl font-bold text-kpn-green">{{ total_members }}</div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-center">
-                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Total Leaders</div>
-                <div class="text-3xl font-bold text-kpn-blue">{{ total_leaders }}</div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-center">
-                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Pending Members</div>
-                <div class="text-3xl font-bold text-yellow-600">{{ pending_members }}</div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-center">
-                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Disciplinary Cases</div>
-                <div class="text-3xl font-bold text-red-600">{{ recent_disciplinary_actions|length|default:"0" }}</div>
-            </div>
+            <div class="kpn-stat-card">
+    <div class="kpn-stat-icon bg-green-100 dark:bg-green-900/30 text-kpn-green">
+        <i class="fas fa-chart-line"></i>
+    </div>
+    <div>
+        <p class="kpn-stat-value">{{ total_members }}</p>
+        <p class="kpn-stat-label">Total Members</p>
+    </div>
+</div>
+            <div class="kpn-stat-card">
+    <div class="kpn-stat-icon bg-blue-100 dark:bg-blue-900/30 text-kpn-blue">
+        <i class="fas fa-chart-line"></i>
+    </div>
+    <div>
+        <p class="kpn-stat-value">{{ total_leaders }}</p>
+        <p class="kpn-stat-label">Total Leaders</p>
+    </div>
+</div>
+            <div class="kpn-stat-card">
+    <div class="kpn-stat-icon bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600">
+        <i class="fas fa-chart-line"></i>
+    </div>
+    <div>
+        <p class="kpn-stat-value">{{ pending_members }}</p>
+        <p class="kpn-stat-label">Pending Members</p>
+    </div>
+</div>
+            <div class="kpn-stat-card">
+    <div class="kpn-stat-icon bg-red-100 dark:bg-red-900/30 text-red-600">
+        <i class="fas fa-chart-line"></i>
+    </div>
+    <div>
+        <p class="kpn-stat-value">{{ recent_disciplinary_actions|length|default:"0" }}</p>
+        <p class="kpn-stat-label">Disciplinary Cases</p>
+    </div>
+</div>
         </div>
     </div>
     
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         
         <!-- My Tasks (Quick Actions) -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-tasks mr-2 text-orange-500"></i> My Tasks</h2>
-            <div class="space-y-3">
-                <a href="{% url 'staff:vice_president_disciplinary_review' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20 group transition border border-transparent hover:border-orange-200 dark:hover:border-orange-800">
-                    <div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-400 flex items-center justify-center mr-4 group-hover:scale-110 transition">
+        <div class="kpn-card">
+            <h2 class="kpn-section-label mt-6">
+    <i class="fas fa-tasks mr-2 text-orange-500"></i> My Tasks
+</h2>
+            <div class="flex flex-col gap-1">
+                <a href="{% url 'staff:vice_president_disciplinary_review' %}" class="kpn-action-item">
+                    <div class="kpn-action-icon bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-500">
                         <i class="fas fa-gavel"></i>
                     </div>
                     <div>
-                        <div class="font-bold text-gray-900 dark:text-white">Disciplinary Review</div>
-                        <div class="text-xs text-gray-500">Review misconduct and approve suspensions</div>
+                        <span>Disciplinary Review</span>
+                        <span class="text-xs text-gray-500">Review misconduct and approve suspensions</span>
                     </div>
                 </a>
                 
-                <a href="{% url 'staff:vice_president_staff_directory' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 group transition border border-transparent hover:border-green-200 dark:hover:border-green-800">
-                    <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 flex items-center justify-center mr-4 group-hover:scale-110 transition">
+                <a href="{% url 'staff:vice_president_staff_directory' %}" class="kpn-action-item">
+                    <div class="kpn-action-icon bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-500">
                         <i class="fas fa-address-book"></i>
                     </div>
                     <div>
-                        <div class="font-bold text-gray-900 dark:text-white">Staff Directory</div>
-                        <div class="text-xs text-gray-500">View and manage KPN staff across all zones</div>
+                        <span>Staff Directory</span>
+                        <span class="text-xs text-gray-500">View and manage KPN staff across all zones</span>
                     </div>
                 </a>
                 
-                <a href="{% url 'staff:view_reports' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 group transition border border-transparent hover:border-purple-200 dark:hover:border-purple-800">
-                    <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 flex items-center justify-center mr-4 group-hover:scale-110 transition">
+                <a href="{% url 'staff:view_reports' %}" class="kpn-action-item">
+                    <div class="kpn-action-icon bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-500">
                         <i class="fas fa-chart-line"></i>
                     </div>
                     <div>
-                        <div class="font-bold text-gray-900 dark:text-white">View Reports & Analytics</div>
-                        <div class="text-xs text-gray-500">Monitor internal network reports</div>
+                        <span>View Reports & Analytics</span>
+                        <span class="text-xs text-gray-500">Monitor internal network reports</span>
                     </div>
                 </a>
             </div>
         </div>
         
         <!-- My Responsibilities -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-clipboard-list mr-2 text-purple-500"></i> My Responsibilities</h2>
+        <div class="kpn-card">
+            <h2 class="kpn-section-label mt-6">
+    <i class="fas fa-clipboard-list mr-2 text-purple-500"></i> My Responsibilities
+</h2>
             <ul class="space-y-4">
                 <li class="flex items-start">
                     <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">1</div>
@@ -100,10 +126,12 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         
         <!-- Zone Statistics -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-map mr-2 text-kpn-green"></i> Zone Statistics</h3>
+        <div class="kpn-card">
+            <h3 class="kpn-section-label mt-6">
+    <i class="fas fa-map mr-2 text-kpn-green"></i> Zone Statistics
+</h3>
             {% if zone_stats %}
-            <div class="space-y-3">
+            <div class="flex flex-col gap-1">
                 {% for stat in zone_stats %}
                 <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg flex justify-between items-center bg-gray-50 dark:bg-gray-700/50">
                     <div>
@@ -125,8 +153,10 @@
         </div>
         
         <!-- Recent Disciplinary Actions -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-gavel mr-2 text-red-500"></i> Recent Disciplinary Actions</h3>
+        <div class="kpn-card">
+            <h3 class="kpn-section-label mt-6">
+    <i class="fas fa-gavel mr-2 text-red-500"></i> Recent Disciplinary Actions
+</h3>
             {% if recent_disciplinary_actions %}
             <div class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
                 {% for action in recent_disciplinary_actions %}
@@ -135,7 +165,7 @@
                         <h4 class="font-bold text-gray-900 dark:text-white">{{ action.user.get_full_name }}</h4>
                         <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ action.get_action_type_display }}</p>
                     </div>
-                    <span class="text-xs font-bold px-2 py-1 rounded-full {% if action.is_approved %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                    <span class="text-xs font-bold px-2 py-1 rounded-full {% if action.is_approved %}kpn-badge kpn-badge-green{% else %}kpn-badge kpn-badge-yellow{% endif %}">
                         {% if action.is_approved %}Approved{% else %}Pending{% endif %}
                     </span>
                 </div>

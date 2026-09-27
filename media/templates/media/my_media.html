@@ -17,7 +17,7 @@
     {% if media_items %}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for item in media_items %}
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div class="kpn-card overflow-hidden">
             {% if item.media_type == 'PHOTO' %}
             <img src="{{ item.file.url }}" alt="{{ item.title }}" class="w-full h-48 object-cover">
             {% else %}
@@ -68,7 +68,7 @@
         {% endfor %}
     </div>
     {% else %}
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
+    <div class="kpn-card p-12 text-center">
         <i class="fas fa-images text-6xl text-gray-400 mb-4"></i>
         <h3 class="text-xl font-semibold mb-2">No media yet</h3>
         <p class="text-gray-600 dark:text-gray-400 mb-6">Start sharing images and videos with the community!</p>

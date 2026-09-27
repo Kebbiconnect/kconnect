@@ -2,75 +2,13 @@
 
 {% block title %}Support Us - KPN{% endblock %}
 
-{% block extra_css %}
-<style>
-    @keyframes slideInLeft {
-        from {
-            opacity: 0;
-            transform: translateX(-50px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-    
-    @keyframes slideInRight {
-        from {
-            opacity: 0;
-            transform: translateX(50px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-    
-    @keyframes float {
-        0%, 100% {
-            transform: translateY(0);
-        }
-        50% {
-            transform: translateY(-10px);
-        }
-    }
-    
-    .slide-in-left {
-        animation: slideInLeft 0.8s ease-out;
-    }
-    
-    .slide-in-right {
-        animation: slideInRight 0.8s ease-out;
-    }
-    
-    .float-animation {
-        animation: float 3s ease-in-out infinite;
-    }
-    
-    .bank-card {
-        transition: all 0.3s ease;
-    }
-    
-    .bank-card:hover {
-        transform: scale(1.02);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    }
-    
-    .copy-btn {
-        transition: all 0.3s ease;
-    }
-    
-    .copy-btn:hover {
-        transform: scale(1.1);
-    }
-</style>
-{% endblock %}
+
 
 {% block content %}
 <!-- Hero Section -->
 <section class="bg-gradient-to-r from-kpn-green to-kpn-blue text-white py-16">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div class="float-animation inline-block mb-4">
+        <div class="inline-block mb-4">
             <i class="fas fa-hand-holding-heart text-6xl"></i>
         </div>
         <h1 class="text-4xl md:text-5xl font-bold mb-4">Support Our Mission</h1>
@@ -80,7 +18,7 @@
 
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <!-- Impact Message -->
-    <div class="slide-in-left bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-10">
+    <div class="kpn-card p-6 mb-10">
         <div class="flex items-start space-x-4">
             <div class="flex-shrink-0">
                 <div class="w-16 h-16 bg-kpn-green rounded-full flex items-center justify-center">
@@ -119,7 +57,7 @@
     </div>
     
     <!-- Bank Details Card -->
-    <div class="slide-in-right">
+    <div class="">
         <h2 class="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-white">
             <i class="fas fa-university text-kpn-green mr-2"></i>
             Donation Account Details
@@ -162,7 +100,7 @@
                         <ul class="space-y-2 text-sm">
                             <li class="flex items-start">
                                 <i class="fas fa-check-circle mr-2 mt-1"></i>
-                                <span>All donations are verified by our Treasurer and recorded by the Financial Secretary</span>
+                                <span>All donations are verified and recorded by our Finance Team</span>
                             </li>
                             <li class="flex items-start">
                                 <i class="fas fa-check-circle mr-2 mt-1"></i>
@@ -182,7 +120,7 @@
     <!-- Contact Section -->
     <div class="mt-10 text-center">
         <p class="text-gray-600 dark:text-gray-400 mb-4">Have questions about donations or need assistance?</p>
-        <a href="{% url 'core:contact' %}" class="inline-flex items-center px-6 py-3 bg-kpn-green text-white rounded-lg font-semibold hover:bg-green-600 transform hover:scale-105 transition-all duration-300 shadow-lg">
+        <a href="{% url 'core:contact' %}" class="inline-flex items-center px-6 py-3 bg-kpn-green text-white rounded-lg font-semibold hover:bg-green-600 transform transition-all duration-300 shadow-lg">
             <i class="fas fa-envelope mr-2"></i>
             Contact Us
         </a>

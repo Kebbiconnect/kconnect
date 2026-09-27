@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Registration Successful - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+        <!-- Success Header -->
+        <div class="bg-kpn-green text-white px-6 py-8 text-center">
+            <div class="mb-4">
+                <i class="fas fa-check-circle text-6xl opacity-90"></i>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-bold mb-2">Registration Successful!</h1>
+            <p class="opacity-90">Your application for <strong>{{ user.role_definition.title }}</strong> has been submitted.</p>
+        </div>
+
+        <div class="p-6 md:p-8">
+            <!-- Pending Notice -->
+            <div class="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4 mb-6">
+                <div class="flex items-start">
+                    <i class="fas fa-clock text-yellow-500 mt-1 mr-3 flex-shrink-0 text-xl"></i>
+                    <div>
+                        <p class="font-semibold text-gray-900 dark:text-white">Application Pending Approval</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            Your registration is pending review by KPN leadership. You will be notified once approved.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Telegram Required Notice -->
+            <div class="bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-300 dark:border-blue-600 rounded-lg p-5 mb-6">
+                <div class="flex items-start">
+                    <i class="fab fa-telegram text-blue-500 mt-1 mr-3 flex-shrink-0 text-2xl"></i>
+                    <div>
+                        <p class="font-bold text-gray-900 dark:text-white mb-1">
+                            Action Required: Join the KPN Telegram Channel
+                        </p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                            Your leadership role (<strong>{{ user.role_definition.title }}</strong>) requires active 
+                            membership of the official KPN Telegram channel. You must complete this step to access 
+                            your dashboard once approved.
+                        </p>
+                        <a href="https://t.me/officialkpn" target="_blank"
+                           class="inline-flex items-center px-5 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold text-sm transition">
+                            <i class="fab fa-telegram mr-2"></i> Join @officialkpn Channel
+                            <i class="fas fa-external-link-alt ml-2 text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- What Happens Next -->
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                <i class="fas fa-road mr-2 text-kpn-green"></i>What Happens Next
+            </h2>
+            <div class="space-y-3 mb-8">
+                <div class="flex items-start">
+                    <div class="w-6 h-6 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-600 flex items-center justify-center text-sm font-bold mr-3 flex-shrink-0">1</div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">KPN leadership reviews and approves your application</p>
+                </div>
+                <div class="flex items-start">
+                    <div class="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 flex items-center justify-center text-sm font-bold mr-3 flex-shrink-0">2</div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        Join the KPN Telegram channel at 
+                        <a href="https://t.me/officialkpn" target="_blank" class="text-blue-500 hover:underline font-semibold">t.me/officialkpn</a>
+                    </p>
+                </div>
+                <div class="flex items-start">
+                    <div class="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900 text-green-600 flex items-center justify-center text-sm font-bold mr-3 flex-shrink-0">3</div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Log in → Connect your Telegram account → Access your dashboard</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+                <a href="{% url 'staff:login' %}"
+                   class="flex-1 text-center bg-kpn-green hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Go to Login
+                </a>
+                <a href="{% url 'core:home' %}"
+                   class="flex-1 text-center border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 px-6 py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-home mr-2"></i>Return to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

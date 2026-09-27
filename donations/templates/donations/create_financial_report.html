@@ -12,7 +12,7 @@
         <p class="text-gray-600 dark:text-gray-400">Generate a comprehensive financial summary</p>
     </div>
     
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <div class="kpn-card p-6">
         <form method="post" enctype="multipart/form-data" class="space-y-6">
             {% csrf_token %}
             
@@ -36,7 +36,7 @@
                 {% if form.report_period.errors %}
                     <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.report_period.errors.0 }}</p>
                 {% endif %}
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">e.g., "January 2025" or "Q1 2025"</p>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">e.g.,"January 2025" or"Q1 2025"</p>
             </div>
             
             <div class="grid grid-cols-2 gap-6">

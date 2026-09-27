@@ -2,315 +2,144 @@
 
 {% block title %}Gallery - KPN{% endblock %}
 
-{% block extra_css %}
-<style>
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    @keyframes zoomIn {
-        from {
-            opacity: 0;
-            transform: scale(0.5);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-    
-    .fade-in-up {
-        animation: fadeInUp 0.8s ease-out;
-    }
-    
-    .gradient-bg {
-        background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(0, 102, 204, 0.05) 100%);
-    }
-    
-    .media-card {
-        position: relative;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        cursor: pointer;
-        overflow: hidden;
-    }
-    
-    .media-card::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, rgba(40, 167, 69, 0.3), rgba(0, 102, 204, 0.3));
-        opacity: 0;
-        transition: opacity 0.4s ease;
-    }
-    
-    .media-card:hover::after {
-        opacity: 1;
-    }
-    
-    .media-card:hover {
-        transform: translateY(-12px) scale(1.05);
-        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
-    }
-    
-    .media-image-wrapper {
-        position: relative;
-        overflow: hidden;
-        height: 300px;
-    }
-    
-    .media-card img {
-        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .media-card:hover img {
-        transform: scale(1.15) rotate(1deg);
-    }
-    
-    .media-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-        opacity: 0;
-        transition: opacity 0.4s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10;
-    }
-    
-    .media-card:hover .media-overlay {
-        opacity: 1;
-    }
-    
-    .media-type-badge {
-        position: absolute;
-        top: 16px;
-        left: 16px;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: bold;
-        color: white;
-        z-index: 11;
-        backdrop-filter: blur(10px);
-    }
-    
-    .photo-badge {
-        background: rgba(34, 197, 94, 0.9);
-    }
-    
-    .video-badge {
-        background: rgba(0, 102, 204, 0.9);
-    }
-    
-    .filter-btn {
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .filter-btn::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.3);
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-    }
-    
-    .filter-btn:active::before {
-        width: 300px;
-        height: 300px;
-    }
-    
-    .lightbox {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.95);
-        z-index: 1000;
-        animation: fadeInUp 0.3s ease-out;
-    }
-    
-    .lightbox.active {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .lightbox-content {
-        max-width: 90%;
-        max-height: 90%;
-        animation: zoomIn 0.4s ease-out;
-    }
-    
-    .lightbox-close {
-        position: absolute;
-        top: 30px;
-        right: 30px;
-        color: white;
-        font-size: 40px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        z-index: 1001;
-    }
-    
-    .lightbox-close:hover {
-        transform: rotate(90deg) scale(1.2);
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="min-h-screen gradient-bg py-16 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-        <!-- Header Section -->
-        <div class="text-center mb-16 fade-in-up">
-            <div class="inline-block mb-4">
-                <div class="w-20 h-20 bg-gradient-to-r from-kpn-green to-kpn-blue rounded-full flex items-center justify-center mx-auto animate-pulse">
-                    <i class="fas fa-images text-white text-3xl"></i>
-                </div>
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+
+    <!-- Header -->
+    <section class="bg-kpn-green text-white py-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-images text-white text-2xl"></i>
             </div>
-            <h1 class="text-5xl md:text-6xl font-extrabold mb-4 bg-gradient-to-r from-kpn-green to-kpn-blue bg-clip-text text-transparent">
-                Media Gallery
-            </h1>
-            <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-                Explore our collection of photos and videos showcasing KPN's journey and achievements
+            <h1 class="text-4xl md:text-5xl font-bold mb-3">Media Gallery</h1>
+            <p class="text-lg max-w-3xl mx-auto opacity-90">
+                Explore our collection of photos and videos showcasing KPN's journey and achievements.
             </p>
         </div>
-        
+    </section>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
         <!-- Filter Buttons -->
-        <div class="flex justify-center gap-4 mb-12 fade-in-up" style="animation-delay: 0.1s;">
-            <a href="?type=all" class="filter-btn px-8 py-3 rounded-full font-bold transition-all transform hover:scale-110 shadow-lg {% if selected_type == 'all' %}bg-gradient-to-r from-kpn-green to-green-600 text-white{% else %}bg-white dark:bg-gray-800 hover:shadow-xl{% endif %}">
-                <i class="fas fa-th mr-2"></i>All Media
+        <div class="flex flex-wrap justify-center gap-2 mb-10">
+            <a href="?type=all"
+               class="kpn-btn {% if selected_type == 'all' %}kpn-btn-primary{% else %}kpn-btn-secondary{% endif %}">
+                <i class="fas fa-th"></i> All Media
             </a>
-            <a href="?type=PHOTO" class="filter-btn px-8 py-3 rounded-full font-bold transition-all transform hover:scale-110 shadow-lg {% if selected_type == 'PHOTO' %}bg-gradient-to-r from-kpn-green to-green-600 text-white{% else %}bg-white dark:bg-gray-800 hover:shadow-xl{% endif %}">
-                <i class="fas fa-camera mr-2"></i>Photos
+            <a href="?type=PHOTO"
+               class="kpn-btn {% if selected_type == 'PHOTO' %}kpn-btn-primary{% else %}kpn-btn-secondary{% endif %}">
+                <i class="fas fa-camera"></i> Photos
             </a>
-            <a href="?type=VIDEO" class="filter-btn px-8 py-3 rounded-full font-bold transition-all transform hover:scale-110 shadow-lg {% if selected_type == 'VIDEO' %}bg-gradient-to-r from-kpn-blue to-blue-600 text-white{% else %}bg-white dark:bg-gray-800 hover:shadow-xl{% endif %}">
-                <i class="fas fa-video mr-2"></i>Videos
+            <a href="?type=VIDEO"
+               class="kpn-btn {% if selected_type == 'VIDEO' %}kpn-btn-blue{% else %}kpn-btn-secondary{% endif %}">
+                <i class="fas fa-video"></i> Videos
             </a>
         </div>
-        
+
         <!-- Media Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for item in media_items %}
-            <div class="media-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden fade-in-up" style="animation-delay: {{ forloop.counter0|add:'1'|floatformat:'1' }}00ms;" {% if item.media_type == 'PHOTO' %}onclick="openLightbox('{{ item.file.url }}')"{% endif %}>
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm hover:shadow-md transition group {% if item.media_type == 'PHOTO' %}cursor-pointer{% endif %}"
+                 {% if item.media_type == 'PHOTO' %}onclick="openLightbox('{{ item.file.url }}')"{% endif %}>
+
                 {% if item.media_type == 'PHOTO' %}
-                <div class="media-image-wrapper">
-                    <img src="{{ item.file.url }}" alt="{{ item.title }}" class="w-full h-full object-cover">
-                    <div class="media-type-badge photo-badge">
-                        <i class="fas fa-camera mr-1"></i>PHOTO
-                    </div>
-                    <div class="media-overlay">
+                <div class="relative h-64 overflow-hidden bg-gray-100 dark:bg-gray-700">
+                    <img src="{{ item.file.url }}" alt="{{ item.title }}" class="w-full h-full object-cover group- transition duration-500">
+                    <!-- Type badge -->
+                    <span class="absolute top-3 left-3 kpn-badge kpn-badge-green text-[10px] font-bold uppercase tracking-wide backdrop-blur-sm">
+                        <i class="fas fa-camera mr-0.5"></i> Photo
+                    </span>
+                    <!-- Hover overlay -->
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                         <div class="text-white text-center">
-                            <i class="fas fa-search-plus text-5xl mb-3"></i>
-                            <p class="font-bold">Click to Enlarge</p>
+                            <i class="fas fa-search-plus text-3xl mb-1"></i>
+                            <p class="text-xs font-medium">Click to Enlarge</p>
                         </div>
                     </div>
                 </div>
                 {% else %}
-                <div class="media-image-wrapper">
+                <div class="relative h-64 overflow-hidden bg-gray-100 dark:bg-gray-700">
                     <video controls class="w-full h-full object-cover">
                         <source src="{{ item.file.url }}" type="video/mp4">
                     </video>
-                    <div class="media-type-badge video-badge">
-                        <i class="fas fa-video mr-1"></i>VIDEO
-                    </div>
+                    <span class="absolute top-3 left-3 kpn-badge kpn-badge-blue text-[10px] font-bold uppercase tracking-wide">
+                        <i class="fas fa-video mr-0.5"></i> Video
+                    </span>
                 </div>
                 {% endif %}
-                
-                <div class="p-6">
-                    <h3 class="text-xl font-bold mb-2 line-clamp-1">{{ item.title }}</h3>
-                    <p class="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-3">{{ item.description|truncatewords:15 }}</p>
-                    
-                    <!-- Media Creator Information -->
-                    <div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-3">
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Media by</p>
-                        <div class="space-y-1">
-                            <h4 class="font-semibold text-sm text-gray-900 dark:text-white">{{ item.uploaded_by.get_full_name }}</h4>
-                            
-                            <!-- Tier Badge -->
-                            {% if item.uploaded_by.role == 'STATE' %}
-                                <span class="inline-block px-2 py-1 text-xs font-semibold bg-gradient-to-r from-kpn-green to-green-600 text-white rounded">
-                                    <i class="fas fa-star mr-1"></i>State Executive
-                                </span>
-                            {% elif item.uploaded_by.role == 'ZONAL' %}
-                                <span class="inline-block px-2 py-1 text-xs font-semibold bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded">
-                                    <i class="fas fa-map-marked-alt mr-1"></i>{{ item.uploaded_by.zone.name }} Zone
-                                </span>
-                            {% elif item.uploaded_by.role == 'LGA' %}
-                                <span class="inline-block px-2 py-1 text-xs font-semibold bg-gradient-to-r from-kpn-blue to-blue-700 text-white rounded">
-                                    <i class="fas fa-map-marker-alt mr-1"></i>{{ item.uploaded_by.lga.name }} LGA
-                                </span>
-                            {% elif item.uploaded_by.role == 'WARD' %}
-                                <span class="inline-block px-2 py-1 text-xs font-semibold bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded">
-                                    <i class="fas fa-location-dot mr-1"></i>{{ item.uploaded_by.ward.name }} Ward
-                                </span>
-                            {% endif %}
-                            
-                            <!-- Role/Position -->
-                            {% if item.uploaded_by.role_definition %}
-                                <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">{{ item.uploaded_by.role_definition.title }}</p>
-                            {% endif %}
-                        </div>
+
+                <div class="p-4">
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1 line-clamp-1">{{ item.title }}</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">{{ item.description|truncatewords:15 }}</p>
+
+                    <!-- Creator Info -->
+                    <div class="border-t border-gray-100 dark:border-gray-700 pt-3">
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mb-1">Media by</p>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ item.uploaded_by.get_full_name }}</p>
+
+                        <!-- Tier Badge -->
+                        {% if item.uploaded_by.role == 'STATE' %}
+                            <span class="kpn-badge kpn-badge-green text-[10px]">
+                                <i class="fas fa-star mr-0.5"></i> State Executive
+                            </span>
+                        {% elif item.uploaded_by.role == 'ZONAL' %}
+                            <span class="kpn-badge kpn-badge-purple text-[10px]">
+                                <i class="fas fa-map-marked-alt mr-0.5"></i> {{ item.uploaded_by.zone.name }} Zone
+                            </span>
+                        {% elif item.uploaded_by.role == 'LGA' %}
+                            <span class="kpn-badge kpn-badge-blue text-[10px]">
+                                <i class="fas fa-map-marker-alt mr-0.5"></i> {{ item.uploaded_by.lga.name }} LGA
+                            </span>
+                        {% elif item.uploaded_by.role == 'WARD' %}
+                            <span class="kpn-badge kpn-badge-orange text-[10px]">
+                                <i class="fas fa-location-dot mr-0.5"></i> {{ item.uploaded_by.ward.name }} Ward
+                            </span>
+                        {% endif %}
+
+                        {% if item.uploaded_by.role_definition %}
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ item.uploaded_by.role_definition.title }}</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
             {% empty %}
-            <div class="col-span-full text-center py-20 fade-in-up">
-                <div class="w-32 h-32 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <i class="fas fa-images text-gray-400 text-5xl"></i>
+            <div class="col-span-full">
+                <div class="kpn-empty text-center py-20 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-images text-2xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">No Media Yet</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Check back soon for photos and videos!</p>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-600 dark:text-gray-400 mb-2">No Media Yet</h3>
-                <p class="text-gray-500 dark:text-gray-500">Check back soon for photos and videos!</p>
             </div>
             {% endfor %}
         </div>
 
         <!-- Upload CTA -->
         {% if media_items %}
-        <div class="mt-20 text-center fade-in-up" style="animation-delay: 0.5s;">
-            <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-12 shadow-2xl">
-                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
-                    <i class="fas fa-cloud-upload-alt mr-3"></i>Share Your Moments
-                </h2>
-                <p class="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+        <div class="mt-16">
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-10 text-center">
+                <div class="w-12 h-12 bg-kpn-green/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-cloud-upload-alt text-kpn-green text-xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Share Your Moments</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
                     Have photos or videos from KPN events? Share them with the community!
                 </p>
-                <a href="{% url 'staff:login' %}" class="inline-block bg-white text-purple-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-xl">
-                    <i class="fas fa-sign-in-alt mr-2"></i>Login to Upload
+                <a href="{% url 'staff:login' %}" class="kpn-btn kpn-btn-primary kpn-btn-lg">
+                    <i class="fas fa-sign-in-alt"></i> Login to Upload
                 </a>
             </div>
         </div>
         {% endif %}
+
     </div>
 </div>
 
 <!-- Lightbox -->
-<div id="lightbox" class="lightbox" onclick="closeLightbox()">
-    <span class="lightbox-close">&times;</span>
-    <img id="lightbox-img" class="lightbox-content" src="" alt="">
+<div id="lightbox" class="hidden fixed inset-0 bg-black/95 z-50 flex items-center justify-center" onclick="closeLightbox()">
+    <button class="absolute top-6 right-6 text-white text-4xl leading-none hover:text-gray-300 transition z-10" onclick="closeLightbox()">&times;</button>
+    <img id="lightbox-img" class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg" src="" alt="">
 </div>
 
 <script>
@@ -318,13 +147,13 @@ function openLightbox(imageSrc) {
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
     lightboxImg.src = imageSrc;
-    lightbox.classList.add('active');
+    lightbox.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
 
 function closeLightbox() {
     const lightbox = document.getElementById('lightbox');
-    lightbox.classList.remove('active');
+    lightbox.classList.add('hidden');
     document.body.style.overflow = 'auto';
 }
 

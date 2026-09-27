@@ -12,7 +12,7 @@
     {% if pending_media %}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for item in pending_media %}
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div class="kpn-card overflow-hidden">
             {% if item.media_type == 'PHOTO' %}
             <img src="{{ item.file.url }}" alt="{{ item.title }}" class="w-full h-48 object-cover">
             {% else %}
@@ -63,7 +63,7 @@
         {% endfor %}
     </div>
     {% else %}
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
+    <div class="kpn-card p-12 text-center">
         <i class="fas fa-check-circle text-6xl text-green-400 mb-4"></i>
         <h3 class="text-xl font-semibold mb-2">All caught up!</h3>
         <p class="text-gray-600 dark:text-gray-400">There are no pending media submissions to review.</p>

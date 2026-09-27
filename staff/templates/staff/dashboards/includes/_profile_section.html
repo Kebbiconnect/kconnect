@@ -1,76 +1,69 @@
 <!-- Quick Profile Edit Section -->
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
-    <div class="flex items-center justify-between mb-4">
-        <h3 class="text-xl font-bold flex items-center">
-            <i class="fas fa-user-edit text-kpn-green mr-2"></i>
-            Quick Profile Update
+<div class="kpn-card mb-6">
+    <div class="kpn-card-header">
+        <h3 class="text-sm font-semibold flex items-center gap-2">
+            <i class="fas fa-user text-kpn-green"></i> Profile Overview
         </h3>
-        <a href="{% url 'staff:profile' %}" class="text-kpn-blue hover:text-kpn-green transition">
-            <i class="fas fa-arrow-right mr-1"></i>Full Profile
+        <a href="{% url 'staff:profile' %}" class="kpn-btn kpn-btn-ghost kpn-btn-sm text-kpn-blue">
+            Full Profile <i class="fas fa-arrow-right ml-1"></i>
         </a>
     </div>
     
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Profile Photo -->
-        <div class="text-center">
-            <div class="mb-3">
-                {% if user.photo %}
-                <img src="{{ user.photo.url }}" alt="{{ user.get_full_name }}" class="w-32 h-32 rounded-full mx-auto object-cover border-4 border-kpn-green shadow-lg">
-                {% else %}
-                <div class="w-32 h-32 rounded-full mx-auto bg-gradient-to-br from-kpn-green to-kpn-blue flex items-center justify-center text-white text-4xl font-bold shadow-lg">
-                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+    <div class="kpn-card-body">
+        <div class="flex flex-col md:flex-row gap-6">
+            <!-- Profile Photo -->
+            <div class="flex flex-col items-center justify-center shrink-0 w-full md:w-32">
+                <div class="mb-3">
+                    {% if user.photo %}
+                    <img src="{{ user.photo.url }}" alt="{{ user.get_full_name }}" class="w-24 h-24 rounded-full mx-auto object-cover border-2 border-gray-200 dark:border-gray-700">
+                    {% else %}
+                    <div class="w-24 h-24 rounded-full mx-auto bg-kpn-green flex items-center justify-center text-white text-3xl font-bold">
+                        {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
+                <a href="{% url 'staff:profile' %}" class="kpn-btn kpn-btn-secondary kpn-btn-sm w-full">
+                    <i class="fas fa-camera mr-1"></i> Update
+                </a>
             </div>
-            <a href="{% url 'staff:profile' %}" class="inline-block bg-kpn-green text-white px-4 py-2 rounded-lg hover:bg-green-600 transition text-sm">
-                <i class="fas fa-camera mr-1"></i>Update Photo
-            </a>
-        </div>
-        
-        <!-- Profile Info -->
-        <div class="md:col-span-2">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        <i class="fas fa-user mr-1"></i>Full Name
-                    </p>
-                    <p class="font-semibold">{{ user.get_full_name }}</p>
+            
+            <!-- Profile Info -->
+            <div class="flex-1 min-w-0">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 mb-4">
+                    <div>
+                        <p class="kpn-label-text"><i class="fas fa-id-badge mr-1 text-gray-400"></i> Full Name</p>
+                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ user.get_full_name }}</p>
+                    </div>
+                    <div>
+                        <p class="kpn-label-text"><i class="fas fa-envelope mr-1 text-gray-400"></i> Email</p>
+                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ user.email }}</p>
+                    </div>
+                    <div>
+                        <p class="kpn-label-text"><i class="fas fa-phone mr-1 text-gray-400"></i> Phone</p>
+                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ user.phone }}</p>
+                    </div>
+                    <div>
+                        <p class="kpn-label-text"><i class="fas fa-map-marker-alt mr-1 text-gray-400"></i> Location</p>
+                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                            {% if user.ward %}{{ user.ward.name }}, {% endif %}
+                            {% if user.lga %}{{ user.lga.name }}, {% endif %}
+                            {% if user.zone %}{{ user.zone.name }}{% endif %}
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        <i class="fas fa-envelope mr-1"></i>Email
-                    </p>
-                    <p class="font-semibold">{{ user.email }}</p>
+                <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                    {% if user.role != 'GENERAL' %}
+                    <a href="{% url 'staff:generate_id_tag' %}" class="kpn-btn kpn-btn-primary kpn-btn-sm">
+                        <i class="fas fa-id-card mr-1"></i> Get ID Card
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'staff:profile' %}" class="kpn-btn kpn-btn-secondary kpn-btn-sm">
+                        <i class="fas fa-edit mr-1"></i> Edit Profile
+                    </a>
+                    <a href="{% url 'staff:change_password' %}" class="kpn-btn kpn-btn-secondary kpn-btn-sm">
+                        <i class="fas fa-lock mr-1"></i> Password
+                    </a>
                 </div>
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        <i class="fas fa-phone mr-1"></i>Phone
-                    </p>
-                    <p class="font-semibold">{{ user.phone }}</p>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        <i class="fas fa-map-marker-alt mr-1"></i>Location
-                    </p>
-                    <p class="font-semibold text-sm">
-                        {% if user.ward %}{{ user.ward.name }}, {% endif %}
-                        {% if user.lga %}{{ user.lga.name }}, {% endif %}
-                        {% if user.zone %}{{ user.zone.name }}{% endif %}
-                    </p>
-                </div>
-            </div>
-            <div class="mt-4 flex gap-3 flex-wrap">
-                {% if user.role != 'GENERAL' %}
-                <a href="{% url 'staff:generate_id_tag' %}" class="flex-1 bg-kpn-green text-white px-4 py-2 rounded-lg hover:bg-green-600 transition text-center text-sm">
-                    <i class="fas fa-id-card mr-1"></i>Get ID Card
-                </a>
-                {% endif %}
-                <a href="{% url 'staff:profile' %}" class="flex-1 bg-kpn-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-center text-sm">
-                    <i class="fas fa-edit mr-1"></i>Edit Profile
-                </a>
-                <a href="{% url 'staff:change_password' %}" class="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition text-center text-sm">
-                    <i class="fas fa-lock mr-1"></i>Change Password
-                </a>
             </div>
         </div>
     </div>

@@ -348,7 +348,7 @@ This message was sent via the KPN contact form.
                 subject=email_subject,
                 message=email_body,
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=['kpn.kebbi@gmail.com'],
+                recipient_list=['info@kpn.com.ng'],
                 fail_silently=False,
             )
             

@@ -2,174 +2,166 @@
 
 {% block title %}President Dashboard - KPN{% endblock %}
 
-{% block extra_css %}
-<style>
-    @keyframes slideUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .stat-card { animation: slideUp 0.5s ease-out backwards; }
-    .stat-card:nth-child(1) { animation-delay: 0.1s; }
-    .stat-card:nth-child(2) { animation-delay: 0.2s; }
-    .stat-card:nth-child(3) { animation-delay: 0.3s; }
-    .stat-card:nth-child(4) { animation-delay: 0.4s; }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page">
 
     {% include 'staff/dashboards/includes/_role_header.html' with title="President Dashboard" icon_class="fas fa-crown" welcome_messages="You have full oversight of the organisation.|Leading KPN toward progress and change.|Empowering youth across Kebbi State.|One Voice, One Change. 🌟" %}
 
     {% include 'staff/dashboards/includes/_profile_section.html' %}
 
+    {% include 'telegram_integration/_telegram_status.html' with telegram_required=True %}
+
     <!-- ── SECTION 1: Network Overview ─────────────────────────────────── -->
-    <h2 class="text-lg font-bold text-gray-700 dark:text-gray-200 mb-4 mt-2 flex items-center">
-        <i class="fas fa-globe-africa text-kpn-green mr-2"></i> Network Overview
+    <h2 class="kpn-section-label mt-6">
+        <i class="fas fa-globe-africa text-kpn-green"></i> Network Overview
     </h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4 hover:shadow-lg transition">
-            <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
-                <i class="fas fa-users text-kpn-green text-xl"></i>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon bg-green-100 dark:bg-green-900/30 text-kpn-green">
+                <i class="fas fa-users"></i>
             </div>
             <div>
-                <div class="flex items-center">
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_members }}</p>
-                    <span class="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-800 flex items-center">
-                        <i class="fas fa-arrow-up mr-1"></i> {{ member_growth_this_month }} this month
+                <div class="flex items-center gap-2">
+                    <p class="kpn-stat-value">{{ total_members }}</p>
+                    <span class="kpn-badge kpn-badge-green px-1.5 py-0.5 text-[10px]">
+                        <i class="fas fa-arrow-up"></i> {{ member_growth_this_month }}
                     </span>
                 </div>
-                <p class="text-xs text-gray-500">Verified Members</p>
-                <p class="text-xs text-gray-400">M: {{ male_members }} | F: {{ female_members }}</p>
+                <p class="kpn-stat-label">Verified Members</p>
+                <p class="kpn-stat-meta">M: {{ male_members }} | F: {{ female_members }}</p>
             </div>
         </div>
-        <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4 hover:shadow-lg transition">
-            <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                <i class="fas fa-user-tie text-kpn-blue text-xl"></i>
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon bg-blue-100 dark:bg-blue-900/30 text-kpn-blue">
+                <i class="fas fa-user-tie"></i>
             </div>
             <div>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_leaders }}</p>
-                <p class="text-xs text-gray-500">Active Leaders</p>
-                <p class="text-xs text-yellow-500">{{ pending_approvals }} Pending</p>
+                <p class="kpn-stat-value">{{ total_leaders }}</p>
+                <p class="kpn-stat-label">Active Leaders</p>
+                <p class="kpn-stat-meta text-yellow-600 dark:text-yellow-500">{{ pending_approvals }} Pending</p>
             </div>
         </div>
-        <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4 hover:shadow-lg transition">
-            <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center">
-                <i class="fas fa-star text-indigo-600 text-xl"></i>
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600">
+                <i class="fas fa-star"></i>
             </div>
             <div>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ trusted_reporters_count|default:"0" }}</p>
-                <p class="text-xs text-gray-500">Trusted Reporters</p>
+                <p class="kpn-stat-value">{{ trusted_reporters_count|default:"0" }}</p>
+                <p class="kpn-stat-label">Trusted Reporters</p>
             </div>
         </div>
-        <div class="stat-card bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4 hover:shadow-lg transition">
-            <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
-                <i class="fas fa-sitemap text-purple-600 text-xl"></i>
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon bg-purple-100 dark:bg-purple-900/30 text-purple-600">
+                <i class="fas fa-sitemap"></i>
             </div>
             <div>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_zones }}</p>
-                <p class="text-xs text-gray-500">Zones</p>
-                <p class="text-xs text-gray-400">{{ total_lgas }} LGAs | {{ total_wards }} Wards</p>
+                <p class="kpn-stat-value">{{ total_zones }}</p>
+                <p class="kpn-stat-label">Zones</p>
+                <p class="kpn-stat-meta">{{ total_lgas }} LGAs | {{ total_wards }} Wards</p>
             </div>
         </div>
     </div>
 
     <!-- Membership Growth Chart -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow mb-8 p-6">
-        <h3 class="font-bold text-gray-800 dark:text-white mb-4 flex items-center">
-            <i class="fas fa-chart-line text-kpn-blue mr-2"></i> Membership Growth (Last 5 Weeks)
-        </h3>
-        <div class="w-full h-64">
-            <canvas id="growthChart"></canvas>
+    <div class="kpn-card mb-8">
+        <div class="kpn-card-header">
+            <h3 class="text-sm font-semibold flex items-center">
+                <i class="fas fa-chart-line text-kpn-blue mr-2"></i> Membership Growth (Last 5 Weeks)
+            </h3>
+        </div>
+        <div class="kpn-card-body">
+            <div class="w-full h-64">
+                <canvas id="growthChart"></canvas>
+            </div>
         </div>
     </div>
 
     <!-- ── SECTION 2: Media & Reports ─────────────────────────────────── -->
-    <h2 class="text-lg font-bold text-gray-700 dark:text-gray-200 mb-4 flex items-center">
-        <i class="fas fa-newspaper text-orange-500 mr-2"></i> Newsroom & Reports
+    <h2 class="kpn-section-label">
+        <i class="fas fa-newspaper text-orange-500"></i> Newsroom & Reports
     </h2>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4">
-            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-clock text-yellow-600 text-xl"></i>
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600">
+                <i class="fas fa-clock"></i>
             </div>
             <div>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ community_reports_pending|default:"0" }}</p>
-                <p class="text-xs text-gray-500">Reports Pending</p>
+                <p class="kpn-stat-value">{{ community_reports_pending|default:"0" }}</p>
+                <p class="kpn-stat-label">Reports Pending</p>
             </div>
         </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4">
-            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon bg-green-100 dark:bg-green-900/30 text-green-600">
+                <i class="fas fa-check-circle"></i>
             </div>
             <div>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_campaigns }}</p>
-                <p class="text-xs text-gray-500">Published Articles</p>
-                <p class="text-xs text-gray-400">Active: {{ active_campaigns }}</p>
+                <p class="kpn-stat-value">{{ total_campaigns }}</p>
+                <p class="kpn-stat-label">Published Articles</p>
+                <p class="kpn-stat-meta">Active: {{ active_campaigns }}</p>
             </div>
         </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4">
-            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-file-alt text-blue-600 text-xl"></i>
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon bg-blue-100 dark:bg-blue-900/30 text-blue-600">
+                <i class="fas fa-file-alt"></i>
             </div>
             <div>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ pending_reports }}</p>
-                <p class="text-xs text-gray-500">Internal Reports</p>
-                <p class="text-xs text-gray-400">Total: {{ total_reports }}</p>
+                <p class="kpn-stat-value">{{ pending_reports }}</p>
+                <p class="kpn-stat-label">Internal Reports</p>
+                <p class="kpn-stat-meta">Total: {{ total_reports }}</p>
             </div>
         </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4">
-            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-calendar text-orange-600 text-xl"></i>
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon bg-orange-100 dark:bg-orange-900/30 text-orange-600">
+                <i class="fas fa-calendar"></i>
             </div>
             <div>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_events }}</p>
-                <p class="text-xs text-gray-500">Events</p>
-                <p class="text-xs text-gray-400">Upcoming: {{ upcoming_events }}</p>
+                <p class="kpn-stat-value">{{ total_events }}</p>
+                <p class="kpn-stat-label">Events</p>
+                <p class="kpn-stat-meta">Upcoming: {{ upcoming_events }}</p>
             </div>
         </div>
     </div>
 
     <!-- ── SECTION 3: Finance & Programs ──────────────────────────────── -->
-    <h2 class="text-lg font-bold text-gray-700 dark:text-gray-200 mb-4 flex items-center">
-        <i class="fas fa-chart-bar text-teal-600 mr-2"></i> Finance & Programs
+    <h2 class="kpn-section-label">
+        <i class="fas fa-chart-bar text-teal-600"></i> Finance & Programs
     </h2>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4">
-            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-donate text-green-600 text-xl"></i>
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon bg-green-100 dark:bg-green-900/30 text-green-600">
+                <i class="fas fa-donate"></i>
             </div>
             <div>
-                <p class="text-xl font-bold text-gray-900 dark:text-white">₦{{ total_donations|floatformat:0 }}</p>
-                <p class="text-xs text-gray-500">Total Donations</p>
+                <p class="kpn-stat-value text-base md:text-lg">₦{{ total_donations|floatformat:0 }}</p>
+                <p class="kpn-stat-label">Total Donations</p>
             </div>
         </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4">
-            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-money-bill text-red-600 text-xl"></i>
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon bg-red-100 dark:bg-red-900/30 text-red-600">
+                <i class="fas fa-money-bill"></i>
             </div>
             <div>
-                <p class="text-xl font-bold text-gray-900 dark:text-white">₦{{ total_expenses|floatformat:0 }}</p>
-                <p class="text-xs text-gray-500">Total Expenses</p>
+                <p class="kpn-stat-value text-base md:text-lg">₦{{ total_expenses|floatformat:0 }}</p>
+                <p class="kpn-stat-label">Total Expenses</p>
             </div>
         </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4">
-            <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-tasks text-teal-600 text-xl"></i>
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon bg-teal-100 dark:bg-teal-900/30 text-teal-600">
+                <i class="fas fa-tasks"></i>
             </div>
             <div>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ total_womens_programs|add:total_youth_programs|add:total_welfare_programs }}</p>
-                <p class="text-xs text-gray-500">Total Programs</p>
-                <p class="text-xs text-gray-400">W:{{ total_womens_programs }} Y:{{ total_youth_programs }} Wf:{{ total_welfare_programs }}</p>
+                <p class="kpn-stat-value">{{ total_womens_programs|add:total_youth_programs|add:total_welfare_programs }}</p>
+                <p class="kpn-stat-label">Total Programs</p>
+                <p class="kpn-stat-meta">W:{{ total_womens_programs }} Y:{{ total_youth_programs }} Wf:{{ total_welfare_programs }}</p>
             </div>
         </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 flex items-center gap-4">
-            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-gavel text-red-600 text-xl"></i>
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon bg-red-100 dark:bg-red-900/30 text-red-600">
+                <i class="fas fa-gavel"></i>
             </div>
             <div>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ pending_disciplinary }}</p>
-                <p class="text-xs text-gray-500">Disciplinary Pending</p>
+                <p class="kpn-stat-value">{{ pending_disciplinary }}</p>
+                <p class="kpn-stat-label">Disciplinary Pending</p>
             </div>
         </div>
     </div>
@@ -177,143 +169,177 @@
     <!-- ── SECTION 4: Quick Actions + Pending Applications ────────────── -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <!-- Quick Actions -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-            <h3 class="font-bold text-gray-800 dark:text-white mb-4 flex items-center">
-                <i class="fas fa-bolt text-yellow-500 mr-2"></i> Quick Actions
-            </h3>
-            <div class="space-y-2">
-                <a href="{% url 'staff:approve_members' %}" class="flex items-center p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/30 hover:bg-yellow-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
-                    <i class="fas fa-user-check w-5 text-yellow-600 mr-2"></i> Approve Applications
-                    {% if pending_approvals %}<span class="ml-auto bg-yellow-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pending_approvals }}</span>{% endif %}
-                </a>
-                <a href="{% url 'staff:manage_opportunities' %}" class="flex items-center p-3 rounded-lg bg-orange-50 dark:bg-orange-900/30 hover:bg-orange-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
-                    <i class="fas fa-briefcase w-5 text-orange-600 mr-2"></i> Manage Opportunities Hub
-                </a>
-                <a href="{% url 'staff:manage_community_initiatives' %}" class="flex items-center p-3 rounded-lg bg-cyan-50 dark:bg-cyan-900/30 hover:bg-cyan-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
-                    <i class="fas fa-hands-helping w-5 text-cyan-600 mr-2"></i> Manage Community Hub
-                </a>
-                <a href="{% url 'staff:manage_advocacy_campaigns' %}" class="flex items-center p-3 rounded-lg bg-pink-50 dark:bg-pink-900/30 hover:bg-pink-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
-                    <i class="fas fa-vote-yea w-5 text-pink-600 mr-2"></i> Manage Advocacy Hub
-                </a>
-                <a href="{% url 'staff:trusted_reporters_list' %}" class="flex items-center p-3 rounded-lg bg-green-50 dark:bg-green-900/30 hover:bg-green-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
-                    <i class="fas fa-user-shield w-5 text-green-600 mr-2"></i> Manage Trusted Reporters
-                </a>
-                <a href="{% url 'staff:manage_staff' %}" class="flex items-center p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
-                    <i class="fas fa-users-cog w-5 text-blue-600 mr-2"></i> Manage All Staff
-                </a>
-                <a href="{% url 'staff:view_reports' %}" class="flex items-center p-3 rounded-lg bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
-                    <i class="fas fa-chart-line w-5 text-purple-600 mr-2"></i> View All Reports
-                </a>
-                <a href="{% url 'staff:disciplinary_actions' %}" class="flex items-center p-3 rounded-lg bg-red-50 dark:bg-red-900/30 hover:bg-red-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
-                    <i class="fas fa-gavel w-5 text-red-600 mr-2"></i> Disciplinary Actions
-                </a>
-                <a href="{% url 'staff:announcements_list' %}" class="flex items-center p-3 rounded-lg bg-green-50 dark:bg-green-900/30 hover:bg-green-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
-                    <i class="fas fa-bullhorn w-5 text-green-600 mr-2"></i> Manage Announcements
-                </a>
-                <a href="{% url 'staff:export_members_csv' %}" class="flex items-center p-3 rounded-lg bg-teal-50 dark:bg-teal-900/30 hover:bg-teal-100 transition text-sm font-medium text-gray-800 dark:text-gray-200">
-                    <i class="fas fa-file-csv w-5 text-teal-600 mr-2"></i> Export Members CSV
-                </a>
+        <div class="kpn-card">
+            <div class="kpn-card-header">
+                <h3 class="text-sm font-semibold flex items-center">
+                    <i class="fas fa-bolt text-yellow-500 mr-2"></i> Quick Actions
+                </h3>
+            </div>
+            <div class="kpn-card-body p-3">
+                <div class="flex flex-col gap-1">
+                    <a href="{% url 'staff:approve_members' %}" class="kpn-action-item">
+                        <div class="kpn-action-icon bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-500"><i class="fas fa-user-check"></i></div>
+                        <span class="flex-1">Approve Applications</span>
+                        {% if pending_approvals %}<span class="kpn-count-badge bg-yellow-500 text-white">{{ pending_approvals }}</span>{% endif %}
+                    </a>
+                    <a href="{% url 'staff:manage_opportunities' %}" class="kpn-action-item">
+                        <div class="kpn-action-icon bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-500"><i class="fas fa-briefcase"></i></div>
+                        <span>Manage Opportunities</span>
+                    </a>
+                    <a href="{% url 'staff:manage_community_initiatives' %}" class="kpn-action-item">
+                        <div class="kpn-action-icon bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-500"><i class="fas fa-hands-helping"></i></div>
+                        <span>Manage Community Hub</span>
+                    </a>
+                    <a href="{% url 'staff:manage_advocacy_campaigns' %}" class="kpn-action-item">
+                        <div class="kpn-action-icon bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-500"><i class="fas fa-vote-yea"></i></div>
+                        <span>Manage Advocacy Hub</span>
+                    </a>
+                    <a href="{% url 'staff:trusted_reporters_list' %}" class="kpn-action-item">
+                        <div class="kpn-action-icon bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-500"><i class="fas fa-user-shield"></i></div>
+                        <span>Manage Trusted Reporters</span>
+                    </a>
+                    <a href="{% url 'staff:manage_staff' %}" class="kpn-action-item">
+                        <div class="kpn-action-icon bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-500"><i class="fas fa-users-cog"></i></div>
+                        <span>Manage All Staff</span>
+                    </a>
+                    <a href="{% url 'staff:view_reports' %}" class="kpn-action-item">
+                        <div class="kpn-action-icon bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-500"><i class="fas fa-chart-line"></i></div>
+                        <span>View All Reports</span>
+                    </a>
+                    <a href="{% url 'staff:disciplinary_actions' %}" class="kpn-action-item">
+                        <div class="kpn-action-icon bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-500"><i class="fas fa-gavel"></i></div>
+                        <span>Disciplinary Actions</span>
+                    </a>
+                    <a href="{% url 'staff:announcements_list' %}" class="kpn-action-item">
+                        <div class="kpn-action-icon bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-500"><i class="fas fa-bullhorn"></i></div>
+                        <span>Manage Announcements</span>
+                    </a>
+                    <a href="{% url 'staff:export_members_csv' %}" class="kpn-action-item">
+                        <div class="kpn-action-icon bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-500"><i class="fas fa-file-csv"></i></div>
+                        <span>Export Members CSV</span>
+                    </a>
+                </div>
             </div>
         </div>
 
         <!-- Pending Applicants -->
-        <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-            <h3 class="font-bold text-gray-800 dark:text-white mb-4 flex items-center">
-                <i class="fas fa-user-clock text-yellow-600 mr-2"></i> Pending Member Applications
+        <div class="lg:col-span-2 kpn-card">
+            <div class="kpn-card-header">
+                <h3 class="text-sm font-semibold flex items-center">
+                    <i class="fas fa-user-clock text-yellow-500 mr-2"></i> Pending Member Applications
+                </h3>
+            </div>
+            <div class="kpn-table-wrap border-0 border-t border-gray-200 dark:border-gray-700 rounded-none rounded-b-lg">
+                <div class="kpn-table-responsive overflow-x-auto">
+                    <table class="kpn-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Location</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for applicant in pending_applicants %}
+                            <tr>
+                                <td data-label="Name" class="font-medium">{{ applicant.get_full_name }}</td>
+                                <td data-label="Role" class="text-gray-500">
+                                    {% if applicant.role_definition %}
+                                        <span class="kpn-badge kpn-badge-blue">{{ applicant.role_definition.title }}</span>
+                                    {% else %}
+                                        <span class="kpn-badge kpn-badge-gray">{{ applicant.get_role_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td data-label="Location" class="text-gray-500">{{ applicant.get_jurisdiction }}</td>
+                                <td data-label="Action">
+                                    <a href="{% url 'staff:review_applicant' applicant.id %}" class="kpn-btn kpn-btn-sm kpn-btn-primary">
+                                        <i class="fas fa-search"></i> Review
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="p-0">
+                                    <div class="kpn-empty py-8">
+                                        <div class="kpn-empty-icon w-10 h-10 text-base mb-2">
+                                            <i class="fas fa-check-circle text-green-500"></i>
+                                        </div>
+                                        <p class="kpn-empty-title text-sm">No pending applications</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SECTION 5: Community Reports Queue ────────────────────────── -->
+    <div class="kpn-card mb-8">
+        <div class="kpn-card-header">
+            <h3 class="text-sm font-semibold flex items-center">
+                <i class="fas fa-file-alt text-orange-500 mr-2"></i> Community Report Submissions
             </h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
+            <a href="{% url 'staff:media_director_dashboard' %}" class="kpn-btn kpn-btn-ghost kpn-btn-sm text-kpn-green">
+                Open in Newsroom <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+        <div class="kpn-table-wrap border-0 rounded-none rounded-b-lg">
+            <div class="kpn-table-responsive overflow-x-auto">
+                <table class="kpn-table">
                     <thead>
-                        <tr class="text-left text-xs text-gray-500 uppercase border-b dark:border-gray-700">
-                            <th class="pb-3 pr-4">Name</th>
-                            <th class="pb-3 pr-4">Role</th>
-                            <th class="pb-3 pr-4">Location</th>
-                            <th class="pb-3">Action</th>
+                        <tr>
+                            <th>Story</th>
+                            <th>Reporter</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th class="text-right">Action</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                        {% for applicant in pending_applicants %}
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                            <td class="py-3 pr-4 font-medium text-gray-900 dark:text-white">{{ applicant.get_full_name }}</td>
-                            <td class="py-3 pr-4 text-gray-600 dark:text-gray-400 text-xs">
-                                {% if applicant.role_definition %}{{ applicant.role_definition.title }}{% else %}{{ applicant.get_role_display }}{% endif %}
+                    <tbody>
+                        {% for report in community_reports %}
+                        <tr>
+                            <td data-label="Story" class="font-medium">{{ report.what_happened|truncatewords:8 }}</td>
+                            <td data-label="Reporter">{{ report.reporter_name }}</td>
+                            <td data-label="Location">
+                                {% if report.ward %}{{ report.ward.name }}, {% endif %}{% if report.lga %}{{ report.lga.name }}{% endif %}
                             </td>
-                            <td class="py-3 pr-4 text-gray-600 dark:text-gray-400 text-xs">{{ applicant.get_jurisdiction }}</td>
-                            <td class="py-3">
-                                <a href="{% url 'staff:review_applicant' applicant.id %}" class="inline-flex items-center px-3 py-1 bg-kpn-green text-white text-xs rounded-lg hover:bg-green-600 transition">
-                                    <i class="fas fa-search mr-1"></i> Review
+                            <td data-label="Status">
+                                <span class="kpn-badge 
+                                    {% if report.status == 'PENDING' %}kpn-badge-yellow
+                                    {% elif report.status == 'APPROVED' %}kpn-badge-green
+                                    {% elif report.status == 'REJECTED' %}kpn-badge-red
+                                    {% else %}kpn-badge-blue{% endif %}">
+                                    {{ report.get_status_display }}
+                                </span>
+                            </td>
+                            <td data-label="Date" class="text-gray-500">{{ report.created_at|date:"M d, Y" }}</td>
+                            <td data-label="Action" class="text-right">
+                                <a href="{% url 'staff:community_report_review' report.id %}" class="kpn-btn kpn-btn-sm kpn-btn-secondary">
+                                    <i class="fas fa-search"></i> Review
                                 </a>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="4" class="py-6 text-center text-gray-400 text-sm">
-                                <i class="fas fa-check-circle text-green-400 mr-2"></i> No pending applications
+                            <td colspan="6" class="p-0">
+                                <div class="kpn-empty py-12">
+                                    <div class="kpn-empty-icon">
+                                        <i class="fas fa-folder-open"></i>
+                                    </div>
+                                    <p class="kpn-empty-title">No reports submitted</p>
+                                    <p class="kpn-empty-desc">There are currently no community reports awaiting your review.</p>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-        </div>
-    </div>
-
-    <!-- ── SECTION 5: Community Reports Queue ────────────────────────── -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow mb-8">
-        <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-            <h3 class="font-bold text-gray-800 dark:text-white flex items-center">
-                <i class="fas fa-file-alt text-orange-500 mr-2"></i> Community Report Submissions
-            </h3>
-            <a href="{% url 'staff:media_director_dashboard' %}" class="text-sm text-kpn-green hover:underline">
-                Open in Newsroom <i class="fas fa-arrow-right ml-1"></i>
-            </a>
-        </div>
-        <div class="overflow-x-auto">
-            {% if community_reports %}
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="bg-gray-50 dark:bg-gray-700 text-xs text-gray-500 uppercase">
-                        <th class="p-4 text-left">Story</th>
-                        <th class="p-4 text-left">Reporter</th>
-                        <th class="p-4 text-left">Location</th>
-                        <th class="p-4 text-left">Status</th>
-                        <th class="p-4 text-left">Date</th>
-                        <th class="p-4 text-right">Action</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                    {% for report in community_reports %}
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                        <td class="p-4 font-medium text-gray-900 dark:text-white">{{ report.what_happened|truncatewords:8 }}</td>
-                        <td class="p-4 text-gray-600 dark:text-gray-400">{{ report.reporter_name }}</td>
-                        <td class="p-4 text-gray-600 dark:text-gray-400">
-                            {% if report.ward %}{{ report.ward.name }}, {% endif %}{% if report.lga %}{{ report.lga.name }}{% endif %}
-                        </td>
-                        <td class="p-4">
-                            <span class="px-2 py-1 rounded-full text-xs font-semibold
-                                {% if report.status == 'PENDING' %}bg-yellow-100 text-yellow-800
-                                {% elif report.status == 'APPROVED' %}bg-green-100 text-green-800
-                                {% elif report.status == 'REJECTED' %}bg-red-100 text-red-800
-                                {% else %}bg-blue-100 text-blue-800{% endif %}">
-                                {{ report.get_status_display }}
-                            </span>
-                        </td>
-                        <td class="p-4 text-gray-500 text-xs">{{ report.created_at|date:"M d, Y" }}</td>
-                        <td class="p-4 text-right">
-                            <a href="{% url 'staff:community_report_review' report.id %}" class="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-700 hover:bg-orange-200 text-xs font-bold rounded-lg transition">
-                                <i class="fas fa-search mr-1"></i> Review
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <div class="p-8 text-center text-gray-400">
-                <i class="fas fa-folder-open text-4xl mb-3 text-gray-300"></i>
-                <p>No community reports submitted yet.</p>
-            </div>
-            {% endif %}
         </div>
     </div>
 

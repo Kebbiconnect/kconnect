@@ -19,8 +19,20 @@ from django.urls import path, include
 from django.conf import settings
 from django.views.generic import TemplateView
 from django.conf.urls.static import static
+from django.views.defaults import permission_denied
+
+# Custom 403 handler — replaces Django's raw Forbidden page with a friendly KPN page.
+# This is triggered by django-ratelimit's block=True and any other PermissionDenied exceptions.
+def custom_403(request, exception=None):
+    from django.template import loader
+    from django.http import HttpResponseForbidden
+    template = loader.get_template('403.html')
+    return HttpResponseForbidden(template.render(request=request))
+
+handler403 = custom_403
 
 urlpatterns = [
+    path('api/v1/', include('rest_api.urls')),
     path('admin/', admin.site.urls),
     path('', include('core.urls')),
     path('account/', include('staff.urls')),
@@ -28,7 +40,7 @@ urlpatterns = [
     path('events/', include('events.urls')),
     path('finance/', include('donations.urls')),
     path('media/', include(('media.urls', 'media'), namespace='media')),
-   
+    path('', include('telegram_integration.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

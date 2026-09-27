@@ -3,7 +3,7 @@
 {% block title %}Ward Coordinator Dashboard - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page">
     <!-- Header -->
     {% include 'staff/dashboards/includes/_role_header.html' with title="Ward Coordinator Dashboard" icon_class="fas fa-users-cog" welcome_messages="Leading at the grassroots level.|Mobilizing your community for change.|Making a difference where it matters most." %}
     
@@ -12,68 +12,89 @@
     
     <!-- My Statistics -->
     <div class="mb-8">
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-chart-pie mr-2 text-kpn-blue"></i> My Statistics</h2>
+        <h2 class="kpn-section-label mt-6">
+    <i class="fas fa-chart-pie mr-2 text-kpn-blue"></i> My Statistics
+</h2>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-center">
+            <div class="kpn-card flex flex-col justify-center">
                 <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">My Ward</div>
                 <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ user.ward.name|default:"N/A" }}</div>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-center">
-                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Ward Members</div>
-                <div class="text-3xl font-bold text-kpn-green">{{ members_in_ward }}</div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-center">
-                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Meetings Held</div>
-                <div class="text-3xl font-bold text-purple-600">{{ total_meetings }}</div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-center">
-                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Reports Sent</div>
-                <div class="text-3xl font-bold text-orange-600">{{ reports_submitted }}</div>
-            </div>
+            <div class="kpn-stat-card">
+    <div class="kpn-stat-icon bg-green-100 dark:bg-green-900/30 text-kpn-green">
+        <i class="fas fa-chart-line"></i>
+    </div>
+    <div>
+        <p class="kpn-stat-value">{{ members_in_ward }}</p>
+        <p class="kpn-stat-label">Ward Members</p>
+    </div>
+</div>
+            <div class="kpn-stat-card">
+    <div class="kpn-stat-icon bg-purple-100 dark:bg-purple-900/30 text-purple-600">
+        <i class="fas fa-chart-line"></i>
+    </div>
+    <div>
+        <p class="kpn-stat-value">{{ total_meetings }}</p>
+        <p class="kpn-stat-label">Meetings Held</p>
+    </div>
+</div>
+            <div class="kpn-stat-card">
+    <div class="kpn-stat-icon bg-orange-100 dark:bg-orange-900/30 text-orange-600">
+        <i class="fas fa-chart-line"></i>
+    </div>
+    <div>
+        <p class="kpn-stat-value">{{ reports_submitted }}</p>
+        <p class="kpn-stat-label">Reports Sent</p>
+    </div>
+</div>
         </div>
     </div>
     
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         
         <!-- My Tasks (Quick Actions) -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-tasks mr-2 text-orange-500"></i> My Tasks</h2>
-            <div class="space-y-3">
-                <a href="{% url 'staff:create_ward_meeting' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-900/20 group transition border border-transparent hover:border-teal-200 dark:hover:border-teal-800">
-                    <div class="w-10 h-10 rounded-full bg-teal-100 dark:bg-teal-900 text-teal-600 dark:text-teal-400 flex items-center justify-center mr-4 group-hover:scale-110 transition">
+        <div class="kpn-card">
+            <h2 class="kpn-section-label mt-6">
+    <i class="fas fa-tasks mr-2 text-orange-500"></i> My Tasks
+</h2>
+            <div class="flex flex-col gap-1">
+                <a href="{% url 'staff:create_ward_meeting' %}" class="kpn-action-item">
+                    <div class="kpn-action-icon bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-500">
                         <i class="fas fa-plus"></i>
                     </div>
                     <div>
-                        <div class="font-bold text-gray-900 dark:text-white">Record Meeting</div>
-                        <div class="text-xs text-gray-500">Log attendance for a recent ward gathering</div>
+                        <span>Record Meeting</span>
+                        <span class="text-xs text-gray-500">Log attendance for a recent ward gathering</span>
                     </div>
                 </a>
                 
-                <a href="{% url 'core:submit_report' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 group transition border border-transparent hover:border-purple-200 dark:hover:border-purple-800">
-                    <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 flex items-center justify-center mr-4 group-hover:scale-110 transition">
+                <a href="{% url 'core:submit_report' %}" class="kpn-action-item">
+                    <div class="kpn-action-icon bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-500">
                         <i class="fas fa-paper-plane"></i>
                     </div>
                     <div>
-                        <div class="font-bold text-gray-900 dark:text-white">Submit Ward Report</div>
-                        <div class="text-xs text-gray-500">Send activity report to LGA Coordinator</div>
+                        <span>Submit Ward Report</span>
+                        <span class="text-xs text-gray-500">Send activity report to LGA Coordinator</span>
                     </div>
                 </a>
                 
-                <a href="{% url 'staff:disciplinary_actions' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 group transition border border-transparent hover:border-red-200 dark:hover:border-red-800">
-                    <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 flex items-center justify-center mr-4 group-hover:scale-110 transition">
+                <a href="{% url 'staff:disciplinary_actions' %}" class="kpn-action-item">
+                    <div class="kpn-action-icon bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-500">
                         <i class="fas fa-exclamation-triangle"></i>
                     </div>
                     <div>
-                        <div class="font-bold text-gray-900 dark:text-white">Report Misconduct</div>
-                        <div class="text-xs text-gray-500">Flag members violating KPN constitution</div>
+                        <span>Report Misconduct</span>
+                        <span class="text-xs text-gray-500">Flag members violating KPN constitution</span>
                     </div>
                 </a>
             </div>
         </div>
         
         <!-- My Responsibilities -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-clipboard-list mr-2 text-purple-500"></i> My Responsibilities</h2>
+        <div class="kpn-card">
+            <h2 class="kpn-section-label mt-6">
+    <i class="fas fa-clipboard-list mr-2 text-purple-500"></i> My Responsibilities
+</h2>
             <ul class="space-y-4">
                 <li class="flex items-start">
                     <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">1</div>
@@ -99,9 +120,11 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         
         <!-- My Team -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <div class="kpn-card">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white"><i class="fas fa-users mr-2 text-kpn-green"></i> My Team (Ward Members)</h2>
+                <h2 class="kpn-section-label mt-6">
+    <i class="fas fa-users mr-2 text-kpn-green"></i> My Team (Ward Members)
+</h2>
                 <a href="{% url 'staff:manage_staff' %}" class="text-sm font-semibold text-kpn-green hover:underline">View All</a>
             </div>
             <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 text-center border border-dashed border-gray-300 dark:border-gray-700">
@@ -111,9 +134,11 @@
         </div>
         
         <!-- My Reports & Meetings -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+        <div class="kpn-card">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white"><i class="fas fa-book mr-2 text-indigo-500"></i> Meeting Logbook</h2>
+                <h2 class="kpn-section-label mt-6">
+    <i class="fas fa-book mr-2 text-indigo-500"></i> Meeting Logbook
+</h2>
                 <a href="{% url 'staff:ward_meetings_list' %}" class="text-sm font-semibold text-indigo-500 hover:underline">View Logbook</a>
             </div>
             <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 text-center border border-dashed border-gray-300 dark:border-gray-700">

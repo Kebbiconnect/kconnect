@@ -190,7 +190,7 @@
     const imageInput = document.getElementById('id_featured_image');
     if (imageInput) {
         imageInput.addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name || "No file chosen";
+            const fileName = e.target.files[0]?.name ||"No file chosen";
             document.getElementById('file-name').textContent = fileName;
         });
     }
@@ -235,7 +235,7 @@
                     class: window.ImageTool,
                     config: {
                         endpoints: {
-                            byFile: "{% url 'campaigns:image_upload' %}",
+                            byFile:"{% url 'campaigns:image_upload' %}",
                         },
                         additionalRequestHeaders: {
                             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
@@ -269,7 +269,7 @@
     function previewArticle() {
         alert("Please Save Draft first to preview the latest changes.");
         {% if article and article.slug %}
-        window.open("{% url 'campaigns:article_detail' article.slug %}", "_blank");
+        window.open("{% url 'campaigns:article_detail' article.slug %}","_blank");
         {% endif %}
     }
 </script>

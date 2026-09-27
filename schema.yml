@@ -1,0 +1,903 @@
+openapi: 3.0.3
+info:
+  title: KPN API
+  version: 1.0.0
+  description: KPN Mobile App API
+paths:
+  /api/v1/advocacy/:
+    get:
+      operationId: advocacy_list
+      tags:
+      - advocacy
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdvocacyCampaign'
+          description: ''
+  /api/v1/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/v1/auth/me/:
+    get:
+      operationId: auth_me_retrieve
+      parameters:
+      - in: header
+        name: Authorization
+        schema:
+          type: string
+        description: Bearer <access_token>
+        required: true
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/auth/register/:
+    post:
+      operationId: auth_register_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/civic/:
+    get:
+      operationId: civic_list
+      tags:
+      - civic
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Campaign'
+          description: ''
+  /api/v1/community/:
+    get:
+      operationId: community_list
+      tags:
+      - community
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommunityInitiative'
+          description: ''
+  /api/v1/impact/:
+    get:
+      operationId: impact_retrieve
+      tags:
+      - impact
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImpactMetrics'
+          description: ''
+  /api/v1/leadership-directory/:
+    get:
+      operationId: leadership_directory_list
+      tags:
+      - leadership-directory
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Leader'
+          description: ''
+  /api/v1/locations/lgas/:
+    get:
+      operationId: locations_lgas_list
+      parameters:
+      - in: query
+        name: zone
+        schema:
+          type: integer
+      tags:
+      - locations
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LGA'
+          description: ''
+  /api/v1/locations/wards/:
+    get:
+      operationId: locations_wards_list
+      parameters:
+      - in: query
+        name: lga
+        schema:
+          type: integer
+      tags:
+      - locations
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ward'
+          description: ''
+  /api/v1/locations/zones/:
+    get:
+      operationId: locations_zones_list
+      tags:
+      - locations
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Zone'
+          description: ''
+  /api/v1/newsroom/:
+    get:
+      operationId: newsroom_list
+      tags:
+      - newsroom
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Campaign'
+          description: ''
+  /api/v1/newsroom/{slug}/:
+    get:
+      operationId: newsroom_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - newsroom
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+          description: ''
+  /api/v1/opportunities/:
+    get:
+      operationId: opportunities_list
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+          enum:
+          - FELLOWSHIP
+          - GRANT
+          - JOB
+          - SCHOLARSHIP
+          - TRAINING
+      tags:
+      - opportunities
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Opportunity'
+          description: ''
+  /api/v1/patrons/:
+    get:
+      operationId: patrons_list
+      tags:
+      - patrons
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Patron'
+          description: ''
+  /api/v1/roles/:
+    get:
+      operationId: roles_list
+      parameters:
+      - in: query
+        name: tier
+        schema:
+          type: string
+          enum:
+          - LGA
+          - STATE
+          - WARD
+          - ZONAL
+      tags:
+      - roles
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoleDefinition'
+          description: ''
+components:
+  schemas:
+    AdvocacyCampaign:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        issue:
+          type: string
+          description: What is the core issue?
+        background:
+          type: string
+          description: Background context
+        kpn_position:
+          type: string
+          description: KPN's official position
+        actions_taken:
+          type: string
+          description: What actions have been taken?
+        government_response:
+          type: string
+        outcome:
+          type: string
+        is_active:
+          type: boolean
+        image:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - background
+      - created_at
+      - id
+      - issue
+      - title
+      - updated_at
+    BlankEnum:
+      enum:
+      - ''
+    Campaign:
+      type: object
+      properties:
+        slug:
+          type: string
+          maxLength: 350
+          pattern: ^[-a-zA-Z0-9_]+$
+        title:
+          type: string
+          maxLength: 300
+        date:
+          type: string
+          format: date-time
+        excerpt:
+          type: string
+        body:
+          type: string
+        image:
+          type: string
+          format: uri
+      required:
+      - body
+      - date
+      - excerpt
+      - image
+      - slug
+      - title
+    CategoryEnum:
+      enum:
+      - SCHOLARSHIP
+      - GRANT
+      - JOB
+      - INTERNSHIP
+      - VOLUNTEER
+      - ENTREPRENEURSHIP
+      - TRAINING
+      - EMPOWERMENT
+      - FELLOWSHIP
+      type: string
+      description: |-
+        * `SCHOLARSHIP` - Scholarships & Education
+        * `GRANT` - Grants & Funding
+        * `JOB` - Jobs & Employment
+        * `INTERNSHIP` - Internships
+        * `VOLUNTEER` - Volunteer Opportunities
+        * `ENTREPRENEURSHIP` - Entrepreneurship
+        * `TRAINING` - Skills & Training
+        * `EMPOWERMENT` - Empowerment Programs
+        * `FELLOWSHIP` - Fellowships & Leadership
+    CommunityInitiative:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/CommunityInitiativeStatusEnum'
+      required:
+      - description
+      - title
+    CommunityInitiativeStatusEnum:
+      enum:
+      - PLANNING
+      - ACTIVE
+      - COMPLETED
+      type: string
+      description: |-
+        * `PLANNING` - Planning
+        * `ACTIVE` - Active
+        * `COMPLETED` - Completed
+    GenderEnum:
+      enum:
+      - M
+      - F
+      type: string
+      description: |-
+        * `M` - Male
+        * `F` - Female
+    ImpactMetrics:
+      type: object
+      properties:
+        verified_members:
+          type: integer
+        trusted_reporters:
+          type: integer
+        community_reports:
+          type: integer
+        opportunities:
+          type: integer
+        impact_communities_reached:
+          type: integer
+        active_lgas:
+          type: integer
+        active_wards:
+          type: integer
+      required:
+      - active_lgas
+      - active_wards
+      - community_reports
+      - impact_communities_reached
+      - opportunities
+      - trusted_reporters
+      - verified_members
+    LGA:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        zone:
+          type: integer
+      required:
+      - id
+      - name
+      - zone
+    Leader:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        role_definition:
+          type: integer
+          nullable: true
+        photo:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - id
+    Opportunity:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 300
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        organization:
+          type: string
+        deadline:
+          type: string
+          format: date
+          nullable: true
+        description:
+          type: string
+        external_apply_link:
+          type: string
+          format: uri
+      required:
+      - description
+      - external_apply_link
+      - organization
+      - title
+    Patron:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        patron_type:
+          $ref: '#/components/schemas/PatronTypeEnum'
+        full_name:
+          type: string
+          maxLength: 200
+        title:
+          type: string
+          description: Official title/designation
+          maxLength: 200
+        bio:
+          type: string
+        photo:
+          type: string
+          format: uri
+          nullable: true
+        is_published:
+          type: boolean
+        order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Display order (lower = higher)
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - full_name
+      - id
+      - title
+      - updated_at
+    PatronTypeEnum:
+      enum:
+      - GRAND
+      - PATRON
+      type: string
+      description: |-
+        * `GRAND` - Grand Patron
+        * `PATRON` - Patron
+    Register:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          title: Email address
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        password:
+          type: string
+          writeOnly: true
+        password_confirm:
+          type: string
+          writeOnly: true
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        phone:
+          type: string
+          maxLength: 20
+        gender:
+          oneOf:
+          - $ref: '#/components/schemas/GenderEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        photo:
+          type: string
+          format: uri
+        zone:
+          type: integer
+          nullable: true
+        lga:
+          type: integer
+          nullable: true
+        ward:
+          type: integer
+          nullable: true
+        role_definition:
+          type: integer
+        bio:
+          type: string
+      required:
+      - password
+      - password_confirm
+      - phone
+      - photo
+      - role_definition
+      - username
+    ReporterLevelEnum:
+      enum:
+      - MEMBER
+      - COMMUNITY_REPORTER
+      - TRUSTED_REPORTER
+      type: string
+      description: |-
+        * `MEMBER` - Member
+        * `COMMUNITY_REPORTER` - Community Reporter
+        * `TRUSTED_REPORTER` - Trusted Reporter
+    RoleDefinition:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        tier:
+          $ref: '#/components/schemas/TierEnum'
+        description:
+          type: string
+        seat_number:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Position number within tier (e.g., 1 for President)
+      required:
+      - id
+      - seat_number
+      - tier
+      - title
+    RoleEnum:
+      enum:
+      - GENERAL
+      - STATE
+      - ZONAL
+      - LGA
+      - WARD
+      type: string
+      description: |-
+        * `GENERAL` - General Member
+        * `STATE` - State Executive
+        * `ZONAL` - Zonal Excos
+        * `LGA` - LGA Excos
+        * `WARD` - Ward Leaders
+    TelegramMembership:
+      type: object
+      properties:
+        telegram_user_id:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          description: Permanent Telegram user ID. Never changes.
+        telegram_username:
+          type: string
+          description: Telegram @username (may change — supplementary only)
+          maxLength: 100
+        telegram_status:
+          $ref: '#/components/schemas/TelegramStatusEnum'
+        is_verified:
+          type: boolean
+          description: True only when Telegram confirms active channel membership
+        last_verified_at:
+          type: string
+          format: date-time
+          nullable: true
+        left_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When member was detected as having left the channel
+      required:
+      - telegram_user_id
+    TelegramStatusEnum:
+      enum:
+      - creator
+      - administrator
+      - member
+      - restricted
+      - left
+      - kicked
+      - not_member
+      type: string
+      description: |-
+        * `creator` - Creator
+        * `administrator` - Administrator
+        * `member` - Member
+        * `restricted` - Restricted
+        * `left` - Left
+        * `kicked` - Kicked/Banned
+        * `not_member` - Not a Member
+    TierEnum:
+      enum:
+      - STATE
+      - ZONAL
+      - LGA
+      - WARD
+      type: string
+      description: |-
+        * `STATE` - State Executive
+        * `ZONAL` - Zonal Excos
+        * `LGA` - LGA Excos
+        * `WARD` - Ward Leaders
+    TokenObtainPair:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - password
+      - refresh
+      - username
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          title: Email address
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        phone:
+          type: string
+          maxLength: 20
+        bio:
+          type: string
+        photo:
+          type: string
+          format: uri
+          nullable: true
+        gender:
+          oneOf:
+          - $ref: '#/components/schemas/GenderEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        zone:
+          type: integer
+          nullable: true
+        lga:
+          type: integer
+          nullable: true
+        ward:
+          type: integer
+          nullable: true
+        role_definition:
+          type: integer
+          nullable: true
+        status:
+          $ref: '#/components/schemas/UserStatusEnum'
+        reporter_level:
+          $ref: '#/components/schemas/ReporterLevelEnum'
+        is_trusted_reporter:
+          type: boolean
+          description: Manually granted by President or Director of Media & Communications
+        telegram_membership:
+          allOf:
+          - $ref: '#/components/schemas/TelegramMembership'
+          readOnly: true
+          nullable: true
+      required:
+      - id
+      - phone
+      - telegram_membership
+      - username
+    UserStatusEnum:
+      enum:
+      - PENDING
+      - UNDER_REVIEW
+      - VERIFIED
+      - REJECTED
+      - SUSPENDED
+      type: string
+      description: |-
+        * `PENDING` - Pending
+        * `UNDER_REVIEW` - Under Review
+        * `VERIFIED` - Verified
+        * `REJECTED` - Rejected
+        * `SUSPENDED` - Suspended
+    Ward:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        lga:
+          type: integer
+      required:
+      - id
+      - lga
+      - name
+    Zone:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+      required:
+      - id
+      - name
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

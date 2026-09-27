@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Connect Telegram - KPN{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+        <div class="bg-kpn-green text-white px-6 py-6 rounded-t-xl text-center">
+            <i class="fab fa-telegram text-5xl mb-3"></i>
+            <h1 class="text-2xl font-bold">Connect Your Telegram Account</h1>
+            <p class="text-sm opacity-90 mt-1">Link your Telegram identity to your KPN profile</p>
+        </div>
+
+        <div class="p-6 md:p-8">
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="mb-4 p-3 rounded-lg text-sm
+                {% if message.tags == 'error' %}bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400
+                {% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400
+                {% else %}bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <p class="text-gray-600 dark:text-gray-400 mb-6">
+                Click the button below to authenticate with Telegram. You'll be asked to authorize the KPN Bot
+                to read your basic profile information (name and ID only). 
+                <strong>No messages will be sent or read.</strong>
+            </p>
+
+            <!-- How It Works -->
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+                <h3 class="font-semibold text-gray-900 dark:text-white mb-2">
+                    <i class="fas fa-shield-alt mr-1 text-kpn-green"></i> How it works
+                </h3>
+                <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Click the Telegram Login button below</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Your Telegram app will open for authorization</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>We verify your KPN channel membership automatically</li>
+                    <li><i class="fas fa-check text-green-500 mr-2"></i>Your dashboard becomes accessible immediately</li>
+                </ul>
+            </div>
+
+            <!-- Telegram Login Widget -->
+            <div class="text-center my-6">
+                <script async src="https://telegram.org/js/telegram-widget.js?22"
+                    data-telegram-login="{{ bot_username }}"
+                    data-size="large"
+                    data-auth-url="{% url 'telegram_integration:callback' %}"
+                    data-request-access="write">
+                </script>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                    Secure authentication via Telegram's official Login Widget.
+                    Your Telegram password is never shared with us.
+                </p>
+            </div>
+
+            <!-- Prerequisite Notice -->
+            <div class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                <p class="text-sm text-blue-700 dark:text-blue-300">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    <strong>Before connecting:</strong> Make sure you have already joined the 
+                    <a href="https://t.me/officialkpn" target="_blank" class="underline font-semibold">@officialkpn</a> 
+                    Telegram channel. Membership is verified automatically after you connect.
+                </p>
+            </div>
+
+            <div class="mt-4 text-center">
+                <a href="{% url 'staff:dashboard' %}" class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    ← Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

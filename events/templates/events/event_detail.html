@@ -23,7 +23,7 @@
     
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-6">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="kpn-card p-6">
                 <h2 class="text-xl font-semibold mb-4">Event Information</h2>
                 <div class="space-y-4">
                     <div>
@@ -53,7 +53,7 @@
                 </div>
             </div>
             
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="kpn-card p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-semibold">Attendance ({{ attendances.count }})</h2>
                     {% if user.role == 'ORGANIZING_SECRETARY' %}
@@ -88,7 +88,7 @@
         </div>
         
         <div class="space-y-6">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="kpn-card p-6">
                 <h3 class="text-lg font-semibold mb-4">Meeting Minutes</h3>
                 {% if minutes %}
                     <div class="space-y-3">
@@ -126,7 +126,7 @@
                 {% endif %}
             </div>
             
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="kpn-card p-6">
                 <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
                 <div class="space-y-2">
                     <a href="{% url 'events:event_calendar' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
