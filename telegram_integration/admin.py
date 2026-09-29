@@ -5,7 +5,7 @@ from django.urls import path
 from django.utils.html import format_html
 from django.views.decorators.http import require_POST
 from django.contrib.admin.views.decorators import staff_member_required
-from .models import TelegramMembership, KPNMeeting, MeetingAttendance, TelegramAuthState, AIRateLimit, AIProviderConfig
+from .models import TelegramMembership, KPNMeeting, MeetingAttendance, TelegramAuthState, AIRateLimit, AIProviderConfig, BotKnowledgeBase
 
 
 @admin.register(TelegramMembership)
@@ -159,3 +159,12 @@ class AIProviderConfigAdmin(admin.ModelAdmin):
         js = ('admin/js/kpn_provider_test.js',)
 
 
+@admin.register(BotKnowledgeBase)
+class BotKnowledgeBaseAdmin(admin.ModelAdmin):
+    """
+    Admin interface for adding text to the bot's memory.
+    """
+    list_display = ('topic', 'is_active', 'updated_at')
+    list_filter = ('is_active',)
+    search_fields = ('topic', 'content')
+    ordering = ('topic',)

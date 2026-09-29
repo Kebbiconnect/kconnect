@@ -348,3 +348,25 @@ class AIProviderConfig(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.get_protocol_display()})"
+
+
+class BotKnowledgeBase(models.Model):
+    """
+    Dynamic Knowledge Base for the AI Assistant.
+    Admins can paste organizational facts, constitution text, or rules here.
+    The AI reads all active records to answer user questions.
+    """
+    topic = models.CharField(max_length=200, help_text="e.g., 'KPN Constitution', 'Event Rules', 'Membership Duties'")
+    content = models.TextField(help_text="Paste the factual information here. The bot will read this to answer questions accurately.")
+    is_active = models.BooleanField(default=True, help_text="Turn off to temporarily hide this info from the bot's brain.")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Bot Knowledge (Brain)"
+        verbose_name_plural = "Bot Knowledge (Brain)"
+        ordering = ['topic']
+
+    def __str__(self):
+        return self.topic
+
