@@ -226,7 +226,7 @@ def call_google_ai(message: str, system_prompt: str, model: str = None) -> str:
     )
 
     payload = {
-        'system_instruction': {
+        'systemInstruction': {
             'parts': [{'text': system_prompt}]
         },
         'contents': [
@@ -267,13 +267,15 @@ def call_openai_compatible_db(provider_config, message: str, system_prompt: str)
 
     # Fallback to ENV vars if api_key field is blank
     if not api_key:
-        # Try standard ENV var naming patterns
-        name_slug = provider_config.name.upper().replace(' ', '_').replace('-', '_')
-        api_key = (
-            getattr(settings, f'{name_slug}_API_KEY', '') or
-            getattr(settings, 'OPENROUTER_API_KEY', '') or
-            ''
-        )
+        if provider_config.protocol == 'google':
+            api_key = getattr(settings, 'GOOGLE_AI_API_KEY', '')
+        else:
+            name_slug = provider_config.name.upper().replace(' ', '_').replace('-', '_')
+            api_key = (
+                getattr(settings, f'{name_slug}_API_KEY', '') or
+                getattr(settings, 'OPENROUTER_API_KEY', '') or
+                ''
+            )
 
     if not api_key:
         raise RuntimeError(
@@ -286,13 +288,9 @@ def call_openai_compatible_db(provider_config, message: str, system_prompt: str)
 
     # Determine the actual call based on protocol
     if provider_config.protocol == 'google':
-        # Google uses its own API format; use api_key from DB or ENV
-        google_key = provider_config.api_key or getattr(settings, 'GOOGLE_AI_API_KEY', '')
-        if not google_key:
-            raise RuntimeError("No Google AI API key configured.")
         # Temporarily override the settings-based call with the DB key
         orig = getattr(settings, 'GOOGLE_AI_API_KEY', '')
-        settings.GOOGLE_AI_API_KEY = google_key
+        settings.GOOGLE_AI_API_KEY = api_key
         try:
             result = call_google_ai(message, system_prompt, model=model or None)
         finally:
@@ -475,7 +473,13 @@ def test_provider_connection(provider_config) -> dict:
             result['hint'] = 'The API key may not have access to this model or endpoint.'
         elif status == 404:
             result['error'] = 'Endpoint not found (404).'
-            result['hint'] = f'Check the base URL. Current: {provider_config.base_url}'
+            if provider_config.protocol == 'google':
+                result['hint'] = f"The model name '{provider_config.default_model}' is likely invalid. For Google, use 'gemini-1.5-flash' or 'gemini-1.5-pro'."
+            else:
+                if '/v1' not in provider_config.base_url:
+                    result['hint'] = f"Your base URL is likely missing '/v1'. Try appending it: {provider_config.base_url.rstrip('/')}/v1"
+                else:
+                    result['hint'] = f"Check the base URL or model name. Current URL: {provider_config.base_url}"
         elif status == 429:
             result['error'] = 'Rate limit exceeded (429 Too Many Requests).'
             result['hint'] = 'You have hit the provider\'s rate limit. Try again later.'

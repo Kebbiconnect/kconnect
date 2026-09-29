@@ -123,6 +123,36 @@ def telegram_callback(request):
 
 
 @login_required
+def telegram_dev_bypass(request):
+    """
+    Local development bypass for the Telegram Login Widget.
+    Only available to superusers. It simulates a successful Telegram connection
+    so developers can access the dashboard without registering a Bot domain.
+    """
+    if not request.user.is_superuser:
+        messages.error(request, "This bypass is only available to administrators.")
+        return redirect('telegram_integration:connect')
+        
+    from .models import TelegramMembership
+    from django.utils import timezone
+    
+    # Create a mock verified membership
+    tm, created = TelegramMembership.objects.update_or_create(
+        user=request.user,
+        defaults={
+            'telegram_user_id': request.user.id + 90000, # Fake ID
+            'telegram_username': request.user.username + '_dev',
+            'telegram_status': 'member',
+            'is_verified': True,
+            'last_checked_at': timezone.now(),
+        }
+    )
+    
+    messages.success(request, "Development Bypass: Successfully simulated Telegram connection!")
+    return redirect('staff:dashboard')
+
+
+@login_required
 def telegram_verify(request):
     """
     Manually triggers a re-verification of the user's Telegram membership status.

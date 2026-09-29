@@ -48,13 +48,25 @@
                 <script async src="https://telegram.org/js/telegram-widget.js?22"
                     data-telegram-login="{{ bot_username }}"
                     data-size="large"
-                    data-auth-url="{% url 'telegram_integration:callback' %}"
+                    data-auth-url="{{ request.scheme }}://{{ request.get_host }}{% url 'telegram_integration:callback' %}"
                     data-request-access="write">
                 </script>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
                     Secure authentication via Telegram's official Login Widget.
                     Your Telegram password is never shared with us.
                 </p>
+                
+                {% if user.is_superuser %}
+                <div class="mt-6 p-4 border border-dashed border-red-300 bg-red-50 rounded text-left">
+                    <p class="text-sm text-red-700 font-semibold mb-2">Local Dev Mode (Admin Only)</p>
+                    <p class="text-xs text-red-600 mb-3">
+                        The Telegram widget above will show "Bot domain invalid" if you are testing on localhost because Telegram requires an official domain registered with BotFather.
+                    </p>
+                    <a href="{% url 'telegram_integration:dev_bypass' %}" class="inline-block px-4 py-2 bg-red-600 text-white rounded text-sm font-bold shadow hover:bg-red-700">
+                        Bypass Widget (Simulate Connection)
+                    </a>
+                </div>
+                {% endif %}
             </div>
 
             <!-- Prerequisite Notice -->
