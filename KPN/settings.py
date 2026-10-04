@@ -209,7 +209,7 @@ STORAGES = {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage" if USE_CLOUDINARY else "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage" if DEBUG else "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
 
@@ -270,7 +270,7 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@kpn.com.ng')
 # Security Settings
 # HTTPS/SSL Configuration
 # Force SSL redirect off if we're on local dev (even if DEBUG is False in env)
-SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool)
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=not DEBUG, cast=bool)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_HSTS_SECONDS = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
@@ -347,11 +347,13 @@ TELEGRAM_REQUIRED_ROLE_TITLES = [
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework_simplejwt.authentication.JWTAuthentication',),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'EXCEPTION_HANDLER': 'rest_api.errors.api_exception_handler',
 }
+
 
 from datetime import timedelta
 SIMPLE_JWT = {
@@ -364,7 +366,26 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'KPN Mobile App API',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'ENUM_NAME_OVERRIDES': {
+        'CampaignCategoryEnum': 'campaigns.models.Campaign.CATEGORY_CHOICES',
+        'CommunityReportCategoryEnum': 'core.models.CommunityReport.CATEGORY_CHOICES',
+        'OpportunityCategoryEnum': 'core.models.Opportunity.CATEGORY_CHOICES',
+        'InitiativeCategoryEnum': 'core.models.CommunityInitiative.CATEGORY_CHOICES',
+        'ExpenseCategoryEnum': 'donations.models.Expense.CATEGORY_CHOICES',
+        'UserStatusEnum': 'staff.models.User.STATUS_CHOICES',
+        'ReportStatusEnum': 'core.models.Report.STATUS_CHOICES',
+        'CommunityReportStatusEnum': 'core.models.CommunityReport.STATUS_CHOICES',
+        'CampaignStatusEnum': 'campaigns.models.Campaign.STATUS_CHOICES',
+        'MediaStatusEnum': 'media.models.MediaItem.STATUS_CHOICES',
+        'OpportunityStatusEnum': 'core.models.Opportunity.STATUS_CHOICES',
+    },
 }
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in config('CORS_ALLOWED_ORIGINS', default='https://kpn.com.ng,https://www.kpn.com.ng').split(',') if origin.strip()]
+FIREBASE_CREDENTIALS_JSON = config('FIREBASE_CREDENTIALS_JSON', default='')
+FIREBASE_CREDENTIALS_FILE = config('FIREBASE_CREDENTIALS_FILE', default='')
+DONATION_BANK_NAME = config('DONATION_BANK_NAME', default='')
+DONATION_ACCOUNT_NAME = config('DONATION_ACCOUNT_NAME', default='')
+DONATION_ACCOUNT_NUMBER = config('DONATION_ACCOUNT_NUMBER', default='')
 
