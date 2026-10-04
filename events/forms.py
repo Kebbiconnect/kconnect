@@ -62,7 +62,7 @@ class AttendanceForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['attendee'].queryset = User.objects.filter(status='APPROVED').exclude(role='GENERAL')
+        self.fields['attendee'].queryset = User.objects.filter(status='VERIFIED').exclude(role='GENERAL')
 
 
 class BulkAttendanceForm(forms.Form):
@@ -77,7 +77,7 @@ class BulkAttendanceForm(forms.Form):
         
         if event:
             self.fields['event'].initial = event
-            leaders = User.objects.filter(status='APPROVED').exclude(role='GENERAL').order_by('last_name', 'first_name')
+            leaders = User.objects.filter(status='VERIFIED').exclude(role='GENERAL').order_by('last_name', 'first_name')
             
             for leader in leaders:
                 field_name = f'attendee_{leader.id}'
@@ -113,5 +113,5 @@ class MeetingMinutesForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['attendees_present'].queryset = User.objects.filter(status='APPROVED').exclude(role='GENERAL').order_by('last_name', 'first_name')
+        self.fields['attendees_present'].queryset = User.objects.filter(status='VERIFIED').exclude(role='GENERAL').order_by('last_name', 'first_name')
         self.fields['attendees_present'].required = False

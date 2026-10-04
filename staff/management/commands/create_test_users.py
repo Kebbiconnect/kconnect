@@ -58,7 +58,7 @@ class Command(BaseCommand):
                 phone=f'080{str(role.id).zfill(8)}',
                 role=role.tier,
                 role_definition=role,
-                status='APPROVED',
+                status='VERIFIED',
                 zone=zone,
                 lga=lga,
                 ward=ward,

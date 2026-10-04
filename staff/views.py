@@ -933,40 +933,17 @@ def approve_members(request):
 
 @role_required('STATE', 'ZONAL', 'LGA')
 def review_applicant(request, user_id):
-    applicant = get_object_or_404(User, id=user_id, status='PENDING')
-    
+    from leadership.access import scope_users
+    from staff.services.membership import decide_application
+    applicant = get_object_or_404(scope_users(request.user), id=user_id, status__in=['PENDING', 'UNDER_REVIEW'])
     if request.method == 'POST':
-        action = request.POST.get('action')
-        
-        if action == 'approve':
-            applicant.status = 'VERIFIED'
-            applicant.approved_by = request.user
-            applicant.date_approved = timezone.now()
-            applicant.save()
-            
-            # Send in-app notification
-            from core.notifications import notify
-            notify(
-                applicant,
-                notif_type='SUCCESS',
-                title='Membership Approved',
-                message='Congratulations! Your KPN membership has been approved.',
-                link='/account/dashboard/'
-            )
-            
-            messages.success(request, f'{applicant.get_full_name()} has been approved.')
+        try:
+            decide_application(request.user, applicant, request.POST.get('action'))
+            messages.success(request, f'{applicant.get_full_name()} application updated.')
             return redirect('staff:approve_members')
-        
-        elif action == 'reject':
-            applicant.delete()
-            messages.success(request, 'Application has been rejected and deleted.')
-            return redirect('staff:approve_members')
-    
-    context = {
-        'applicant': applicant,
-    }
-    
-    return render(request, 'staff/review_applicant.html', context)
+        except Exception as exc:
+            messages.error(request, str(exc))
+    return render(request, 'staff/review_applicant.html', {'applicant': applicant})
 
 @role_required('STATE')
 def manage_staff(request):
@@ -1014,7 +991,7 @@ def my_jurisdiction_members(request):
     user = request.user
     
     search = request.GET.get('search', '')
-    status_filter = request.GET.get('status', 'APPROVED')
+    status_filter = request.GET.get('status', 'VERIFIED')
     
     # Base query - exclude superusers
     members = User.objects.filter(is_superuser=False).order_by('last_name', 'first_name')
@@ -1078,7 +1055,7 @@ def view_reports(request):
     elif filter_status == 'reviewed':
         reports = reports.filter(is_reviewed=True)
     elif filter_status == 'approved':
-        reports = reports.filter(status='VERIFIED')
+        reports = reports.filter(status='APPROVED')
     elif filter_status == 'flagged':
         reports = reports.filter(status='FLAGGED')
     elif filter_status == 'rejected':
@@ -1097,7 +1074,7 @@ def view_reports(request):
     
     pending_count = base_reports.filter(status='SUBMITTED', is_reviewed=False).count()
     reviewed_count = base_reports.filter(is_reviewed=True).count()
-    approved_count = base_reports.filter(status='VERIFIED').count()
+    approved_count = base_reports.filter(status='APPROVED').count()
     flagged_count = base_reports.filter(status='FLAGGED').count()
     rejected_count = base_reports.filter(status='REJECTED').count()
     escalated_count = base_reports.filter(status='ESCALATED').count()
@@ -1964,7 +1941,8 @@ def dismiss_member(request, user_id):
     if request.method == 'POST':
         reason = request.POST.get('reason', '')
         member.status = 'DISMISSED'
-        member.save()
+        member.is_active = False
+        member.save(update_fields=['status', 'is_active', 'updated_at'])
         
         messages.success(request, f'{member.get_full_name()} has been dismissed from the organization.')
         return redirect('staff:manage_staff')
@@ -1999,6 +1977,7 @@ def reinstate_member(request, user_id):
     
     if request.method == 'POST':
         member.status = 'VERIFIED'
+        member.is_active = True
         member.date_approved = timezone.now()
         member.approved_by = request.user
         member.save()
@@ -2055,9 +2034,9 @@ def swap_positions(request):
 
 
 
-@specific_role_required('Director of Women Development', 'Assistant Director of Women Development')
+@specific_role_required("Director of Women's Development", "Assistant Director of Women's Development")
 def women_members(request):
-    """Female members dashboard for Women Leader"""
+    """Female members dashboard for Director of Women's Development"""
     search = request.GET.get('search', '')
     zone_filter = request.GET.get('zone', '')
     lga_filter = request.GET.get('lga', '')
@@ -2092,7 +2071,7 @@ def women_members(request):
     return render(request, 'staff/women_members.html', context)
 
 
-@specific_role_required('Director of Membership & Mobilization', 'Assistant Director of Membership & Mobilization', 'LGA Community Engagement Officer', 'President', 'Senatorial Director', 'LGA Network Lead', 'Ward Community Lead')
+@specific_role_required('Director of Community Engagement', 'Assistant Director of Community Engagement', 'LGA Community Engagement Officer', 'President', 'Senatorial Director', 'LGA Network Lead', 'Ward Community Lead')
 def member_mobilization(request):
     """Member filtering and contact list generation for mobilization"""
     import csv
@@ -2287,7 +2266,7 @@ def member_mobilization(request):
 
 # Women's Program Management Views
 
-@specific_role_required('Director of Women Development', 'Assistant Director of Women Development')
+@specific_role_required("Director of Women's Development", "Assistant Director of Women's Development")
 def womens_programs_list(request):
     """List all women's programs"""
     user = request.user
@@ -2314,7 +2293,7 @@ def womens_programs_list(request):
     return render(request, 'staff/womens_programs/list.html', context)
 
 
-@specific_role_required('Director of Women Development', 'Assistant Director of Women Development')
+@specific_role_required("Director of Women's Development", "Assistant Director of Women's Development")
 def create_womens_program(request):
     """Create a new women's program"""
     from .forms import WomensProgramForm
@@ -2344,7 +2323,7 @@ def create_womens_program(request):
     return render(request, 'staff/womens_programs/form.html', context)
 
 
-@specific_role_required('Director of Women Development', 'Assistant Director of Women Development')
+@specific_role_required("Director of Women's Development", "Assistant Director of Women's Development")
 def edit_womens_program(request, program_id):
     """Edit an existing women's program"""
     from .forms import WomensProgramForm
@@ -2367,7 +2346,7 @@ def edit_womens_program(request, program_id):
     return render(request, 'staff/womens_programs/form.html', context)
 
 
-@specific_role_required('Director of Women Development', 'Assistant Director of Women Development')
+@specific_role_required("Director of Women's Development", "Assistant Director of Women's Development")
 def delete_womens_program(request, program_id):
     """Delete a women's program"""
     program = get_object_or_404(WomensProgram, pk=program_id)
@@ -2384,7 +2363,7 @@ def delete_womens_program(request, program_id):
     return render(request, 'staff/womens_programs/delete.html', context)
 
 
-@specific_role_required('Director of Women Development', 'Assistant Director of Women Development')
+@specific_role_required("Director of Women's Development", "Assistant Director of Women's Development")
 def manage_program_participants(request, program_id):
     """Manage participants for a women's program"""
     
@@ -2521,7 +2500,7 @@ def toggle_faq_status(request, faq_id):
 
 # Legal Review Views
 
-@specific_role_required('Legal & Ethics Adviser')
+@specific_role_required('Director of Legal Affairs & Ethics')
 def legal_review_queue(request):
     """View pending disciplinary actions for legal review"""
     
@@ -2543,7 +2522,7 @@ def legal_review_queue(request):
     return render(request, 'staff/legal_review/queue.html', context)
 
 
-@specific_role_required('Legal & Ethics Adviser')
+@specific_role_required('Director of Legal Affairs & Ethics')
 def legal_review_action(request, action_id):
     """Legal review of a disciplinary action"""
     from .forms import LegalReviewForm
@@ -2578,7 +2557,7 @@ def legal_review_action(request, action_id):
 
 # Youth Program Management Views
 
-@specific_role_required('Youth Development & Empowerment Officer')
+@specific_role_required('Director of Youth Development')
 def youth_programs_list(request):
     """List all youth programs"""
     from .models import YouthProgram
@@ -2607,7 +2586,7 @@ def youth_programs_list(request):
     return render(request, 'staff/youth_programs/list.html', context)
 
 
-@specific_role_required('Youth Development & Empowerment Officer')
+@specific_role_required('Director of Youth Development')
 def create_youth_program(request):
     """Create a new youth program"""
     from .forms import YouthProgramForm
@@ -2630,7 +2609,7 @@ def create_youth_program(request):
     return render(request, 'staff/youth_programs/form.html', context)
 
 
-@specific_role_required('Youth Development & Empowerment Officer')
+@specific_role_required('Director of Youth Development')
 def edit_youth_program(request, program_id):
     """Edit an existing youth program"""
     from .forms import YouthProgramForm
@@ -2654,7 +2633,7 @@ def edit_youth_program(request, program_id):
     return render(request, 'staff/youth_programs/form.html', context)
 
 
-@specific_role_required('Youth Development & Empowerment Officer')
+@specific_role_required('Director of Youth Development')
 def delete_youth_program(request, program_id):
     """Delete a youth program"""
     from .models import YouthProgram
@@ -2672,7 +2651,7 @@ def delete_youth_program(request, program_id):
     return render(request, 'staff/youth_programs/delete.html', context)
 
 
-@specific_role_required('Youth Development & Empowerment Officer')
+@specific_role_required('Director of Youth Development')
 def manage_youth_participants(request, program_id):
     """Manage participants for a youth program"""
     from .models import YouthProgram
@@ -2719,7 +2698,7 @@ def manage_youth_participants(request, program_id):
 
 # Welfare Program Management Views
 
-@specific_role_required('Welfare Officer')
+@specific_role_required('Director of Member Support & Welfare')
 def welfare_programs_list(request):
     """List all welfare programs"""
     from .models import WelfareProgram
@@ -2748,7 +2727,7 @@ def welfare_programs_list(request):
     return render(request, 'staff/welfare_programs/list.html', context)
 
 
-@specific_role_required('Welfare Officer')
+@specific_role_required('Director of Member Support & Welfare')
 def create_welfare_program(request):
     """Create a new welfare program"""
     from .forms import WelfareProgramForm
@@ -2771,7 +2750,7 @@ def create_welfare_program(request):
     return render(request, 'staff/welfare_programs/form.html', context)
 
 
-@specific_role_required('Welfare Officer')
+@specific_role_required('Director of Member Support & Welfare')
 def edit_welfare_program(request, program_id):
     """Edit an existing welfare program"""
     from .forms import WelfareProgramForm
@@ -2795,7 +2774,7 @@ def edit_welfare_program(request, program_id):
     return render(request, 'staff/welfare_programs/form.html', context)
 
 
-@specific_role_required('Welfare Officer')
+@specific_role_required('Director of Member Support & Welfare')
 def delete_welfare_program(request, program_id):
     """Delete a welfare program"""
     from .models import WelfareProgram
@@ -2813,7 +2792,7 @@ def delete_welfare_program(request, program_id):
     return render(request, 'staff/welfare_programs/delete.html', context)
 
 
-@specific_role_required('Welfare Officer')
+@specific_role_required('Director of Member Support & Welfare')
 def manage_welfare_beneficiaries(request, program_id):
     """Manage beneficiaries for a welfare program"""
     from .models import WelfareProgram
@@ -2860,7 +2839,7 @@ def manage_welfare_beneficiaries(request, program_id):
 
 # Audit Report Management Views
 
-@specific_role_required('Auditor General')
+@specific_role_required('Director of Audit & Accountability')
 def create_audit_report(request):
     """Create a new audit report"""
     from donations.forms import AuditReportForm
@@ -2889,7 +2868,7 @@ def create_audit_report(request):
     return render(request, 'staff/audit_reports/form.html', context)
 
 
-@specific_role_required('Auditor General')
+@specific_role_required('Director of Audit & Accountability')
 def edit_audit_report(request, report_id):
     """Edit an existing audit report"""
     from donations.forms import AuditReportForm
@@ -2917,7 +2896,7 @@ def edit_audit_report(request, report_id):
     return render(request, 'staff/audit_reports/form.html', context)
 
 
-@specific_role_required('Auditor General')
+@specific_role_required('Director of Audit & Accountability')
 def submit_audit_report(request, report_id):
     """Submit an audit report to the President"""
     from donations.models import AuditReport
@@ -3004,7 +2983,7 @@ def vice_president_disciplinary_review(request):
 
 # Community Outreach Management (PR Officer)
 
-@specific_role_required('Public Relations & Community Engagement Officer')
+@specific_role_required('Director of Public Relations & Partnerships')
 def create_outreach(request):
     """Create a new community outreach activity"""
     if request.method == 'POST':
@@ -3024,7 +3003,7 @@ def create_outreach(request):
     return render(request, 'staff/outreach/create.html', context)
 
 
-@specific_role_required('Public Relations & Community Engagement Officer')
+@specific_role_required('Director of Public Relations & Partnerships')
 def outreach_list(request):
     """List all community outreach activities"""
     outreach_activities = CommunityOutreach.objects.all().order_by('-date')
@@ -3047,7 +3026,7 @@ def outreach_list(request):
     return render(request, 'staff/outreach/list.html', context)
 
 
-@specific_role_required('Public Relations & Community Engagement Officer')
+@specific_role_required('Director of Public Relations & Partnerships')
 def edit_outreach(request, pk):
     """Edit an existing community outreach activity"""
     outreach = get_object_or_404(CommunityOutreach, pk=pk)
@@ -3068,7 +3047,7 @@ def edit_outreach(request, pk):
     return render(request, 'staff/outreach/edit.html', context)
 
 
-@specific_role_required('Public Relations & Community Engagement Officer')
+@specific_role_required('Director of Public Relations & Partnerships')
 def delete_outreach(request, pk):
     """Delete a community outreach activity"""
     outreach = get_object_or_404(CommunityOutreach, pk=pk)
@@ -3214,6 +3193,8 @@ def create_announcement(request):
             try:
                 announcement.full_clean()
                 announcement.save()
+                from core.notifications import announcement_recipients, notify_many
+                notify_many(announcement_recipients(announcement), 'INFO', announcement.title, announcement.content, '/account/dashboard/', event='ANNOUNCEMENT_CREATED')
                 messages.success(request, 'Announcement created successfully! It is now active and visible to the targeted members.')
                 return redirect('staff:announcements_list')
             except Exception as e:
@@ -3279,21 +3260,21 @@ ROLE_SHORTENING = {
     'General Secretary': 'Gen. Secretary',
     'Assistant General Secretary': 'Asst. Secretary',
     'Director of Monitoring & Compliance': 'Dir. Monitoring',
-    'Legal & Ethics Adviser': 'Legal Adviser',
+    'Director of Legal Affairs & Ethics': 'Legal Adviser',
     'Director of Finance': 'Dir. Finance',
-    'Financial Secretary': 'Fin. Secretary',
-    'Director of Membership & Mobilization': 'Dir. Mobilization',
-    'Assistant Director of Membership & Mobilization': 'Asst. Mobilization',
+    'Finance Operations Officer': 'Fin. Secretary',
+    'Director of Community Engagement': 'Dir. Mobilization',
+    'Assistant Director of Community Engagement': 'Asst. Mobilization',
     'Director of Programmes & Events': 'Dir. Programmes',
     'Assistant Director of Programmes & Events': 'Asst. Programmes',
-    'Auditor General': 'Auditor General',
-    'Director of Welfare & Community Support': 'Dir. Welfare',
-    'Director of Youth Development & Empowerment': 'Dir. Youth',
-    'Director of Women Development': 'Dir. Women',
-    'Assistant Director of Women Development': 'Asst. Women',
+    'Director of Audit & Accountability': 'Director of Audit & Accountability',
+    'Director of Member Support & Welfare': 'Dir. Welfare',
+    'Director of Youth Development': 'Dir. Youth',
+    "Director of Women's Development": 'Dir. Women',
+    "Assistant Director of Women's Development": 'Asst. Women',
     'Director of Media & Communications': 'Dir. Media',
     'Assistant Director of Media & Communications': 'Asst. Media',
-    'Director of Public Relations & Community Engagement': 'PR Director',
+    'Director of Public Relations & Partnerships': 'PR Director',
     'Senatorial Director': 'Sen. Director',
     'Senatorial Administrative Officer': 'Sen. Admin',
     'Senatorial Communications Officer': 'Sen. Comms',
@@ -3304,8 +3285,8 @@ ROLE_SHORTENING = {
     'LGA Community Engagement Officer': 'LGA Engagement',
     'LGA Adviser': 'LGA Adviser',
     'LGA Programmes Officer': 'LGA Programs',
-    'LGA Community Support Officer': 'LGA Support',
-    'LGA Women Development Officer': 'LGA Women',
+    'LGA Member Support Officer': 'LGA Support',
+    "LGA Women's Development Officer": 'LGA Women',
     'LGA Finance Officer': 'LGA Finance',
     'Ward Community Lead': 'Ward Lead',
     'Ward Monitoring Officer': 'Ward Monitor',

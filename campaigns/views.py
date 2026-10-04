@@ -221,8 +221,8 @@ def submit_for_review(request, article_id):
         return redirect('campaigns:edit_article', article_id=article.pk)
 
     if request.method == 'POST':
-        article.status = 'PENDING'
-        article.save(update_fields=['status'])
+        from .services.articles import submit
+        submit(article, request.user)
         messages.success(request, 'Article submitted for editorial review.')
         return redirect('campaigns:my_articles')
 
@@ -326,11 +326,8 @@ def publish_article(request, article_id):
         return redirect('campaigns:review_queue')
 
     if request.method == 'POST':
-        article.status = 'PUBLISHED'
-        article.approved_by = request.user
-        article.published_at = timezone.now()
-        article.rejection_note = ''
-        article.save(update_fields=['status', 'approved_by', 'published_at', 'rejection_note'])
+        from .services.articles import decide
+        decide(article, request.user, 'publish')
         messages.success(request, f'"{article.title}" is now published.')
         return redirect('campaigns:review_queue')
 
@@ -352,9 +349,8 @@ def return_article(request, article_id):
 
     if request.method == 'POST':
         note = request.POST.get('rejection_note', '').strip()
-        article.status = 'REJECTED'
-        article.rejection_note = note
-        article.save(update_fields=['status', 'rejection_note'])
+        from .services.articles import decide
+        decide(article, request.user, 'return', note)
         messages.success(request, f'Article returned to {article.author.get_full_name()} for revision.')
         return redirect('campaigns:review_queue')
 

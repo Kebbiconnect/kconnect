@@ -98,7 +98,7 @@ class EditMemberRoleForm(forms.ModelForm):
                 zone=zone,
                 lga=lga,
                 ward=ward,
-                status='APPROVED'
+                status='VERIFIED'
             ).exclude(pk=self.instance.pk).first()
             
             if existing_holder:
@@ -236,13 +236,13 @@ class SwapPositionsForm(forms.Form):
     """Form for swapping positions between two members"""
     
     member1 = forms.ModelChoiceField(
-        queryset=User.objects.filter(status='APPROVED').exclude(role='GENERAL'),
+        queryset=User.objects.filter(status='VERIFIED').exclude(role='GENERAL'),
         label="First Member",
         widget=forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'})
     )
     
     member2 = forms.ModelChoiceField(
-        queryset=User.objects.filter(status='APPROVED').exclude(role='GENERAL'),
+        queryset=User.objects.filter(status='VERIFIED').exclude(role='GENERAL'),
         label="Second Member",
         widget=forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'})
     )
@@ -266,7 +266,7 @@ class DisciplinaryActionForm(forms.ModelForm):
     """Form for creating disciplinary actions"""
     
     user = forms.ModelChoiceField(
-        queryset=User.objects.filter(status='APPROVED', is_superuser=False),
+        queryset=User.objects.filter(status='VERIFIED', is_superuser=False),
         label="Select Member",
         widget=forms.Select(attrs={
             'class': 'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-kpn-blue dark:bg-gray-700 dark:text-white'
@@ -297,7 +297,7 @@ class DisciplinaryActionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Exclude superusers from disciplinary actions
-        self.fields['user'].queryset = User.objects.filter(status='APPROVED', is_superuser=False).order_by('last_name', 'first_name')
+        self.fields['user'].queryset = User.objects.filter(status='VERIFIED', is_superuser=False).order_by('last_name', 'first_name')
 
 
 class MemberMobilizationFilterForm(forms.Form):
@@ -337,7 +337,7 @@ class MemberMobilizationFilterForm(forms.Form):
     )
     
     status = forms.ChoiceField(
-        choices=[('', 'All Status'), ('APPROVED', 'Approved'), ('PENDING', 'Pending'), ('SUSPENDED', 'Suspended')],
+        choices=[('', 'All Status'), ('VERIFIED', 'Verified'), ('PENDING', 'Pending'), ('SUSPENDED', 'Suspended')],
         required=False,
         widget=forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'})
     )
@@ -836,7 +836,7 @@ class WardMeetingAttendanceForm(forms.Form):
         if meeting and meeting.ward:
             ward_members = User.objects.filter(
                 ward=meeting.ward,
-                status='APPROVED'
+                status='VERIFIED'
             ).order_by('last_name', 'first_name')
             
             for member in ward_members:

@@ -22,7 +22,7 @@ def event_calendar(request):
     return render(request, 'events/event_calendar.html', context)
 
 
-@specific_role_required('Organizing Secretary', 'Assistant Organizing Secretary')
+@specific_role_required('Director of Programmes & Events', 'Assistant Director of Programmes & Events')
 def create_event(request):
     if request.method == 'POST':
         form = EventForm(request.POST)
@@ -30,6 +30,8 @@ def create_event(request):
             event = form.save(commit=False)
             event.created_by = request.user
             event.save()
+            from core.notifications import notify_event_audience
+            notify_event_audience('MEETING_CREATED', event, f'A new KPN event has been scheduled for {event.start_date}.')
             messages.success(request, f'Event "{event.title}" created successfully!')
             return redirect('events:event_detail', pk=event.pk)
     else:
@@ -42,14 +44,16 @@ def create_event(request):
     return render(request, 'events/create_event.html', context)
 
 
-@specific_role_required('Organizing Secretary', 'Assistant Organizing Secretary')
+@specific_role_required('Director of Programmes & Events', 'Assistant Director of Programmes & Events')
 def edit_event(request, pk):
     event = get_object_or_404(Event, pk=pk)
     
     if request.method == 'POST':
         form = EventForm(request.POST, instance=event)
         if form.is_valid():
-            form.save()
+            event = form.save()
+            from core.notifications import notify_event_audience
+            notify_event_audience('MEETING_CHANGED', event, 'A KPN event schedule or details changed.')
             messages.success(request, f'Event "{event.title}" updated successfully!')
             return redirect('events:event_detail', pk=event.pk)
     else:
@@ -63,12 +67,14 @@ def edit_event(request, pk):
     return render(request, 'events/edit_event.html', context)
 
 
-@specific_role_required('Organizing Secretary', 'Assistant Organizing Secretary')
+@specific_role_required('Director of Programmes & Events', 'Assistant Director of Programmes & Events')
 def delete_event(request, pk):
     event = get_object_or_404(Event, pk=pk)
     
     if request.method == 'POST':
         event_title = event.title
+        from core.notifications import notify_event_audience
+        notify_event_audience('MEETING_CANCELLED', event, 'A KPN event has been cancelled.')
         event.delete()
         messages.success(request, f'Event "{event_title}" has been deleted.')
         return redirect('events:event_calendar')
@@ -99,7 +105,7 @@ def event_detail(request, pk):
     return render(request, 'events/event_detail.html', context)
 
 
-@specific_role_required('Organizing Secretary')
+@specific_role_required('Director of Programmes & Events')
 def manage_attendance(request, pk):
     event = get_object_or_404(Event, pk=pk)
     
@@ -144,7 +150,7 @@ def manage_attendance(request, pk):
     return render(request, 'events/manage_attendance.html', context)
 
 
-@specific_role_required('Organizing Secretary')
+@specific_role_required('Director of Programmes & Events')
 def mark_individual_attendance(request, pk, attendee_id):
     event = get_object_or_404(Event, pk=pk)
     attendee = get_object_or_404(User, id=attendee_id)

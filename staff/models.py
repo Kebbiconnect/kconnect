@@ -17,6 +17,7 @@ class User(AbstractUser):
         ('VERIFIED', 'Verified'),
         ('REJECTED', 'Rejected'),
         ('SUSPENDED', 'Suspended'),
+        ('DISMISSED', 'Dismissed'),
     ]
     
     GENDER_CHOICES = [

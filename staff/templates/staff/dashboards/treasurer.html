@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
-{% block title %}Treasurer Dashboard - KPN{% endblock %}
+{% block title %}Director of Finance Dashboard - KPN{% endblock %}
 {% block content %}
 <div class="kpn-page">
-    {% include 'staff/dashboards/includes/_role_header.html' with title="Treasurer Dashboard" icon_class="fas fa-coins" welcome_messages="Managing KPN finances with integrity.|Ensuring transparent fund management.|Building fiscal accountability." %}
+    {% include 'staff/dashboards/includes/_role_header.html' with title="Director of Finance Dashboard" icon_class="fas fa-coins" welcome_messages="Managing KPN finances with integrity.|Ensuring transparent fund management.|Building fiscal accountability." %}
     {% include 'staff/dashboards/includes/_profile_section.html' %}
 
     <div class="mb-8">
@@ -31,11 +31,11 @@
     <i class="fas fa-tasks mr-2 text-green-500"></i> My Tasks
 </h2>
             <div class="flex flex-col gap-1">
-                <a href="{% url 'staff:treasurer_income_list' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-green-50 group transition border border-transparent hover:border-green-200">
+                <a href="{% url 'donations:treasurer_donations' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-green-50 group transition border border-transparent hover:border-green-200">
                     <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-4"><i class="fas fa-plus-circle"></i></div>
                     <div><span>Record Income</span><span class="text-xs text-gray-500">Log new dues, levies, or donations received</span></div>
                 </a>
-                <a href="{% url 'staff:treasurer_expense_list' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-red-50 group transition border border-transparent hover:border-red-200">
+                <a href="{% url 'donations:expenses_list' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-red-50 group transition border border-transparent hover:border-red-200">
                     <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center mr-4"><i class="fas fa-minus-circle"></i></div>
                     <div><span>Record Expense</span><span class="text-xs text-gray-500">Log a KPN expenditure or disbursement</span></div>
                 </a>

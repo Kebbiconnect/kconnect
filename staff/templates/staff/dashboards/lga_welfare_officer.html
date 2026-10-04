@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 
-{% block title %}LGA Welfare Officer Dashboard - KPN{% endblock %}
+{% block title %}LGA Member Support Officer Dashboard - KPN{% endblock %}
 
 {% block content %}
 <div class="kpn-page">
-    {% include 'staff/dashboards/includes/_role_header.html' with title="LGA Welfare Officer Dashboard" icon_class="fas fa-hand-holding-heart" welcome_messages="Supporting members in your LGA.|Building a caring local network.|Welfare begins at home." %}
+    {% include 'staff/dashboards/includes/_role_header.html' with title="LGA Member Support Officer Dashboard" icon_class="fas fa-hand-holding-heart" welcome_messages="Supporting members in your LGA.|Building a caring local network.|Welfare begins at home." %}
     {% include 'staff/dashboards/includes/_profile_section.html' %}
 
     <!-- My Statistics -->
@@ -50,7 +50,7 @@
     <i class="fas fa-tasks mr-2 text-blue-500"></i> My Tasks
 </h2>
             <div class="flex flex-col gap-1">
-                <a href="{% url 'staff:welfare_cases' %}" class="kpn-action-item">
+                <a href="{% url 'staff:welfare_programs_list' %}" class="kpn-action-item">
                     <div class="kpn-action-icon bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-500">
                         <i class="fas fa-file-medical"></i>
                     </div>
@@ -59,7 +59,7 @@
                         <span class="text-xs text-gray-500">View and manage LGA welfare requests</span>
                     </div>
                 </a>
-                <a href="{% url 'staff:manage_staff' %}" class="kpn-action-item">
+                <a href="{% url 'staff:my_jurisdiction_members' %}" class="kpn-action-item">
                     <div class="kpn-action-icon bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-500">
                         <i class="fas fa-users"></i>
                     </div>
@@ -91,7 +91,7 @@
                 </li>
                 <li class="flex items-start">
                     <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">4</div>
-                    <span class="text-gray-700 dark:text-gray-300"><strong>Reporting:</strong> Submit regular welfare reports to the state Welfare Officer and LGA Coordinator.</span>
+                    <span class="text-gray-700 dark:text-gray-300"><strong>Reporting:</strong> Submit regular welfare reports to the state Director of Member Support & Welfare and LGA Network Lead.</span>
                 </li>
             </ul>
         </div>

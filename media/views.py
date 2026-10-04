@@ -13,8 +13,8 @@ def publicity_officer_required(view_func):
         if not request.user.is_authenticated:
             return redirect('staff:login')
         
-        if request.user.status != 'APPROVED':
-            messages.error(request, 'Your account is not approved yet.')
+        if request.user.status != 'VERIFIED':
+            messages.error(request, 'Your account is not verified.')
             return redirect('core:home')
         
         publicity_roles = [

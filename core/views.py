@@ -267,7 +267,7 @@ def impact(request):
     impact_stories = ImpactStory.objects.filter(is_published=True).order_by('-date_achieved')
     
     communities_reached_from_stories = impact_stories.aggregate(Sum('communities_reached'))['communities_reached__sum'] or 0
-    communities_reached = max(50, communities_reached_from_stories)  # Base baseline
+    communities_reached = communities_reached_from_stories
     
     lgas_active = LGA.objects.filter(members__status='VERIFIED').distinct().count()
     wards_active = Ward.objects.filter(members__status='VERIFIED').distinct().count()
@@ -361,7 +361,9 @@ This message was sent via the KPN contact form.
     return render(request, 'core/contact.html')
 
 def support_us(request):
-    return render(request, 'core/support_us.html')
+    from django.conf import settings
+    bank = {'name': settings.DONATION_BANK_NAME, 'account_name': settings.DONATION_ACCOUNT_NAME, 'account_number': settings.DONATION_ACCOUNT_NUMBER}
+    return render(request, 'core/support_us.html', {'donation_bank': bank, 'donation_details_verified': all(bank.values())})
 
 def faq(request):
     faqs = FAQ.objects.filter(is_active=True)

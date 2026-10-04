@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 
-{% block title %}LGA Women Leader Dashboard - KPN{% endblock %}
+{% block title %}LGA Women's Development Officer Dashboard - KPN{% endblock %}
 
 {% block content %}
 <div class="kpn-page">
-    {% include 'staff/dashboards/includes/_role_header.html' with title="LGA Women Leader Dashboard" icon_class="fas fa-female" welcome_messages="Leading women in your LGA.|Advocating for women's empowerment locally.|Every woman's voice matters." %}
+    {% include 'staff/dashboards/includes/_role_header.html' with title="LGA Women's Development Officer Dashboard" icon_class="fas fa-female" welcome_messages="Leading women in your LGA.|Advocating for women's empowerment locally.|Every woman's voice matters." %}
     {% include 'staff/dashboards/includes/_profile_section.html' %}
 
     <!-- My Statistics -->
@@ -50,7 +50,7 @@
     <i class="fas fa-tasks mr-2 text-purple-500"></i> My Tasks
 </h2>
             <div class="flex flex-col gap-1">
-                <a href="{% url 'staff:manage_staff' %}" class="kpn-action-item">
+                <a href="{% url 'staff:my_jurisdiction_members' %}" class="kpn-action-item">
                     <div class="kpn-action-icon bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-500">
                         <i class="fas fa-users"></i>
                     </div>
@@ -91,7 +91,7 @@
                 </li>
                 <li class="flex items-start">
                     <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">4</div>
-                    <span class="text-gray-700 dark:text-gray-300"><strong>Reporting to State:</strong> Report LGA women's activities and welfare cases to the state Women Leader.</span>
+                    <span class="text-gray-700 dark:text-gray-300"><strong>Reporting to State:</strong> Report LGA women's activities and welfare cases to the state Director of Women's Development.</span>
                 </li>
             </ul>
         </div>
