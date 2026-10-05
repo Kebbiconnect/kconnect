@@ -592,89 +592,23 @@ def get_wards_by_lga(request):
         return JsonResponse({'wards': []})
 
 def check_vacant_roles(request):
+    from staff.services.vacancy import vacant_roles
     zone_id = request.GET.get('zone_id')
     lga_id = request.GET.get('lga_id')
     ward_id = request.GET.get('ward_id')
-    
-    vacant_roles = []
-    
     try:
         zone = Zone.objects.get(id=zone_id) if zone_id else None
     except (Zone.DoesNotExist, ValueError, TypeError):
         zone = None
-    
     try:
         lga = LGA.objects.get(id=lga_id) if lga_id else None
     except (LGA.DoesNotExist, ValueError, TypeError):
         lga = None
-    
     try:
         ward = Ward.objects.get(id=ward_id) if ward_id else None
     except (Ward.DoesNotExist, ValueError, TypeError):
         ward = None
-    
-    if zone and lga:
-        state_roles = RoleDefinition.objects.filter(tier='STATE')
-        for role in state_roles:
-            existing = User.objects.filter(
-                role_definition=role,
-                status='VERIFIED'
-            ).exists()
-            if not existing:
-                vacant_roles.append({
-                    'id': role.id,
-                    'title': role.title,
-                    'tier': role.tier
-                })
-    
-    if zone:
-        zonal_roles = RoleDefinition.objects.filter(tier='ZONAL')
-        for role in zonal_roles:
-            existing = User.objects.filter(
-                role_definition=role,
-                zone=zone,
-                status='VERIFIED'
-            ).exists()
-            if not existing:
-                vacant_roles.append({
-                    'id': role.id,
-                    'title': role.title,
-                    'tier': role.tier
-                })
-    
-    if lga:
-        lga_roles = RoleDefinition.objects.filter(tier='LGA')
-        for role in lga_roles:
-            existing = User.objects.filter(
-                role_definition=role,
-                lga=lga,
-                status='VERIFIED'
-            ).exists()
-            if not existing:
-                vacant_roles.append({
-                    'id': role.id,
-                    'title': role.title,
-                    'tier': role.tier
-                })
-    
-    if ward:
-        ward_roles = RoleDefinition.objects.filter(tier='WARD')
-        for role in ward_roles:
-            existing = User.objects.filter(
-                role_definition=role,
-                ward=ward,
-                status='VERIFIED'
-            ).exists()
-            if not existing:
-                vacant_roles.append({
-                    'id': role.id,
-                    'title': role.title,
-                    'tier': role.tier
-                })
-    
-    return JsonResponse({
-        'vacant_roles': vacant_roles
-    })
+    return JsonResponse({'vacant_roles': vacant_roles(zone=zone, lga=lga, ward=ward)})
 
 @specific_role_required('President')
 def president_dashboard(request):
@@ -878,71 +812,35 @@ def export_members_pdf(request):
 
 @role_required('STATE', 'ZONAL', 'LGA')
 def approve_members(request):
-    if request.user.role == 'STATE':
-        # Exclude superusers from approval listings
-        pending_users = User.objects.filter(status__in=['PENDING', 'UNDER_REVIEW'], is_superuser=False).order_by('-created_at')
-        
-        zone_filter = request.GET.get('zone')
-        lga_filter = request.GET.get('lga')
-        ward_filter = request.GET.get('ward')
-        
-        if zone_filter:
-            pending_users = pending_users.filter(zone_id=zone_filter)
-        if lga_filter:
-            pending_users = pending_users.filter(lga_id=lga_filter)
-        if ward_filter:
-            pending_users = pending_users.filter(ward_id=ward_filter)
-        
-        zones = Zone.objects.all()
-        lgas = LGA.objects.all()
-        wards = Ward.objects.all()
-        
-    elif request.user.role == 'ZONAL':
-        pending_users = User.objects.filter(
-            status__in=['PENDING', 'UNDER_REVIEW'],
-            zone=request.user.zone,
-            is_superuser=False
-        ).order_by('-created_at')
-        zones = lgas = wards = None
-        zone_filter = lga_filter = ward_filter = None
-        
-    elif request.user.role == 'LGA':
-        pending_users = User.objects.filter(
-            status__in=['PENDING', 'UNDER_REVIEW'],
-            lga=request.user.lga,
-            is_superuser=False
-        ).order_by('-created_at')
-        zones = lgas = wards = None
-        zone_filter = lga_filter = ward_filter = None
-    else:
-        pending_users = User.objects.none()
-        zones = lgas = wards = None
-        zone_filter = lga_filter = ward_filter = None
-    
-    context = {
-        'pending_users': pending_users,
-        'zones': zones,
-        'lgas': lgas,
-        'wards': wards,
-        'zone_filter': zone_filter,
-        'lga_filter': lga_filter,
-        'ward_filter': ward_filter,
-    }
-    
+    from staff.services.member_admin import pending_applicants_qs
+    pending_users = pending_applicants_qs(request.user)
+    zone_filter = request.GET.get('zone') if request.user.role == 'STATE' else None
+    lga_filter = request.GET.get('lga') if request.user.role == 'STATE' else None
+    ward_filter = request.GET.get('ward') if request.user.role == 'STATE' else None
+    if zone_filter: pending_users = pending_users.filter(zone_id=zone_filter)
+    if lga_filter: pending_users = pending_users.filter(lga_id=lga_filter)
+    if ward_filter: pending_users = pending_users.filter(ward_id=ward_filter)
+    context = {'pending_users': pending_users,
+        'zones': Zone.objects.all() if request.user.role == 'STATE' else None,
+        'lgas': LGA.objects.all() if request.user.role == 'STATE' else None,
+        'wards': Ward.objects.all() if request.user.role == 'STATE' else None,
+        'zone_filter': zone_filter, 'lga_filter': lga_filter, 'ward_filter': ward_filter}
     return render(request, 'staff/approve_members.html', context)
 
 @role_required('STATE', 'ZONAL', 'LGA')
 def review_applicant(request, user_id):
-    from leadership.access import scope_users
-    from staff.services.membership import decide_application
-    applicant = get_object_or_404(scope_users(request.user), id=user_id, status__in=['PENDING', 'UNDER_REVIEW'])
+    from staff.services.member_admin import pending_applicants_qs,decide_application,MemberDecisionError
+    applicant = get_object_or_404(pending_applicants_qs(request.user), id=user_id)
     if request.method == 'POST':
+        action = request.POST.get('action')
         try:
-            decide_application(request.user, applicant, request.POST.get('action'))
-            messages.success(request, f'{applicant.get_full_name()} application updated.')
+            decided = decide_application(request.user, applicant.id, action)
+        except MemberDecisionError as exc:
+            messages.error(request, exc.message)
             return redirect('staff:approve_members')
-        except Exception as exc:
-            messages.error(request, str(exc))
+        if action == 'approve': messages.success(request, f'{decided.get_full_name()} has been approved.')
+        else: messages.success(request, 'Application has been rejected and deleted.')
+        return redirect('staff:approve_members')
     return render(request, 'staff/review_applicant.html', {'applicant': applicant})
 
 @role_required('STATE')
@@ -1183,8 +1081,9 @@ def approve_disciplinary_action(request, action_id):
             member.save()
             messages.success(request, f'{member.get_full_name()} has been suspended.')
         elif action.action_type == 'DISMISSAL':
-            member.status = 'DISMISSED'
-            member.save()
+            member.status = 'SUSPENDED'
+            member.is_active = False
+            member.save(update_fields=['status', 'is_active'])
             messages.success(request, f'{member.get_full_name()} has been dismissed from the organization.')
         else:
             messages.success(request, f'{action.get_action_type_display()} for {member.get_full_name()} has been approved.')
@@ -1940,9 +1839,9 @@ def dismiss_member(request, user_id):
     
     if request.method == 'POST':
         reason = request.POST.get('reason', '')
-        member.status = 'DISMISSED'
+        member.status = 'SUSPENDED'
         member.is_active = False
-        member.save(update_fields=['status', 'is_active', 'updated_at'])
+        member.save(update_fields=['status', 'is_active'])
         
         messages.success(request, f'{member.get_full_name()} has been dismissed from the organization.')
         return redirect('staff:manage_staff')
@@ -1977,7 +1876,6 @@ def reinstate_member(request, user_id):
     
     if request.method == 'POST':
         member.status = 'VERIFIED'
-        member.is_active = True
         member.date_approved = timezone.now()
         member.approved_by = request.user
         member.save()
@@ -2034,9 +1932,9 @@ def swap_positions(request):
 
 
 
-@specific_role_required("Director of Women's Development", "Assistant Director of Women's Development")
+@specific_role_required('Director of Women Development', 'Assistant Director of Women Development')
 def women_members(request):
-    """Female members dashboard for Director of Women's Development"""
+    """Female members dashboard for Women Leader"""
     search = request.GET.get('search', '')
     zone_filter = request.GET.get('zone', '')
     lga_filter = request.GET.get('lga', '')
@@ -2071,7 +1969,7 @@ def women_members(request):
     return render(request, 'staff/women_members.html', context)
 
 
-@specific_role_required('Director of Community Engagement', 'Assistant Director of Community Engagement', 'LGA Community Engagement Officer', 'President', 'Senatorial Director', 'LGA Network Lead', 'Ward Community Lead')
+@specific_role_required('Director of Membership & Mobilization', 'Assistant Director of Membership & Mobilization', 'LGA Community Engagement Officer', 'President', 'Senatorial Director', 'LGA Network Lead', 'Ward Community Lead')
 def member_mobilization(request):
     """Member filtering and contact list generation for mobilization"""
     import csv
@@ -2266,7 +2164,7 @@ def member_mobilization(request):
 
 # Women's Program Management Views
 
-@specific_role_required("Director of Women's Development", "Assistant Director of Women's Development")
+@specific_role_required('Director of Women Development', 'Assistant Director of Women Development')
 def womens_programs_list(request):
     """List all women's programs"""
     user = request.user
@@ -2293,7 +2191,7 @@ def womens_programs_list(request):
     return render(request, 'staff/womens_programs/list.html', context)
 
 
-@specific_role_required("Director of Women's Development", "Assistant Director of Women's Development")
+@specific_role_required('Director of Women Development', 'Assistant Director of Women Development')
 def create_womens_program(request):
     """Create a new women's program"""
     from .forms import WomensProgramForm
@@ -2323,7 +2221,7 @@ def create_womens_program(request):
     return render(request, 'staff/womens_programs/form.html', context)
 
 
-@specific_role_required("Director of Women's Development", "Assistant Director of Women's Development")
+@specific_role_required('Director of Women Development', 'Assistant Director of Women Development')
 def edit_womens_program(request, program_id):
     """Edit an existing women's program"""
     from .forms import WomensProgramForm
@@ -2346,7 +2244,7 @@ def edit_womens_program(request, program_id):
     return render(request, 'staff/womens_programs/form.html', context)
 
 
-@specific_role_required("Director of Women's Development", "Assistant Director of Women's Development")
+@specific_role_required('Director of Women Development', 'Assistant Director of Women Development')
 def delete_womens_program(request, program_id):
     """Delete a women's program"""
     program = get_object_or_404(WomensProgram, pk=program_id)
@@ -2363,7 +2261,7 @@ def delete_womens_program(request, program_id):
     return render(request, 'staff/womens_programs/delete.html', context)
 
 
-@specific_role_required("Director of Women's Development", "Assistant Director of Women's Development")
+@specific_role_required('Director of Women Development', 'Assistant Director of Women Development')
 def manage_program_participants(request, program_id):
     """Manage participants for a women's program"""
     
@@ -2500,7 +2398,7 @@ def toggle_faq_status(request, faq_id):
 
 # Legal Review Views
 
-@specific_role_required('Director of Legal Affairs & Ethics')
+@specific_role_required('Legal & Ethics Adviser')
 def legal_review_queue(request):
     """View pending disciplinary actions for legal review"""
     
@@ -2522,7 +2420,7 @@ def legal_review_queue(request):
     return render(request, 'staff/legal_review/queue.html', context)
 
 
-@specific_role_required('Director of Legal Affairs & Ethics')
+@specific_role_required('Legal & Ethics Adviser')
 def legal_review_action(request, action_id):
     """Legal review of a disciplinary action"""
     from .forms import LegalReviewForm
@@ -2557,7 +2455,7 @@ def legal_review_action(request, action_id):
 
 # Youth Program Management Views
 
-@specific_role_required('Director of Youth Development')
+@specific_role_required('Youth Development & Empowerment Officer')
 def youth_programs_list(request):
     """List all youth programs"""
     from .models import YouthProgram
@@ -2586,7 +2484,7 @@ def youth_programs_list(request):
     return render(request, 'staff/youth_programs/list.html', context)
 
 
-@specific_role_required('Director of Youth Development')
+@specific_role_required('Youth Development & Empowerment Officer')
 def create_youth_program(request):
     """Create a new youth program"""
     from .forms import YouthProgramForm
@@ -2609,7 +2507,7 @@ def create_youth_program(request):
     return render(request, 'staff/youth_programs/form.html', context)
 
 
-@specific_role_required('Director of Youth Development')
+@specific_role_required('Youth Development & Empowerment Officer')
 def edit_youth_program(request, program_id):
     """Edit an existing youth program"""
     from .forms import YouthProgramForm
@@ -2633,7 +2531,7 @@ def edit_youth_program(request, program_id):
     return render(request, 'staff/youth_programs/form.html', context)
 
 
-@specific_role_required('Director of Youth Development')
+@specific_role_required('Youth Development & Empowerment Officer')
 def delete_youth_program(request, program_id):
     """Delete a youth program"""
     from .models import YouthProgram
@@ -2651,7 +2549,7 @@ def delete_youth_program(request, program_id):
     return render(request, 'staff/youth_programs/delete.html', context)
 
 
-@specific_role_required('Director of Youth Development')
+@specific_role_required('Youth Development & Empowerment Officer')
 def manage_youth_participants(request, program_id):
     """Manage participants for a youth program"""
     from .models import YouthProgram
@@ -2698,7 +2596,7 @@ def manage_youth_participants(request, program_id):
 
 # Welfare Program Management Views
 
-@specific_role_required('Director of Member Support & Welfare')
+@specific_role_required('Welfare Officer')
 def welfare_programs_list(request):
     """List all welfare programs"""
     from .models import WelfareProgram
@@ -2727,7 +2625,7 @@ def welfare_programs_list(request):
     return render(request, 'staff/welfare_programs/list.html', context)
 
 
-@specific_role_required('Director of Member Support & Welfare')
+@specific_role_required('Welfare Officer')
 def create_welfare_program(request):
     """Create a new welfare program"""
     from .forms import WelfareProgramForm
@@ -2750,7 +2648,7 @@ def create_welfare_program(request):
     return render(request, 'staff/welfare_programs/form.html', context)
 
 
-@specific_role_required('Director of Member Support & Welfare')
+@specific_role_required('Welfare Officer')
 def edit_welfare_program(request, program_id):
     """Edit an existing welfare program"""
     from .forms import WelfareProgramForm
@@ -2774,7 +2672,7 @@ def edit_welfare_program(request, program_id):
     return render(request, 'staff/welfare_programs/form.html', context)
 
 
-@specific_role_required('Director of Member Support & Welfare')
+@specific_role_required('Welfare Officer')
 def delete_welfare_program(request, program_id):
     """Delete a welfare program"""
     from .models import WelfareProgram
@@ -2792,7 +2690,7 @@ def delete_welfare_program(request, program_id):
     return render(request, 'staff/welfare_programs/delete.html', context)
 
 
-@specific_role_required('Director of Member Support & Welfare')
+@specific_role_required('Welfare Officer')
 def manage_welfare_beneficiaries(request, program_id):
     """Manage beneficiaries for a welfare program"""
     from .models import WelfareProgram
@@ -2839,7 +2737,7 @@ def manage_welfare_beneficiaries(request, program_id):
 
 # Audit Report Management Views
 
-@specific_role_required('Director of Audit & Accountability')
+@specific_role_required('Auditor General')
 def create_audit_report(request):
     """Create a new audit report"""
     from donations.forms import AuditReportForm
@@ -2868,7 +2766,7 @@ def create_audit_report(request):
     return render(request, 'staff/audit_reports/form.html', context)
 
 
-@specific_role_required('Director of Audit & Accountability')
+@specific_role_required('Auditor General')
 def edit_audit_report(request, report_id):
     """Edit an existing audit report"""
     from donations.forms import AuditReportForm
@@ -2896,7 +2794,7 @@ def edit_audit_report(request, report_id):
     return render(request, 'staff/audit_reports/form.html', context)
 
 
-@specific_role_required('Director of Audit & Accountability')
+@specific_role_required('Auditor General')
 def submit_audit_report(request, report_id):
     """Submit an audit report to the President"""
     from donations.models import AuditReport
@@ -2983,7 +2881,7 @@ def vice_president_disciplinary_review(request):
 
 # Community Outreach Management (PR Officer)
 
-@specific_role_required('Director of Public Relations & Partnerships')
+@specific_role_required('Public Relations & Community Engagement Officer')
 def create_outreach(request):
     """Create a new community outreach activity"""
     if request.method == 'POST':
@@ -3003,7 +2901,7 @@ def create_outreach(request):
     return render(request, 'staff/outreach/create.html', context)
 
 
-@specific_role_required('Director of Public Relations & Partnerships')
+@specific_role_required('Public Relations & Community Engagement Officer')
 def outreach_list(request):
     """List all community outreach activities"""
     outreach_activities = CommunityOutreach.objects.all().order_by('-date')
@@ -3026,7 +2924,7 @@ def outreach_list(request):
     return render(request, 'staff/outreach/list.html', context)
 
 
-@specific_role_required('Director of Public Relations & Partnerships')
+@specific_role_required('Public Relations & Community Engagement Officer')
 def edit_outreach(request, pk):
     """Edit an existing community outreach activity"""
     outreach = get_object_or_404(CommunityOutreach, pk=pk)
@@ -3047,7 +2945,7 @@ def edit_outreach(request, pk):
     return render(request, 'staff/outreach/edit.html', context)
 
 
-@specific_role_required('Director of Public Relations & Partnerships')
+@specific_role_required('Public Relations & Community Engagement Officer')
 def delete_outreach(request, pk):
     """Delete a community outreach activity"""
     outreach = get_object_or_404(CommunityOutreach, pk=pk)
@@ -3193,8 +3091,6 @@ def create_announcement(request):
             try:
                 announcement.full_clean()
                 announcement.save()
-                from core.notifications import announcement_recipients, notify_many
-                notify_many(announcement_recipients(announcement), 'INFO', announcement.title, announcement.content, '/account/dashboard/', event='ANNOUNCEMENT_CREATED')
                 messages.success(request, 'Announcement created successfully! It is now active and visible to the targeted members.')
                 return redirect('staff:announcements_list')
             except Exception as e:
@@ -3260,21 +3156,21 @@ ROLE_SHORTENING = {
     'General Secretary': 'Gen. Secretary',
     'Assistant General Secretary': 'Asst. Secretary',
     'Director of Monitoring & Compliance': 'Dir. Monitoring',
-    'Director of Legal Affairs & Ethics': 'Legal Adviser',
+    'Legal & Ethics Adviser': 'Legal Adviser',
     'Director of Finance': 'Dir. Finance',
-    'Finance Operations Officer': 'Fin. Secretary',
-    'Director of Community Engagement': 'Dir. Mobilization',
-    'Assistant Director of Community Engagement': 'Asst. Mobilization',
+    'Financial Secretary': 'Fin. Secretary',
+    'Director of Membership & Mobilization': 'Dir. Mobilization',
+    'Assistant Director of Membership & Mobilization': 'Asst. Mobilization',
     'Director of Programmes & Events': 'Dir. Programmes',
     'Assistant Director of Programmes & Events': 'Asst. Programmes',
-    'Director of Audit & Accountability': 'Director of Audit & Accountability',
-    'Director of Member Support & Welfare': 'Dir. Welfare',
-    'Director of Youth Development': 'Dir. Youth',
-    "Director of Women's Development": 'Dir. Women',
-    "Assistant Director of Women's Development": 'Asst. Women',
+    'Auditor General': 'Auditor General',
+    'Director of Welfare & Community Support': 'Dir. Welfare',
+    'Director of Youth Development & Empowerment': 'Dir. Youth',
+    'Director of Women Development': 'Dir. Women',
+    'Assistant Director of Women Development': 'Asst. Women',
     'Director of Media & Communications': 'Dir. Media',
     'Assistant Director of Media & Communications': 'Asst. Media',
-    'Director of Public Relations & Partnerships': 'PR Director',
+    'Director of Public Relations & Community Engagement': 'PR Director',
     'Senatorial Director': 'Sen. Director',
     'Senatorial Administrative Officer': 'Sen. Admin',
     'Senatorial Communications Officer': 'Sen. Comms',
@@ -3285,8 +3181,8 @@ ROLE_SHORTENING = {
     'LGA Community Engagement Officer': 'LGA Engagement',
     'LGA Adviser': 'LGA Adviser',
     'LGA Programmes Officer': 'LGA Programs',
-    'LGA Member Support Officer': 'LGA Support',
-    "LGA Women's Development Officer": 'LGA Women',
+    'LGA Community Support Officer': 'LGA Support',
+    'LGA Women Development Officer': 'LGA Women',
     'LGA Finance Officer': 'LGA Finance',
     'Ward Community Lead': 'Ward Lead',
     'Ward Monitoring Officer': 'Ward Monitor',

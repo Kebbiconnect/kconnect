@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
-{% block title %}LGA Network Lead Dashboard - KPN{% endblock %}
+{% block title %}LGA Coordinator Dashboard - KPN{% endblock %}
 
 {% block content %}
 <div class="kpn-page">
     <!-- Header -->
-    {% include 'staff/dashboards/includes/_role_header.html' with title="LGA Network Lead Dashboard" icon_class="fas fa-map-marker-alt" welcome_messages="Coordinating ward activities in your LGA.|Driving local mobilization and engagement.|Building grassroots strength." %}
+    {% include 'staff/dashboards/includes/_role_header.html' with title="LGA Coordinator Dashboard" icon_class="fas fa-map-marker-alt" welcome_messages="Coordinating ward activities in your LGA.|Driving local mobilization and engagement.|Building grassroots strength." %}
     
     <!-- Profile Section -->
     {% include 'staff/dashboards/includes/_profile_section.html' %}
@@ -74,7 +74,7 @@
                     </div>
                     <div>
                         <span>Submit LGA Report</span>
-                        <span class="text-xs text-gray-500">Send monthly report to Senatorial Director</span>
+                        <span class="text-xs text-gray-500">Send monthly report to Zonal Coordinator</span>
                     </div>
                 </a>
             </div>
@@ -88,7 +88,7 @@
             <ul class="space-y-4">
                 <li class="flex items-start">
                     <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">1</div>
-                    <span class="text-gray-700 dark:text-gray-300"><strong>Supervise Ward Operations:</strong> Ensure all Ward Community Leads within {{ user.lga.name }} LGA are active and submitting reports.</span>
+                    <span class="text-gray-700 dark:text-gray-300"><strong>Supervise Ward Operations:</strong> Ensure all Ward Coordinators within {{ user.lga.name }} LGA are active and submitting reports.</span>
                 </li>
                 <li class="flex items-start">
                     <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">2</div>
@@ -113,13 +113,13 @@
         <div class="kpn-card">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="kpn-section-label mt-6">
-    <i class="fas fa-users mr-2 text-kpn-green"></i> My Team (Ward Community Leads)
+    <i class="fas fa-users mr-2 text-kpn-green"></i> My Team (Ward Coordinators)
 </h2>
-                <a href="{% url 'staff:my_jurisdiction_members' %}" class="text-sm font-semibold text-kpn-green hover:underline">Manage Team</a>
+                <a href="{% url 'staff:manage_staff' %}" class="text-sm font-semibold text-kpn-green hover:underline">Manage Team</a>
             </div>
             <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 text-center border border-dashed border-gray-300 dark:border-gray-700">
-                <p class="text-gray-500 text-sm">Use the Manage Team tool to view and assign Ward Community Leads in your LGA.</p>
-                <a href="{% url 'staff:my_jurisdiction_members' %}" class="mt-3 inline-block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-50 transition">Open Team Manager</a>
+                <p class="text-gray-500 text-sm">Use the Manage Team tool to view and assign Ward Coordinators in your LGA.</p>
+                <a href="{% url 'staff:manage_staff' %}" class="mt-3 inline-block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-50 transition">Open Team Manager</a>
             </div>
         </div>
         
@@ -132,7 +132,7 @@
                 <a href="{% url 'staff:view_reports' %}" class="text-sm font-semibold text-indigo-500 hover:underline">View All</a>
             </div>
             <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 text-center border border-dashed border-gray-300 dark:border-gray-700">
-                <p class="text-gray-500 text-sm">Review official reports submitted by your Ward Community Leads.</p>
+                <p class="text-gray-500 text-sm">Review official reports submitted by your Ward Coordinators.</p>
                 <a href="{% url 'staff:view_reports' %}" class="mt-3 inline-block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-50 transition">Open Reports Viewer</a>
             </div>
         </div>

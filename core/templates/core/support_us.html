@@ -63,13 +63,12 @@
             Donation Account Details
         </h2>
         
-        {% if donation_details_verified %}
         <div class="bank-card bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-2xl p-8 border-2 border-kpn-green">
             <div class="space-y-6">
                 <div class="flex items-center justify-between p-4 bg-kpn-green/10 dark:bg-kpn-green/20 rounded-lg">
                     <div>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Account Name</p>
-                        <p class="text-xl font-bold text-gray-900 dark:text-white">{{ donation_bank.account_name }}</p>
+                        <p class="text-xl font-bold text-gray-900 dark:text-white">Kebbi Progressive Youth Network</p>
                     </div>
                     <i class="fas fa-user-circle text-4xl text-kpn-green"></i>
                 </div>
@@ -77,7 +76,7 @@
                 <div class="flex items-center justify-between p-4 bg-kpn-blue/10 dark:bg-kpn-blue/20 rounded-lg">
                     <div>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Bank Name</p>
-                        <p class="text-xl font-bold text-gray-900 dark:text-white">{{ donation_bank.name }}</p>
+                        <p class="text-xl font-bold text-gray-900 dark:text-white">Access Bank Nigeria</p>
                     </div>
                     <i class="fas fa-university text-4xl text-kpn-blue"></i>
                 </div>
@@ -85,7 +84,7 @@
                 <div class="flex items-center justify-between p-4 bg-yellow-500/10 dark:bg-yellow-500/20 rounded-lg">
                     <div class="flex-grow">
                         <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Account Number</p>
-                        <p class="text-2xl font-mono font-bold text-gray-900 dark:text-white" id="accountNumber">{{ donation_bank.account_number }}</p>
+                        <p class="text-base font-semibold text-amber-700 dark:text-amber-300">Bank details are being verified. Please contact KPN before making a transfer.</p>
                     </div>
                     <button onclick="copyAccountNumber()" class="copy-btn ml-4 p-3 bg-kpn-green text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-kpn-green">
                         <i class="fas fa-copy text-xl"></i>
@@ -128,7 +127,6 @@
     </div>
 </div>
 
-{% else %}<div class="p-6 border rounded-lg text-center"><p>Verified donation account details are currently unavailable. Please contact KPN directly before making a transfer.</p></div>{% endif %}
 <script>
 function copyAccountNumber() {
     const accountNumber = document.getElementById('accountNumber').innerText;

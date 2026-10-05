@@ -1,33 +1,26 @@
-"""Shared in-app + push notification event abstraction."""
-from django.db import transaction
+"""Shared in-app and Android push notification service."""
 from core.models import Notification
 
-def notify(user, notif_type='INFO', title='', message='', link='', event='INFO'):
-    notification=Notification.objects.create(user=user,event=event,notif_type=notif_type,title=title,message=message,link=link)
-    transaction.on_commit(lambda: _push(notification.pk))
+def _push(notification):
+    try:
+        from rest_api.push import send_to_devices
+        send_to_devices(notification.user.devices, title=notification.title, body=notification.message,
+                        data={'notification_id':notification.id,'event':notification.event,
+                              'target_type':notification.target_type,'target_id':notification.target_id,
+                              'route':notification.link})
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception('Notification push dispatch failed')
+
+def notify(user, notif_type='INFO', title='', message='', link='', event='INFO', target_type='', target_id=None, push=True):
+    notification=Notification.objects.create(user=user,notif_type=notif_type,event=event,target_type=target_type,
+        target_id=target_id,title=title,message=message,link=link)
+    if push:_push(notification)
     return notification
 
-def _push(pk):
-    from core.models import Notification
-    from core.push import send_notification
-    try: send_notification(Notification.objects.get(pk=pk))
-    except Exception: pass  # delivery failures are recorded and never roll back business actions
-
-def notify_many(users, notif_type='INFO', title='', message='', link='', event='INFO'):
-    return [notify(u,notif_type,title,message,link,event) for u in users]
-
-def announcement_recipients(announcement):
-    from staff.models import User
-    qs=User.objects.filter(status='VERIFIED',is_active=True)
-    if announcement.scope=='ZONAL': qs=qs.filter(zone=announcement.target_zone)
-    elif announcement.scope=='LGA': qs=qs.filter(lga=announcement.target_lga)
-    elif announcement.scope=='WARD': qs=qs.filter(ward=announcement.target_ward)
-    return qs
-
-def verified_members():
-    from staff.models import User
-    return User.objects.filter(status='VERIFIED', is_active=True)
-
-def notify_event_audience(event_name, event, message):
-    """Events are statewide in the current Event model (no geographic scope field)."""
-    return notify_many(verified_members(), 'INFO', event.title, message, f'/events/{event.pk}/', event=event_name)
+def notify_many(users, notif_type='INFO', title='', message='', link='', event='INFO', target_type='', target_id=None, push=True):
+    notifications=Notification.objects.bulk_create([Notification(user=u,notif_type=notif_type,event=event,
+        target_type=target_type,target_id=target_id,title=title,message=message,link=link) for u in users])
+    if push:
+        for notification in notifications:_push(notification)
+    return notifications
