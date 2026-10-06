@@ -1,23 +1,25 @@
 from rest_framework.permissions import BasePermission
-from leadership.access import is_verified
-from leadership.capabilities import capabilities_for
+from leadership.access import is_verified, role_title
 class IsVerifiedMember(BasePermission):
- message="Verified KPN membership is required."
+ message='A verified KPN membership is required.'
  def has_permission(self,request,view): return is_verified(request.user)
-class HasCapability(BasePermission):
- message="Your KPN role does not permit this action."
- def has_permission(self,request,view):
-  capability=getattr(view,"required_capability",None)
-  return bool(capability and capability in capabilities_for(request.user))
-def capability_permission(capability):
- class RequiredCapability(HasCapability):
-  def has_permission(self,request,view): return capability in capabilities_for(request.user)
- RequiredCapability.__name__=f"Can{capability.title().replace('_','')}"
- return RequiredCapability
-
-def any_capability_permission(*capabilities):
- class AnyCapability(BasePermission):
-  message="Your KPN role does not permit this action."
-  def has_permission(self,request,view): return bool(set(capabilities).intersection(capabilities_for(request.user)))
- AnyCapability.__name__="CanAny"+"".join(x.title().replace('_','') for x in capabilities)
- return AnyCapability
+class HasRoleTitles(BasePermission):
+ allowed_titles=()
+ def has_permission(self,request,view): return is_verified(request.user) and role_title(request.user) in self.allowed_titles
+class IsStateExecutive(IsVerifiedMember):
+ def has_permission(self,request,view): return super().has_permission(request,view) and request.user.role=='STATE'
+class IsZonalExecutive(IsVerifiedMember):
+ def has_permission(self,request,view): return super().has_permission(request,view) and request.user.role=='ZONAL' and bool(request.user.zone_id)
+class IsLgaExecutive(IsVerifiedMember):
+ def has_permission(self,request,view): return super().has_permission(request,view) and request.user.role=='LGA' and bool(request.user.lga_id)
+class IsWardExecutive(IsVerifiedMember):
+ def has_permission(self,request,view): return super().has_permission(request,view) and request.user.role=='WARD' and bool(request.user.ward_id)
+class IsEditor(HasRoleTitles):
+ from leadership.roles import EDITOR_ROLES
+ allowed_titles=EDITOR_ROLES
+class IsPublicityOfficer(HasRoleTitles):
+ from leadership.roles import PUBLICITY_ROLES
+ allowed_titles=PUBLICITY_ROLES
+class IsEventManager(HasRoleTitles):
+ from leadership.roles import EVENT_MANAGER_ROLES
+ allowed_titles=EVENT_MANAGER_ROLES

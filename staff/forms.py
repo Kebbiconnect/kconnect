@@ -337,7 +337,7 @@ class MemberMobilizationFilterForm(forms.Form):
     )
     
     status = forms.ChoiceField(
-        choices=[('', 'All Status'), ('APPROVED', 'Approved'), ('PENDING', 'Pending'), ('SUSPENDED', 'Suspended')],
+        choices=[('', 'All Status'), ('VERIFIED', 'Verified'), ('PENDING', 'Pending'), ('SUSPENDED', 'Suspended')],
         required=False,
         widget=forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'})
     )

@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from leadership.models import Zone, LGA, Ward, RoleDefinition
+from leadership.roles import ROLES_BY_TIER
 
 class Command(BaseCommand):
     help = 'Seeds the database with Kebbi State location data and role definitions'
@@ -52,86 +53,10 @@ class Command(BaseCommand):
         
         self.stdout.write('Seeding Role Definitions...')
         
-        state_roles = [
-            (1, 'President'),
-            (2, 'Vice President'),
-            (3, 'General Secretary'),
-            (4, 'Assistant General Secretary'),
-            (5, 'State Supervisor'),
-            (6, 'Legal & Ethics Adviser'),
-            (7, 'Treasurer'),
-            (8, 'Financial Secretary'),
-            (9, 'Director of Mobilization'),
-            (10, 'Assistant Director of Mobilization'),
-            (11, 'Organizing Secretary'),
-            (12, 'Assistant Organizing Secretary'),
-            (13, 'Auditor General'),
-            (14, 'Welfare Officer'),
-            (15, 'Youth Development & Empowerment Officer'),
-            (16, 'Women Leader'),
-            (17, 'Assistant Women Leader'),
-            (18, 'Director of Media & Communications'),
-            (19, 'Assistant Director of Media & Communications'),
-            (20, 'Public Relations & Community Engagement Officer'),
-        ]
-        
-        zonal_roles = [
-            (1, 'Zonal Coordinator'),
-            (2, 'Zonal Secretary'),
-            (3, 'Zonal Publicity Officer'),
-        ]
-        
-        lga_roles = [
-            (1, 'LGA Coordinator'),
-            (2, 'Secretary'),
-            (3, 'Organizing Secretary'),
-            (4, 'Treasurer'),
-            (5, 'Publicity Officer'),
-            (6, 'LGA Supervisor'),
-            (7, 'Women Leader'),
-            (8, 'Welfare Officer'),
-            (9, 'Director of Contact and Mobilization'),
-            (10, 'LGA Adviser'),
-        ]
-        
-        ward_roles = [
-            (1, 'Ward Coordinator'),
-            (2, 'Secretary'),
-            (3, 'Organizing Secretary'),
-            (4, 'Treasurer'),
-            (5, 'Publicity Officer'),
-            (6, 'Financial Secretary'),
-            (7, 'Ward Supervisor'),
-            (8, 'Ward Adviser'),
-        ]
-        
-        for seat_number, title in state_roles:
-            RoleDefinition.objects.get_or_create(
-                tier='STATE',
-                title=title,
-                defaults={'seat_number': seat_number}
-            )
-        
-        for seat_number, title in zonal_roles:
-            RoleDefinition.objects.get_or_create(
-                tier='ZONAL',
-                title=title,
-                defaults={'seat_number': seat_number}
-            )
-        
-        for seat_number, title in lga_roles:
-            RoleDefinition.objects.get_or_create(
-                tier='LGA',
-                title=title,
-                defaults={'seat_number': seat_number}
-            )
-        
-        for seat_number, title in ward_roles:
-            RoleDefinition.objects.get_or_create(
-                tier='WARD',
-                title=title,
-                defaults={'seat_number': seat_number}
-            )
+        # Role titles are imported from leadership.roles; this command is not a competing authority.
+        for tier, titles in ROLES_BY_TIER.items():
+            for seat_number, title in enumerate(titles, 1):
+                RoleDefinition.objects.get_or_create(tier=tier, title=title, defaults={'seat_number': seat_number})
         
         self.stdout.write(self.style.SUCCESS('Successfully seeded role definitions!'))
         

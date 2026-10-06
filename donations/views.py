@@ -6,9 +6,9 @@ from .models import Donation, Expense, FinancialReport
 from .forms import DonationForm, ExpenseForm, FinancialReportForm
 
 
-@specific_role_required('Treasurer')
+@specific_role_required('Director of Finance')
 def treasurer_donations(request):
-    """Treasurer views unverified donations and can verify them"""
+    """Director of Finance views unverified donations and can verify them"""
     unverified = Donation.objects.filter(status='UNVERIFIED').order_by('-created_at')
     verified = Donation.objects.filter(status='VERIFIED').order_by('-verified_at')
     
@@ -20,9 +20,9 @@ def treasurer_donations(request):
     return render(request, 'donations/treasurer_donations.html', context)
 
 
-@specific_role_required('Treasurer')
+@specific_role_required('Director of Finance')
 def verify_donation(request, donation_id):
-    """Treasurer verifies a donation"""
+    """Director of Finance verifies a donation"""
     donation = get_object_or_404(Donation, pk=donation_id, status='UNVERIFIED')
     
     if request.method == 'POST':
@@ -41,9 +41,9 @@ def verify_donation(request, donation_id):
     return render(request, 'donations/verify_donation.html', context)
 
 
-@specific_role_required('Treasurer')
+@specific_role_required('Director of Finance')
 def add_donation(request):
-    """Treasurer can add new donations to the system"""
+    """Director of Finance can add new donations to the system"""
     if request.method == 'POST':
         form = DonationForm(request.POST)
         if form.is_valid():
@@ -60,9 +60,9 @@ def add_donation(request):
     return render(request, 'donations/add_donation.html', context)
 
 
-@specific_role_required('Financial Secretary')
+@specific_role_required('Finance Operations Officer')
 def financial_secretary_donations(request):
-    """Financial Secretary views verified donations and can record them"""
+    """Finance Operations Officer views verified donations and can record them"""
     verified = Donation.objects.filter(status='VERIFIED').order_by('-verified_at')
     recorded = Donation.objects.filter(status='RECORDED').order_by('-recorded_at')
     
@@ -74,9 +74,9 @@ def financial_secretary_donations(request):
     return render(request, 'donations/financial_secretary_donations.html', context)
 
 
-@specific_role_required('Financial Secretary')
+@specific_role_required('Finance Operations Officer')
 def record_donation(request, donation_id):
-    """Financial Secretary records a verified donation"""
+    """Finance Operations Officer records a verified donation"""
     donation = get_object_or_404(Donation, pk=donation_id, status='VERIFIED')
     
     if request.method == 'POST':
@@ -95,9 +95,9 @@ def record_donation(request, donation_id):
     return render(request, 'donations/record_donation.html', context)
 
 
-@specific_role_required('Financial Secretary')
+@specific_role_required('Finance Operations Officer')
 def expenses_list(request):
-    """Financial Secretary views all expenses"""
+    """Finance Operations Officer views all expenses"""
     expenses = Expense.objects.all().order_by('-date', '-created_at')
     
     total_expenses = sum(expense.amount for expense in expenses)
@@ -110,9 +110,9 @@ def expenses_list(request):
     return render(request, 'donations/expenses_list.html', context)
 
 
-@specific_role_required('Financial Secretary')
+@specific_role_required('Finance Operations Officer')
 def add_expense(request):
-    """Financial Secretary records a new expense"""
+    """Finance Operations Officer records a new expense"""
     if request.method == 'POST':
         form = ExpenseForm(request.POST)
         if form.is_valid():
@@ -132,7 +132,7 @@ def add_expense(request):
     return render(request, 'donations/add_expense.html', context)
 
 
-@specific_role_required('Financial Secretary')
+@specific_role_required('Finance Operations Officer')
 def financial_reports(request):
     """View all financial reports"""
     reports = FinancialReport.objects.all().order_by('-created_at')
@@ -144,7 +144,7 @@ def financial_reports(request):
     return render(request, 'donations/financial_reports.html', context)
 
 
-@specific_role_required('Financial Secretary')
+@specific_role_required('Finance Operations Officer')
 def create_financial_report(request):
     """Create a new financial report"""
     if request.method == 'POST':

@@ -14,7 +14,7 @@ def publicity_officer_required(view_func):
             return redirect('staff:login')
         
         if request.user.status != 'VERIFIED':
-            messages.error(request, 'Your account is not verified yet.')
+            messages.error(request, 'Your account is not verified.')
             return redirect('core:home')
         
         publicity_roles = [

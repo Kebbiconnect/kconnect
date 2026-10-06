@@ -7,41 +7,12 @@ NEVER duplicate this logic in templates or other views.
 """
 
 from django.conf import settings
+from leadership.roles import TELEGRAM_REQUIRED_ROLE_TITLES as CANONICAL_TELEGRAM_REQUIRED_ROLES
 
 
 # These role titles REQUIRE Telegram verification before dashboard access.
 # Sourced from KPN spec §2 Category A.
-TELEGRAM_REQUIRED_ROLE_TITLES = getattr(settings, 'TELEGRAM_REQUIRED_ROLE_TITLES', [
-    # State Executive Team — all 20 positions
-    'President',
-    'Vice President',
-    'General Secretary',
-    'Assistant General Secretary',
-    'Director of Monitoring & Compliance',
-    'Director of Legal Affairs & Ethics',
-    'Director of Finance',
-    'Finance Operations Officer',
-    'Director of Community Engagement',
-    'Assistant Director of Community Engagement',
-    'Director of Programmes & Events',
-    'Assistant Director of Programmes & Events',
-    'Director of Audit & Accountability',
-    'Director of Member Support & Welfare',
-    'Director of Youth Development',
-    "Director of Women's Development",
-    "Assistant Director of Women's Development",
-    'Director of Media & Communications',
-    'Assistant Director of Media & Communications',
-    'Director of Public Relations & Partnerships',
-    # Senatorial Leadership — all 3 roles (applied per zone)
-    'Senatorial Director',
-    'Senatorial Administrative Officer',
-    'Senatorial Communications Officer',
-    # LGA — only the Network Lead
-    'LGA Network Lead',
-    # Ward — only the Community Lead
-    'Ward Community Lead',
-])
+TELEGRAM_REQUIRED_ROLE_TITLES = tuple(getattr(settings, 'TELEGRAM_REQUIRED_ROLE_TITLES', CANONICAL_TELEGRAM_REQUIRED_ROLES))
 
 
 def get_telegram_status(user):
