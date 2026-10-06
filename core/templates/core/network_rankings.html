@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Network Rankings - Kebbi Progressive Youth Network{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen pb-16">
+    <!-- Header -->
+    <section class="bg-kpn-blue text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">KPN Network Rankings</h1>
+            <p class="text-xl max-w-3xl mx-auto opacity-90">
+                Recognising the most active communities, opportunity scouts, and grassroots reporters driving progress across Kebbi State.
+            </p>
+        </div>
+    </section>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        <!-- INTERNAL RANKINGS (Only visible to authenticated leaders) -->
+        {% if internal_data %}
+        <div class="mb-16">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+                <i class="fas fa-lock text-red-500 mr-2"></i> Internal Executive Dashboard
+            </h2>
+            <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-6 border border-red-200 dark:border-red-800 shadow-sm mb-6">
+                <p class="text-sm text-red-700 dark:text-red-400 font-semibold mb-4">
+                    <i class="fas fa-info-circle mr-1"></i> These metrics are only visible to KPN Leaders to help identify inactive areas and pending workflows.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm">
+                        <h3 class="font-bold text-gray-900 dark:text-white mb-3 flex items-center">
+                            <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i> Inactive LGAs (0 Verified Members)
+                        </h3>
+                        <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                            {% for lga in internal_data.inactive_lgas %}
+                            <li class="flex items-center"><i class="fas fa-times-circle text-red-500 mr-2"></i> {{ lga.name }}</li>
+                            {% empty %}
+                            <li class="text-green-600 font-semibold"><i class="fas fa-check-circle mr-1"></i> All LGAs are currently active!</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm">
+                        <h3 class="font-bold text-gray-900 dark:text-white mb-3 flex items-center">
+                            <i class="fas fa-inbox text-orange-500 mr-2"></i> Verification Queue
+                        </h3>
+                        <div class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ internal_data.pending_reports }}</div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Community reports awaiting verification by the Newsroom.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- PUBLIC RANKINGS -->
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8 text-center uppercase tracking-wider">Top Performing Communities</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+            <!-- Top LGAs -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700">
+                <div class="bg-gradient-to-r from-kpn-green to-green-600 p-4">
+                    <h3 class="text-xl font-bold text-white flex items-center justify-center">
+                        <i class="fas fa-trophy text-yellow-300 mr-2"></i> Top Active LGAs
+                    </h3>
+                </div>
+                <div class="p-0">
+                    <ul class="divide-y divide-gray-100 dark:divide-gray-700">
+                        {% for lga in top_lgas %}
+                        <li class="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                            <div class="flex items-center">
+                                <span class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 font-bold flex items-center justify-center mr-4">
+                                    {{ forloop.counter }}
+                                </span>
+                                <span class="font-bold text-gray-900 dark:text-white text-lg">{{ lga.name }}</span>
+                            </div>
+                            <span class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1 rounded-full text-sm font-semibold">
+                                {{ lga.active_members }} Members
+                            </span>
+                        </li>
+                        {% empty %}
+                        <li class="p-8 text-center text-gray-500">No active LGAs yet.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Top Wards -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700">
+                <div class="bg-gradient-to-r from-kpn-blue to-blue-600 p-4">
+                    <h3 class="text-xl font-bold text-white flex items-center justify-center">
+                        <i class="fas fa-medal text-yellow-300 mr-2"></i> Top Active Wards
+                    </h3>
+                </div>
+                <div class="p-0">
+                    <ul class="divide-y divide-gray-100 dark:divide-gray-700">
+                        {% for ward in top_wards %}
+                        <li class="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                            <div class="flex items-center">
+                                <span class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 font-bold flex items-center justify-center mr-4">
+                                    {{ forloop.counter }}
+                                </span>
+                                <div>
+                                    <span class="font-bold text-gray-900 dark:text-white text-lg block">{{ ward.name }}</span>
+                                    <span class="text-xs text-gray-500">{{ ward.lga.name }} LGA</span>
+                                </div>
+                            </div>
+                            <span class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1 rounded-full text-sm font-semibold">
+                                {{ ward.active_members }} Members
+                            </span>
+                        </li>
+                        {% empty %}
+                        <li class="p-8 text-center text-gray-500">No active Wards yet.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8 text-center uppercase tracking-wider">Top Individual Contributors</h2>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700">
+            <div class="bg-gradient-to-r from-orange-500 to-red-500 p-4">
+                <h3 class="text-xl font-bold text-white flex items-center justify-center">
+                    <i class="fas fa-star text-yellow-300 mr-2"></i> Verified Trusted Reporters
+                </h3>
+                <p class="text-center text-white/80 text-sm mt-1">Recognised for consistent, accurate grassroots reporting.</p>
+            </div>
+            <div class="p-6">
+                {% if trusted_reporters %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for reporter in trusted_reporters %}
+                    <div class="flex items-center p-4 bg-orange-50/50 dark:bg-orange-900/10 rounded-lg border border-orange-100 dark:border-orange-800">
+                        <div class="w-12 h-12 rounded-full bg-orange-200 dark:bg-orange-800 flex items-center justify-center text-orange-600 dark:text-orange-300 font-bold text-xl mr-4 flex-shrink-0">
+                            {{ reporter.first_name|first|default:reporter.username|first|upper }}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-900 dark:text-white flex items-center">
+                                {{ reporter.get_full_name }} 
+                                <i class="fas fa-check-circle text-kpn-green ml-1 text-xs" title="Verified Member"></i>
+                            </h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ reporter.get_jurisdiction }}</p>
+                            <span class="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/50 px-2 py-0.5 rounded">
+                                Trusted Reporter
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-newspaper text-4xl mb-3 text-gray-300"></i>
+                    <p>No Trusted Reporters have been appointed yet.</p>
+                    <p class="text-sm mt-2">Submit quality community reports to earn this recognition!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

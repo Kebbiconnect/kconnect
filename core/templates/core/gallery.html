@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Gallery - KPN{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+
+    <!-- Header -->
+    <section class="bg-kpn-green text-white py-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-images text-white text-2xl"></i>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold mb-3">Media Gallery</h1>
+            <p class="text-lg max-w-3xl mx-auto opacity-90">
+                Explore our collection of photos and videos showcasing KPN's journey and achievements.
+            </p>
+        </div>
+    </section>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+        <!-- Filter Buttons -->
+        <div class="flex flex-wrap justify-center gap-2 mb-10">
+            <a href="?type=all"
+               class="kpn-btn {% if selected_type == 'all' %}kpn-btn-primary{% else %}kpn-btn-secondary{% endif %}">
+                <i class="fas fa-th"></i> All Media
+            </a>
+            <a href="?type=PHOTO"
+               class="kpn-btn {% if selected_type == 'PHOTO' %}kpn-btn-primary{% else %}kpn-btn-secondary{% endif %}">
+                <i class="fas fa-camera"></i> Photos
+            </a>
+            <a href="?type=VIDEO"
+               class="kpn-btn {% if selected_type == 'VIDEO' %}kpn-btn-blue{% else %}kpn-btn-secondary{% endif %}">
+                <i class="fas fa-video"></i> Videos
+            </a>
+        </div>
+
+        <!-- Media Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for item in media_items %}
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm hover:shadow-md transition group {% if item.media_type == 'PHOTO' %}cursor-pointer{% endif %}"
+                 {% if item.media_type == 'PHOTO' %}onclick="openLightbox('{{ item.file.url }}')"{% endif %}>
+
+                {% if item.media_type == 'PHOTO' %}
+                <div class="relative h-64 overflow-hidden bg-gray-100 dark:bg-gray-700">
+                    <img src="{{ item.file.url }}" alt="{{ item.title }}" class="w-full h-full object-cover group- transition duration-500">
+                    <!-- Type badge -->
+                    <span class="absolute top-3 left-3 kpn-badge kpn-badge-green text-[10px] font-bold uppercase tracking-wide backdrop-blur-sm">
+                        <i class="fas fa-camera mr-0.5"></i> Photo
+                    </span>
+                    <!-- Hover overlay -->
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                        <div class="text-white text-center">
+                            <i class="fas fa-search-plus text-3xl mb-1"></i>
+                            <p class="text-xs font-medium">Click to Enlarge</p>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="relative h-64 overflow-hidden bg-gray-100 dark:bg-gray-700">
+                    <video controls class="w-full h-full object-cover">
+                        <source src="{{ item.file.url }}" type="video/mp4">
+                    </video>
+                    <span class="absolute top-3 left-3 kpn-badge kpn-badge-blue text-[10px] font-bold uppercase tracking-wide">
+                        <i class="fas fa-video mr-0.5"></i> Video
+                    </span>
+                </div>
+                {% endif %}
+
+                <div class="p-4">
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1 line-clamp-1">{{ item.title }}</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">{{ item.description|truncatewords:15 }}</p>
+
+                    <!-- Creator Info -->
+                    <div class="border-t border-gray-100 dark:border-gray-700 pt-3">
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mb-1">Media by</p>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ item.uploaded_by.get_full_name }}</p>
+
+                        <!-- Tier Badge -->
+                        {% if item.uploaded_by.role == 'STATE' %}
+                            <span class="kpn-badge kpn-badge-green text-[10px]">
+                                <i class="fas fa-star mr-0.5"></i> State Executive
+                            </span>
+                        {% elif item.uploaded_by.role == 'ZONAL' %}
+                            <span class="kpn-badge kpn-badge-purple text-[10px]">
+                                <i class="fas fa-map-marked-alt mr-0.5"></i> {{ item.uploaded_by.zone.name }} Zone
+                            </span>
+                        {% elif item.uploaded_by.role == 'LGA' %}
+                            <span class="kpn-badge kpn-badge-blue text-[10px]">
+                                <i class="fas fa-map-marker-alt mr-0.5"></i> {{ item.uploaded_by.lga.name }} LGA
+                            </span>
+                        {% elif item.uploaded_by.role == 'WARD' %}
+                            <span class="kpn-badge kpn-badge-orange text-[10px]">
+                                <i class="fas fa-location-dot mr-0.5"></i> {{ item.uploaded_by.ward.name }} Ward
+                            </span>
+                        {% endif %}
+
+                        {% if item.uploaded_by.role_definition %}
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ item.uploaded_by.role_definition.title }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full">
+                <div class="kpn-empty text-center py-20 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-images text-2xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">No Media Yet</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Check back soon for photos and videos!</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Upload CTA -->
+        {% if media_items %}
+        <div class="mt-16">
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-10 text-center">
+                <div class="w-12 h-12 bg-kpn-green/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-cloud-upload-alt text-kpn-green text-xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Share Your Moments</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                    Have photos or videos from KPN events? Share them with the community!
+                </p>
+                <a href="{% url 'staff:login' %}" class="kpn-btn kpn-btn-primary kpn-btn-lg">
+                    <i class="fas fa-sign-in-alt"></i> Login to Upload
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="hidden fixed inset-0 bg-black/95 z-50 flex items-center justify-center" onclick="closeLightbox()">
+    <button class="absolute top-6 right-6 text-white text-4xl leading-none hover:text-gray-300 transition z-10" onclick="closeLightbox()">&times;</button>
+    <img id="lightbox-img" class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg" src="" alt="">
+</div>
+
+<script>
+function openLightbox(imageSrc) {
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    lightboxImg.src = imageSrc;
+    lightbox.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    const lightbox = document.getElementById('lightbox');
+    lightbox.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeLightbox();
+    }
+});
+</script>
+{% endblock %}

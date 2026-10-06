@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact Us - KPN{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-gray-50 dark:bg-gray-950 py-12 border-b border-gray-200 dark:border-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="w-12 h-12 bg-kpn-green text-white rounded-lg flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-envelope text-lg"></i>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-3">Get In Touch</h1>
+        <p class="text-gray-500 dark:text-gray-400 max-w-xl mx-auto text-sm">
+            Have questions? Za musu Muji. Tura Mana Sako and we'll respond as soon as possible.
+        </p>
+    </div>
+</section>
+
+<div class="bg-white dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+
+        <!-- Contact Info Cards -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 text-center hover:shadow-md transition">
+                <div class="w-12 h-12 bg-kpn-green text-white rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-map-marker-alt text-lg"></i>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Visit Us</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Sani Abacha Bypass Road, Birnin Kebbi</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 text-center hover:shadow-md transition">
+                <div class="w-12 h-12 bg-kpn-blue text-white rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-phone text-lg"></i>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Call Us</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">+234 806 777 0283</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 text-center hover:shadow-md transition">
+                <div class="w-12 h-12 bg-kpn-green text-white rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-envelope text-lg"></i>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Email Us</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">info@kpn.com.ng</p>
+            </div>
+        </div>
+
+        <!-- Contact Form -->
+        <div class="max-w-3xl mx-auto">
+            <div class="kpn-card">
+                <div class="kpn-card-header">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 bg-kpn-green/10 text-kpn-green rounded-md flex items-center justify-center">
+                            <i class="fas fa-paper-plane text-sm"></i>
+                        </div>
+                        <h2 class="text-base font-semibold text-gray-900 dark:text-white">Send Us a Message</h2>
+                    </div>
+                </div>
+                <div class="kpn-card-body">
+                    <form method="POST" class="space-y-5">
+                        {% csrf_token %}
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="kpn-form-group !mb-0">
+                                <label class="kpn-label-text">
+                                    <i class="fas fa-user text-kpn-green mr-1"></i> Your Name
+                                </label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    required
+                                    class="kpn-input"
+                                    placeholder="Isah Musa"
+                                >
+                            </div>
+
+                            <div class="kpn-form-group !mb-0">
+                                <label class="kpn-label-text">
+                                    <i class="fas fa-envelope text-kpn-blue mr-1"></i> Email Address
+                                </label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    required
+                                    class="kpn-input"
+                                    placeholder="musa@example.com"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="kpn-form-group !mb-0">
+                            <label class="kpn-label-text">
+                                <i class="fas fa-comment-alt text-gray-400 mr-1"></i> Your Message
+                            </label>
+                            <textarea
+                                name="message"
+                                rows="6"
+                                required
+                                class="kpn-textarea"
+                                placeholder="Faɗa Mana Abinda ke Ranka..."
+                            ></textarea>
+                        </div>
+
+                        <button type="submit" class="kpn-btn kpn-btn-primary kpn-btn-lg w-full">
+                            <i class="fas fa-paper-plane"></i> Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Social Links -->
+        <div class="mt-12 text-center">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Connect With Us</h3>
+            <div class="flex justify-center gap-4">
+                <a href="https://www.facebook.com/kpnkebbi" target="_blank"
+                   class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white hover:bg-blue-700 transition"
+                   title="Follow us on Facebook">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="https://twitter.com/kpnkebbi" target="_blank"
+                   class="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center text-white hover:bg-blue-400 transition"
+                   title="Follow us on Twitter/X">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="https://wa.me/2348102444491" target="_blank"
+                   class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center text-white hover:bg-green-600 transition"
+                   title="Chat on WhatsApp">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="https://www.tiktok.com/@kpn.kb" target="_blank"
+                   class="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-white hover:bg-gray-800 transition"
+                   title="Follow us on TikTok">
+                    <i class="fab fa-tiktok"></i>
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
