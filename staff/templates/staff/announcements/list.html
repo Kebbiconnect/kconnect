@@ -21,7 +21,18 @@
   <div class="grid gap-4">
     {% for announcement in announcements %}
 
-    <div class="kpn-card border-l-4 {% if announcement.priority == 'URGENT' %}border-red-500{% elif announcement.priority == 'HIGH' %}border-orange-500{% elif announcement.priority == 'NORMAL' %}border-blue-500{% else %}border-gray-300 dark:border-gray-600{% endif %}">
+    {# Determine left-border color by priority #}
+    {% if announcement.priority == 'URGENT' %}
+      {% with border_class="border-red-500" %}
+    {% elif announcement.priority == 'HIGH' %}
+      {% with border_class="border-orange-500" %}
+    {% elif announcement.priority == 'NORMAL' %}
+      {% with border_class="border-blue-500" %}
+    {% else %}
+      {% with border_class="border-gray-300 dark:border-gray-600" %}
+    {% endif %}
+
+    <div class="kpn-card border-l-4 {{ border_class }}">
 
       <!-- Card Header: title + badges + actions -->
       <div class="kpn-card-header flex-wrap gap-y-3">
@@ -88,6 +99,7 @@
       </div>
     </div>
 
+    {% endwith %}
     {% endfor %}
   </div>
 

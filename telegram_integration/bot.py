@@ -38,7 +38,7 @@ def handle_message(message: dict):
         args = parts[1] if len(parts) > 1 else ''
 
         if command == '/start':
-            handle_start(chat_id, user_id, from_user.get('first_name', ''))
+            handle_start(chat_id, user_id, from_user.get('first_name', ''), args, from_user)
         elif command == '/help':
             handle_help(chat_id)
         elif command == '/verify' or command == '/membership':
@@ -61,8 +61,26 @@ def handle_message(message: dict):
         handle_ai_query(chat_id, user_id, text)
 
 
-def handle_start(chat_id: int, user_id: int, first_name: str):
-    """Handler for /start command"""
+def handle_start(chat_id: int, user_id: int, first_name: str, args: str = '', from_user: dict = None):
+    """Handle normal starts and one-time mobile account-link tokens."""
+    if args.startswith('kpn_'):
+        from django.db import transaction
+        from .models import TelegramAuthState
+        from .services import create_or_update_telegram_membership
+        token=args[4:]
+        with transaction.atomic():
+            state=TelegramAuthState.objects.select_for_update().filter(state_token=token,used=False,user__is_active=True).first()
+            if not state or state.is_expired:
+                send_telegram_message(chat_id,'This KPN account-link has expired or was already used. Request a new link in the KPN app.')
+                return
+            try:
+                data={'id':user_id,'first_name':(from_user or {}).get('first_name',''),'last_name':(from_user or {}).get('last_name',''),'username':(from_user or {}).get('username','')}
+                create_or_update_telegram_membership(state.user,data)
+            except ValueError as exc:
+                send_telegram_message(chat_id,str(exc)); return
+            state.used=True;state.save(update_fields=['used'])
+        send_telegram_message(chat_id,'✅ Your Telegram account is now linked to your KPN profile. Return to the KPN app and tap Check again.')
+        return
     text = (
         f"👋 Welcome to the official <b>Kebbi Progressive Youth Network (KPN)</b> Assistant, {first_name}!\n\n"
         "<i>\"One Voice, One Change.\"</i>\n\n"

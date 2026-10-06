@@ -6,36 +6,59 @@ from core.models import Opportunity, CommunityInitiative, AdvocacyCampaign, Patr
 from leadership.models import Zone, LGA, Ward, RoleDefinition
 from staff.models import User
 from telegram_integration.models import TelegramMembership
+from leadership.access import role_title
+from leadership.capabilities import capabilities_for
+from leadership.roles import DASHBOARD_BY_ROLE
+from telegram_integration.permissions import check_dashboard_access
 
 class CampaignSerializer(serializers.ModelSerializer):
-    author_name=serializers.CharField(source='author.get_full_name',read_only=True)
-    lga_name=serializers.CharField(source='lga.name',read_only=True,allow_null=True)
-    ward_name=serializers.CharField(source='ward.name',read_only=True,allow_null=True)
-    read_time=serializers.IntegerField(source='get_read_time',read_only=True)
-    image=serializers.ImageField(source='featured_image',read_only=True)
+    image = serializers.ImageField(source='featured_image', allow_null=True, read_only=True)
+    lga_name = serializers.CharField(source='lga.name', allow_null=True, read_only=True)
+    ward_name = serializers.CharField(source='ward.name', allow_null=True, read_only=True)
+    author_name = serializers.CharField(source='author.get_full_name', read_only=True)
+    read_time = serializers.SerializerMethodField()
+    category_label = serializers.CharField(source='get_category_display', read_only=True)
+    verification_status_label = serializers.CharField(source='get_verification_status_display', read_only=True)
+
     class Meta:
-        model=Campaign
-        fields=['id','slug','title','subheadline','category','location','lga','lga_name','ward','ward_name','verification_status','reporter_credit','author_name','image','content','content_json','views','read_time','published_at']
+        model = Campaign
+        fields = ['id','slug','title','subheadline','category','category_label','location','lga','lga_name',
+                  'ward','ward_name','verification_status','verification_status_label','reporter_credit',
+                  'author_name','image','content','content_json','views','read_time','published_at','status']
+
+    def get_read_time(self, obj):
+        return obj.get_read_time()
+
 class OpportunitySerializer(serializers.ModelSerializer):
-    organization=serializers.CharField(source='provider',read_only=True)
-    external_apply_link=serializers.URLField(source='application_link',read_only=True)
+    organization = serializers.CharField(source='provider')
+    external_apply_link = serializers.URLField(source='application_link', allow_blank=True)
+    category_label = serializers.CharField(source='get_category_display', read_only=True)
+    status_label = serializers.CharField(source='get_status_display', read_only=True)
+
     class Meta:
-        model=Opportunity
-        fields=['id','slug','title','category','organization','description','requirements','benefits','deadline','status','is_featured','external_apply_link','created_at','updated_at']
+        model = Opportunity
+        fields = ['id','slug','title','category','category_label','organization','description','requirements',
+                  'benefits','deadline','status','status_label','is_featured','external_apply_link','created_at','updated_at']
+
 class CommunityInitiativeSerializer(serializers.ModelSerializer):
+    category_label = serializers.CharField(source='get_category_display', read_only=True)
+    status_label = serializers.CharField(source='get_status_display', read_only=True)
     class Meta:
         model = CommunityInitiative
-        fields = ['title', 'description', 'status']
+        fields = ['id','title','category','category_label','status','status_label','description','location_text',
+                  'people_reached','image','created_at','updated_at']
 
 class AdvocacyCampaignSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdvocacyCampaign
-        fields = '__all__'
+        fields = ['id','title','issue','background','kpn_position','actions_taken','government_response',
+                  'outcome','is_active','image','created_at','updated_at']
 
 class PatronSerializer(serializers.ModelSerializer):
+    patron_type_label = serializers.CharField(source='get_patron_type_display', read_only=True)
     class Meta:
         model = Patron
-        fields = '__all__'
+        fields = ['id','patron_type','patron_type_label','full_name','title','bio','photo','is_published','order']
 
 class ZoneSerializer(serializers.ModelSerializer):
     class Meta:
@@ -69,10 +92,49 @@ class TelegramMembershipSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     telegram_membership = TelegramMembershipSerializer(read_only=True, allow_null=True)
+    tier = serializers.CharField(source='role', read_only=True)
+    zone_name = serializers.CharField(source='zone.name', read_only=True, allow_null=True)
+    lga_name = serializers.CharField(source='lga.name', read_only=True, allow_null=True)
+    ward_name = serializers.CharField(source='ward.name', read_only=True, allow_null=True)
+    role_title = serializers.SerializerMethodField()
+    seat_number = serializers.IntegerField(source='role_definition.seat_number', read_only=True, allow_null=True)
+    access = serializers.SerializerMethodField()
+    dashboard = serializers.SerializerMethodField()
+    capabilities = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone', 'bio', 'photo', 'gender', 'role', 'zone', 'lga', 'ward', 'role_definition', 'status', 'reporter_level', 'is_trusted_reporter', 'telegram_membership']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone', 'bio', 'photo', 'gender',
+                  'role', 'tier', 'zone', 'zone_name', 'lga', 'lga_name', 'ward', 'ward_name',
+                  'role_definition', 'role_title', 'seat_number', 'status', 'reporter_level',
+                  'is_trusted_reporter', 'telegram_membership', 'access', 'dashboard', 'capabilities']
+        read_only_fields = fields
+
+    def get_role_title(self, obj):
+        return role_title(obj)
+
+    def get_access(self, obj):
+        result = check_dashboard_access(obj)
+        states = {'ok': 'ALLOWED', 'not_verified': 'PENDING_APPROVAL', 'telegram_required': 'TELEGRAM_REQUIRED'}
+        return {
+            'state': states[result['reason']],
+            'telegram_required': result['telegram_required'],
+            'telegram_verified': result['telegram_active'],
+        }
+
+    def get_dashboard(self, obj):
+        return DASHBOARD_BY_ROLE.get(role_title(obj), 'member')
+
+    def get_capabilities(self, obj):
+        return capabilities_for(obj)
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name', 'phone', 'bio', 'gender',
+                  'photo', 'zone', 'lga', 'ward']
+        read_only_fields = ['username', 'zone', 'lga', 'ward']
 
 class ImpactMetricsSerializer(serializers.Serializer):
     verified_members = serializers.IntegerField()
@@ -82,6 +144,9 @@ class ImpactMetricsSerializer(serializers.Serializer):
     impact_communities_reached = serializers.IntegerField()
     active_lgas = serializers.IntegerField()
     active_wards = serializers.IntegerField()
+    zones_total = serializers.IntegerField()
+    lgas_total = serializers.IntegerField()
+    wards_total = serializers.IntegerField()
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
@@ -157,78 +222,185 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-from core.models import Report, Notification, DeviceRegistration
-from events.models import Event, EventAttendance, MeetingMinutes
-from media.models import MediaItem
-from staff.models import DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram, WardMeeting, WardMeetingAttendance
-from donations.models import Donation, Expense, FinancialReport
+class LeadershipHolderSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    photo = serializers.URLField(allow_null=True)
 
-class MemberSummarySerializer(serializers.ModelSerializer):
-    role_title=serializers.CharField(source='role_definition.title',read_only=True,allow_null=True)
+class LeadershipLocationSerializer(serializers.Serializer):
+    label = serializers.CharField()
+    zone = serializers.IntegerField(allow_null=True)
+    zone_name = serializers.CharField(allow_null=True)
+    lga = serializers.IntegerField(allow_null=True)
+    lga_name = serializers.CharField(allow_null=True)
+    ward = serializers.IntegerField(allow_null=True)
+    ward_name = serializers.CharField(allow_null=True)
+
+class LeadershipSeatSerializer(serializers.Serializer):
+    seat_key = serializers.CharField()
+    role_definition = serializers.IntegerField()
+    role_title = serializers.CharField()
+    tier = serializers.ChoiceField(choices=['STATE','ZONAL','LGA','WARD'])
+    seat_number = serializers.IntegerField()
+    location = LeadershipLocationSerializer()
+    status = serializers.ChoiceField(choices=['FILLED','VACANT'])
+    holder = LeadershipHolderSerializer(allow_null=True)
+
+class MemberSerializer(serializers.ModelSerializer):
+    role_title = serializers.CharField(source='role_definition.title', allow_null=True, read_only=True)
+    zone_name = serializers.CharField(source='zone.name', allow_null=True, read_only=True)
+    lga_name = serializers.CharField(source='lga.name', allow_null=True, read_only=True)
+    ward_name = serializers.CharField(source='ward.name', allow_null=True, read_only=True)
     class Meta:
-        model=User; fields=['id','username','first_name','last_name','email','phone','photo','gender','role','role_title','zone','lga','ward','status','reporter_level','created_at']
-        read_only_fields=['role','status','reporter_level','created_at']
-class ProfileUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=User; fields=['email','first_name','last_name','phone','bio','photo','facebook_url','twitter_url','instagram_url','tiktok_url']
-class PasswordChangeSerializer(serializers.Serializer):
-    old_password=serializers.CharField(write_only=True); new_password=serializers.CharField(write_only=True)
-    def validate_new_password(self,value): validate_password(value,self.context['request'].user); return value
+        model = User
+        fields = ['id','username','first_name','last_name','email','phone','photo','gender','bio','role','role_title',
+                  'zone','zone_name','lga','lga_name','ward','ward_name','status','reporter_level','created_at']
+        read_only_fields = fields
+
 class ReportSerializer(serializers.ModelSerializer):
-    submitted_by_name=serializers.CharField(source='submitted_by.get_full_name',read_only=True)
-    submitted_to_name=serializers.CharField(source='submitted_to.get_full_name',read_only=True,allow_null=True)
+    submitted_by_name = serializers.CharField(source='submitted_by.get_full_name', read_only=True)
+    submitted_to_name = serializers.CharField(source='submitted_to.get_full_name', allow_null=True, read_only=True)
+    reviewed_by_name = serializers.CharField(source='reviewed_by.get_full_name', allow_null=True, read_only=True)
     class Meta:
-        model=Report; fields=['id','title','report_type','content','period','submitted_by','submitted_by_name','submitted_to','submitted_to_name','reviewed_by','parent_report','status','is_reviewed','is_escalated','review_notes','deadline','created_at','submitted_at','reviewed_at','escalated_at']
-        read_only_fields=['submitted_by','submitted_to','reviewed_by','parent_report','status','is_reviewed','is_escalated','review_notes','created_at','submitted_at','reviewed_at','escalated_at']
-class ReportSubmitSerializer(serializers.Serializer):
-    title=serializers.CharField(max_length=300); content=serializers.CharField(); period=serializers.CharField(required=False,allow_blank=True); deadline=serializers.DateField(required=False,allow_null=True); report_type=serializers.ChoiceField(choices=Report.REPORT_TYPE_CHOICES,required=False)
-class CampaignWriteSerializer(serializers.ModelSerializer):
+        model = __import__('core.models',fromlist=['Report']).Report
+        fields = ['id','title','report_type','content','period','submitted_by','submitted_by_name','submitted_to',
+                  'submitted_to_name','reviewed_by','reviewed_by_name','parent_report','status','is_reviewed',
+                  'is_escalated','review_notes','deadline','created_at','submitted_at','reviewed_at','escalated_at']
+        read_only_fields = fields
+
+class ReportCreateSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=300)
+    content = serializers.CharField()
+    period = serializers.CharField(max_length=100, required=False, allow_blank=True, default='')
+    deadline = serializers.DateField(required=False, allow_null=True)
+
+class ArticleWriteSerializer(serializers.ModelSerializer):
     class Meta:
-        model=Campaign; fields=['id','slug','title','subheadline','category','location','lga','ward','verification_status','reporter_credit','meta_description','content','content_json','featured_image','status','rejection_note','created_at','updated_at','published_at']
-        read_only_fields=['slug','status','rejection_note','created_at','updated_at','published_at']
-    def validate(self,attrs):
-        user=self.context['request'].user; lga=attrs.get('lga',getattr(self.instance,'lga',None)); ward=attrs.get('ward',getattr(self.instance,'ward',None))
-        if ward and lga and ward.lga_id != lga.id: raise serializers.ValidationError({'ward':'Ward must belong to the selected LGA.'})
-        if user.role=='ZONAL' and lga and lga.zone_id != user.zone_id: raise serializers.ValidationError({'lga':'LGA is outside your zone.'})
-        if user.role=='LGA' and ((lga and lga.id!=user.lga_id) or (ward and ward.lga_id!=user.lga_id)): raise serializers.ValidationError({'location':'Location is outside your LGA.'})
-        if user.role=='WARD' and ((ward and ward.id!=user.ward_id) or (lga and lga.id!=user.lga_id)): raise serializers.ValidationError({'location':'Location is outside your ward jurisdiction.'})
-        return attrs
+        model = Campaign
+        fields = ['id','title','subheadline','category','location','lga','ward','verification_status','reporter_credit','content','content_json','featured_image']
+        read_only_fields = ['id']
+
 class MediaItemSerializer(serializers.ModelSerializer):
     class Meta:
-        model=MediaItem; fields=['id','title','description','media_type','file','thumbnail','uploaded_by','status','approved_by','created_at','updated_at']; read_only_fields=['uploaded_by','status','approved_by','created_at','updated_at']
+        model = __import__('media.models',fromlist=['MediaItem']).MediaItem
+        fields = ['id','title','description','media_type','file','thumbnail','uploaded_by','status','approved_by','created_at','updated_at']
+        read_only_fields = ['id','uploaded_by','status','approved_by','created_at','updated_at']
+
+from events.models import Event, EventAttendance, MeetingMinutes
+from staff.models import WardMeeting, WomensProgram, YouthProgram, WelfareProgram, DisciplinaryAction
+from donations.models import Donation, Expense
+from core.models import Notification
+from .models import DeviceRegistration
+
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
-        model=Event; fields='__all__'; read_only_fields=['created_by','created_at','updated_at']
-class AttendanceSerializer(serializers.ModelSerializer):
+        model = Event
+        fields = ['id','title','description','location','start_date','end_date','created_by','created_at','updated_at']
+        read_only_fields = ['id','created_by','created_at','updated_at']
+
+class AttendanceRecordSerializer(serializers.ModelSerializer):
     class Meta:
-        model=EventAttendance; fields='__all__'; read_only_fields=['recorded_by','recorded_at']
-class MinutesSerializer(serializers.ModelSerializer):
+        model = EventAttendance
+        fields = ['attendee','present','notes']
+
+class MeetingMinutesSerializer(serializers.ModelSerializer):
     class Meta:
-        model=MeetingMinutes; fields='__all__'; read_only_fields=['recorded_by','recorded_at','updated_at','published_at']
+        model = MeetingMinutes
+        fields = ['id','event','content','summary','attendees_present','recorded_by','recorded_at','updated_at','is_published','published_at']
+        read_only_fields = ['id','event','recorded_by','recorded_at','updated_at','published_at']
+
 class WardMeetingSerializer(serializers.ModelSerializer):
     class Meta:
-        model=WardMeeting; fields='__all__'; read_only_fields=['ward','created_by','created_at','updated_at']
-class DeviceSerializer(serializers.ModelSerializer):
+        model = WardMeeting
+        fields = ['id','ward','meeting_type','title','date','time','location','agenda','minutes','created_by','created_at','updated_at']
+        read_only_fields = ['id','ward','created_by','created_at','updated_at']
+
+class WomensProgramSerializer(serializers.ModelSerializer):
+    target_participants = serializers.IntegerField(required=False)
     class Meta:
-        model=DeviceRegistration; fields=['id','token','device_id','platform','app_version','is_active','updated_at']; read_only_fields=['id','updated_at']
+        model = WomensProgram
+        fields = ['id','title','description','program_type','status','zone','lga','start_date','end_date','location','target_participants','budget','notes','created_by','created_at','updated_at']
+        read_only_fields = ['id','zone','lga','created_by','created_at','updated_at']
+
+class YouthProgramSerializer(serializers.ModelSerializer):
+    target_participants = serializers.IntegerField(required=False)
+    class Meta:
+        model = YouthProgram
+        fields = ['id','title','description','program_type','status','zone','lga','start_date','end_date','location','target_participants','budget','notes','created_by','created_at','updated_at']
+        read_only_fields = ['id','zone','lga','created_by','created_at','updated_at']
+
+class WelfareProgramSerializer(serializers.ModelSerializer):
+    location = serializers.SerializerMethodField()
+    target_participants = serializers.IntegerField(source='target_beneficiaries', required=False)
+    class Meta:
+        model = WelfareProgram
+        fields = ['id','title','description','program_type','status','zone','lga','start_date','end_date','location','target_participants','target_beneficiaries','budget','notes','created_by','created_at','updated_at']
+        read_only_fields = ['id','zone','lga','location','created_by','created_at','updated_at']
+    def get_location(self,obj):
+        return obj.get_scope()
+
+class DonationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Donation
+        fields = ['id','donor_name','amount','reference','notes','status','verified_by','verified_at','recorded_by','recorded_at','created_at']
+        read_only_fields = ['id','status','verified_by','verified_at','recorded_by','recorded_at','created_at']
+
+class ExpenseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Expense
+        fields = ['id','description','amount','category','notes','date','recorded_by','created_at']
+        read_only_fields = ['id','recorded_by','created_at']
+
+class DisciplineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DisciplinaryAction
+        fields = ['id','user','action_type','reason','issued_by','approved_by','is_approved','legal_reviewed_by','legal_opinion','legal_approved','legal_reviewed_at','created_at']
+        read_only_fields = ['id','issued_by','approved_by','is_approved','legal_reviewed_by','legal_opinion','legal_approved','legal_reviewed_at','created_at']
+
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
-        model=Notification; fields=['id','event','notif_type','title','message','link','is_read','created_at']; read_only_fields=['id','event','notif_type','title','message','link','created_at']
-class DisciplinarySerializer(serializers.ModelSerializer):
-    class Meta:
-        model=DisciplinaryAction; fields='__all__'; read_only_fields=['issued_by','approved_by','legal_reviewed_by','legal_reviewed_at','is_approved','created_at']
-class WomensProgramSerializer(serializers.ModelSerializer):
-    class Meta: model=WomensProgram; fields='__all__'; read_only_fields=['created_by','created_at','updated_at']
-class YouthProgramSerializer(serializers.ModelSerializer):
-    class Meta: model=YouthProgram; fields='__all__'; read_only_fields=['created_by','created_at','updated_at']
-class WelfareProgramSerializer(serializers.ModelSerializer):
-    class Meta: model=WelfareProgram; fields='__all__'; read_only_fields=['created_by','created_at','updated_at']
-class DonationSerializer(serializers.ModelSerializer):
-    class Meta: model=Donation; fields='__all__'; read_only_fields=['verified_by','verified_at','recorded_by','recorded_at','created_at']
-class ExpenseSerializer(serializers.ModelSerializer):
-    class Meta: model=Expense; fields='__all__'; read_only_fields=['recorded_by','created_at']
-class FinancialReportSerializer(serializers.ModelSerializer):
-    class Meta: model=FinancialReport; fields='__all__'; read_only_fields=['prepared_by','created_at']
+        model = Notification
+        fields = ['id','event','notif_type','target_type','target_id','title','message','link','is_read','created_at']
+        read_only_fields = fields
 
-class GenericObjectSerializer(serializers.Serializer):
-    pass
+class DeviceRegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeviceRegistration
+        fields = ['id','token','device_id','platform','app_version','is_active','created_at','updated_at']
+        read_only_fields = ['id','created_at','updated_at']
+
+from core.models import FAQ, CommunityReport
+from staff.models import Announcement, CommunityOutreach
+from donations.models import FinancialReport, AuditReport
+class FAQSerializer(serializers.ModelSerializer):
+    class Meta: model=FAQ; fields=['id','question','answer','order','is_active','created_at','updated_at']
+class CommunityReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=CommunityReport
+        fields=['id','reporter_name','reporter_phone','submitted_by','ward','lga','zone','location_details','incident_date','incident_time','category','what_happened','who_was_involved','why_is_it_important','evidence_image','evidence_video','status','info_status','internal_notes','created_at']
+        read_only_fields=['id','reporter_name','reporter_phone','submitted_by','zone','status','info_status','internal_notes','created_at']
+class AnnouncementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Announcement
+        fields=['id','title','content','scope','priority','target_zone','target_lga','target_ward','is_active','expires_at','created_by','created_at','updated_at']
+        read_only_fields=['id','created_by','created_at','updated_at']
+    def validate(self,a):
+        obj=Announcement(**a)
+        try:obj.clean()
+        except Exception as exc:raise serializers.ValidationError(getattr(exc,'message_dict',{'non_field_errors':exc.messages}))
+        return a
+class OutreachSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=CommunityOutreach
+        fields=['id','organization','contact_person','contact_phone','contact_email','engagement_type','status','date','location','purpose','notes','follow_up_date','follow_up_notes','created_by','created_at','updated_at']
+        read_only_fields=['id','created_by','created_at','updated_at']
+class FinancialReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=FinancialReport
+        fields=['id','title','report_period','total_income','total_expenses','report_file','summary','prepared_by','created_at']
+        read_only_fields=['id','prepared_by','created_at']
+class AuditReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=AuditReport
+        fields=['id','title','audit_period','findings','recommendations','compliance_status','status','report_file','submitted_by','submitted_to','reviewed_by','review_notes','created_at','submitted_at','reviewed_at']
+        read_only_fields=['id','status','submitted_by','submitted_to','reviewed_by','created_at','submitted_at','reviewed_at']

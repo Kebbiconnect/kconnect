@@ -39,8 +39,8 @@
             <option value="">All Roles</option>
             <option value="GENERAL" {% if role_filter == 'GENERAL' %}selected{% endif %}>General Member</option>
             <option value="STATE"   {% if role_filter == 'STATE'   %}selected{% endif %}>State Executive</option>
-            <option value="ZONAL"   {% if role_filter == 'ZONAL'   %}selected{% endif %}>Senatorial Director</option>
-            <option value="LGA"     {% if role_filter == 'LGA'     %}selected{% endif %}>LGA Network Lead</option>
+            <option value="ZONAL"   {% if role_filter == 'ZONAL'   %}selected{% endif %}>Zonal Coordinator</option>
+            <option value="LGA"     {% if role_filter == 'LGA'     %}selected{% endif %}>LGA Coordinator</option>
             <option value="WARD"    {% if role_filter == 'WARD'    %}selected{% endif %}>Ward Leader</option>
           </select>
         </div>
@@ -62,7 +62,6 @@
             <option value="PENDING"   {% if status_filter == 'PENDING'   %}selected{% endif %}>Pending</option>
             <option value="APPROVED"  {% if status_filter == 'APPROVED'  %}selected{% endif %}>Approved</option>
             <option value="SUSPENDED" {% if status_filter == 'SUSPENDED' %}selected{% endif %}>Suspended</option>
-            <option value="DISMISSED" {% if status_filter == 'DISMISSED' %}selected{% endif %}>Dismissed</option>
           </select>
         </div>
         <!-- Actions -->
@@ -161,7 +160,7 @@
                   <a href="{% url 'staff:dismiss_member' member.id %}" class="kpn-dropdown-item danger">
                     <i class="fas fa-user-times w-4"></i> Dismiss
                   </a>
-                  {% elif member.status == 'SUSPENDED' or member.status == 'DISMISSED' %}
+                  {% elif member.status == 'SUSPENDED' %}
                   <div class="kpn-dropdown-separator"></div>
                   <a href="{% url 'staff:reinstate_member' member.id %}" class="kpn-dropdown-item">
                     <i class="fas fa-user-check w-4"></i> Reinstate

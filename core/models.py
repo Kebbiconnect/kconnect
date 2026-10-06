@@ -247,6 +247,7 @@ class CommunityReport(models.Model):
     
     reporter_name = models.CharField(max_length=100)
     reporter_phone = models.CharField(max_length=20, blank=True)
+    submitted_by = models.ForeignKey('staff.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='community_reports')
     
     # Geographic mapping (optional if reporter doesn't know)
     ward = models.ForeignKey('leadership.Ward', on_delete=models.SET_NULL, null=True, blank=True)
@@ -330,8 +331,10 @@ class Notification(models.Model):
         on_delete=models.CASCADE,
         related_name='notifications'
     )
-    event = models.CharField(max_length=50, default='INFO', db_index=True, help_text='Stable machine-readable workflow event')
     notif_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='INFO')
+    event = models.CharField(max_length=50, default='INFO')
+    target_type = models.CharField(max_length=40, blank=True)
+    target_id = models.PositiveBigIntegerField(null=True, blank=True)
     title = models.CharField(max_length=200)
     message = models.TextField()
     link = models.CharField(
@@ -365,29 +368,3 @@ class Patron(models.Model):
         
     def __str__(self):
         return self.full_name
-
-class DeviceRegistration(models.Model):
-    """A server-owned push token registered by an authenticated mobile client."""
-    PLATFORM_CHOICES = [('ANDROID', 'Android')]
-    user = models.ForeignKey('staff.User', on_delete=models.CASCADE, related_name='devices')
-    token = models.CharField(max_length=512, unique=True)
-    device_id = models.CharField(max_length=200, blank=True)
-    platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES, default='ANDROID')
-    app_version = models.CharField(max_length=50, blank=True)
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    last_seen_at = models.DateTimeField(auto_now=True)
-    class Meta:
-        ordering = ['-updated_at']
-        indexes = [models.Index(fields=['user', 'is_active'], name='device_user_active_idx')]
-
-class PushDelivery(models.Model):
-    STATUS_CHOICES = [('PENDING','Pending'),('SENT','Sent'),('FAILED','Failed'),('INVALID','Invalid token')]
-    notification = models.ForeignKey(Notification, on_delete=models.CASCADE, related_name='push_deliveries')
-    device = models.ForeignKey(DeviceRegistration, on_delete=models.CASCADE, related_name='deliveries')
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
-    provider_message_id = models.CharField(max_length=300, blank=True)
-    error = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    sent_at = models.DateTimeField(null=True, blank=True)

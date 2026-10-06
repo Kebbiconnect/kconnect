@@ -2,6 +2,7 @@ from functools import wraps
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from leadership.roles import canonical_role_title
 
 def role_required(*allowed_roles):
     def decorator(view_func):
@@ -31,9 +32,11 @@ def specific_role_required(*role_titles):
             
             # Super Access for President and Director of Media & Communications
             super_roles = ['President', 'Director of Media & Communications']
-            has_super_access = request.user.role_definition and request.user.role_definition.title in super_roles
+            actual_title = canonical_role_title(request.user.role_definition.title) if request.user.role_definition else None
+            allowed_titles = {canonical_role_title(title) for title in role_titles}
+            has_super_access = actual_title in super_roles
             
-            if not has_super_access and (not request.user.role_definition or request.user.role_definition.title not in role_titles):
+            if not has_super_access and actual_title not in allowed_titles:
                 messages.error(request, 'You do not have permission to access this page.')
                 return redirect('staff:dashboard')
             

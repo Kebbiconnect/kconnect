@@ -96,7 +96,7 @@ class FinancialReportForm(forms.ModelForm):
 
 
 class AuditReportForm(forms.ModelForm):
-    """Form for Director of Audit & Accountability to submit audit reports"""
+    """Form for Auditor General to submit audit reports"""
     
     class Meta:
         model = AuditReport
