@@ -16,7 +16,7 @@ from donations.models import Donation, Expense
 from core.models import Notification
 from telegram_integration.models import TelegramAuthState, TelegramMembership
 from .models import DeviceRegistration
-from .permissions import IsVerifiedMember, capability_permission
+from .permissions import IsVerifiedMember, capability_permission, any_capability_permission
 from .serializers import (EventSerializer,AttendanceRecordSerializer,MeetingMinutesSerializer,WardMeetingSerializer,
  WomensProgramSerializer,YouthProgramSerializer,WelfareProgramSerializer,DonationSerializer,ExpenseSerializer,
  DisciplineSerializer,NotificationSerializer,DeviceRegistrationSerializer,TelegramMembershipSerializer)
@@ -24,19 +24,22 @@ from .serializers import (EventSerializer,AttendanceRecordSerializer,MeetingMinu
 AUTH=[permissions.IsAuthenticated,IsVerifiedMember]
 
 def scoped_users(user):
-    qs=User.objects.filter(status='VERIFIED',is_superuser=False)
-    if user.role=='STATE': return qs
-    if user.role=='ZONAL': return qs.filter(zone=user.zone)
-    if user.role=='LGA': return qs.filter(lga=user.lga)
-    if user.role=='WARD': return qs.filter(ward=user.ward)
-    return qs.filter(pk=user.pk)
+    from leadership.access import users_in_jurisdiction
+    return users_in_jurisdiction(user,User.objects.filter(status='VERIFIED',is_superuser=False))
 
 def scoped_programs(model,user):
     qs=model.objects.all()
     if user.role=='STATE': return qs
-    if user.role=='ZONAL': return qs.filter(Q(zone=user.zone)|Q(zone__isnull=True,lga__isnull=True))
-    if user.role=='LGA': return qs.filter(Q(lga=user.lga)|Q(zone=user.lga.zone,lga__isnull=True)|Q(zone__isnull=True,lga__isnull=True))
+    if user.role=='ZONAL' and user.zone_id: return qs.filter(Q(zone_id=user.zone_id)|Q(zone__isnull=True,lga__isnull=True))
+    if user.role=='LGA' and user.lga_id: return qs.filter(Q(lga_id=user.lga_id)|Q(zone_id=user.lga.zone_id,lga__isnull=True)|Q(zone__isnull=True,lga__isnull=True))
+    # Website programmes have no Ward field. Do not grant a Ward role LGA-wide writes.
     return qs.none()
+
+def programme_creation_scope(user):
+    if user.role=='STATE': return {'created_by':user}
+    if user.role=='ZONAL' and user.zone_id:return {'created_by':user,'zone':user.zone}
+    if user.role=='LGA' and user.lga_id:return {'created_by':user,'zone':user.lga.zone,'lga':user.lga}
+    raise PermissionDenied('Programme creation is not configured for this jurisdiction.')
 
 class EventListCreateView(generics.ListCreateAPIView):
     serializer_class=EventSerializer
@@ -121,10 +124,7 @@ class ProgramListCreateView(generics.ListCreateAPIView):
     def get_permissions(self): return [p() for p in [permissions.IsAuthenticated,IsVerifiedMember,capability_permission(self.config()[2])]]
     def get_queryset(self): return scoped_programs(self.config()[0],self.request.user)
     def perform_create(self,s):
-        values={'created_by':self.request.user}
-        if self.request.user.role=='ZONAL': values['zone']=self.request.user.zone
-        elif self.request.user.role=='LGA': values.update(zone=self.request.user.lga.zone,lga=self.request.user.lga)
-        s.save(**values)
+        s.save(**programme_creation_scope(self.request.user))
 
 class FinanceSummaryView(APIView):
     permission_classes=[permissions.IsAuthenticated,IsVerifiedMember,capability_permission('VIEW_FINANCE')]
@@ -346,7 +346,7 @@ class FinancialReportListCreateView(generics.ListCreateAPIView):
 class AuditReportListCreateView(generics.ListCreateAPIView):
     serializer_class=AuditReportSerializer
     def get_permissions(self):
-        cap='MANAGE_AUDIT_REPORTS' if self.request.method=='POST' else 'VIEW_AUDIT_REPORTS';return [permissions.IsAuthenticated(),IsVerifiedMember(),capability_permission(cap)()]
+        check=capability_permission('MANAGE_AUDIT_REPORTS') if self.request.method=='POST' else any_capability_permission('MANAGE_AUDIT_REPORTS','VIEW_AUDIT_REPORTS');return [permissions.IsAuthenticated(),IsVerifiedMember(),check()]
     def get_queryset(self):return AuditReport.objects.all()
     def perform_create(self,s):s.save(submitted_by=self.request.user)
 class AuditReportSubmitView(APIView):

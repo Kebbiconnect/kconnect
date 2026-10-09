@@ -7,8 +7,30 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from . import views
 from . import dashboard_views
 from . import workflow_views
+from . import mobile_views
+from . import member_mobile_views
+from . import mobilization_views
+
+from . import schema_mobile  # Documentation-only API annotations.
 
 urlpatterns = [
+    path("members/mobilization/",mobilization_views.MobilizationListView.as_view()),
+    path("members/mobilization/filters/",mobilization_views.MobilizationFiltersView.as_view()),
+    path("members/mobilization/export/<str:format_name>/",mobilization_views.MobilizationExportView.as_view()),
+    path("articles/images/",mobile_views.ArticleBodyImageView.as_view()),
+    path("members/export/<str:format_name>/",member_mobile_views.MemberExportView.as_view()),
+    path("members/<int:pk>/administration/",member_mobile_views.MemberAdministrationView.as_view()),
+    path("content/home/", mobile_views.MobileHomeView.as_view()),
+    path("leadership/people/<int:pk>/", mobile_views.PublicLeaderDetailView.as_view()),
+    path("notifications/summary/", mobile_views.NotificationSummaryView.as_view()),
+    path("notifications/<int:pk>/state/", mobile_views.NotificationStateView.as_view()),
+    path("management/catalog/", mobile_views.ResourceCatalogView.as_view()),
+    path("management/<str:kind>/", mobile_views.ResourceListCreateView.as_view()),
+    path("management/<str:kind>/<int:pk>/", mobile_views.ResourceDetailView.as_view()),
+    path("programs/<str:kind>/<int:pk>/", mobile_views.ProgramDetailView.as_view()),
+    path("programs/<str:kind>/<int:pk>/participants/", mobile_views.ProgramParticipantsView.as_view()),
+    path("ward-meetings/<int:pk>/", mobile_views.WardMeetingDetailView.as_view()),
+    path("ward-meetings/<int:pk>/attendance/", mobile_views.WardAttendanceView.as_view()),
     path('newsroom/', views.NewsroomListView.as_view(), name='newsroom-list'),
     path('newsroom/<slug:slug>/', views.NewsroomDetailView.as_view(), name='newsroom-detail'),
     path('opportunities/', views.OpportunityListView.as_view(), name='opportunity-list'),

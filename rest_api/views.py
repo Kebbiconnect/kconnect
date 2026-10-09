@@ -232,6 +232,13 @@ class RoleDefinitionListView(generics.ListAPIView):
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        # Match the documented response: actual identity/status, not the write-form serializer.
+        return Response(UserSerializer(user, context=self.get_serializer_context()).data, status=201)
     
     @extend_schema(
         auth=[],
@@ -314,7 +321,7 @@ class LeadershipSeatListView(APIView):
     @extend_schema(auth=[], responses={200: LeadershipSeatSerializer(many=True)})
     def get(self, request):
         from django.shortcuts import get_object_or_404
-        from leadership.directory import leadership_seats
+        from .leadership_read_model import leadership_seats
         from rest_framework.exceptions import ValidationError
         from .pagination import StandardPagination
         from .serializers import LeadershipSeatSerializer
@@ -378,6 +385,17 @@ class MemberListView(generics.ListAPIView):
         if requested_status: queryset=queryset.filter(status=requested_status)
         gender=self.request.query_params.get('gender')
         if gender: queryset=queryset.filter(gender=gender)
+        for field in ('zone','lga','ward'):
+            value=self.request.query_params.get(field)
+            if value:
+                try:queryset=queryset.filter(**{field+'_id':int(value)})
+                except (ValueError,TypeError):return queryset.none()
+        tier=self.request.query_params.get('tier')
+        if tier:queryset=queryset.filter(role=tier)
+        query=self.request.query_params.get('search','').strip()
+        if query:
+            from django.db.models import Q
+            queryset=queryset.filter(Q(first_name__icontains=query)|Q(last_name__icontains=query)|Q(username__icontains=query))
         return queryset
 
 class PendingMemberListView(generics.ListAPIView):

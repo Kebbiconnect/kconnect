@@ -24,9 +24,9 @@ class CampaignSerializer(serializers.ModelSerializer):
         model = Campaign
         fields = ['id','slug','title','subheadline','category','category_label','location','lga','lga_name',
                   'ward','ward_name','verification_status','verification_status_label','reporter_credit',
-                  'author_name','image','content','content_json','views','read_time','published_at','status']
+                  'author_name','image','content','content_json','meta_description','views','read_time','published_at','status']
 
-    def get_read_time(self, obj):
+    def get_read_time(self, obj) -> int:
         return obj.get_read_time()
 
 class OpportunitySerializer(serializers.ModelSerializer):
@@ -101,19 +101,21 @@ class UserSerializer(serializers.ModelSerializer):
     access = serializers.SerializerMethodField()
     dashboard = serializers.SerializerMethodField()
     capabilities = serializers.SerializerMethodField()
+    mobile_tools = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone', 'bio', 'photo', 'gender',
                   'role', 'tier', 'zone', 'zone_name', 'lga', 'lga_name', 'ward', 'ward_name',
                   'role_definition', 'role_title', 'seat_number', 'status', 'reporter_level',
-                  'is_trusted_reporter', 'telegram_membership', 'access', 'dashboard', 'capabilities']
+                  'is_trusted_reporter', 'telegram_membership', 'access', 'dashboard', 'capabilities',
+                  'facebook_url','twitter_url','instagram_url','tiktok_url','mobile_tools']
         read_only_fields = fields
 
-    def get_role_title(self, obj):
+    def get_role_title(self, obj) -> str | None:
         return role_title(obj)
 
-    def get_access(self, obj):
+    def get_access(self, obj) -> dict:
         result = check_dashboard_access(obj)
         states = {'ok': 'ALLOWED', 'not_verified': 'PENDING_APPROVAL', 'telegram_required': 'TELEGRAM_REQUIRED'}
         return {
@@ -122,18 +124,22 @@ class UserSerializer(serializers.ModelSerializer):
             'telegram_verified': result['telegram_active'],
         }
 
-    def get_dashboard(self, obj):
+    def get_dashboard(self, obj) -> str:
         return DASHBOARD_BY_ROLE.get(role_title(obj), 'member')
 
-    def get_capabilities(self, obj):
+    def get_capabilities(self, obj) -> tuple[str, ...]:
         return capabilities_for(obj)
 
+
+    def get_mobile_tools(self,obj) -> list[str]:
+        from .mobilization_views import can_mobilize
+        return ['mobilization'] if can_mobilize(obj) else []
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'email', 'first_name', 'last_name', 'phone', 'bio', 'gender',
-                  'photo', 'zone', 'lga', 'ward']
+                  'photo', 'zone', 'lga', 'ward', 'facebook_url','twitter_url','instagram_url','tiktok_url']
         read_only_fields = ['username', 'zone', 'lga', 'ward']
 
 class ImpactMetricsSerializer(serializers.Serializer):
@@ -277,8 +283,16 @@ class ReportCreateSerializer(serializers.Serializer):
 class ArticleWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Campaign
-        fields = ['id','title','subheadline','category','location','lga','ward','verification_status','reporter_credit','content','content_json','featured_image']
-        read_only_fields = ['id']
+        fields = ['id','slug','status','rejection_note','title','subheadline','category','location','lga','ward','verification_status','reporter_credit','content','content_json','featured_image','meta_description']
+        read_only_fields = ['id','slug','status','rejection_note']
+    def validate(self,attrs):
+        lga=attrs.get('lga',getattr(self.instance,'lga',None))
+        ward=attrs.get('ward',getattr(self.instance,'ward',None))
+        if ward and (not lga or ward.lga_id!=lga.pk):raise serializers.ValidationError({'ward':'Choose a ward belonging to the selected LGA.'})
+        if 'content_json' in attrs:
+            from .article_blocks import sanitize_article_blocks
+            attrs['content_json']=sanitize_article_blocks(attrs['content_json'])
+        return attrs
 
 class MediaItemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -293,6 +307,11 @@ from core.models import Notification
 from .models import DeviceRegistration
 
 class EventSerializer(serializers.ModelSerializer):
+    def validate(self,attrs):
+        starts=attrs.get('start_date',getattr(self.instance,'start_date',None))
+        ends=attrs.get('end_date',getattr(self.instance,'end_date',None))
+        if starts and ends and starts>=ends:raise serializers.ValidationError({'end_date':'End date must be after start date.'})
+        return attrs
     class Meta:
         model = Event
         fields = ['id','title','description','location','start_date','end_date','created_by','created_at','updated_at']
@@ -336,7 +355,7 @@ class WelfareProgramSerializer(serializers.ModelSerializer):
         model = WelfareProgram
         fields = ['id','title','description','program_type','status','zone','lga','start_date','end_date','location','target_participants','target_beneficiaries','budget','notes','created_by','created_at','updated_at']
         read_only_fields = ['id','zone','lga','location','created_by','created_at','updated_at']
-    def get_location(self,obj):
+    def get_location(self,obj) -> str:
         return obj.get_scope()
 
 class DonationSerializer(serializers.ModelSerializer):
@@ -385,9 +404,25 @@ class AnnouncementSerializer(serializers.ModelSerializer):
         fields=['id','title','content','scope','priority','target_zone','target_lga','target_ward','is_active','expires_at','created_by','created_at','updated_at']
         read_only_fields=['id','created_by','created_at','updated_at']
     def validate(self,a):
-        obj=Announcement(**a)
+        fields=('title','content','scope','priority','target_zone','target_lga','target_ward','is_active','expires_at')
+        merged={name:getattr(self.instance,name) for name in fields} if self.instance else {}
+        merged.update(a)
+        obj=Announcement(**merged)
         try:obj.clean()
         except Exception as exc:raise serializers.ValidationError(getattr(exc,'message_dict',{'non_field_errors':exc.messages}))
+        request=self.context.get('request')
+        if request:
+            from staff.forms import AnnouncementForm
+            from rest_framework.exceptions import PermissionDenied
+            user=request.user
+            if user.role!='STATE' and not {'ZONAL':user.zone_id,'LGA':user.lga_id,'WARD':user.ward_id}.get(user.role):
+                raise PermissionDenied('Your announcement jurisdiction is not assigned.')
+            form=AnnouncementForm(user=user)
+            if obj.scope not in dict(form.fields['scope'].choices):raise PermissionDenied('This announcement scope is not authorized for your role.')
+            for name in ('target_zone','target_lga','target_ward'):
+                target=merged.get(name)
+                if target and (name not in form.fields or not form.fields[name].queryset.filter(pk=target.pk).exists()):
+                    raise PermissionDenied('An announcement target is outside your jurisdiction.')
         return a
 class OutreachSerializer(serializers.ModelSerializer):
     class Meta:
