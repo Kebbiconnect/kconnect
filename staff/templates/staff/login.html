@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Login - KPN{% endblock %}
 
@@ -8,30 +9,24 @@
 {% block content %}
 <div class="min-h-[80vh] flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4 sm:px-6 lg:px-8">
     <div class="max-w-sm w-full kpn-card">
-        <div class="kpn-card-header text-center">
-            <div class="mx-auto flex items-center justify-center mb-4">
-                <i class="fas fa-shield-alt text-kpn-green text-3xl"></i>
-            </div>
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-                KPN Member Login
-            </h2>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                Sign in to your KPN account to continue
-            </p>
+        <div class="kpn-auth-header">
+            <img src="{% static 'images/kpn-logo.png' %}" alt="KPN emblem" width="56" height="56">
+            <h1>Sign in to KPN</h1>
+            <p>Access your member workspace.</p>
         </div>
-        
+
         <div class="kpn-card-body">
             <form method="POST" class="space-y-4">
                 {% csrf_token %}
                 
                 <div class="kpn-form-group">
-                    <label class="kpn-label-text">
+                    <label for="loginUsername" class="kpn-label-text">
                         Username
                     </label>
                     <div class="kpn-input-icon-wrap">
                         <i class="fas fa-user kpn-input-icon"></i>
                         <input type="text" 
-                               name="username" 
+                               name="username" id="loginUsername" autocomplete="username" 
                                required 
                                class="kpn-input pl-10"
                                placeholder="Enter your username">
@@ -40,7 +35,7 @@
                 
                 <div class="kpn-form-group">
                     <div class="flex justify-between items-center mb-1">
-                        <label class="kpn-label-text mb-0">
+                        <label for="loginPassword" class="kpn-label-text mb-0">
                             Password
                         </label>
                         <a href="{% url 'staff:forgot_password' %}" class="text-xs text-kpn-green hover:text-kpn-blue font-semibold transition-colors">
@@ -51,11 +46,11 @@
                         <i class="fas fa-lock kpn-input-icon"></i>
                         <input type="password" 
                                name="password" 
-                               id="loginPassword"
+                               id="loginPassword" autocomplete="current-password"
                                required 
-                               class="kpn-input pl-10 pr-10"
+                               class="kpn-input pl-10 pr-14"
                                placeholder="Enter your password">
-                        <button type="button" onclick="toggleLoginPassword()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-kpn-green transition-colors focus:outline-none">
+                        <button type="button" id="loginPasswordToggle" aria-label="Show password" aria-pressed="false" onclick="toggleLoginPassword()" class="kpn-icon-btn absolute right-1 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-kpn-green transition-colors focus:outline-none">
                             <i class="fas fa-eye" id="loginPasswordIcon"></i>
                         </button>
                     </div>
@@ -90,13 +85,18 @@
 function toggleLoginPassword() {
     const passwordField = document.getElementById('loginPassword');
     const icon = document.getElementById('loginPasswordIcon');
+    const toggle = document.getElementById('loginPasswordToggle');
     
     if (passwordField.type === 'password') {
         passwordField.type = 'text';
+        toggle.setAttribute('aria-label', 'Hide password');
+        toggle.setAttribute('aria-pressed', 'true');
         icon.classList.remove('fa-eye');
         icon.classList.add('fa-eye-slash');
     } else {
         passwordField.type = 'password';
+        toggle.setAttribute('aria-label', 'Show password');
+        toggle.setAttribute('aria-pressed', 'false');
         icon.classList.remove('fa-eye-slash');
         icon.classList.add('fa-eye');
     }

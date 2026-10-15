@@ -60,7 +60,9 @@
           <select name="status" class="kpn-input kpn-select">
             <option value="">All Statuses</option>
             <option value="PENDING"   {% if status_filter == 'PENDING'   %}selected{% endif %}>Pending</option>
-            <option value="APPROVED"  {% if status_filter == 'APPROVED'  %}selected{% endif %}>Approved</option>
+            <option value="VERIFIED"  {% if status_filter == 'VERIFIED'  %}selected{% endif %}>Verified</option>
+            <option value="UNDER_REVIEW" {% if status_filter == 'UNDER_REVIEW' %}selected{% endif %}>Under review</option>
+            <option value="REJECTED" {% if status_filter == 'REJECTED' %}selected{% endif %}>Rejected / archived</option>
             <option value="SUSPENDED" {% if status_filter == 'SUSPENDED' %}selected{% endif %}>Suspended</option>
           </select>
         </div>
@@ -107,10 +109,16 @@
             </td>
             <td data-label="Location" class="text-gray-600 dark:text-gray-400">{{ member.get_jurisdiction }}</td>
             <td data-label="Status">
-              {% if member.status == 'APPROVED' %}
-                <span class="kpn-badge kpn-badge-green"><i class="fas fa-check-circle"></i> Approved</span>
+              {% if member.archived_at %}
+                <span class="kpn-badge kpn-badge-gray"><i class="fas fa-archive"></i> Archived</span>
+              {% elif member.status == 'VERIFIED' %}
+                <span class="kpn-badge kpn-badge-green"><i class="fas fa-check-circle"></i> Verified</span>
               {% elif member.status == 'PENDING' %}
                 <span class="kpn-badge kpn-badge-yellow"><i class="fas fa-clock"></i> Pending</span>
+              {% elif member.status == 'UNDER_REVIEW' %}
+                <span class="kpn-badge kpn-badge-yellow">Under review</span>
+              {% elif member.status == 'REJECTED' %}
+                <span class="kpn-badge kpn-badge-red">Rejected</span>
               {% elif member.status == 'SUSPENDED' %}
                 <span class="kpn-badge kpn-badge-orange"><i class="fas fa-pause-circle"></i> Suspended</span>
               {% else %}
@@ -119,6 +127,9 @@
             </td>
             <td data-label="Joined" class="text-gray-600 dark:text-gray-400">{{ member.created_at|date:"M d, Y" }}</td>
             <td data-label="Actions">
+              {% if member.archived_at %}
+              <span class="text-sm text-gray-600 dark:text-gray-400">Records preserved</span>
+              {% else %}
               <!-- Alpine.js dropdown -->
               <div class="relative inline-block text-left"
                    x-data="{ open: false }"
@@ -152,7 +163,7 @@
                     <i class="fas fa-level-down-alt w-4"></i> Demote
                   </a>
                   {% endif %}
-                  {% if member.status == 'APPROVED' %}
+                  {% if member.status == 'VERIFIED' %}
                   <div class="kpn-dropdown-separator"></div>
                   <a href="{% url 'staff:suspend_member' member.id %}" class="kpn-dropdown-item">
                     <i class="fas fa-pause-circle w-4"></i> Suspend
@@ -168,6 +179,7 @@
                   {% endif %}
                 </div>
               </div>
+              {% endif %}
             </td>
           </tr>
           {% empty %}

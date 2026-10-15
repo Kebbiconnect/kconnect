@@ -1,0 +1,25 @@
+<div class="kpn-quick-actions" aria-label="Dashboard shortcuts">
+    <div class="kpn-quick-grid">
+        {% for action in primary_actions %}
+        <a class="kpn-quick-tile" href="{{ action.url }}">
+            <span class="kpn-quick-icon" aria-hidden="true"><i class="fas fa-{{ action.icon }}"></i></span>
+            <span class="kpn-quick-label">{{ action.label }}</span>
+        </a>
+        {% empty %}
+        <p class="kpn-quick-empty">Your shortcuts will appear once your membership is verified.</p>
+        {% endfor %}
+    </div>
+    {% if more_actions %}
+    <details class="kpn-quick-more">
+        <summary>More actions <i class="fas fa-chevron-down" aria-hidden="true"></i></summary>
+        <div class="kpn-quick-grid kpn-quick-secondary">
+            {% for action in more_actions %}
+            <a class="kpn-quick-tile" href="{{ action.url }}">
+                <span class="kpn-quick-icon" aria-hidden="true"><i class="fas fa-{{ action.icon }}"></i></span>
+                <span class="kpn-quick-label">{{ action.label }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </details>
+    {% endif %}
+</div>

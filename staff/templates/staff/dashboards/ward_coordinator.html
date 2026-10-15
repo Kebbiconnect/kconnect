@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load dashboard_actions %}
 
 {% block title %}Ward Coordinator Dashboard - KPN{% endblock %}
 
@@ -54,40 +55,8 @@
         
         <!-- My Tasks (Quick Actions) -->
         <div class="kpn-card">
-            <h2 class="kpn-section-label mt-6">
-    <i class="fas fa-tasks mr-2 text-orange-500"></i> My Tasks
-</h2>
-            <div class="flex flex-col gap-1">
-                <a href="{% url 'staff:create_ward_meeting' %}" class="kpn-action-item">
-                    <div class="kpn-action-icon bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-500">
-                        <i class="fas fa-plus"></i>
-                    </div>
-                    <div>
-                        <span>Record Meeting</span>
-                        <span class="text-xs text-gray-500">Log attendance for a recent ward gathering</span>
-                    </div>
-                </a>
-                
-                <a href="{% url 'core:submit_report' %}" class="kpn-action-item">
-                    <div class="kpn-action-icon bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-500">
-                        <i class="fas fa-paper-plane"></i>
-                    </div>
-                    <div>
-                        <span>Submit Ward Report</span>
-                        <span class="text-xs text-gray-500">Send activity report to LGA Coordinator</span>
-                    </div>
-                </a>
-                
-                <a href="{% url 'staff:disciplinary_actions' %}" class="kpn-action-item">
-                    <div class="kpn-action-icon bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-500">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <div>
-                        <span>Report Misconduct</span>
-                        <span class="text-xs text-gray-500">Flag members violating KPN constitution</span>
-                    </div>
-                </a>
-            </div>
+            <h2 class="kpn-quick-heading">Quick actions</h2>
+            {% dashboard_quick_actions %}
         </div>
         
         <!-- My Responsibilities -->

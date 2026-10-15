@@ -18,6 +18,7 @@ import cloudinary.uploader
 import cloudinary.api
 from dotenv import load_dotenv
 from decouple import config
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,10 +29,20 @@ load_dotenv(BASE_DIR / '.env')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # No default fallback - must be set in environment variables for security
-SECRET_KEY = config('SESSION_SECRET', default='django-insecure-dev-key-replace-in-production-123456789')
+SECRET_KEY = config('SESSION_SECRET', default='')
+if not SECRET_KEY.strip():
+    raise ImproperlyConfigured(
+        "SESSION_SECRET must be configured with a private Django signing key."
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
+KPN_ENV = config('KPN_ENV', default='production' if os.getenv('RENDER') else 'development')
+IS_PRODUCTION = KPN_ENV == 'production'
+if KPN_ENV not in {'development', 'test', 'production'}:
+    raise ImproperlyConfigured('KPN_ENV must be development, test or production.')
+if IS_PRODUCTION and DEBUG:
+    raise ImproperlyConfigured('DEBUG must be False in production.')
 
 # --- START: New and Improved ALLOWED_HOSTS logic ---
 # In DEBUG mode, allow all hosts for easier development
@@ -151,20 +162,24 @@ WSGI_APPLICATION = 'KPN.wsgi.application'
 # Database configuration
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Use PostgreSQL database from DATABASE_URL environment variable, fallback to sqlite3
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL', f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
-
-# Configure database connection pool settings for PostgreSQL
+# Production cannot silently use an ephemeral SQLite database on Render.
+DATABASE_URL = config('DATABASE_URL', default='')
+if IS_PRODUCTION and not DATABASE_URL:
+    raise ImproperlyConfigured('DATABASE_URL must be configured for Neon PostgreSQL.')
+DATABASES = {'default': dj_database_url.parse(
+    DATABASE_URL or f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+    conn_max_age=config('DB_CONN_MAX_AGE', default=60, cast=int),
+    conn_health_checks=True,
+)}
+if IS_PRODUCTION and DATABASES['default'].get('ENGINE') != 'django.db.backends.postgresql':
+    raise ImproperlyConfigured('Production requires PostgreSQL, not SQLite.')
 if DATABASES['default'].get('ENGINE') == 'django.db.backends.postgresql':
-    if 'OPTIONS' not in DATABASES['default']:
-        DATABASES['default']['OPTIONS'] = {}
-    DATABASES['default']['OPTIONS']['connect_timeout'] = 30
+    options=DATABASES['default'].setdefault('OPTIONS', {})
+    options['connect_timeout']=15
+    if IS_PRODUCTION:
+        options.setdefault('sslmode', 'require')
+        if options['sslmode'] not in {'require','verify-ca','verify-full'}:
+            raise ImproperlyConfigured('Production PostgreSQL connections must require TLS.')
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -196,6 +211,12 @@ CLOUDINARY_API_SECRET = config('CLOUDINARY_API_SECRET', default='')
 
 # Only configure Cloudinary if all credentials are provided
 USE_CLOUDINARY = all([CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET])
+if IS_PRODUCTION and not USE_CLOUDINARY:
+    raise ImproperlyConfigured('All Cloudinary credentials are required in production; local uploads are not a fallback.')
+CLOUDINARY_STORAGE = {'CLOUD_NAME':CLOUDINARY_CLOUD_NAME,'API_KEY':CLOUDINARY_API_KEY,'API_SECRET':CLOUDINARY_API_SECRET,'SECURE':True}
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 
 if USE_CLOUDINARY:
     cloudinary.config(
@@ -247,17 +268,13 @@ SITE_URL = config('SITE_URL', default='')
 LOCKALLY_API_KEY = config('LOCKALLY_API_KEY', default='')
 LOCKALLY_API_URL = config('LOCKALLY_API_URL', default='')
 LOCKALLY_FROM_EMAIL = config('LOCKALLY_FROM_EMAIL', default='')
-LOCKALLY_FROM_NAME = config('LOCKALLY_FROM_NAME', default='KPN - Kebbi Progressive Network')
+LOCKALLY_FROM_NAME = config('LOCKALLY_FROM_NAME', default='KPN - Kebbi Progressive Youth Network')
 
-# Select email backend:
-#   1. Lockally backend  — when LOCKALLY_API_KEY + LOCKALLY_API_URL are both set (production)
-#   2. Console backend   — fallback for local development / when Lockally not configured
-_lockally_configured = bool(LOCKALLY_API_KEY and LOCKALLY_API_URL)
-
+# Lockally is the default. Missing configuration must not silently switch to
+# console output and imply that a real message was delivered. EMAIL_BACKEND
+# remains an explicit override for tests/development or a chosen SMTP service.
 EMAIL_BACKEND = config(
-    'EMAIL_BACKEND',
-    default='staff.lockally_backend.LockallyEmailBackend' if _lockally_configured
-            else 'django.core.mail.backends.console.EmailBackend'
+    'EMAIL_BACKEND', default='staff.lockally_backend.LockallyEmailBackend'
 )
 
 # SMTP settings retained for reference / manual override (not used when Lockally is active)
@@ -268,11 +285,14 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@kpn.com.ng')
+# Bound SMTP failures instead of letting a blocked provider hang a request.
+EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=10, cast=int)
+CONTACT_RECIPIENT_EMAIL = config('CONTACT_RECIPIENT_EMAIL', default='info@kpn.com.ng')
 
 # Security Settings
 # HTTPS/SSL Configuration
 # Force SSL redirect off if we're on local dev (even if DEBUG is False in env)
-SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool)
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=IS_PRODUCTION, cast=bool)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_HSTS_SECONDS = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
@@ -352,6 +372,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_PARSER_CLASSES': ('rest_api.parsers.JSONObjectParser','rest_framework.parsers.FormParser','rest_framework.parsers.MultiPartParser'),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_api.pagination.StandardPagination',
     'PAGE_SIZE': 20,
@@ -378,3 +399,16 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in config('CORS_ALLOWED_ORIGINS', default='https://kpn.com.ng,https://www.kpn.com.ng').split(',') if origin.strip()]
 FIREBASE_CREDENTIALS_FILE = config('FIREBASE_CREDENTIALS_FILE', default='')
 
+
+# Production invariants; HTTPS is terminated at Render and forwarded over its trusted proxy.
+if IS_PRODUCTION:
+    from urllib.parse import urlsplit
+    if not SITE_URL or urlsplit(SITE_URL).scheme != 'https' or not urlsplit(SITE_URL).netloc:
+        raise ImproperlyConfigured('SITE_URL must be the canonical HTTPS production address.')
+    if not SECURE_SSL_REDIRECT or not SESSION_COOKIE_SECURE or not CSRF_COOKIE_SECURE:
+        raise ImproperlyConfigured('HTTPS redirection and secure session/CSRF cookies are mandatory in production.')
+    ALLOWED_HOSTS=[host for host in ALLOWED_HOSTS if host not in {'localhost','127.0.0.1'}]
+    site_host=urlsplit(SITE_URL).hostname
+    if site_host not in ALLOWED_HOSTS: ALLOWED_HOSTS.append(site_host)
+    site_origin=f"https://{urlsplit(SITE_URL).netloc}"
+    if site_origin not in CSRF_TRUSTED_ORIGINS: CSRF_TRUSTED_ORIGINS.append(site_origin)

@@ -6,6 +6,7 @@ Routes data to bot.py handlers.
 """
 
 import logging
+import hmac
 from django.conf import settings
 from .bot import handle_message, handle_chat_member_update
 
@@ -18,11 +19,10 @@ def process_webhook_update(request):
     """
     # Validate Secret Token (configured when setting the webhook)
     expected_token = getattr(settings, 'TELEGRAM_WEBHOOK_SECRET', '')
-    if expected_token:
-        received_token = request.headers.get('X-Telegram-Bot-Api-Secret-Token')
-        if received_token != expected_token:
-            logger.warning(f"Webhook unauthorized access attempt. Invalid token.")
-            return False
+    received_token=request.headers.get('X-Telegram-Bot-Api-Secret-Token','')
+    if not expected_token or not hmac.compare_digest(received_token,expected_token):
+        logger.warning('Webhook request rejected: missing or incorrect secret.')
+        return False
 
     import json
     try:
@@ -31,6 +31,10 @@ def process_webhook_update(request):
     except Exception as e:
         logger.error(f"Failed to parse webhook JSON: {e}")
         return False
+
+    if not isinstance(update,dict):return False
+    for kind in ('message','chat_member','my_chat_member'):
+        if kind in update and not isinstance(update[kind],dict):return False
 
     # Route based on update type
     if 'message' in update:

@@ -1,8 +1,27 @@
 from functools import wraps
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from leadership.roles import canonical_role_title
+
+
+def dashboard_access_required(view_func):
+    """Apply the existing dashboard-entry policy to direct dashboard URLs.
+
+    This does not change functional officer permissions or API workflow policy.
+    """
+    @wraps(view_func)
+    @login_required
+    def wrapped(request, *args, **kwargs):
+        from telegram_integration.permissions import check_dashboard_access
+        access = check_dashboard_access(request.user)
+        if not access["allowed"]:
+            if access["reason"] == "telegram_required":
+                return render(request, "telegram_integration/gate.html",
+                              {"user": request.user})
+            return render(request, "staff/pending_approval.html")
+        return view_func(request, *args, **kwargs)
+    return wrapped
 
 def role_required(*allowed_roles):
     def decorator(view_func):

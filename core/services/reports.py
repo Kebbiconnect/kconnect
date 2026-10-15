@@ -3,7 +3,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 from core.models import Report
-from leadership.access import role_title
+from leadership.access import role_title,has_full_access
 from staff.models import User
 
 class ReportWorkflowError(Exception):
@@ -32,12 +32,18 @@ def create_report(user,**data):
 def reports_for(user):
  title=role_title(user)
  qs=Report.objects.select_related("submitted_by","submitted_to","reviewed_by","parent_report")
- if title in {"President","Director of Monitoring & Compliance"}: return qs.order_by("-created_at")
+ if has_full_access(user) or title=="Director of Monitoring & Compliance": return qs.order_by("-created_at")
  return qs.filter(Q(submitted_by=user)|Q(submitted_to=user)).distinct().order_by("-created_at")
 
-def can_review(user,report): return report.submitted_to_id==user.id or role_title(user)=="President"
+def can_review(user,report): return report.submitted_to_id==user.id or has_full_access(user)
 
+@transaction.atomic
 def escalate_report(original,reviewer):
+ # Recheck the actual row under lock; callers may hold a stale approved instance.
+ Report.objects.select_for_update().get(pk=original.pk)
+ original.refresh_from_db()
+ if not can_review(reviewer,original): raise ReportWorkflowError("permission_denied","You do not have permission to escalate this report.")
+ if not original.can_be_escalated(): raise ReportWorkflowError("not_escalatable","Only an approved, un-escalated report can be escalated.")
  if original.report_type=="WARD_TO_LGA":
   submitter=original.submitted_by; zone=submitter.zone or (submitter.ward.lga.zone if submitter.ward_id else None) or (submitter.lga.zone if submitter.lga_id else None)
   next_type="LGA_TO_ZONAL"; supervisor=User.objects.filter(role="ZONAL",zone=zone,role_definition__title="Senatorial Director",status="VERIFIED").first() if zone else None
@@ -54,8 +60,9 @@ def escalate_report(original,reviewer):
 @transaction.atomic
 def review_report(user,report_id,action,notes="",auto_escalate=True):
  if action not in {"APPROVED","FLAGGED","REJECTED"}: raise ReportWorkflowError("invalid_action","Use APPROVED, FLAGGED or REJECTED.","action")
- report=Report.objects.select_for_update().select_related("submitted_by","submitted_to").get(pk=report_id)
+ report=Report.objects.select_for_update(of=("self",)).select_related("submitted_by","submitted_to").get(pk=report_id)
  if not can_review(user,report): raise ReportWorkflowError("permission_denied","You do not have permission to review this report.")
+ if report.is_escalated: raise ReportWorkflowError("already_escalated","An escalated report cannot be reviewed again.","action")
  if action in {"FLAGGED","REJECTED"} and not notes.strip(): raise ReportWorkflowError("notes_required","Review notes are required when flagging or rejecting.","notes")
  report.status=action; report.review_notes=notes; report.is_reviewed=True; report.reviewed_by=user; report.reviewed_at=timezone.now(); report.save()
  send_report_notification(report,"reviewed")

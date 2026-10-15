@@ -8,8 +8,12 @@ def announcements(request):
     user_announcements = []
     
     if request.user.is_authenticated:
-        user_announcements = Announcement.for_user(request.user)[:10]
+        user_announcements = list(Announcement.for_user(request.user)[:10])
     
     return {
-        'user_announcements': user_announcements
+        'user_announcements': user_announcements,
+        'announcement_data': [
+            {'title': item.title, 'content': item.content, 'priority': item.priority}
+            for item in user_announcements
+        ]
     }

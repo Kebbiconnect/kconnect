@@ -26,14 +26,14 @@ logger = logging.getLogger(__name__)
 class LockallyEmailBackend(BaseEmailBackend):
     """
     Sends email via the Lockally Sending API (POST JSON).
-    Falls back gracefully on failure without exposing credentials.
+    Raises delivery errors by default; never silently falls back to console or SMTP.
     """
 
     def __init__(self, fail_silently=False, **kwargs):
         super().__init__(fail_silently=fail_silently, **kwargs)
         self.api_url = getattr(settings, 'LOCKALLY_API_URL', '')
         self.api_key = getattr(settings, 'LOCKALLY_API_KEY', '')
-        self.from_email = getattr(settings, 'LOCKALLY_FROM_EMAIL', settings.DEFAULT_FROM_EMAIL)
+        self.from_email = getattr(settings, 'LOCKALLY_FROM_EMAIL', '') or settings.DEFAULT_FROM_EMAIL
         self.from_name = getattr(settings, 'LOCKALLY_FROM_NAME', 'KPN')
 
     def _send_single(self, email_message):
@@ -104,7 +104,7 @@ class LockallyEmailBackend(BaseEmailBackend):
 
             if response.status_code in (200, 201, 202):
                 logger.info(
-                    'Lockally: Email sent successfully to %d recipient(s). Subject: "%s"',
+                    'Lockally: Email accepted by provider for %d recipient(s). Subject: "%s"',
                     len(email_message.to),
                     email_message.subject,
                 )

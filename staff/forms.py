@@ -964,9 +964,9 @@ class AnnouncementForm(forms.ModelForm):
         target_lga = cleaned_data.get('target_lga')
         target_ward = cleaned_data.get('target_ward')
         
-        if scope == 'GENERAL':
+        if scope in {'GENERAL', 'STATE'}:
             if target_zone or target_lga or target_ward:
-                raise forms.ValidationError("General announcements should not have zone, LGA, or ward targets.")
+                raise forms.ValidationError("General and State announcements should not have zone, LGA, or ward targets.")
         elif scope == 'ZONAL':
             if not target_zone:
                 raise forms.ValidationError("Please select a zone for this zonal announcement.")

@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 """Additive native-mobile endpoints. Website views, models, and migrations are unchanged."""
 from django.shortcuts import get_object_or_404
 from django.db import transaction
@@ -111,6 +112,7 @@ class ResourceDetailView(ResourceListCreateView,generics.RetrieveUpdateDestroyAP
     http_method_names=["get","put","patch","delete","head","options"]
     def get_permissions(self):return [permissions.IsAuthenticated(),IsVerifiedMember(),capability_permission(resource_config(self.kwargs.get('kind','faq') if getattr(self,'swagger_fake_view',False) else self.kwargs['kind'])[2])()]
     def get_serializer_class(self):return resource_config(self.kwargs.get('kind','faq') if getattr(self,'swagger_fake_view',False) else self.kwargs['kind'])[1]
+    @extend_schema(operation_id="management_resource_retrieve")
     def get(self,request,*args,**kwargs):return self.retrieve(request,*args,**kwargs)
     def update(self,request,*args,**kwargs):
         kind=self.kwargs.get('kind','faq') if getattr(self,'swagger_fake_view',False) else self.kwargs['kind']

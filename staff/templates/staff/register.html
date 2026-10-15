@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Join KPN - Register{% endblock %}
 
@@ -6,12 +7,12 @@
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="kpn-card">
         <div class="bg-kpn-green text-white py-4 px-6 rounded-t-lg text-center">
-            <h3 class="text-base font-bold">
+            <h1 class="text-xl font-bold">
                 <i class="fas fa-user-plus mr-2"></i> Join Kebbi Progressive Youth Network
-            </h3>
+            </h1>
             <p class="text-sm">One Voice, One Change</p>
         </div>
-        <div class="kpn-card-body p-6 md:p-8">
+        <div class="kpn-registration kpn-card-body p-6 md:p-8">
             <form method="POST" enctype="multipart/form-data" id="registrationForm">
                 {% csrf_token %}
                 
@@ -71,8 +72,9 @@
                     <label for="photo" class="kpn-label-text">
                         Profile Photo *
                     </label>
-                    <input type="file" accept="image/*" class="kpn-input" id="photo" name="photo" required>
-                    <p class="text-xs text-gray-500 mt-1">Upload a clear photo of yourself (JPG, PNG, max 5MB)</p>
+                    <input type="file" accept="image/*" class="kpn-input" id="photo" name="photo" aria-describedby="photo-help photo-error" required>
+                    <p id="photo-help" class="text-sm text-gray-500 mt-1">Upload a clear photo of yourself (JPG or PNG, maximum 400 KiB).</p>
+                    <p id="photo-error" class="text-sm text-red-700 dark:text-red-300 mt-1" role="alert" hidden></p>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -222,6 +224,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'staff/js/registration.js' %}" defer></script>
 <script>
 // Toggle leadership options
 const generalMemberRadio = document.getElementById('general_member');
@@ -479,7 +482,7 @@ async function checkVacantRoles() {
         if (data.vacant_roles.length === 0) {
             roleSelect.innerHTML = '<option value="">No vacant positions available</option>';
             roleSelect.disabled = true;
-            roleMessage.textContent = 'No vacant leadership positions available in this location. You can register as a General Member.';
+            roleMessage.textContent = 'No vacant leadership positions available in this location. Choose another location or contact KPN support.';
             roleMessage.className = 'text-sm mt-2 text-orange-600 dark:text-orange-400';
         } else {
             roleSelect.innerHTML = '<option value="">Select a position</option>';
@@ -552,9 +555,9 @@ async function checkVacantRolesByTier(tier) {
             roleSelect.disabled = true;
             
             if (tier === 'STATE') {
-                roleMessage.textContent = `All State Executive positions are currently filled. Register as a General Member or select another tier.`;
+                roleMessage.textContent = `All State Executive positions are currently filled. Select another tier or contact KPN support.`;
             } else {
-                roleMessage.textContent = `No vacant ${tierLabel} positions available in this location. Try another tier or register as a General Member.`;
+                roleMessage.textContent = `No vacant ${tierLabel} positions available in this location. Try another tier or contact KPN support.`;
             }
             roleMessage.className = 'text-sm mt-2 text-orange-600 dark:text-orange-400';
         } else {

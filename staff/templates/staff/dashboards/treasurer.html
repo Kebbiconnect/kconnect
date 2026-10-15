@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load dashboard_actions %}
 {% block title %}Treasurer Dashboard - KPN{% endblock %}
 {% block content %}
 <div class="kpn-page">
@@ -27,23 +28,8 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <div class="kpn-card">
-            <h2 class="kpn-section-label mt-6">
-    <i class="fas fa-tasks mr-2 text-green-500"></i> My Tasks
-</h2>
-            <div class="flex flex-col gap-1">
-                <a href="{% url 'staff:dashboard' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-green-50 group transition border border-transparent hover:border-green-200">
-                    <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-4"><i class="fas fa-plus-circle"></i></div>
-                    <div><span>Record Income</span><span class="text-xs text-gray-500">Log new dues, levies, or donations received</span></div>
-                </a>
-                <a href="{% url 'staff:dashboard' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-red-50 group transition border border-transparent hover:border-red-200">
-                    <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center mr-4"><i class="fas fa-minus-circle"></i></div>
-                    <div><span>Record Expense</span><span class="text-xs text-gray-500">Log a KPN expenditure or disbursement</span></div>
-                </a>
-                <a href="{% url 'staff:view_reports' %}" class="flex items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-blue-50 group transition border border-transparent hover:border-blue-200">
-                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-4"><i class="fas fa-chart-pie"></i></div>
-                    <div><span>Financial Reports</span><span class="text-xs text-gray-500">View income vs expense reports</span></div>
-                </a>
-            </div>
+            <h2 class="kpn-quick-heading">Quick actions</h2>
+            {% dashboard_quick_actions %}
         </div>
         <div class="kpn-card">
             <h2 class="kpn-section-label mt-6">

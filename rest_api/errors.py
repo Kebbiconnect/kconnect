@@ -1,5 +1,5 @@
 from rest_framework import status
-from rest_framework.exceptions import ValidationError,AuthenticationFailed,NotAuthenticated,PermissionDenied,Throttled,NotFound
+from rest_framework.exceptions import ValidationError,AuthenticationFailed,NotAuthenticated,PermissionDenied,Throttled,NotFound,ParseError
 from rest_framework.views import exception_handler
 
 def _strings(value):
@@ -20,6 +20,8 @@ def api_exception_handler(exc,context):
   else: non_field=_strings(response.data)
   message=non_field[0] if non_field else "Please correct the highlighted fields."
   details={"fields":fields,"non_field":non_field}
+ elif isinstance(exc,ParseError):
+  code="validation_error"; message=str(exc.detail); details={"fields":{},"non_field":[message]}
  elif isinstance(exc,Throttled):
   code="throttled"; message=str(exc.detail); details={"retry_after_seconds":exc.wait}
  elif isinstance(exc,(AuthenticationFailed,NotAuthenticated)):
@@ -27,6 +29,8 @@ def api_exception_handler(exc,context):
  elif isinstance(exc,PermissionDenied):
   codes=exc.get_codes(); code=codes if isinstance(codes,str) else "permission_denied"; message=str(exc.detail)
  elif isinstance(exc,NotFound): code="not_found"; message=str(exc.detail)
+ elif response.status_code==503 and getattr(exc, "default_code", None)=="email_delivery_unavailable":
+  code="email_delivery_unavailable"; message=str(exc.detail)
  elif response.status_code==409: code="conflict"; message=str(response.data)
  response.data={"error":{"code":code,"message":message,"details":details},"request_id":request_id}
  return response

@@ -1,4 +1,4 @@
-from rest_framework import generics, viewsets, permissions
+from rest_framework import generics, viewsets, permissions, serializers
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -17,6 +17,16 @@ from .serializers import (
     RegisterSerializer, ImpactMetricsSerializer, ProfileSerializer, LeadershipSeatSerializer, MemberSerializer, ReportSerializer, ReportCreateSerializer, ArticleWriteSerializer, MediaItemSerializer
 )
 
+def optional_location_id(request, name):
+    value = request.query_params.get(name)
+    if value in (None, ''):
+        return None
+    try:
+        return serializers.IntegerField(min_value=1).run_validation(value)
+    except serializers.ValidationError as exc:
+        raise serializers.ValidationError({name: exc.detail})
+
+
 class NewsroomListView(generics.ListAPIView):
     serializer_class = CampaignSerializer
     permission_classes = [permissions.AllowAny]
@@ -26,7 +36,7 @@ class NewsroomListView(generics.ListAPIView):
     def get_queryset(self):
         queryset = Campaign.objects.filter(status='PUBLISHED').select_related('author','lga','ward')
         category = self.request.query_params.get('category')
-        lga = self.request.query_params.get('lga')
+        lga = optional_location_id(self.request, 'lga')
         verification = self.request.query_params.get('status')
         search = self.request.query_params.get('q','').strip()
         if category: queryset = queryset.filter(category=category)
@@ -178,7 +188,7 @@ class LGAListView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = LGA.objects.all()
-        zone = self.request.query_params.get('zone')
+        zone = optional_location_id(self.request, 'zone')
         if zone:
             queryset = queryset.filter(zone_id=zone)
         return queryset
@@ -198,7 +208,7 @@ class WardListView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = Ward.objects.all()
-        lga = self.request.query_params.get('lga')
+        lga = optional_location_id(self.request, 'lga')
         if lga:
             queryset = queryset.filter(lga_id=lga)
         return queryset
@@ -333,9 +343,9 @@ class LeadershipSeatListView(APIView):
             raise ValidationError({'status': 'Use FILLED, VACANT or all.'})
         if seat_status in {'VACANT','all'} and not tier:
             raise ValidationError({'tier': 'A tier is required when requesting vacant seats.'})
-        zone = get_object_or_404(Zone, pk=request.query_params['zone']) if request.query_params.get('zone') else None
-        lga = get_object_or_404(LGA.objects.select_related('zone'), pk=request.query_params['lga']) if request.query_params.get('lga') else None
-        ward = get_object_or_404(Ward.objects.select_related('lga__zone'), pk=request.query_params['ward']) if request.query_params.get('ward') else None
+        zone = get_object_or_404(Zone, pk=optional_location_id(request, 'zone')) if request.query_params.get('zone') else None
+        lga = get_object_or_404(LGA.objects.select_related('zone'), pk=optional_location_id(request, 'lga')) if request.query_params.get('lga') else None
+        ward = get_object_or_404(Ward.objects.select_related('lga__zone'), pk=optional_location_id(request, 'ward')) if request.query_params.get('ward') else None
         if lga and zone and lga.zone_id != zone.id:
             raise ValidationError({'lga': 'The selected LGA is outside the selected zone.'})
         if ward and lga and ward.lga_id != lga.id:
@@ -358,9 +368,9 @@ class RegistrationVacantRolesView(APIView):
         from django.shortcuts import get_object_or_404
         from rest_framework.exceptions import ValidationError
         from staff.services.vacancy import vacant_roles
-        zone = get_object_or_404(Zone, pk=request.query_params['zone']) if request.query_params.get('zone') else None
-        lga = get_object_or_404(LGA.objects.select_related('zone'), pk=request.query_params['lga']) if request.query_params.get('lga') else None
-        ward = get_object_or_404(Ward.objects.select_related('lga__zone'), pk=request.query_params['ward']) if request.query_params.get('ward') else None
+        zone = get_object_or_404(Zone, pk=optional_location_id(request, 'zone')) if request.query_params.get('zone') else None
+        lga = get_object_or_404(LGA.objects.select_related('zone'), pk=optional_location_id(request, 'lga')) if request.query_params.get('lga') else None
+        ward = get_object_or_404(Ward.objects.select_related('lga__zone'), pk=optional_location_id(request, 'ward')) if request.query_params.get('ward') else None
         if lga and zone and lga.zone_id != zone.id:
             raise ValidationError({'lga':'The selected LGA is outside the selected zone.'})
         if ward and lga and ward.lga_id != lga.id:
@@ -416,7 +426,7 @@ class MemberDecisionView(APIView):
     permission_classes = [permissions.IsAuthenticated, IsVerifiedMember, capability_permission('REVIEW_APPLICANTS')]
     def post(self,request,pk):
         from staff.services.member_admin import decide_application,MemberDecisionError
-        try: member=decide_application(request.user,pk,request.data.get('decision'))
+        try: member=decide_application(request.user,pk,serializers.ChoiceField(choices=['approve','reject']).run_validation(request.data.get('decision')),serializers.CharField(allow_blank=True,max_length=2000).run_validation(request.data.get('reason','')))
         except User.DoesNotExist: raise NotFound('Applicant not found.')
         except MemberDecisionError as exc:
             from rest_framework.exceptions import PermissionDenied,ValidationError
@@ -469,7 +479,7 @@ class ReportReviewView(APIView):
         from rest_framework.exceptions import PermissionDenied,ValidationError
         raw_action=str(request.data.get('action','')).lower()
         action={'approve':'APPROVED','approved':'APPROVED','flag':'FLAGGED','flagged':'FLAGGED','reject':'REJECTED','rejected':'REJECTED'}.get(raw_action,raw_action.upper())
-        notes=request.data.get('notes','')
+        notes=serializers.CharField(allow_blank=True,max_length=20000).run_validation(request.data.get('notes',''))
         try: report,child=review_report(request.user,pk,action,notes)
         except __import__('core.models',fromlist=['Report']).Report.DoesNotExist: raise NotFound('Report not found.')
         except ReportWorkflowError as exc:
@@ -541,7 +551,7 @@ class ArticleDecisionView(APIView):
         from rest_framework.exceptions import ValidationError
         article=Campaign.objects.filter(pk=pk,status='PENDING').first()
         if not article: raise NotFound('Pending article not found.')
-        action=request.data.get('action'); note=str(request.data.get('note','')).strip()
+        action=serializers.CharField(max_length=32).run_validation(request.data.get('action')); note=serializers.CharField(allow_blank=True,max_length=20000).run_validation(request.data.get('note','')).strip()
         if action=='publish': article.status='PUBLISHED'; article.approved_by=request.user; article.published_at=timezone.now(); article.rejection_note=''
         elif action in {'return','reject'}:
             if not note: raise ValidationError({'note':['An editor note is required.']})
@@ -574,7 +584,7 @@ class MediaDecisionView(APIView):
         from rest_framework.exceptions import ValidationError
         item=MediaItem.objects.filter(pk=pk,status='PENDING').first()
         if not item: raise NotFound('Pending media item not found.')
-        action=request.data.get('action')
+        action=serializers.CharField(max_length=32).run_validation(request.data.get('action'))
         if action=='approve': item.status='APPROVED'; item.approved_by=request.user
         elif action=='reject': item.status='REJECTED'; item.approved_by=None
         else: raise ValidationError({'action':['Use approve or reject.']})

@@ -82,7 +82,7 @@ class MemberAdministrationView(APIView):
         return Response({"member":MemberSerializer(member,context={"request":request}).data,"action":action,"title":ACTIONS[action],"actions":[{"value":k,"label":v} for k,v in ACTIONS.items()],"fields":fields})
     @transaction.atomic
     def post(self,request,pk):
-        member=self.get_member(pk,lock=True);action=request.data.get("action");values=dict(request.data)
+        action=request.data.get("action");member=self.get_member(pk,lock=action!="swap");values=dict(request.data)
         # JSON scalars only; this endpoint does not accept file or arbitrary model-field updates.
         if not isinstance(action,str):raise ValidationError({"action":"Choose an administration action."})
         if action in {"suspend","dismiss","reinstate"}:
@@ -90,6 +90,7 @@ class MemberAdministrationView(APIView):
             if action=="suspend":member.status="SUSPENDED"
             elif action=="dismiss":member.status="SUSPENDED";member.is_active=False
             else:
+                if member.archived_at:raise ValidationError({"action":"Archived applications cannot be reinstated as approved members."})
                 # Match website reinstatement exactly: it does not reactivate a dismissed account.
                 if member.role_definition:
                     RoleDefinition.objects.select_for_update().get(pk=member.role_definition_id)
@@ -99,10 +100,11 @@ class MemberAdministrationView(APIView):
         elif action=="swap":
             values["member1"]=member.pk;form=SwapPositionsForm(values)
             if not form.is_valid():raise ValidationError(dict(form.errors))
-            other=self.get_member(form.cleaned_data["member2"].pk,lock=True)
-            keys=("role","role_definition","zone","lga","ward");first={k:getattr(member,k) for k in keys};second={k:getattr(other,k) for k in keys}
-            for k in keys:setattr(member,k,second[k]);setattr(other,k,first[k])
-            member.save();other.save()
+            from staff.services.assignments import swap_members
+            from django.core.exceptions import ValidationError as DjangoValidationError
+            try: swap_members(member.pk,form.cleaned_data["member2"].pk)
+            except DjangoValidationError as exc: raise ValidationError({"non_field_errors":exc.messages})
+            member.refresh_from_db()
         else:
             form=self.form(action,member,values)
             if not form.is_valid():raise ValidationError(dict(form.errors))

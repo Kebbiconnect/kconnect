@@ -1,18 +1,8 @@
-<!-- Reusable Dashboard Header Component with Typing Animation -->
-<div class="kpn-card border-none bg-gradient-to-r from-kpn-green to-kpn-blue text-white mb-6">
-    <div class="kpn-card-body flex flex-col md:flex-row items-center justify-between gap-6 p-8">
-        <div class="flex-1 text-center md:text-left">
-            <h1 class="text-3xl font-bold mb-2 tracking-tight">
-                <i class="{{ icon_class|default:'fas fa-tachometer-alt' }} mr-2"></i>{{ title }}
-            </h1>
-            <div class="text-white/90 text-sm md:text-base h-6">
-                <span class="typing-text font-medium" data-messages="{{ welcome_messages }}"></span>
-                <span class="typing-cursor inline-block w-0.5 h-4 bg-white ml-0.5 align-middle animate-pulse"></span>
-            </div>
-        </div>
-        <div class="bg-white/10 backdrop-blur rounded-lg px-5 py-3 border border-white/20 text-center md:text-right shrink-0">
-            <p class="text-[10px] text-white/80 uppercase tracking-wider font-bold mb-0.5">Welcome back</p>
-            <p class="text-lg font-bold leading-tight">{{ user.get_full_name }}</p>
-        </div>
+<header class="kpn-workspace-header">
+    <div>
+        <p class="kpn-eyebrow">Your KPN workspace</p>
+        <h1><i class="{{ icon_class|default:'fas fa-tachometer-alt' }}" aria-hidden="true"></i> {{ title }}</h1>
+        <p class="kpn-workspace-meta">{{ user.role_definition.title|default:"KPN member" }} · {{ user.get_jurisdiction }}</p>
     </div>
-</div>
+    <div class="kpn-workspace-identity"><span>Signed in as</span><strong>{{ user.get_full_name }}</strong></div>
+</header>

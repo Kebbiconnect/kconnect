@@ -6,7 +6,7 @@ from django.db.models import Q, Sum
 from django.utils import timezone
 from django.conf import settings
 from django.urls import reverse
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, status, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
@@ -131,8 +131,8 @@ class FinanceSummaryView(APIView):
     def get(self,request):
         income=Donation.objects.filter(status='RECORDED').aggregate(v=Sum('amount'))['v'] or Decimal('0')
         expenses=Expense.objects.aggregate(v=Sum('amount'))['v'] or Decimal('0')
-        return Response({'scope':'STATE','total_income':str(income),'total_expenses':str(expenses),
-                         'balance':str(income-expenses),'pending_donations':Donation.objects.filter(status='UNVERIFIED').count()})
+        return Response({'scope':'STATE','total_income':format(income,'.2f'),'total_expenses':format(expenses,'.2f'),
+                         'balance':format(income-expenses,'.2f'),'pending_donations':Donation.objects.filter(status='UNVERIFIED').count()})
 
 class DonationListCreateView(generics.ListCreateAPIView):
     serializer_class=DonationSerializer
@@ -167,7 +167,7 @@ class DisciplineDecisionView(APIView):
     def post(self,request,pk):
         try: action=DisciplinaryAction.objects.select_for_update().select_related('user').get(pk=pk,user__is_superuser=False)
         except DisciplinaryAction.DoesNotExist: raise NotFound('Disciplinary action not found.')
-        decision=request.data.get('decision','').upper()
+        decision=serializers.CharField(max_length=32).run_validation(request.data.get('decision')).upper()
         if decision not in {'APPROVE','REJECT'}: raise ValidationError({'decision':'Use APPROVE or REJECT.'})
         if action.is_approved: raise ValidationError({'decision':'This action is already approved.'})
         if decision=='REJECT': action.delete(); return Response(status=status.HTTP_204_NO_CONTENT)
@@ -202,8 +202,10 @@ class DeviceListCreateView(generics.ListCreateAPIView):
     def create(self,request,*a,**kw):
         serializer=self.get_serializer(data=request.data); serializer.is_valid(raise_exception=True)
         token=serializer.validated_data['token']
-        DeviceRegistration.objects.filter(token=token).exclude(user=request.user).update(is_active=False)
-        obj,_=DeviceRegistration.objects.update_or_create(user=request.user,token=token,defaults={
+        # The token is globally unique: move its one registration to the current account.
+        # Old-account deactivation remains user-scoped and cannot deactivate the new owner.
+        obj,_=DeviceRegistration.objects.update_or_create(token=token,defaults={
+            'user':request.user,
             'device_id':serializer.validated_data.get('device_id',''),'platform':serializer.validated_data.get('platform','ANDROID'),
             'app_version':serializer.validated_data.get('app_version',''),'is_active':serializer.validated_data.get('is_active',True)})
         return Response(self.get_serializer(obj).data,status=status.HTTP_200_OK)
@@ -254,9 +256,22 @@ class PublicContactView(APIView):
     permission_classes=[permissions.AllowAny]
     def get(self,request): return Response({'address':'Sani Abacha Bypass Road, Birnin Kebbi','phone':'+234 806 777 0283','email':'info@kpn.com.ng'})
     def post(self,request):
-        for field in ('name','email','message'):
-            if not str(request.data.get(field,'')).strip(): raise ValidationError({field:'This field is required.'})
-        send_mail(f"KPN Contact Form: Message from {request.data['name']}",f"Name: {request.data['name']}\nEmail: {request.data['email']}\n\n{request.data['message']}",settings.DEFAULT_FROM_EMAIL,['info@kpn.com.ng'],fail_silently=False)
+        class ContactInput(serializers.Serializer):
+            name=serializers.CharField(max_length=200)
+            email=serializers.EmailField(max_length=254)
+            message=serializers.CharField(max_length=20000)
+            def validate_name(self,value):
+                if '\r' in value or '\n' in value:
+                    raise serializers.ValidationError('Use a single-line name.')
+                return value
+        form=ContactInput(data=request.data);form.is_valid(raise_exception=True);data=form.validated_data
+        from .auth import EmailDeliveryUnavailable
+        try:
+            sent = send_mail(f"KPN Contact Form: Message from {data['name']}",f"Name: {data['name']}\nEmail: {data['email']}\n\n{data['message']}",settings.DEFAULT_FROM_EMAIL,[settings.CONTACT_RECIPIENT_EMAIL],fail_silently=False)
+            if sent != 1:
+                raise RuntimeError('Email provider did not accept the contact message.')
+        except Exception:
+            raise EmailDeliveryUnavailable('We could not deliver your message at this time. Please try again later.') from None
         return Response({'message':'Thank you for contacting us! We will get back to you soon.'},status=201)
 class PublicFAQView(generics.ListAPIView):
     serializer_class=FAQSerializer; permission_classes=[permissions.AllowAny]
@@ -272,7 +287,7 @@ class CommunityReportListCreateView(generics.ListCreateAPIView):
     def get_permissions(self):
         if self.request.method=='POST': return [permissions.IsAuthenticated(),IsVerifiedMember(),capability_permission('SUBMIT_COMMUNITY_REPORT')()]
         return [permissions.IsAuthenticated(),IsVerifiedMember(),capability_permission('REVIEW_COMMUNITY_REPORTS')()]
-    def get_queryset(self): return CommunityReport.objects.select_related('submitted_by','zone','lga','ward').all()
+    def get_queryset(self): return CommunityReport.objects.select_related('submitted_by','zone','lga','ward').order_by('-created_at','-pk')
     def perform_create(self,s):
         u=self.request.user
         s.save(submitted_by=u,reporter_name=u.get_full_name(),reporter_phone=u.phone,zone=(u.zone or (u.lga.zone if u.lga_id else (u.ward.lga.zone if u.ward_id else None))))
@@ -281,11 +296,11 @@ class CommunityReportDecisionView(APIView):
     def post(self,request,pk):
         try: report=CommunityReport.objects.get(pk=pk)
         except CommunityReport.DoesNotExist:raise NotFound('Community report not found.')
-        action=request.data.get('action'); mapping={'approve':'APPROVED','reject':'REJECTED','under_review':'UNDER_REVIEW'}
+        action=serializers.CharField(max_length=32).run_validation(request.data.get('action')); mapping={'approve':'APPROVED','reject':'REJECTED','under_review':'UNDER_REVIEW'}
         if action not in mapping:raise ValidationError({'action':'Use approve, reject or under_review.'})
-        info=request.data.get('info_status','')
+        info=serializers.CharField(allow_blank=True,max_length=32).run_validation(request.data.get('info_status',''))
         if action=='approve' and info not in dict(CommunityReport.INFO_STATUS_CHOICES):raise ValidationError({'info_status':'A valid information label is required for approval.'})
-        report.status=mapping[action]; report.info_status=info if action=='approve' else report.info_status; report.internal_notes=request.data.get('internal_notes',''); report.save()
+        report.status=mapping[action]; report.info_status=info if action=='approve' else report.info_status; report.internal_notes=serializers.CharField(allow_blank=True,max_length=20000).run_validation(request.data.get('internal_notes','')); report.save()
         if report.submitted_by_id:
             from core.notifications import notify
             notify(report.submitted_by,'SUCCESS' if action=='approve' else 'ACTION','Community Report Reviewed',f'Your community report is now {report.get_status_display()}.',event='COMMUNITY_REPORT_REVIEWED',target_type='community_report',target_id=report.id)
@@ -311,13 +326,9 @@ class AnnouncementListCreateView(generics.ListCreateAPIView):
         qs=Announcement.objects.all() if self.request.user.role=='STATE' and self.request.query_params.get('mine')=='false' else Announcement.objects.filter(created_by=self.request.user)
         return qs
     def perform_create(self,s):
-        obj=s.save(created_by=self.request.user)
-        from core.notifications import notify_many
-        users=User.objects.filter(status='VERIFIED',is_active=True)
-        if obj.scope=='ZONAL':users=users.filter(zone=obj.target_zone)
-        elif obj.scope=='LGA':users=users.filter(lga=obj.target_lga)
-        elif obj.scope=='WARD':users=users.filter(ward=obj.target_ward)
-        notify_many(users,'INFO',obj.title,obj.content,event='ANNOUNCEMENT',target_type='announcement',target_id=obj.id)
+        from django.db import transaction
+        with transaction.atomic():
+            s.save(created_by=self.request.user)
 class AnnouncementDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class=AnnouncementSerializer; permission_classes=[permissions.IsAuthenticated,IsVerifiedMember,capability_permission('CREATE_ANNOUNCEMENT')]
     def get_queryset(self):return Announcement.objects.filter(created_by=self.request.user)
@@ -362,9 +373,9 @@ class LegalOpinionView(APIView):
     def post(self,request,pk):
         try:a=DisciplinaryAction.objects.get(pk=pk,is_approved=False)
         except DisciplinaryAction.DoesNotExist:raise NotFound('Pending disciplinary action not found.')
-        opinion=str(request.data.get('legal_opinion','')).strip()
+        opinion=serializers.CharField(max_length=20000).run_validation(request.data.get('legal_opinion')).strip()
         if not opinion:raise ValidationError({'legal_opinion':'This field is required.'})
-        a.legal_opinion=opinion;a.legal_approved=bool(request.data.get('legal_approved'));a.legal_reviewed_by=request.user;a.legal_reviewed_at=timezone.now();a.save();return Response(DisciplineSerializer(a).data)
+        a.legal_opinion=opinion;a.legal_approved=serializers.BooleanField().run_validation(request.data.get('legal_approved',False));a.legal_reviewed_by=request.user;a.legal_reviewed_at=timezone.now();a.save();return Response(DisciplineSerializer(a).data)
 
 class OutreachListCreateView(generics.ListCreateAPIView):
     serializer_class=OutreachSerializer; permission_classes=[permissions.IsAuthenticated,IsVerifiedMember,capability_permission('MANAGE_OUTREACH')]

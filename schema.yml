@@ -27,7 +27,29 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedAdvocacyCampaignList'
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
           description: ''
   /api/v1/advocacy/{id}/:
     get:
@@ -228,6 +250,8 @@ paths:
   /api/v1/articles/{id}/decision/:
     post:
       operationId: articles_decision_create
+      description: REVIEW_ARTICLES required. Pending articles only. Return/reject
+        requires an editor note.
       parameters:
       - in: path
         name: id
@@ -236,14 +260,36 @@ paths:
         required: true
       tags:
       - articles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum:
+                  - publish
+                  - return
+                  - reject
+                note:
+                  type: string
+              required:
+              - action
       security:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+          description: ''
   /api/v1/articles/{id}/submit/:
     post:
       operationId: articles_submit_create
+      description: Owner's nonempty DRAFT only. Returned articles must be edited/saved
+        to DRAFT before submitting again.
       parameters:
       - in: path
         name: id
@@ -256,7 +302,48 @@ paths:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+          description: ''
+  /api/v1/articles/images/:
+    post:
+      operationId: articles_images_create
+      description: Verified WRITE_ARTICLES members only. Multipart JPG/PNG/GIF/WebP
+        image; max 2 MB and 4000px per dimension. Returns Editor.js-compatible storage
+        URL.
+      tags:
+      - articles
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+              required:
+              - image
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: integer
+                  file:
+                    type: object
+                    properties:
+                      url:
+                        type: string
+                        format: uri
+          description: ''
   /api/v1/articles/mine/:
     get:
       operationId: articles_mine_list
@@ -495,11 +582,22 @@ paths:
         required: true
       tags:
       - audit-reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
       security:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/auth/login/:
     post:
       operationId: auth_login_create
@@ -532,11 +630,21 @@ paths:
       operationId: auth_logout_create
       tags:
       - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh:
+                  type: string
+              required:
+              - refresh
       security:
       - jwtAuth: []
       - {}
       responses:
-        '200':
+        '204':
           description: No response body
   /api/v1/auth/me/:
     get:
@@ -557,24 +665,68 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: object
+                additionalProperties: true
           description: ''
   /api/v1/auth/password-reset/:
     post:
       operationId: auth_password_reset_create
       tags:
       - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+              required:
+              - email
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: ''
   /api/v1/auth/password-reset/confirm/:
     post:
       operationId: auth_password_reset_confirm_create
       tags:
       - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uid:
+                  type: string
+                token:
+                  type: string
+                new_password:
+                  type: string
+                  format: password
+                  writeOnly: true
+              required:
+              - uid
+              - token
+              - new_password
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: ''
   /api/v1/auth/refresh/:
     post:
       operationId: auth_refresh_create
@@ -611,20 +763,15 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Register'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Register'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Register'
-        required: true
+              type: object
+              additionalProperties: true
       responses:
-        '201':
+        '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: object
+                additionalProperties: true
           description: ''
   /api/v1/civic/:
     get:
@@ -649,7 +796,29 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedCampaignList'
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
           description: ''
   /api/v1/community/:
     get:
@@ -674,7 +843,29 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedCommunityInitiativeList'
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
           description: ''
   /api/v1/community-reports/:
     get:
@@ -739,11 +930,22 @@ paths:
         required: true
       tags:
       - community-reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
       security:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/community/{id}/:
     get:
       operationId: community_retrieve
@@ -775,7 +977,12 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/content/code-of-conduct/:
     get:
       operationId: content_code_of_conduct_retrieve
@@ -786,7 +993,12 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/content/contact/:
     get:
       operationId: content_contact_retrieve
@@ -797,17 +1009,33 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
     post:
       operationId: content_contact_create
       tags:
       - content
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
       security:
       - jwtAuth: []
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/content/faq/:
     get:
       operationId: content_faq_list
@@ -836,6 +1064,43 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedFAQList'
           description: ''
+  /api/v1/content/home/:
+    get:
+      operationId: content_home_retrieve
+      tags:
+      - content
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organization:
+                    type: string
+                  motto:
+                    type: string
+                  introduction:
+                    type: string
+                  pillars:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                        body:
+                          type: string
+                        route:
+                          type: string
+                      required:
+                      - title
+                      - body
+                      - route
+          description: ''
   /api/v1/content/support/:
     get:
       operationId: content_support_retrieve
@@ -846,7 +1111,12 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/dashboards/community/:
     get:
       operationId: dashboards_community_retrieve
@@ -856,7 +1126,12 @@ paths:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/dashboards/finance/:
     get:
       operationId: dashboards_finance_retrieve
@@ -866,7 +1141,12 @@ paths:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/dashboards/lga/:
     get:
       operationId: dashboards_lga_retrieve
@@ -876,7 +1156,12 @@ paths:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/dashboards/me/:
     get:
       operationId: dashboards_me_retrieve
@@ -890,7 +1175,7 @@ paths:
             application/json:
               schema:
                 type: object
-                additionalProperties: {}
+                additionalProperties: true
           description: ''
   /api/v1/dashboards/secretariat/:
     get:
@@ -901,7 +1186,12 @@ paths:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/dashboards/ward/:
     get:
       operationId: dashboards_ward_retrieve
@@ -911,7 +1201,12 @@ paths:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/dashboards/zone/:
     get:
       operationId: dashboards_zone_retrieve
@@ -921,7 +1216,12 @@ paths:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/devices/:
     get:
       operationId: devices_list
@@ -995,10 +1295,16 @@ paths:
       operationId: devices_deactivate_create
       tags:
       - devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
       security:
       - jwtAuth: []
       responses:
-        '200':
+        '204':
           description: No response body
   /api/v1/discipline/:
     get:
@@ -1063,11 +1369,22 @@ paths:
         required: true
       tags:
       - discipline
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
       security:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/discipline/{id}/legal-opinion/:
     post:
       operationId: discipline_legal_opinion_create
@@ -1079,11 +1396,22 @@ paths:
         required: true
       tags:
       - discipline
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
       security:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/events/:
     get:
       operationId: events_list
@@ -1247,7 +1575,12 @@ paths:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
     put:
       operationId: events_attendance_update
       parameters:
@@ -1258,11 +1591,22 @@ paths:
         required: true
       tags:
       - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
       security:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/events/{id}/minutes/:
     get:
       operationId: events_minutes_retrieve
@@ -1278,7 +1622,12 @@ paths:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
     put:
       operationId: events_minutes_update
       parameters:
@@ -1289,11 +1638,22 @@ paths:
         required: true
       tags:
       - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
       security:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/finance/donations/:
     get:
       operationId: finance_donations_list
@@ -1357,11 +1717,22 @@ paths:
         required: true
       tags:
       - finance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
       security:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/finance/donations/{id}/verify/:
     post:
       operationId: finance_donations_verify_create
@@ -1373,11 +1744,22 @@ paths:
         required: true
       tags:
       - finance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
       security:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/finance/expenses/:
     get:
       operationId: finance_expenses_list
@@ -1491,7 +1873,12 @@ paths:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/gallery/:
     get:
       operationId: gallery_list
@@ -1530,11 +1917,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ImpactMetrics'
+                type: object
+                additionalProperties: true
           description: ''
   /api/v1/leadership/:
     get:
-      operationId: leadership_list
+      operationId: leadership_retrieve
       tags:
       - leadership
       responses:
@@ -1542,9 +1930,8 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/LeadershipSeat'
+                type: object
+                additionalProperties: true
           description: ''
   /api/v1/leadership-directory/:
     get:
@@ -1569,7 +1956,67 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedLeaderList'
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+          description: ''
+  /api/v1/leadership/people/{id}/:
+    get:
+      operationId: leadership_people_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - leadership
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  role_title:
+                    type: string
+                  tier:
+                    type: string
+                  jurisdiction:
+                    type: string
+                  bio:
+                    type: string
+                  photo:
+                    type: string
+                    nullable: true
+                    format: uri
           description: ''
   /api/v1/locations/lgas/:
     get:
@@ -1598,7 +2045,29 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedLGAList'
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
           description: ''
   /api/v1/locations/wards/:
     get:
@@ -1627,7 +2096,29 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedWardList'
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
           description: ''
   /api/v1/locations/zones/:
     get:
@@ -1652,7 +2143,331 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedZoneList'
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+          description: ''
+  /api/v1/management/{kind}/:
+    get:
+      operationId: management_list
+      parameters:
+      - in: path
+        name: kind
+        schema:
+          type: string
+          enum:
+          - advocacy
+          - audit-reports
+          - community
+          - donations
+          - events
+          - expenses
+          - faq
+          - financial-reports
+          - opportunities
+          - outreach
+          - patrons
+          - programs_welfare
+          - programs_women
+          - programs_youth
+          - ward-meetings
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - management
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMobileManagementResourceList'
+          description: ''
+    post:
+      operationId: management_create
+      parameters:
+      - in: path
+        name: kind
+        schema:
+          type: string
+          enum:
+          - advocacy
+          - audit-reports
+          - community
+          - donations
+          - events
+          - expenses
+          - faq
+          - financial-reports
+          - opportunities
+          - outreach
+          - patrons
+          - programs_welfare
+          - programs_women
+          - programs_youth
+          - ward-meetings
+        required: true
+      tags:
+      - management
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MobileManagementResource'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MobileManagementResource'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MobileManagementResource'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileManagementResource'
+          description: ''
+  /api/v1/management/{kind}/{id}/:
+    get:
+      operationId: management_resource_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: kind
+        schema:
+          type: string
+          enum:
+          - advocacy
+          - audit-reports
+          - community
+          - donations
+          - events
+          - expenses
+          - faq
+          - financial-reports
+          - opportunities
+          - outreach
+          - patrons
+          - programs_welfare
+          - programs_women
+          - programs_youth
+          - ward-meetings
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - management
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMobileManagementResourceList'
+          description: ''
+    put:
+      operationId: management_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: kind
+        schema:
+          type: string
+          enum:
+          - advocacy
+          - audit-reports
+          - community
+          - donations
+          - events
+          - expenses
+          - faq
+          - financial-reports
+          - opportunities
+          - outreach
+          - patrons
+          - programs_welfare
+          - programs_women
+          - programs_youth
+          - ward-meetings
+        required: true
+      tags:
+      - management
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MobileManagementResource'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MobileManagementResource'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MobileManagementResource'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileManagementResource'
+          description: ''
+    patch:
+      operationId: management_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: kind
+        schema:
+          type: string
+          enum:
+          - advocacy
+          - audit-reports
+          - community
+          - donations
+          - events
+          - expenses
+          - faq
+          - financial-reports
+          - opportunities
+          - outreach
+          - patrons
+          - programs_welfare
+          - programs_women
+          - programs_youth
+          - ward-meetings
+        required: true
+      tags:
+      - management
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMobileManagementResource'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMobileManagementResource'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMobileManagementResource'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileManagementResource'
+          description: ''
+    delete:
+      operationId: management_destroy
+      description: Only resources marked can_delete by the catalog. Financial entries/audits
+        cannot be deleted.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: kind
+        schema:
+          type: string
+          enum:
+          - advocacy
+          - audit-reports
+          - community
+          - donations
+          - events
+          - expenses
+          - faq
+          - financial-reports
+          - opportunities
+          - outreach
+          - patrons
+          - programs_welfare
+          - programs_women
+          - programs_youth
+          - ward-meetings
+        required: true
+      tags:
+      - management
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/management/catalog/:
+    get:
+      operationId: management_catalog_retrieve
+      tags:
+      - management
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
           description: ''
   /api/v1/media/{id}/decision/:
     post:
@@ -1665,11 +2480,22 @@ paths:
         required: true
       tags:
       - media
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
       security:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/media/mine/:
     get:
       operationId: media_mine_list
@@ -1735,7 +2561,7 @@ paths:
             application/json:
               schema:
                 type: object
-                additionalProperties: {}
+                additionalProperties: true
           description: ''
   /api/v1/media/review/:
     get:
@@ -1767,7 +2593,17 @@ paths:
   /api/v1/members/:
     get:
       operationId: members_list
+      description: All filters remain within the member visibility rules enforced
+        by staff.services.member_admin.members_qs.
       parameters:
+      - in: query
+        name: gender
+        schema:
+          type: string
+      - in: query
+        name: lga
+        schema:
+          type: string
       - name: page
         required: false
         in: query
@@ -1780,6 +2616,26 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      - in: query
+        name: tier
+        schema:
+          type: string
+      - in: query
+        name: ward
+        schema:
+          type: string
+      - in: query
+        name: zone
+        schema:
+          type: string
       tags:
       - members
       security:
@@ -1811,9 +2667,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Member'
           description: ''
-  /api/v1/members/{id}/decision/:
-    post:
-      operationId: members_decision_create
+  /api/v1/members/{id}/administration/:
+    get:
+      operationId: members_administration_retrieve
       parameters:
       - in: path
         name: id
@@ -1826,7 +2682,254 @@ paths:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
+    post:
+      operationId: members_administration_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - members
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
+  /api/v1/members/{id}/decision/:
+    post:
+      operationId: members_decision_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - members
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                decision:
+                  type: string
+                  enum:
+                  - approve
+                  - reject
+              required:
+              - decision
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: ''
+  /api/v1/members/export/{format_name}/:
+    get:
+      operationId: members_export_retrieve
+      description: President EXPORT_MEMBERS permission required; CSV cells are formula-neutralized.
+      parameters:
+      - in: path
+        name: format_name
+        schema:
+          type: string
+          enum:
+          - csv
+          - pdf
+        required: true
+      tags:
+      - members
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/v1/members/mobilization/:
+    get:
+      operationId: members_mobilization_list
+      description: Exact website member_mobilization role-decorator authorization,
+        always filtered through members_qs jurisdiction. Default status VERIFIED;
+        legacy APPROVED alias maps to VERIFIED.
+      parameters:
+      - in: query
+        name: gender
+        schema:
+          type: string
+      - in: query
+        name: lga
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: role
+        schema:
+          type: string
+      - in: query
+        name: search
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      - in: query
+        name: tier
+        schema:
+          type: string
+      - in: query
+        name: ward
+        schema:
+          type: string
+      - in: query
+        name: zone
+        schema:
+          type: string
+      tags:
+      - members
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMemberList'
+          description: ''
+  /api/v1/members/mobilization/export/{format_name}/:
+    get:
+      operationId: members_mobilization_export_retrieve
+      description: Same filters and jurisdiction as the native mobilization list;
+        not restricted to the displayed page. CSV formula prefixes neutralized; PDF
+        cells escaped.
+      parameters:
+      - in: path
+        name: format_name
+        schema:
+          type: string
+          enum:
+          - csv
+          - pdf
+        required: true
+      - in: query
+        name: gender
+        schema:
+          type: string
+      - in: query
+        name: lga
+        schema:
+          type: string
+      - in: query
+        name: role
+        schema:
+          type: string
+      - in: query
+        name: search
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+      - in: query
+        name: tier
+        schema:
+          type: string
+      - in: query
+        name: ward
+        schema:
+          type: string
+      - in: query
+        name: zone
+        schema:
+          type: string
+      tags:
+      - members
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/v1/members/mobilization/filters/:
+    get:
+      operationId: members_mobilization_filters_retrieve
+      parameters:
+      - in: query
+        name: lga
+        schema:
+          type: integer
+      - in: query
+        name: zone
+        schema:
+          type: integer
+      tags:
+      - members
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fields:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+          description: ''
   /api/v1/members/pending/:
     get:
       operationId: members_pending_list
@@ -1877,7 +2980,29 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedCampaignList'
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
           description: ''
   /api/v1/newsroom/{slug}/:
     get:
@@ -1895,7 +3020,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Campaign'
+                type: object
+                additionalProperties: true
           description: ''
   /api/v1/notifications/:
     get:
@@ -1935,21 +3061,87 @@ paths:
         required: true
       tags:
       - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/notifications/{id}/state/:
+    post:
+      operationId: notifications_state_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                is_read:
+                  type: boolean
+              required:
+              - is_read
       security:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  is_read:
+                    type: boolean
+          description: ''
   /api/v1/notifications/read-all/:
     post:
       operationId: notifications_read_all_create
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/notifications/summary/:
+    get:
+      operationId: notifications_summary_retrieve
       tags:
       - notifications
       security:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  unread_count:
+                    type: integer
+                required:
+                - unread_count
+          description: ''
   /api/v1/operations/oversight/:
     get:
       operationId: operations_oversight_retrieve
@@ -1963,7 +3155,7 @@ paths:
             application/json:
               schema:
                 type: object
-                additionalProperties: {}
+                additionalProperties: true
           description: ''
   /api/v1/opportunities/:
     get:
@@ -1998,7 +3190,29 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedOpportunityList'
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
           description: ''
   /api/v1/opportunities/{slug}/:
     get:
@@ -2192,7 +3406,29 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedPatronList'
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
           description: ''
   /api/v1/patrons/{id}/:
     get:
@@ -2283,11 +3519,27 @@ paths:
       operationId: profile_password_create
       tags:
       - profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                old_password:
+                  type: string
+                  format: password
+                  writeOnly: true
+                new_password:
+                  type: string
+                  format: password
+                  writeOnly: true
+              required:
+              - old_password
+              - new_password
       security:
       - jwtAuth: []
-      - {}
       responses:
-        '200':
+        '204':
           description: No response body
   /api/v1/programs/{kind}/:
     get:
@@ -2352,6 +3604,212 @@ paths:
               schema:
                 $ref: '#/components/schemas/WomensProgram'
           description: ''
+  /api/v1/programs/{kind}/{id}/:
+    get:
+      operationId: programs_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: kind
+        schema:
+          type: string
+          enum:
+          - welfare
+          - women
+          - youth
+        required: true
+      tags:
+      - programs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileProgramme'
+          description: ''
+    put:
+      operationId: programs_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: kind
+        schema:
+          type: string
+          enum:
+          - welfare
+          - women
+          - youth
+        required: true
+      tags:
+      - programs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MobileProgramme'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MobileProgramme'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MobileProgramme'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileProgramme'
+          description: ''
+    patch:
+      operationId: programs_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: kind
+        schema:
+          type: string
+          enum:
+          - welfare
+          - women
+          - youth
+        required: true
+      tags:
+      - programs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMobileProgramme'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMobileProgramme'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMobileProgramme'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileProgramme'
+          description: ''
+    delete:
+      operationId: programs_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: kind
+        schema:
+          type: string
+          enum:
+          - welfare
+          - women
+          - youth
+        required: true
+      tags:
+      - programs
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/programs/{kind}/{id}/participants/:
+    get:
+      operationId: programs_participants_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: kind
+        schema:
+          type: string
+        required: true
+      tags:
+      - programs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  members:
+                    type: array
+                    items:
+                      type: integer
+                required:
+                - members
+          description: ''
+    put:
+      operationId: programs_participants_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: kind
+        schema:
+          type: string
+        required: true
+      tags:
+      - programs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                members:
+                  type: array
+                  items:
+                    type: integer
+              required:
+              - members
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  members:
+                    type: array
+                    items:
+                      type: integer
+                required:
+                - members
+          description: ''
   /api/v1/registration/vacant-roles/:
     get:
       operationId: registration_vacant_roles_retrieve
@@ -2361,7 +3819,12 @@ paths:
       - {}
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/reporters/:
     get:
       operationId: reporters_list
@@ -2405,11 +3868,22 @@ paths:
         required: true
       tags:
       - reporters
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
       security:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/reports/:
     get:
       operationId: reports_list
@@ -2493,11 +3967,22 @@ paths:
         required: true
       tags:
       - reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
       security:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/reports/{id}/review/:
     post:
       operationId: reports_review_create
@@ -2509,11 +3994,22 @@ paths:
         required: true
       tags:
       - reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
       security:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/reports/recipient/:
     get:
       operationId: reports_recipient_retrieve
@@ -2523,7 +4019,12 @@ paths:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/roles/:
     get:
       operationId: roles_list
@@ -2556,28 +4057,67 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedRoleDefinitionList'
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
           description: ''
   /api/v1/telegram/disconnect/:
     post:
       operationId: telegram_disconnect_create
       tags:
       - telegram
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
       security:
       - jwtAuth: []
       responses:
-        '200':
+        '204':
           description: No response body
   /api/v1/telegram/link/:
     post:
       operationId: telegram_link_create
       tags:
       - telegram
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
       security:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/telegram/status/:
     get:
       operationId: telegram_status_retrieve
@@ -2587,7 +4127,12 @@ paths:
       - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+          description: ''
   /api/v1/ward-meetings/:
     get:
       operationId: ward_meetings_list
@@ -2639,6 +4184,172 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WardMeeting'
+          description: ''
+  /api/v1/ward-meetings/{id}/:
+    get:
+      operationId: ward_meetings_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - ward-meetings
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WardMeeting'
+          description: ''
+    put:
+      operationId: ward_meetings_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - ward-meetings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WardMeeting'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WardMeeting'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WardMeeting'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WardMeeting'
+          description: ''
+    patch:
+      operationId: ward_meetings_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - ward-meetings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWardMeeting'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedWardMeeting'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedWardMeeting'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WardMeeting'
+          description: ''
+    delete:
+      operationId: ward_meetings_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - ward-meetings
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/ward-meetings/{id}/attendance/:
+    get:
+      operationId: ward_meetings_attendance_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - ward-meetings
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    attendee:
+                      type: integer
+                    present:
+                      type: boolean
+                    notes:
+                      type: string
+          description: ''
+    put:
+      operationId: ward_meetings_attendance_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - ward-meetings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                records:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      attendee:
+                        type: integer
+                      present:
+                        type: boolean
+                      notes:
+                        type: string
+                    required:
+                    - attendee
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
           description: ''
 components:
   schemas:
@@ -2764,12 +4475,38 @@ components:
       - scope
       - title
       - updated_at
+    ArticleStatusEnum:
+      enum:
+      - DRAFT
+      - PENDING
+      - PUBLISHED
+      - REJECTED
+      - ARCHIVED
+      type: string
+      description: |-
+        * `DRAFT` - Draft
+        * `PENDING` - Pending Review
+        * `PUBLISHED` - Published
+        * `REJECTED` - Returned for Revision
+        * `ARCHIVED` - Archived
     ArticleWrite:
       type: object
       properties:
         id:
           type: integer
           readOnly: true
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ArticleStatusEnum'
+          readOnly: true
+        rejection_note:
+          type: string
+          readOnly: true
+          description: Note from editor when returning article for revision
         title:
           type: string
           maxLength: 300
@@ -2778,7 +4515,7 @@ components:
           description: Short deck/subheadline that appears below the main headline
           maxLength: 500
         category:
-          $ref: '#/components/schemas/Category867Enum'
+          $ref: '#/components/schemas/NewsCategoryEnum'
         location:
           type: string
           description: Specific community or location (e.g. Birnin Kebbi)
@@ -2802,8 +4539,15 @@ components:
           type: string
           format: uri
           nullable: true
+        meta_description:
+          type: string
+          description: Short summary for search engines (max 160 characters)
+          maxLength: 160
       required:
       - id
+      - rejection_note
+      - slug
+      - status
       - title
     AuditReport:
       type: object
@@ -2911,7 +4655,7 @@ components:
           description: Short deck/subheadline that appears below the main headline
           maxLength: 500
         category:
-          $ref: '#/components/schemas/Category867Enum'
+          $ref: '#/components/schemas/NewsCategoryEnum'
         category_label:
           type: string
           readOnly: true
@@ -2953,20 +4697,23 @@ components:
         content_json:
           nullable: true
           description: Block editor content stored as JSON
+        meta_description:
+          type: string
+          description: Short summary for search engines (max 160 characters)
+          maxLength: 160
         views:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         read_time:
-          type: string
+          type: integer
           readOnly: true
         published_at:
           type: string
           format: date-time
           nullable: true
         status:
-          $ref: '#/components/schemas/CampaignStatusEnum'
+          $ref: '#/components/schemas/ArticleStatusEnum'
       required:
       - author_name
       - category_label
@@ -2978,58 +4725,18 @@ components:
       - title
       - verification_status_label
       - ward_name
-    CampaignStatusEnum:
+    CommunityCategoryEnum:
       enum:
-      - DRAFT
-      - PENDING
-      - PUBLISHED
-      - REJECTED
-      - ARCHIVED
+      - WELFARE
+      - VOLUNTEER
+      - PROJECT
+      - HUMANITARIAN
       type: string
       description: |-
-        * `DRAFT` - Draft
-        * `PENDING` - Pending Review
-        * `PUBLISHED` - Published
-        * `REJECTED` - Returned for Revision
-        * `ARCHIVED` - Archived
-    Category867Enum:
-      enum:
-      - COMMUNITY
-      - EDUCATION
-      - AGRICULTURE
-      - HEALTH
-      - SECURITY
-      - INFRASTRUCTURE
-      - MARKETS
-      - YOUTH
-      - WOMEN
-      - ENVIRONMENT
-      - HUMAN_INTEREST
-      - CULTURE
-      - TRADITIONAL
-      - GOVERNANCE
-      - EMERGENCY
-      - CIVIC
-      - GENERAL
-      type: string
-      description: |-
-        * `COMMUNITY` - Community
-        * `EDUCATION` - Education
-        * `AGRICULTURE` - Agriculture
-        * `HEALTH` - Health
-        * `SECURITY` - Security
-        * `INFRASTRUCTURE` - Infrastructure
-        * `MARKETS` - Markets & Business
-        * `YOUTH` - Youth
-        * `WOMEN` - Women
-        * `ENVIRONMENT` - Environment
-        * `HUMAN_INTEREST` - Human Interest
-        * `CULTURE` - Culture
-        * `TRADITIONAL` - Traditional Institutions
-        * `GOVERNANCE` - Government & Governance
-        * `EMERGENCY` - Emergency
-        * `CIVIC` - Civic
-        * `GENERAL` - General
+        * `WELFARE` - Welfare & Relief
+        * `VOLUNTEER` - Volunteer Work
+        * `PROJECT` - Community Project
+        * `HUMANITARIAN` - Humanitarian Aid
     CommunityInitiative:
       type: object
       properties:
@@ -3040,12 +4747,12 @@ components:
           type: string
           maxLength: 200
         category:
-          $ref: '#/components/schemas/CommunityInitiativeCategoryEnum'
+          $ref: '#/components/schemas/CommunityCategoryEnum'
         category_label:
           type: string
           readOnly: true
         status:
-          $ref: '#/components/schemas/CommunityInitiativeStatusEnum'
+          $ref: '#/components/schemas/CommunityStatusEnum'
         status_label:
           type: string
           readOnly: true
@@ -3057,9 +4764,8 @@ components:
           maxLength: 200
         people_reached:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         image:
           type: string
           format: uri
@@ -3082,28 +4788,6 @@ components:
       - status_label
       - title
       - updated_at
-    CommunityInitiativeCategoryEnum:
-      enum:
-      - WELFARE
-      - VOLUNTEER
-      - PROJECT
-      - HUMANITARIAN
-      type: string
-      description: |-
-        * `WELFARE` - Welfare & Relief
-        * `VOLUNTEER` - Volunteer Work
-        * `PROJECT` - Community Project
-        * `HUMANITARIAN` - Humanitarian Aid
-    CommunityInitiativeStatusEnum:
-      enum:
-      - PLANNING
-      - ACTIVE
-      - COMPLETED
-      type: string
-      description: |-
-        * `PLANNING` - Planning
-        * `ACTIVE` - Active
-        * `COMPLETED` - Completed
     CommunityReport:
       type: object
       properties:
@@ -3112,10 +4796,10 @@ components:
           readOnly: true
         reporter_name:
           type: string
-          maxLength: 100
+          readOnly: true
         reporter_phone:
           type: string
-          maxLength: 20
+          readOnly: true
         submitted_by:
           type: integer
           readOnly: true
@@ -3182,6 +4866,7 @@ components:
       - internal_notes
       - location_details
       - reporter_name
+      - reporter_phone
       - status
       - submitted_by
       - what_happened
@@ -3236,6 +4921,16 @@ components:
         * `ESCALATED` - Escalated
         * `APPROVED` - Approved for Publication
         * `REJECTED` - Rejected
+    CommunityStatusEnum:
+      enum:
+      - PLANNING
+      - ACTIVE
+      - COMPLETED
+      type: string
+      description: |-
+        * `PLANNING` - Planning
+        * `ACTIVE` - Active
+        * `COMPLETED` - Completed
     DeviceRegistration:
       type: object
       properties:
@@ -3510,9 +5205,8 @@ components:
           type: string
         order:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
         is_active:
           type: boolean
         created_at:
@@ -3579,40 +5273,24 @@ components:
       description: |-
         * `M` - Male
         * `F` - Female
-    ImpactMetrics:
-      type: object
-      properties:
-        verified_members:
-          type: integer
-        trusted_reporters:
-          type: integer
-        community_reports:
-          type: integer
-        opportunities:
-          type: integer
-        impact_communities_reached:
-          type: integer
-        active_lgas:
-          type: integer
-        active_wards:
-          type: integer
-        zones_total:
-          type: integer
-        lgas_total:
-          type: integer
-        wards_total:
-          type: integer
-      required:
-      - active_lgas
-      - active_wards
-      - community_reports
-      - impact_communities_reached
-      - lgas_total
-      - opportunities
-      - trusted_reporters
-      - verified_members
-      - wards_total
-      - zones_total
+    HierarchicalReportStatusEnum:
+      enum:
+      - DRAFT
+      - SUBMITTED
+      - UNDER_REVIEW
+      - APPROVED
+      - FLAGGED
+      - REJECTED
+      - ESCALATED
+      type: string
+      description: |-
+        * `DRAFT` - Draft
+        * `SUBMITTED` - Submitted
+        * `UNDER_REVIEW` - Under Review
+        * `APPROVED` - Approved
+        * `FLAGGED` - Flagged for Issues
+        * `REJECTED` - Rejected
+        * `ESCALATED` - Escalated to Next Level
     InfoStatusEnum:
       enum:
       - VERIFIED
@@ -3637,140 +5315,6 @@ components:
       required:
       - password
       - username
-    LGA:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
-          maxLength: 100
-        zone:
-          type: integer
-      required:
-      - id
-      - name
-      - zone
-    Leader:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        first_name:
-          type: string
-          maxLength: 150
-        last_name:
-          type: string
-          maxLength: 150
-        role:
-          $ref: '#/components/schemas/RoleEnum'
-        role_definition:
-          type: integer
-          nullable: true
-        photo:
-          type: string
-          format: uri
-          nullable: true
-      required:
-      - id
-    LeadershipHolder:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        photo:
-          type: string
-          format: uri
-          nullable: true
-      required:
-      - id
-      - name
-      - photo
-    LeadershipLocation:
-      type: object
-      properties:
-        label:
-          type: string
-        zone:
-          type: integer
-          nullable: true
-        zone_name:
-          type: string
-          nullable: true
-        lga:
-          type: integer
-          nullable: true
-        lga_name:
-          type: string
-          nullable: true
-        ward:
-          type: integer
-          nullable: true
-        ward_name:
-          type: string
-          nullable: true
-      required:
-      - label
-      - lga
-      - lga_name
-      - ward
-      - ward_name
-      - zone
-      - zone_name
-    LeadershipSeat:
-      type: object
-      properties:
-        seat_key:
-          type: string
-        role_definition:
-          type: integer
-        role_title:
-          type: string
-        tier:
-          $ref: '#/components/schemas/LeadershipSeatTierEnum'
-        seat_number:
-          type: integer
-        location:
-          $ref: '#/components/schemas/LeadershipLocation'
-        status:
-          $ref: '#/components/schemas/LeadershipSeatStatusEnum'
-        holder:
-          allOf:
-          - $ref: '#/components/schemas/LeadershipHolder'
-          nullable: true
-      required:
-      - holder
-      - location
-      - role_definition
-      - role_title
-      - seat_key
-      - seat_number
-      - status
-      - tier
-    LeadershipSeatStatusEnum:
-      enum:
-      - FILLED
-      - VACANT
-      type: string
-      description: |-
-        * `FILLED` - FILLED
-        * `VACANT` - VACANT
-    LeadershipSeatTierEnum:
-      enum:
-      - STATE
-      - ZONAL
-      - LGA
-      - WARD
-      type: string
-      description: |-
-        * `STATE` - STATE
-        * `ZONAL` - ZONAL
-        * `LGA` - LGA
-        * `WARD` - WARD
     MediaItem:
       type: object
       properties:
@@ -3796,7 +5340,7 @@ components:
           readOnly: true
         status:
           allOf:
-          - $ref: '#/components/schemas/MediaItemStatusEnum'
+          - $ref: '#/components/schemas/MediaStatusEnum'
           readOnly: true
         approved_by:
           type: integer
@@ -3820,7 +5364,7 @@ components:
       - title
       - updated_at
       - uploaded_by
-    MediaItemStatusEnum:
+    MediaStatusEnum:
       enum:
       - PENDING
       - APPROVED
@@ -3923,7 +5467,7 @@ components:
           nullable: true
         status:
           allOf:
-          - $ref: '#/components/schemas/Status488Enum'
+          - $ref: '#/components/schemas/MembershipStatusEnum'
           readOnly: true
         reporter_level:
           allOf:
@@ -3933,7 +5477,13 @@ components:
           type: string
           format: date-time
           readOnly: true
+        archived_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
       required:
+      - archived_at
       - bio
       - created_at
       - email
@@ -3954,6 +5504,80 @@ components:
       - ward_name
       - zone
       - zone_name
+    MembershipStatusEnum:
+      enum:
+      - PENDING
+      - UNDER_REVIEW
+      - VERIFIED
+      - REJECTED
+      - SUSPENDED
+      type: string
+      description: |-
+        * `PENDING` - Pending
+        * `UNDER_REVIEW` - Under Review
+        * `VERIFIED` - Verified
+        * `REJECTED` - Rejected
+        * `SUSPENDED` - Suspended
+    MobileManagementResource:
+      oneOf:
+      - $ref: '#/components/schemas/Opportunity'
+      - $ref: '#/components/schemas/CommunityInitiative'
+      - $ref: '#/components/schemas/AdvocacyCampaign'
+      - $ref: '#/components/schemas/Patron'
+      - $ref: '#/components/schemas/FAQ'
+      - $ref: '#/components/schemas/Donation'
+      - $ref: '#/components/schemas/Expense'
+      - $ref: '#/components/schemas/FinancialReport'
+      - $ref: '#/components/schemas/AuditReport'
+      - $ref: '#/components/schemas/Outreach'
+      - $ref: '#/components/schemas/Event'
+      - $ref: '#/components/schemas/WardMeeting'
+      - $ref: '#/components/schemas/WomensProgram'
+      - $ref: '#/components/schemas/YouthProgram'
+      - $ref: '#/components/schemas/WelfareProgram'
+    MobileProgramme:
+      oneOf:
+      - $ref: '#/components/schemas/WomensProgram'
+      - $ref: '#/components/schemas/YouthProgram'
+      - $ref: '#/components/schemas/WelfareProgram'
+    NewsCategoryEnum:
+      enum:
+      - COMMUNITY
+      - EDUCATION
+      - AGRICULTURE
+      - HEALTH
+      - SECURITY
+      - INFRASTRUCTURE
+      - MARKETS
+      - YOUTH
+      - WOMEN
+      - ENVIRONMENT
+      - HUMAN_INTEREST
+      - CULTURE
+      - TRADITIONAL
+      - GOVERNANCE
+      - EMERGENCY
+      - CIVIC
+      - GENERAL
+      type: string
+      description: |-
+        * `COMMUNITY` - Community
+        * `EDUCATION` - Education
+        * `AGRICULTURE` - Agriculture
+        * `HEALTH` - Health
+        * `SECURITY` - Security
+        * `INFRASTRUCTURE` - Infrastructure
+        * `MARKETS` - Markets & Business
+        * `YOUTH` - Youth
+        * `WOMEN` - Women
+        * `ENVIRONMENT` - Environment
+        * `HUMAN_INTEREST` - Human Interest
+        * `CULTURE` - Culture
+        * `TRADITIONAL` - Traditional Institutions
+        * `GOVERNANCE` - Government & Governance
+        * `EMERGENCY` - Emergency
+        * `CIVIC` - Civic
+        * `GENERAL` - General
     NotifTypeEnum:
       enum:
       - INFO
@@ -4191,29 +5815,6 @@ components:
         * `ONGOING` - Ongoing
         * `COMPLETED` - Completed
         * `FOLLOW_UP` - Follow-up Required
-    PaginatedAdvocacyCampaignList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/AdvocacyCampaign'
     PaginatedAnnouncementList:
       type: object
       required:
@@ -4283,29 +5884,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Campaign'
-    PaginatedCommunityInitiativeList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/CommunityInitiative'
     PaginatedCommunityReportList:
       type: object
       required:
@@ -4490,52 +6068,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FinancialReport'
-    PaginatedLGAList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/LGA'
-    PaginatedLeaderList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/Leader'
     PaginatedMediaItemList:
       type: object
       required:
@@ -4582,6 +6114,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Member'
+    PaginatedMobileManagementResourceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MobileManagementResource'
     PaginatedNotificationList:
       type: object
       required:
@@ -4605,29 +6160,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Notification'
-    PaginatedOpportunityList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/Opportunity'
     PaginatedOutreachList:
       type: object
       required:
@@ -4651,29 +6183,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Outreach'
-    PaginatedPatronList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/Patron'
     PaginatedReportList:
       type: object
       required:
@@ -4697,29 +6206,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Report'
-    PaginatedRoleDefinitionList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/RoleDefinition'
     PaginatedUserList:
       type: object
       required:
@@ -4743,29 +6229,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/User'
-    PaginatedWardList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/Ward'
     PaginatedWardMeetingList:
       type: object
       required:
@@ -4812,29 +6275,45 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WomensProgram'
-    PaginatedZoneList:
+    PatchedAdvocacyCampaign:
       type: object
-      required:
-      - count
-      - results
       properties:
-        count:
+        id:
           type: integer
-          example: 123
-        next:
+          readOnly: true
+        title:
           type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
+          maxLength: 200
+        issue:
           type: string
-          nullable: true
+          description: What is the core issue?
+        background:
+          type: string
+          description: Background context
+        kpn_position:
+          type: string
+          description: KPN's official position
+        actions_taken:
+          type: string
+          description: What actions have been taken?
+        government_response:
+          type: string
+        outcome:
+          type: string
+        is_active:
+          type: boolean
+        image:
+          type: string
           format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/Zone'
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
     PatchedAnnouncement:
       type: object
       properties:
@@ -4899,6 +6378,18 @@ components:
         id:
           type: integer
           readOnly: true
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ArticleStatusEnum'
+          readOnly: true
+        rejection_note:
+          type: string
+          readOnly: true
+          description: Note from editor when returning article for revision
         title:
           type: string
           maxLength: 300
@@ -4907,7 +6398,7 @@ components:
           description: Short deck/subheadline that appears below the main headline
           maxLength: 500
         category:
-          $ref: '#/components/schemas/Category867Enum'
+          $ref: '#/components/schemas/NewsCategoryEnum'
         location:
           type: string
           description: Specific community or location (e.g. Birnin Kebbi)
@@ -4931,6 +6422,158 @@ components:
           type: string
           format: uri
           nullable: true
+        meta_description:
+          type: string
+          description: Short summary for search engines (max 160 characters)
+          maxLength: 160
+    PatchedAuditReport:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 300
+        audit_period:
+          type: string
+          description: e.g., 'Q1 2025' or 'January-March 2025'
+          maxLength: 100
+        findings:
+          type: string
+          description: Key findings from the audit
+        recommendations:
+          type: string
+          description: Recommendations for improvement
+        compliance_status:
+          type: string
+          description: Overall compliance status
+          maxLength: 200
+        status:
+          allOf:
+          - $ref: '#/components/schemas/AuditReportStatusEnum'
+          readOnly: true
+        report_file:
+          type: string
+          format: uri
+          nullable: true
+          description: Upload detailed audit report PDF
+        submitted_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        submitted_to:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Usually the President
+        reviewed_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        review_notes:
+          type: string
+          description: Notes from the reviewer
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        submitted_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        reviewed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+    PatchedCommunityInitiative:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        category:
+          $ref: '#/components/schemas/CommunityCategoryEnum'
+        category_label:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/CommunityStatusEnum'
+        status_label:
+          type: string
+          readOnly: true
+        description:
+          type: string
+        location_text:
+          type: string
+          description: E.g., Birnin Kebbi Central Market
+          maxLength: 200
+        people_reached:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        image:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedDonation:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        donor_name:
+          type: string
+          maxLength: 200
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        reference:
+          type: string
+          description: Bank transaction reference
+          maxLength: 100
+        notes:
+          type: string
+        status:
+          allOf:
+          - $ref: '#/components/schemas/DonationStatusEnum'
+          readOnly: true
+        verified_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        verified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        recorded_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        recorded_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
     PatchedEvent:
       type: object
       properties:
@@ -4954,6 +6597,170 @@ components:
         created_by:
           type: integer
           readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedExpense:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        description:
+          type: string
+          maxLength: 300
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        category:
+          $ref: '#/components/schemas/ExpenseCategoryEnum'
+        notes:
+          type: string
+        date:
+          type: string
+          format: date
+        recorded_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedFAQ:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        question:
+          type: string
+          maxLength: 500
+        answer:
+          type: string
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedFinancialReport:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 300
+        report_period:
+          type: string
+          description: e.g., 'January 2025' or 'Q1 2025'
+          maxLength: 100
+        total_income:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        total_expenses:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        report_file:
+          type: string
+          format: uri
+          nullable: true
+        summary:
+          type: string
+        prepared_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedMobileManagementResource:
+      oneOf:
+      - $ref: '#/components/schemas/PatchedOpportunity'
+      - $ref: '#/components/schemas/PatchedCommunityInitiative'
+      - $ref: '#/components/schemas/PatchedAdvocacyCampaign'
+      - $ref: '#/components/schemas/PatchedPatron'
+      - $ref: '#/components/schemas/PatchedFAQ'
+      - $ref: '#/components/schemas/PatchedDonation'
+      - $ref: '#/components/schemas/PatchedExpense'
+      - $ref: '#/components/schemas/PatchedFinancialReport'
+      - $ref: '#/components/schemas/PatchedAuditReport'
+      - $ref: '#/components/schemas/PatchedOutreach'
+      - $ref: '#/components/schemas/PatchedEvent'
+      - $ref: '#/components/schemas/PatchedWardMeeting'
+      - $ref: '#/components/schemas/PatchedWomensProgram'
+      - $ref: '#/components/schemas/PatchedYouthProgram'
+      - $ref: '#/components/schemas/PatchedWelfareProgram'
+    PatchedMobileProgramme:
+      oneOf:
+      - $ref: '#/components/schemas/PatchedWomensProgram'
+      - $ref: '#/components/schemas/PatchedYouthProgram'
+      - $ref: '#/components/schemas/PatchedWelfareProgram'
+    PatchedOpportunity:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        slug:
+          type: string
+          maxLength: 350
+          pattern: ^[-a-zA-Z0-9_]+$
+        title:
+          type: string
+          maxLength: 300
+        category:
+          $ref: '#/components/schemas/OpportunityCategoryEnum'
+        category_label:
+          type: string
+          readOnly: true
+        organization:
+          type: string
+        description:
+          type: string
+        requirements:
+          type: string
+          description: Eligibility requirements (bullet points recommended)
+        benefits:
+          type: string
+          description: What does it offer? (Funding amount, salary, etc.)
+        deadline:
+          type: string
+          format: date
+          nullable: true
+        status:
+          $ref: '#/components/schemas/OpportunityStatusEnum'
+        status_label:
+          type: string
+          readOnly: true
+        is_featured:
+          type: boolean
+          description: Feature this opportunity on the homepage/hub top
+        external_apply_link:
+          oneOf:
+          - type: string
+            format: uri
+          - type: string
+            maxLength: 0
         created_at:
           type: string
           format: date-time
@@ -5021,6 +6828,37 @@ components:
           type: string
           format: date-time
           readOnly: true
+    PatchedPatron:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        patron_type:
+          $ref: '#/components/schemas/PatronTypeEnum'
+        patron_type_label:
+          type: string
+          readOnly: true
+        full_name:
+          type: string
+          maxLength: 200
+        title:
+          type: string
+          description: Official title/designation
+          maxLength: 200
+        bio:
+          type: string
+        photo:
+          type: string
+          format: uri
+          nullable: true
+        is_published:
+          type: boolean
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Display order (lower = higher)
     PatchedProfile:
       type: object
       properties:
@@ -5068,6 +6906,256 @@ components:
           type: integer
           readOnly: true
           nullable: true
+        facebook_url:
+          description: Your Facebook profile URL
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+        twitter_url:
+          description: Your Twitter/X profile URL
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+        instagram_url:
+          description: Your Instagram profile URL
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+        tiktok_url:
+          description: Your TikTok profile URL
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+    PatchedWardMeeting:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        ward:
+          type: integer
+          readOnly: true
+        meeting_type:
+          $ref: '#/components/schemas/MeetingTypeEnum'
+        title:
+          type: string
+          maxLength: 300
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+          format: time
+          nullable: true
+        location:
+          type: string
+          maxLength: 200
+        agenda:
+          type: string
+          description: Meeting agenda and topics
+        minutes:
+          type: string
+          description: Meeting minutes and decisions
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedWelfareProgram:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 300
+        description:
+          type: string
+        program_type:
+          $ref: '#/components/schemas/WelfareProgramProgramTypeEnum'
+        status:
+          $ref: '#/components/schemas/ProgrammeStatusEnum'
+        zone:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Leave blank for State-level programs
+        lga:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Leave blank for Zonal/State-level programs
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        location:
+          type: string
+          readOnly: true
+        target_participants:
+          type: integer
+        target_beneficiaries:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Expected number of beneficiaries
+        budget:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        notes:
+          type: string
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedWomensProgram:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 300
+        description:
+          type: string
+        program_type:
+          $ref: '#/components/schemas/WomensProgramProgramTypeEnum'
+        status:
+          $ref: '#/components/schemas/ProgrammeStatusEnum'
+        zone:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Leave blank for State-level programs
+        lga:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Leave blank for Zonal/State-level programs
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        location:
+          type: string
+          maxLength: 200
+        target_participants:
+          type: integer
+        budget:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        notes:
+          type: string
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedYouthProgram:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 300
+        description:
+          type: string
+        program_type:
+          $ref: '#/components/schemas/YouthProgramProgramTypeEnum'
+        status:
+          $ref: '#/components/schemas/ProgrammeStatusEnum'
+        zone:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Leave blank for State-level programs
+        lga:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Leave blank for Zonal/State-level programs
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        location:
+          type: string
+          maxLength: 200
+        target_participants:
+          type: integer
+        budget:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        notes:
+          type: string
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
     Patron:
       type: object
       properties:
@@ -5096,9 +7184,8 @@ components:
           type: boolean
         order:
           type: integer
-          maximum: 9223372036854775807
+          maximum: 2147483647
           minimum: 0
-          format: int64
           description: Display order (lower = higher)
       required:
       - full_name
@@ -5182,87 +7269,56 @@ components:
           type: integer
           readOnly: true
           nullable: true
+        facebook_url:
+          description: Your Facebook profile URL
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+        twitter_url:
+          description: Your Twitter/X profile URL
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+        instagram_url:
+          description: Your Instagram profile URL
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+        tiktok_url:
+          description: Your TikTok profile URL
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
       required:
       - lga
       - phone
       - username
       - ward
       - zone
-    ProgramTypeEnum:
+    ProgrammeStatusEnum:
       enum:
-      - TRAINING
-      - EMPOWERMENT
-      - HEALTH
-      - ADVOCACY
-      - NETWORKING
-      - OTHER
+      - PLANNED
+      - ONGOING
+      - COMPLETED
+      - CANCELLED
       type: string
       description: |-
-        * `TRAINING` - Training & Skills Development
-        * `EMPOWERMENT` - Women Empowerment
-        * `HEALTH` - Health & Wellness
-        * `ADVOCACY` - Advocacy & Rights
-        * `NETWORKING` - Networking Event
-        * `OTHER` - Other
-    Register:
-      type: object
-      properties:
-        username:
-          type: string
-          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
-            only.
-          pattern: ^[\w.@+-]+$
-          maxLength: 150
-        email:
-          title: Email address
-          oneOf:
-          - type: string
-            format: email
-            maxLength: 254
-          - type: string
-            maxLength: 0
-        password:
-          type: string
-          writeOnly: true
-        password_confirm:
-          type: string
-          writeOnly: true
-        first_name:
-          type: string
-          maxLength: 150
-        last_name:
-          type: string
-          maxLength: 150
-        phone:
-          type: string
-          maxLength: 20
-        gender:
-          oneOf:
-          - $ref: '#/components/schemas/GenderEnum'
-          - $ref: '#/components/schemas/BlankEnum'
-        photo:
-          type: string
-          format: uri
-        zone:
-          type: integer
-          nullable: true
-        lga:
-          type: integer
-          nullable: true
-        ward:
-          type: integer
-          nullable: true
-        role_definition:
-          type: integer
-        bio:
-          type: string
-      required:
-      - password
-      - password_confirm
-      - phone
-      - photo
-      - role_definition
-      - username
+        * `PLANNED` - Planned
+        * `ONGOING` - Ongoing
+        * `COMPLETED` - Completed
+        * `CANCELLED` - Cancelled
     Report:
       type: object
       properties:
@@ -5313,7 +7369,7 @@ components:
           description: Parent report that this report was escalated from
         status:
           allOf:
-          - $ref: '#/components/schemas/ReportStatusEnum'
+          - $ref: '#/components/schemas/HierarchicalReportStatusEnum'
           readOnly: true
         is_reviewed:
           type: boolean
@@ -5392,24 +7448,6 @@ components:
       required:
       - content
       - title
-    ReportStatusEnum:
-      enum:
-      - DRAFT
-      - SUBMITTED
-      - UNDER_REVIEW
-      - APPROVED
-      - FLAGGED
-      - REJECTED
-      - ESCALATED
-      type: string
-      description: |-
-        * `DRAFT` - Draft
-        * `SUBMITTED` - Submitted
-        * `UNDER_REVIEW` - Under Review
-        * `APPROVED` - Approved
-        * `FLAGGED` - Flagged for Issues
-        * `REJECTED` - Rejected
-        * `ESCALATED` - Escalated to Next Level
     ReportTypeEnum:
       enum:
       - WARD_TO_LGA
@@ -5444,42 +7482,6 @@ components:
         * `MEMBER` - Member
         * `COMMUNITY_REPORTER` - Community Reporter
         * `TRUSTED_REPORTER` - Trusted Reporter
-    RoleDefinition:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        title:
-          type: string
-          maxLength: 200
-        tier:
-          $ref: '#/components/schemas/RoleDefinitionTierEnum'
-        description:
-          type: string
-        seat_number:
-          type: integer
-          maximum: 9223372036854775807
-          minimum: 0
-          format: int64
-          description: Position number within tier (e.g., 1 for President)
-      required:
-      - id
-      - seat_number
-      - tier
-      - title
-    RoleDefinitionTierEnum:
-      enum:
-      - STATE
-      - ZONAL
-      - LGA
-      - WARD
-      type: string
-      description: |-
-        * `STATE` - State Executive
-        * `ZONAL` - Zonal Excos
-        * `LGA` - LGA Excos
-        * `WARD` - Ward Leaders
     RoleEnum:
       enum:
       - GENERAL
@@ -5506,20 +7508,6 @@ components:
         * `ZONAL` - Zonal - Specific Zone
         * `LGA` - LGA - Specific LGA
         * `WARD` - Ward - Specific Ward
-    Status488Enum:
-      enum:
-      - PENDING
-      - UNDER_REVIEW
-      - VERIFIED
-      - REJECTED
-      - SUSPENDED
-      type: string
-      description: |-
-        * `PENDING` - Pending
-        * `UNDER_REVIEW` - Under Review
-        * `VERIFIED` - Verified
-        * `REJECTED` - Rejected
-        * `SUSPENDED` - Suspended
     TelegramMembership:
       type: object
       properties:
@@ -5619,6 +7607,7 @@ components:
           allOf:
           - $ref: '#/components/schemas/RoleEnum'
           readOnly: true
+          default: GENERAL
         tier:
           type: string
           readOnly: true
@@ -5652,6 +7641,7 @@ components:
           nullable: true
         role_title:
           type: string
+          nullable: true
           readOnly: true
         seat_number:
           type: integer
@@ -5659,8 +7649,9 @@ components:
           nullable: true
         status:
           allOf:
-          - $ref: '#/components/schemas/Status488Enum'
+          - $ref: '#/components/schemas/MembershipStatusEnum'
           readOnly: true
+          default: PENDING
         reporter_level:
           allOf:
           - $ref: '#/components/schemas/ReporterLevelEnum'
@@ -5675,13 +7666,43 @@ components:
           readOnly: true
           nullable: true
         access:
-          type: string
+          type: object
+          additionalProperties: {}
           readOnly: true
         dashboard:
           type: string
           readOnly: true
         capabilities:
+          type: array
+          items:
+            type: string
+          minLength: 2
+          maxLength: 2
+          readOnly: true
+        facebook_url:
           type: string
+          format: uri
+          readOnly: true
+          description: Your Facebook profile URL
+        twitter_url:
+          type: string
+          format: uri
+          readOnly: true
+          description: Your Twitter/X profile URL
+        instagram_url:
+          type: string
+          format: uri
+          readOnly: true
+          description: Your Instagram profile URL
+        tiktok_url:
+          type: string
+          format: uri
+          readOnly: true
+          description: Your TikTok profile URL
+        mobile_tools:
+          type: array
+          items:
+            type: string
           readOnly: true
       required:
       - access
@@ -5689,13 +7710,16 @@ components:
       - capabilities
       - dashboard
       - email
+      - facebook_url
       - first_name
       - gender
       - id
+      - instagram_url
       - is_trusted_reporter
       - last_name
       - lga
       - lga_name
+      - mobile_tools
       - phone
       - photo
       - reporter_level
@@ -5706,6 +7730,8 @@ components:
       - status
       - telegram_membership
       - tier
+      - tiktok_url
+      - twitter_url
       - username
       - ward
       - ward_name
@@ -5723,21 +7749,6 @@ components:
         * `CONFIRMED` - KPN Confirmed
         * `VERIFIED` - KPN Verified
         * `COMMUNITY_ALERT` - KPN Community Alert
-    Ward:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
-          maxLength: 200
-        lga:
-          type: integer
-      required:
-      - id
-      - lga
-      - name
     WardMeeting:
       type: object
       properties:
@@ -5789,6 +7800,95 @@ components:
       - title
       - updated_at
       - ward
+    WelfareProgram:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 300
+        description:
+          type: string
+        program_type:
+          $ref: '#/components/schemas/WelfareProgramProgramTypeEnum'
+        status:
+          $ref: '#/components/schemas/ProgrammeStatusEnum'
+        zone:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Leave blank for State-level programs
+        lga:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Leave blank for Zonal/State-level programs
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        location:
+          type: string
+          readOnly: true
+        target_participants:
+          type: integer
+        target_beneficiaries:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: Expected number of beneficiaries
+        budget:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        notes:
+          type: string
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - created_by
+      - description
+      - id
+      - lga
+      - location
+      - program_type
+      - title
+      - updated_at
+      - zone
+    WelfareProgramProgramTypeEnum:
+      enum:
+      - HEALTH
+      - FINANCIAL
+      - EDUCATION
+      - EMERGENCY
+      - SOCIAL
+      - OTHER
+      type: string
+      description: |-
+        * `HEALTH` - Health Support
+        * `FINANCIAL` - Financial Assistance
+        * `EDUCATION` - Educational Support
+        * `EMERGENCY` - Emergency Relief
+        * `SOCIAL` - Social Welfare
+        * `OTHER` - Other
     WomensProgram:
       type: object
       properties:
@@ -5801,9 +7901,9 @@ components:
         description:
           type: string
         program_type:
-          $ref: '#/components/schemas/ProgramTypeEnum'
+          $ref: '#/components/schemas/WomensProgramProgramTypeEnum'
         status:
-          $ref: '#/components/schemas/WomensProgramStatusEnum'
+          $ref: '#/components/schemas/ProgrammeStatusEnum'
         zone:
           type: integer
           readOnly: true
@@ -5856,30 +7956,107 @@ components:
       - title
       - updated_at
       - zone
-    WomensProgramStatusEnum:
+    WomensProgramProgramTypeEnum:
       enum:
-      - PLANNED
-      - ONGOING
-      - COMPLETED
-      - CANCELLED
+      - TRAINING
+      - EMPOWERMENT
+      - HEALTH
+      - ADVOCACY
+      - NETWORKING
+      - OTHER
       type: string
       description: |-
-        * `PLANNED` - Planned
-        * `ONGOING` - Ongoing
-        * `COMPLETED` - Completed
-        * `CANCELLED` - Cancelled
-    Zone:
+        * `TRAINING` - Training & Skills Development
+        * `EMPOWERMENT` - Women Empowerment
+        * `HEALTH` - Health & Wellness
+        * `ADVOCACY` - Advocacy & Rights
+        * `NETWORKING` - Networking Event
+        * `OTHER` - Other
+    YouthProgram:
       type: object
       properties:
         id:
           type: integer
           readOnly: true
-        name:
+        title:
           type: string
-          maxLength: 100
+          maxLength: 300
+        description:
+          type: string
+        program_type:
+          $ref: '#/components/schemas/YouthProgramProgramTypeEnum'
+        status:
+          $ref: '#/components/schemas/ProgrammeStatusEnum'
+        zone:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Leave blank for State-level programs
+        lga:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Leave blank for Zonal/State-level programs
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        location:
+          type: string
+          maxLength: 200
+        target_participants:
+          type: integer
+        budget:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        notes:
+          type: string
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
       required:
+      - created_at
+      - created_by
+      - description
       - id
-      - name
+      - lga
+      - program_type
+      - title
+      - updated_at
+      - zone
+    YouthProgramProgramTypeEnum:
+      enum:
+      - TRAINING
+      - WORKSHOP
+      - MENTORSHIP
+      - ENTREPRENEURSHIP
+      - LEADERSHIP
+      - SPORTS
+      - OTHER
+      type: string
+      description: |-
+        * `TRAINING` - Training & Skills Development
+        * `WORKSHOP` - Workshop
+        * `MENTORSHIP` - Mentorship Program
+        * `ENTREPRENEURSHIP` - Entrepreneurship
+        * `LEADERSHIP` - Leadership Development
+        * `SPORTS` - Sports & Recreation
+        * `OTHER` - Other
   securitySchemes:
     jwtAuth:
       type: http

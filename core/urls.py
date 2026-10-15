@@ -1,9 +1,14 @@
 from django.urls import path
 from . import views
+from .pwa import service_worker
 
 app_name = 'core'
 
+from .health import readiness
+
 urlpatterns = [
+    path('health/ready/', readiness, name='readiness'),
+    path('service-worker.js', service_worker, name='service_worker'),
     path('', views.home, name='home'),
     path('about/', views.about, name='about'),
     path('patrons/', views.patrons, name='patrons'),

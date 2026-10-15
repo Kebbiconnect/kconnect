@@ -1,80 +1,36 @@
-const CACHE_NAME = 'kpn-cache-v1';
-const urlsToCache = [
-  '/',
-  '/static/images/kpn-logo.png',
-  '/about/',
-  '/leadership/',
-  '/campaigns/',
-  '/gallery/',
-  '/contact/',
-  'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-  'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js'
-];
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
-      .catch((err) => {
-        console.log('Cache install failed:', err);
-      })
-  );
-  self.skipWaiting();
+/* KPN v3: cache static assets only. Never retain personalized HTML/API data. */
+const CACHE_NAME = "kpn-cache-v3-state-quick-actions";
+const OFFLINE_PAGE = "/static/offline.html";
+const PRECACHE = [OFFLINE_PAGE, "/static/images/pwa-icon-192.png"];
+self.addEventListener("install", event => {
+    event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE)));
+    self.skipWaiting();
 });
-
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request, {ignoreSearch: true})
-      .then((response) => {
-        if (response) {
-          return response;
-        }
-        
-        return fetch(event.request).then((response) => {
-          if (!response || response.status !== 200 || response.type !== 'basic') {
+self.addEventListener("activate", event => {
+    event.waitUntil(caches.keys().then(names => Promise.all(
+        names.filter(name => name.startsWith("kpn-cache-") && name !== CACHE_NAME)
+            .map(name => caches.delete(name))
+    )).then(() => self.clients.claim()));
+});
+self.addEventListener("fetch", event => {
+    const request = event.request;
+    const url = new URL(request.url);
+    if (request.method !== "GET" || url.origin !== self.location.origin) return;
+    if (request.mode === "navigate") {
+        event.respondWith(fetch(request).catch(() => caches.match(OFFLINE_PAGE)
+            .then(page => page || new Response("You are offline. Reconnect to continue.",
+                {status: 503, headers: {"Content-Type": "text/plain"}}))));
+    } else if (url.pathname.startsWith("/static/")) {
+        event.respondWith(caches.open(CACHE_NAME).then(async cache => {
+            const cached = await cache.match(request);
+            if (cached) return cached;
+            const response = await fetch(request);
+            if (response.ok && response.type === "basic"
+                && new URL(response.url).pathname.startsWith("/static/")) {
+                await cache.put(request, response.clone());
+            }
             return response;
-          }
-          
-          const responseToCache = response.clone();
-          
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          
-          return response;
-        }).catch(() => {
-          if (event.request.mode === 'navigate') {
-            return caches.match('/');
-          }
-          return new Response('Offline - Resource not available', {
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: new Headers({
-              'Content-Type': 'text/plain'
-            })
-          });
-        });
-      })
-  );
-});
-
-self.addEventListener('activate', (event) => {
-  const cacheWhitelist = [CACHE_NAME];
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
-  self.clients.claim();
+        }));
+    }
+    // API, account data, media uploads, third parties and mutations bypass caching.
 });

@@ -136,6 +136,11 @@ class UserSerializer(serializers.ModelSerializer):
         return ['mobilization'] if can_mobilize(obj) else []
 
 class ProfileSerializer(serializers.ModelSerializer):
+    def validate_photo(self,photo):
+        if photo and photo.size > 400 * 1024:
+            raise serializers.ValidationError('Profile photo must not exceed 400 KiB.')
+        return photo
+
     class Meta:
         model = User
         fields = ['username', 'email', 'first_name', 'last_name', 'phone', 'bio', 'gender',
@@ -155,8 +160,8 @@ class ImpactMetricsSerializer(serializers.Serializer):
     wards_total = serializers.IntegerField()
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=True)
-    password_confirm = serializers.CharField(write_only=True, required=True)
+    password = serializers.CharField(write_only=True, required=True, trim_whitespace=False, max_length=4096)
+    password_confirm = serializers.CharField(write_only=True, required=True, trim_whitespace=False, max_length=4096)
     photo = serializers.ImageField(required=True)
     role_definition = serializers.PrimaryKeyRelatedField(queryset=RoleDefinition.objects.all(), required=True)
 
@@ -181,25 +186,21 @@ class RegisterSerializer(serializers.ModelSerializer):
         if photo and photo.size > 400 * 1024:
             raise serializers.ValidationError({"photo": "Profile photo must not exceed 400KB."})
 
-        # 4. Role and location constraints
-        role_def = attrs.get('role_definition')
-        zone = attrs.get('zone')
-        lga = attrs.get('lga')
-        ward = attrs.get('ward')
-        role = role_def.tier
-
-        if role == 'STATE':
-            if not zone or not lga:
-                raise serializers.ValidationError("Zone and LGA are required for State Executive roles.")
-        elif role == 'ZONAL':
-            if not zone:
-                raise serializers.ValidationError("Zone is required for Zonal Excos roles.")
-        elif role == 'LGA':
-            if not lga:
-                raise serializers.ValidationError("LGA is required for LGA Excos roles.")
-        elif role == 'WARD':
-            if not ward:
-                raise serializers.ValidationError("Ward is required for Ward Leaders roles.")
+        # Authoritative leadership-only and parent/child location validation.
+        from staff.services.assignments import validate_location
+        role_def=attrs.get('role_definition')
+        try:
+            assigned=validate_location(role_def,attrs.get('zone'),attrs.get('lga'),attrs.get('ward'),registration=True)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({'non_field_errors':exc.messages})
+        attrs.update({k:v for k,v in assigned.items() if k != 'role'})
+        role=assigned['role']; zone=assigned['zone']; lga=assigned['lga']; ward=assigned['ward']
+        for key in ('first_name','last_name','email','phone'):
+            if not str(attrs.get(key,'')).strip():
+                raise serializers.ValidationError({key:'This field is required.'})
+        for key in ('email','phone'):
+            if User.objects.filter(**{key+'__iexact':attrs[key]}).exists():
+                raise serializers.ValidationError({key:'This value is already registered.'})
 
         # 5. Position availability check
         existing_holder = User.objects.filter(role_definition=role_def, status='VERIFIED')
@@ -223,10 +224,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         validated_data['status'] = 'PENDING'
         validated_data['facebook_verified'] = False # For backward compatibility in DB
 
-        user = User.objects.create(**validated_data)
-        user.set_password(password)
-        user.save()
-        return user
+        from django.db import transaction
+        photo=validated_data.pop('photo')
+        with transaction.atomic():
+            # Establish the unique account before any external file upload.
+            user=User.objects.create_user(password=password, **validated_data)
+            user.photo=photo
+            user.save(update_fields=['photo'])
+            return user
 
 class LeadershipHolderSerializer(serializers.Serializer):
     id = serializers.IntegerField()
@@ -260,7 +265,7 @@ class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id','username','first_name','last_name','email','phone','photo','gender','bio','role','role_title',
-                  'zone','zone_name','lga','lga_name','ward','ward_name','status','reporter_level','created_at']
+                  'zone','zone_name','lga','lga_name','ward','ward_name','status','reporter_level','created_at','archived_at']
         read_only_fields = fields
 
 class ReportSerializer(serializers.ModelSerializer):
@@ -383,6 +388,8 @@ class NotificationSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 class DeviceRegistrationSerializer(serializers.ModelSerializer):
+    # Registration upserts by token; uniqueness remains enforced by the database.
+    token = serializers.CharField(max_length=512)
     class Meta:
         model = DeviceRegistration
         fields = ['id','token','device_id','platform','app_version','is_active','created_at','updated_at']
@@ -438,4 +445,4 @@ class AuditReportSerializer(serializers.ModelSerializer):
     class Meta:
         model=AuditReport
         fields=['id','title','audit_period','findings','recommendations','compliance_status','status','report_file','submitted_by','submitted_to','reviewed_by','review_notes','created_at','submitted_at','reviewed_at']
-        read_only_fields=['id','status','submitted_by','submitted_to','reviewed_by','created_at','submitted_at','reviewed_at']
+        read_only_fields=['id','status','submitted_by','submitted_to','reviewed_by','review_notes','created_at','submitted_at','reviewed_at']

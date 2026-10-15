@@ -9,6 +9,8 @@ from django import template
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
 import json
+import bleach
+from urllib.parse import urlsplit
 
 register = template.Library()
 
@@ -171,20 +173,18 @@ def render_article_blocks(content_json):
             return mark_safe(f'<p>{escape(content_json)}</p>')
 
     blocks = content_json.get('blocks', []) if isinstance(content_json, dict) else []
-    parts = []
-    for block in blocks:
-        btype = block.get('type', '')
-        data = block.get('data', {})
-        renderer = BLOCK_RENDERERS.get(btype)
+    if not isinstance(blocks,list): return mark_safe('')
+    parts=[]
+    for block in blocks[:1000]:
+        if not isinstance(block,dict) or not isinstance(block.get('data'),dict): continue
+        renderer=BLOCK_RENDERERS.get(block.get('type'))
         if renderer:
-            parts.append(renderer(data))
+            try: parts.append(renderer(block['data']))
+            except (TypeError,ValueError,AttributeError): continue
         else:
-            # Fallback: try to render any text
-            raw = data.get('text', '')
-            if raw:
-                parts.append(f'<p class="mb-4 text-gray-800 dark:text-gray-200">{raw}</p>')
-
-    return mark_safe('\n'.join(parts))
+            raw=block['data'].get('text','')
+            if isinstance(raw,str):parts.append(f'<p>{escape(raw)}</p>')
+    return clean_article_html('\n'.join(parts))
 
 
 @register.filter(name='verification_badge')
@@ -203,3 +203,23 @@ def verification_badge(article):
         f'<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold '
         f'tracking-wide uppercase {cls}">{label}</span>'
     )
+
+
+ARTICLE_TAGS=('p','h2','h3','h4','ul','ol','li','figure','img','figcaption','blockquote','cite','hr','div','span','strong','b','i','em','u','a','code','br','mark','iframe')
+EMBED_HOSTS={'www.youtube.com','www.youtube-nocookie.com','www.youtube-nocookie.com','player.vimeo.com'}
+
+def article_attribute(tag,name,value):
+    if name in {'class','alt','title','loading','allowfullscreen'}:return True
+    if tag=='a' and name in {'href','title'}:return True
+    if name=='src' and tag in {'img','iframe'}:
+        try:
+            if any(ord(c)<32 for c in value) or '\\' in value:return False
+            u=urlsplit(value)
+            if tag=='iframe':return u.scheme=='https' and u.hostname in EMBED_HOSTS and not u.username
+            return (u.scheme in {'http','https'} and bool(u.hostname) and not u.username) or (value.startswith('/') and not value.startswith('//') and not u.scheme and not u.netloc)
+        except ValueError:return False
+    return False
+
+@register.filter(name='clean_article_html')
+def clean_article_html(value):
+    return mark_safe(bleach.clean(str(value or ''),tags=ARTICLE_TAGS,attributes=article_attribute,protocols=['http','https','mailto','tel'],strip=True))

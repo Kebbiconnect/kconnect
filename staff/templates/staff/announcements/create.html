@@ -27,7 +27,7 @@
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                    <label class="block text-sm font-medium mb-2">Scope <span class="text-red-500">*</span></label>
+                    <label for="scope-select" class="block text-sm font-medium mb-2">Scope <span class="text-red-500">*</span></label>
                     {{ form.scope }}
                 </div>
                 <div>
@@ -94,9 +94,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const lgaField = document.getElementById('lgaField');
     const wardField = document.getElementById('wardField');
     const targetFields = document.getElementById('targetFields');
+    const targetInputs = {
+        zone: document.getElementById('zone-select'),
+        lga: document.getElementById('lga-select'),
+        ward: document.getElementById('ward-select')
+    };
+    const audienceNote = document.createElement('p');
+    audienceNote.className = 'text-sm text-gray-600 dark:text-gray-300 mt-2';
+    scopeSelect.parentElement.appendChild(audienceNote);
     
     function updateTargetFields() {
         const scope = scopeSelect.value;
+        audienceNote.textContent = scope === 'STATE'
+            ? 'Only verified, active state executive team members will receive this announcement.'
+            : scope === 'GENERAL' ? 'All verified, active KPN members will receive this announcement.' : '';
+        const enabledTargets = { zone: ['ZONAL', 'LGA'].includes(scope), lga: scope === 'LGA', ward: scope === 'WARD' };
+        Object.entries(targetInputs).forEach(([key, input]) => {
+            if (!input) return;
+            input.disabled = !enabledTargets[key];
+            if (input.disabled) input.value = '';
+        });
         
         zoneField.style.display = 'none';
         lgaField.style.display = 'none';

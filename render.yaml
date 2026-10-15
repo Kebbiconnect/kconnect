@@ -1,0 +1,43 @@
+# Production reference for www.kpn.com.ng. On an existing Render service, update
+# its dashboard commands/environment; importing this blueprint can create a new service.
+services:
+  - type: web
+    name: kpn-production
+    runtime: python
+    branch: main
+    buildCommand: bash scripts/render-build.sh
+    startCommand: bash scripts/render-start.sh
+    healthCheckPath: /health/ready/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.15
+      - key: KPN_ENV
+        value: production
+      - key: DEBUG
+        value: 'False'
+      - key: SITE_URL
+        value: https://www.kpn.com.ng
+      - key: SESSION_SECRET
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: LOCKALLY_API_KEY
+        sync: false
+      - key: LOCKALLY_API_URL
+        sync: false
+      - key: LOCKALLY_FROM_EMAIL
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_WEBHOOK_SECRET
+        sync: false
+      - key: TELEGRAM_CHANNEL_ID
+        sync: false
+      - key: TELEGRAM_BOT_USERNAME
+        sync: false

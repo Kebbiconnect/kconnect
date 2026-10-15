@@ -13,7 +13,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django_ratelimit.decorators import ratelimit
 from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram, CommunityOutreach, WardMeeting, WardMeetingAttendance, Announcement
-from .decorators import specific_role_required, role_required, approved_leader_required
+from .decorators import specific_role_required, role_required, approved_leader_required, dashboard_access_required
 from .forms import MemberMobilizationFilterForm, CommunityOutreachForm, WardMeetingForm, WardMeetingAttendanceForm, AnnouncementForm
 from leadership.models import Zone, LGA, Ward, RoleDefinition
 from core.models import Report
@@ -60,177 +60,32 @@ def register(request):
         return redirect('staff:dashboard')
     
     if request.method == 'POST':
-        username = request.POST.get('username')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        email = request.POST.get('email')
-        phone = request.POST.get('phone')
-        password1 = request.POST.get('password1')
-        password2 = request.POST.get('password2')
-        bio = request.POST.get('bio', '')
-        gender = request.POST.get('gender', '')
-        
-        zone_id = request.POST.get('zone')
-        lga_id = request.POST.get('lga')
-        ward_id = request.POST.get('ward')
-        role_definition_id = request.POST.get('role_definition')
-        
-        facebook_verified = False
-        
-        # Check if photo is uploaded
-        if not request.FILES.get('photo'):
-            messages.error(request, 'Profile photo is required for registration.')
+        # Website and native registration now use the same validated contract.
+        from rest_api.serializers import RegisterSerializer
+        from django.db import IntegrityError
+        payload={key:request.POST.get(key, '') for key in ('username','email','first_name','last_name','phone','gender','bio')}
+        payload.update(password=request.POST.get('password1'), password_confirm=request.POST.get('password2'))
+        for key in ('zone','lga','ward','role_definition'):
+            if request.POST.get(key): payload[key]=request.POST[key]
+        if request.FILES.get('photo'): payload['photo']=request.FILES['photo']
+        serializer=RegisterSerializer(data=payload)
+        if not serializer.is_valid():
+            for field,errors in serializer.errors.items():
+                for error in errors: messages.error(request, f"{field.replace('_',' ').title()}: {error}")
             return redirect('staff:register')
-        
-        # Enforce 400KB maximum file size for profile photo
-        photo_file = request.FILES['photo']
-        if photo_file.size > 400 * 1024:  # 400KB in bytes
-            messages.error(request, 'Profile photo must not exceed 400KB. Please compress or resize your image and try again.')
-            return redirect('staff:register')
-        
-        if password1 != password2:
-            messages.error(request, 'Passwords do not match.')
-            return redirect('staff:register')
-        
-        # Validate password strength using Django's built-in validators
-        from django.contrib.auth.password_validation import validate_password
-        from django.core.exceptions import ValidationError as DjangoValidationError
-        
         try:
-            validate_password(password1, user=User(username=username, email=email, first_name=first_name, last_name=last_name))
-        except DjangoValidationError as e:
-            for error in e.messages:
-                messages.error(request, error)
-            return redirect('staff:register')
-        
-        if User.objects.filter(username=username).exists():
-            messages.error(request, 'Username already exists.')
-            return redirect('staff:register')
-        
-        # Check if email already exists
-        if User.objects.filter(email=email).exists():
-            messages.error(request, 'This email address is already registered. Please use a different email or login to your existing account.')
-            return redirect('staff:register')
-        
-        # Check if phone number already exists
-        if User.objects.filter(phone=phone).exists():
-            messages.error(request, 'This phone number is already registered. Please use a different phone number or login to your existing account.')
-            return redirect('staff:register')
-        
-        try:
-            zone = Zone.objects.get(id=zone_id) if zone_id else None
-            lga = LGA.objects.get(id=lga_id) if lga_id else None
-            ward = Ward.objects.get(id=ward_id) if ward_id else None
-        except (Zone.DoesNotExist, LGA.DoesNotExist, Ward.DoesNotExist, ValueError, TypeError):
-            messages.error(request, 'Invalid location selection.')
-            return redirect('staff:register')
-        
-        role = 'GENERAL'
-        role_definition = None
-        status = 'PENDING'
-        
-        # GENERAL role is disabled for new registrations, so role_definition is required
-        if not role_definition_id:
-            messages.error(request, 'Please select a leadership position.')
-            return redirect('staff:register')
-            
-        try:
-            role_definition = RoleDefinition.objects.get(id=role_definition_id)
-        except (RoleDefinition.DoesNotExist, ValueError, TypeError):
-            messages.error(request, 'Invalid role selection.')
-            return redirect('staff:register')
-            
-        role = role_definition.tier
-        status = 'PENDING'
-        
-        if role == 'STATE':
-            if not zone or not lga:
-                messages.error(request, 'Zone and LGA are required for State Executive roles.')
-                return redirect('staff:register')
-        elif role == 'ZONAL':
-            if not zone:
-                messages.error(request, 'Zone is required for Zonal Excos roles.')
-                return redirect('staff:register')
-        elif role == 'LGA':
-            if not lga:
-                messages.error(request, 'LGA is required for LGA Excos roles.')
-                return redirect('staff:register')
-        elif role == 'WARD':
-            if not ward:
-                messages.error(request, 'Ward is required for Ward Leaders roles.')
-                return redirect('staff:register')
-        
-        existing_holder = User.objects.filter(
-            role_definition=role_definition,
-            status='VERIFIED'
-        )
-        
-        if role == 'ZONAL':
-            existing_holder = existing_holder.filter(zone=zone)
-        elif role == 'LGA':
-            existing_holder = existing_holder.filter(lga=lga)
-        elif role == 'WARD':
-            existing_holder = existing_holder.filter(ward=ward)
-        
-        if existing_holder.exists():
-            messages.error(request, 'This position is already filled.')
-            return redirect('staff:register')
-        
-        try:
-            user = User.objects.create_user(
-                username=username,
-                email=email,
-                password=password1,
-                first_name=first_name,
-                last_name=last_name,
-                phone=phone,
-                bio=bio,
-                gender=gender,
-                zone=zone,
-                lga=lga,
-                ward=ward,
-                role=role,
-                role_definition=role_definition,
-                status=status,
-                facebook_verified=facebook_verified
-            )
-            
-            # Handle profile photo upload with error handling
-            photo_uploaded = False
-            if request.FILES.get('photo'):
-                try:
-                    user.photo = request.FILES['photo']
-                    user.save()
-                    photo_uploaded = True
-                except Exception as photo_error:
-                    # If photo upload fails, log it but don't crash registration
-                    import logging
-                    logger = logging.getLogger(__name__)
-                    logger.error(f"Photo upload failed for user {username}: {str(photo_error)}")
-                    # User is created but without photo - will notify user below
-        except Exception as e:
-            # Log the error for debugging
+            user=serializer.save()
+        except Exception as exc:
             import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"User registration failed for {username}: {str(e)}")
-            messages.error(request, f'Registration failed. Please contact administrator. Error: {str(e)}')
+            logging.getLogger(__name__).error('Registration persistence failed; error type=%s', type(exc).__name__)
+            messages.error(request, 'Registration could not be completed. Please retry or contact support.')
             return redirect('staff:register')
-        
-        # Registration successful - show appropriate message
+        messages.success(request, 'Registration successful! Your leadership application is pending approval.')
         from telegram_integration.permissions import requires_telegram
-        tg_req = requires_telegram(user)
-        
-        if photo_uploaded:
-            messages.success(request, 'Registration successful! Your application is pending approval.')
-        else:
-            messages.warning(request, 'Registration successful! Your application is pending approval. Note: Your profile photo could not be uploaded. You can update it after approval.')
-            
-        if tg_req:
-            # Render a special informational template for Telegram-required roles
-            return render(request, 'telegram_integration/post_register_telegram.html', {'user': user})
-        else:
-            return redirect('staff:login')
-    
+        if requires_telegram(user):
+            return render(request, 'telegram_integration/post_register_telegram.html', {'user':user})
+        return redirect('staff:login')
+
     zones = Zone.objects.all()
     lgas = LGA.objects.all()
     wards = Ward.objects.all()
@@ -324,6 +179,7 @@ def dashboard(request):
     return render(request, 'staff/dashboard.html', context)
 
 @login_required
+@dashboard_access_required
 def general_member_dashboard(request):
     """Dashboard for general members with announcements and motivational content"""
     user = request.user
@@ -497,14 +353,16 @@ Kebbi Progressive Youth Network (KPN)
 
             try:
                 from django.core.mail import send_mail
-                send_mail(
+                sent = send_mail(
                     subject='KPN Password Reset Request',
                     message=message,
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[user.email],
                     fail_silently=False,
                 )
-                logger.info('Password reset email sent to user pk=%s', user.pk)
+                if sent != 1:
+                    raise RuntimeError('Email provider did not accept the reset message.')
+                logger.info('Password reset email accepted for user pk=%s', user.pk)
             except Exception:
                 # Log a sanitized error — never expose credentials or provider details
                 logger.exception(
@@ -611,6 +469,7 @@ def check_vacant_roles(request):
     return JsonResponse({'vacant_roles': vacant_roles(zone=zone, lga=lga, ward=ward)})
 
 @specific_role_required('President')
+@dashboard_access_required
 def president_dashboard(request):
     from leadership.models import Zone
     from campaigns.models import Campaign
@@ -668,14 +527,16 @@ def president_dashboard(request):
     
     pending_applicants = User.objects.filter(status='PENDING').order_by('-created_at')[:10]
     
-    # Weekly growth data for Chart.js
+    # Exact counts for five non-overlapping rolling seven-day windows.
     import json
     weeks_data = []
+    membership_periods = []
     for i in range(4, -1, -1):
         start = now - timezone.timedelta(days=i*7 + 7)
         end = now - timezone.timedelta(days=i*7)
-        count = User.objects.filter(status='VERIFIED', created_at__range=(start, end)).count()
+        count = User.objects.filter(status='VERIFIED', created_at__gte=start, created_at__lt=end).count()
         weeks_data.append(count)
+        membership_periods.append({"label": "Past 7 days" if i == 0 else f"{i*7+7}–{i*7} days ago", "count": count})
     
     context = {
         'pending_approvals': pending_approvals,
@@ -685,6 +546,7 @@ def president_dashboard(request):
         'female_members': female_members,
         'member_growth_this_month': member_growth_this_month,
         'chart_data': json.dumps(weeks_data),
+        'membership_periods': membership_periods,
         'total_campaigns': total_campaigns,
         'active_campaigns': active_campaigns,
         'pending_campaigns': pending_campaigns,
@@ -834,12 +696,12 @@ def review_applicant(request, user_id):
     if request.method == 'POST':
         action = request.POST.get('action')
         try:
-            decided = decide_application(request.user, applicant.id, action)
+            decided = decide_application(request.user, applicant.id, action, request.POST.get("reason", ""))
         except MemberDecisionError as exc:
             messages.error(request, exc.message)
             return redirect('staff:approve_members')
         if action == 'approve': messages.success(request, f'{decided.get_full_name()} has been approved.')
-        else: messages.success(request, 'Application has been rejected and deleted.')
+        else: messages.success(request, 'Application has been rejected and archived. Its records have been preserved.')
         return redirect('staff:approve_members')
     return render(request, 'staff/review_applicant.html', {'applicant': applicant})
 
@@ -1121,6 +983,7 @@ def reject_disciplinary_action(request, action_id):
     return render(request, 'staff/reject_disciplinary_action.html', context)
 
 @specific_role_required('Director of Media & Communications')
+@dashboard_access_required
 def media_director_dashboard(request):
     from core.models import CommunityReport
     from campaigns.models import Campaign
@@ -1140,6 +1003,7 @@ def media_director_dashboard(request):
     return render(request, 'staff/dashboards/media_director.html', context)
 
 @specific_role_required('Director of Finance')
+@dashboard_access_required
 def treasurer_dashboard(request):
     from donations.models import Donation
     unverified_donations = Donation.objects.filter(status='UNVERIFIED').count()
@@ -1153,6 +1017,7 @@ def treasurer_dashboard(request):
     return render(request, 'staff/dashboards/treasurer.html', context)
 
 @specific_role_required('Finance Operations Officer')
+@dashboard_access_required
 def financial_secretary_dashboard(request):
     from donations.models import Donation, FinancialReport
     verified_donations = Donation.objects.filter(status='VERIFIED').count()
@@ -1166,6 +1031,7 @@ def financial_secretary_dashboard(request):
     return render(request, 'staff/dashboards/financial_secretary.html', context)
 
 @specific_role_required('Director of Programmes & Events')
+@dashboard_access_required
 def organizing_secretary_dashboard(request):
     from events.models import MeetingMinutes
     upcoming_events = Event.objects.filter(start_date__gte=timezone.now()).count()
@@ -1179,6 +1045,7 @@ def organizing_secretary_dashboard(request):
     return render(request, 'staff/dashboards/organizing_secretary.html', context)
 
 @specific_role_required('General Secretary')
+@dashboard_access_required
 def general_secretary_dashboard(request):
     from events.models import MeetingMinutes
     meeting_minutes_count = MeetingMinutes.objects.all().count()
@@ -1193,6 +1060,7 @@ def general_secretary_dashboard(request):
     return render(request, 'staff/dashboards/general_secretary.html', context)
 
 @specific_role_required('Senatorial Director')
+@dashboard_access_required
 def zonal_coordinator_dashboard(request):
     lgas_in_zone = LGA.objects.filter(zone=request.user.zone).count()
     members_in_zone = User.objects.filter(zone=request.user.zone, status='VERIFIED').count()
@@ -1212,6 +1080,7 @@ def zonal_coordinator_dashboard(request):
     return render(request, 'staff/dashboards/zonal_coordinator.html', context)
 
 @specific_role_required('LGA Network Lead')
+@dashboard_access_required
 def lga_coordinator_dashboard(request):
     from core.models import CommunityReport
     wards_in_lga = Ward.objects.filter(lga=request.user.lga).count()
@@ -1234,6 +1103,7 @@ def lga_coordinator_dashboard(request):
     return render(request, 'staff/dashboards/lga_coordinator.html', context)
 
 @specific_role_required('Ward Community Lead')
+@dashboard_access_required
 def ward_coordinator_dashboard(request):
     from core.models import CommunityReport
     members_in_ward = User.objects.filter(ward=request.user.ward, status='VERIFIED').count()
@@ -1251,6 +1121,7 @@ def ward_coordinator_dashboard(request):
     return render(request, 'staff/dashboards/ward_coordinator.html', context)
 
 @specific_role_required('Vice President')
+@dashboard_access_required
 def vice_president_dashboard(request):
     """Vice President dashboard with inter-zone reports and disciplinary review"""
     from leadership.models import Zone
@@ -1293,6 +1164,7 @@ def vice_president_dashboard(request):
     return render(request, 'staff/dashboards/vice_president.html', context)
 
 @specific_role_required('Assistant General Secretary')
+@dashboard_access_required
 def assistant_general_secretary_dashboard(request):
     from core.models import FAQ
     
@@ -1311,6 +1183,7 @@ def assistant_general_secretary_dashboard(request):
     return render(request, 'staff/dashboards/assistant_general_secretary.html', context)
 
 @specific_role_required('Director of Monitoring & Compliance')
+@dashboard_access_required
 def state_supervisor_dashboard(request):
     total_zones = Zone.objects.count()
     total_lgas = LGA.objects.count()
@@ -1330,6 +1203,7 @@ def state_supervisor_dashboard(request):
     return render(request, 'staff/dashboards/state_supervisor.html', context)
 
 @specific_role_required('Director of Legal Affairs & Ethics')
+@dashboard_access_required
 def legal_ethics_adviser_dashboard(request):
     disciplinary_actions = DisciplinaryAction.objects.all().count()
     pending_actions = DisciplinaryAction.objects.filter(is_approved=False).count()
@@ -1342,6 +1216,7 @@ def legal_ethics_adviser_dashboard(request):
     return render(request, 'staff/dashboards/legal_ethics_adviser.html', context)
 
 @specific_role_required('Director of Community Engagement')
+@dashboard_access_required
 def director_of_mobilization_dashboard(request):
     total_members = User.objects.filter(status='VERIFIED').count()
     total_zones = Zone.objects.count()
@@ -1354,6 +1229,7 @@ def director_of_mobilization_dashboard(request):
     return render(request, 'staff/dashboards/director_of_mobilization.html', context)
 
 @specific_role_required('Assistant Director of Community Engagement')
+@dashboard_access_required
 def assistant_director_of_mobilization_dashboard(request):
     total_members = User.objects.filter(status='VERIFIED').count()
     
@@ -1364,6 +1240,7 @@ def assistant_director_of_mobilization_dashboard(request):
     return render(request, 'staff/dashboards/assistant_director_of_mobilization.html', context)
 
 @specific_role_required('Assistant Director of Programmes & Events')
+@dashboard_access_required
 def assistant_organizing_secretary_dashboard(request):
     upcoming_events = Event.objects.filter(start_date__gte=timezone.now()).count()
     
@@ -1374,6 +1251,7 @@ def assistant_organizing_secretary_dashboard(request):
     return render(request, 'staff/dashboards/assistant_organizing_secretary.html', context)
 
 @specific_role_required('Director of Audit & Accountability')
+@dashboard_access_required
 def auditor_general_dashboard(request):
     from donations.models import FinancialReport, AuditReport
     
@@ -1401,6 +1279,7 @@ def auditor_general_dashboard(request):
     return render(request, 'staff/dashboards/auditor_general.html', context)
 
 @specific_role_required('Director of Member Support & Welfare')
+@dashboard_access_required
 def welfare_officer_dashboard(request):
     from .models import WelfareProgram
     
@@ -1434,6 +1313,7 @@ def welfare_officer_dashboard(request):
     return render(request, 'staff/dashboards/welfare_officer.html', context)
 
 @specific_role_required('Director of Youth Development')
+@dashboard_access_required
 def youth_empowerment_officer_dashboard(request):
     from .models import YouthProgram
     
@@ -1467,6 +1347,7 @@ def youth_empowerment_officer_dashboard(request):
     return render(request, 'staff/dashboards/youth_empowerment_officer.html', context)
 
 @specific_role_required("Director of Women's Development")
+@dashboard_access_required
 def women_leader_dashboard(request):
     # Filter only female members
     if request.user.role == 'STATE':
@@ -1500,6 +1381,7 @@ def women_leader_dashboard(request):
     return render(request, 'staff/dashboards/women_leader.html', context)
 
 @specific_role_required("Assistant Director of Women's Development")
+@dashboard_access_required
 def assistant_women_leader_dashboard(request):
     # Filter only female members
     if request.user.role == 'STATE':
@@ -1521,6 +1403,7 @@ def assistant_women_leader_dashboard(request):
     return render(request, 'staff/dashboards/assistant_women_leader.html', context)
 
 @specific_role_required('Assistant Director of Media & Communications')
+@dashboard_access_required
 def assistant_media_director_dashboard(request):
     pending_campaigns = Campaign.objects.filter(status='PENDING').count()
     pending_media = MediaItem.objects.filter(status='PENDING').count()
@@ -1533,6 +1416,7 @@ def assistant_media_director_dashboard(request):
     return render(request, 'staff/dashboards/assistant_media_director.html', context)
 
 @specific_role_required('Director of Public Relations & Partnerships')
+@dashboard_access_required
 def pr_officer_dashboard(request):
     published_campaigns = Campaign.objects.filter(status='PUBLISHED').count()
     total_outreach = CommunityOutreach.objects.count()
@@ -1547,6 +1431,7 @@ def pr_officer_dashboard(request):
     return render(request, 'staff/dashboards/pr_officer.html', context)
 
 @specific_role_required('Senatorial Administrative Officer')
+@dashboard_access_required
 def zonal_secretary_dashboard(request):
     lgas_in_zone = LGA.objects.filter(zone=request.user.zone).count() if request.user.zone else 0
     members_in_zone = User.objects.filter(zone=request.user.zone, status='VERIFIED').count() if request.user.zone else 0
@@ -1559,6 +1444,7 @@ def zonal_secretary_dashboard(request):
     return render(request, 'staff/dashboards/zonal_secretary.html', context)
 
 @specific_role_required('Senatorial Communications Officer')
+@dashboard_access_required
 def zonal_publicity_officer_dashboard(request):
     members_in_zone = User.objects.filter(zone=request.user.zone, status='VERIFIED').count() if request.user.zone else 0
     
@@ -1569,6 +1455,7 @@ def zonal_publicity_officer_dashboard(request):
     return render(request, 'staff/dashboards/zonal_publicity_officer.html', context)
 
 @specific_role_required('LGA Administrative Officer')
+@dashboard_access_required
 def lga_secretary_dashboard(request):
     wards_in_lga = Ward.objects.filter(lga=request.user.lga).count() if request.user.lga else 0
     members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count() if request.user.lga else 0
@@ -1581,6 +1468,7 @@ def lga_secretary_dashboard(request):
     return render(request, 'staff/dashboards/lga_secretary.html', context)
 
 @specific_role_required('LGA Programmes Officer')
+@dashboard_access_required
 def lga_organizing_secretary_dashboard(request):
     members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count() if request.user.lga else 0
     
@@ -1591,6 +1479,7 @@ def lga_organizing_secretary_dashboard(request):
     return render(request, 'staff/dashboards/lga_organizing_secretary.html', context)
 
 @specific_role_required('LGA Finance Officer')
+@dashboard_access_required
 def lga_treasurer_dashboard(request):
     members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count() if request.user.lga else 0
     
@@ -1601,6 +1490,7 @@ def lga_treasurer_dashboard(request):
     return render(request, 'staff/dashboards/lga_treasurer.html', context)
 
 @specific_role_required('LGA Communications Officer')
+@dashboard_access_required
 def lga_publicity_officer_dashboard(request):
     members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count() if request.user.lga else 0
     
@@ -1611,6 +1501,7 @@ def lga_publicity_officer_dashboard(request):
     return render(request, 'staff/dashboards/lga_publicity_officer.html', context)
 
 @specific_role_required('LGA Monitoring Officer')
+@dashboard_access_required
 def lga_supervisor_dashboard(request):
     wards_in_lga = Ward.objects.filter(lga=request.user.lga).count() if request.user.lga else 0
     
@@ -1621,6 +1512,7 @@ def lga_supervisor_dashboard(request):
     return render(request, 'staff/dashboards/lga_supervisor.html', context)
 
 @specific_role_required("LGA Women's Development Officer")
+@dashboard_access_required
 def lga_women_leader_dashboard(request):
     members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count() if request.user.lga else 0
     
@@ -1631,6 +1523,7 @@ def lga_women_leader_dashboard(request):
     return render(request, 'staff/dashboards/lga_women_leader.html', context)
 
 @specific_role_required('LGA Member Support Officer')
+@dashboard_access_required
 def lga_welfare_officer_dashboard(request):
     members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count() if request.user.lga else 0
     
@@ -1641,6 +1534,7 @@ def lga_welfare_officer_dashboard(request):
     return render(request, 'staff/dashboards/lga_welfare_officer.html', context)
 
 @specific_role_required('LGA Community Engagement Officer')
+@dashboard_access_required
 def lga_contact_mobilization_dashboard(request):
     members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count() if request.user.lga else 0
     
@@ -1651,6 +1545,7 @@ def lga_contact_mobilization_dashboard(request):
     return render(request, 'staff/dashboards/lga_contact_mobilization.html', context)
 
 @specific_role_required('LGA Adviser')
+@dashboard_access_required
 def lga_adviser_dashboard(request):
     members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count() if request.user.lga else 0
     
@@ -1661,6 +1556,7 @@ def lga_adviser_dashboard(request):
     return render(request, 'staff/dashboards/lga_adviser.html', context)
 
 @specific_role_required('Ward Administrative Officer')
+@dashboard_access_required
 def ward_secretary_dashboard(request):
     members_in_ward = User.objects.filter(ward=request.user.ward, status='VERIFIED').count() if request.user.ward else 0
     total_meetings = WardMeeting.objects.filter(ward=request.user.ward).count() if request.user.ward else 0
@@ -1673,6 +1569,7 @@ def ward_secretary_dashboard(request):
     return render(request, 'staff/dashboards/ward_secretary.html', context)
 
 @specific_role_required('Ward Programmes Officer')
+@dashboard_access_required
 def ward_organizing_secretary_dashboard(request):
     members_in_ward = User.objects.filter(ward=request.user.ward, status='VERIFIED').count() if request.user.ward else 0
     
@@ -1683,6 +1580,7 @@ def ward_organizing_secretary_dashboard(request):
     return render(request, 'staff/dashboards/ward_organizing_secretary.html', context)
 
 @specific_role_required('Ward Finance Officer')
+@dashboard_access_required
 def ward_treasurer_dashboard(request):
     members_in_ward = User.objects.filter(ward=request.user.ward, status='VERIFIED').count() if request.user.ward else 0
     
@@ -1693,6 +1591,7 @@ def ward_treasurer_dashboard(request):
     return render(request, 'staff/dashboards/ward_treasurer.html', context)
 
 @specific_role_required('Ward Communications Officer')
+@dashboard_access_required
 def ward_publicity_officer_dashboard(request):
     members_in_ward = User.objects.filter(ward=request.user.ward, status='VERIFIED').count() if request.user.ward else 0
     
@@ -1703,6 +1602,7 @@ def ward_publicity_officer_dashboard(request):
     return render(request, 'staff/dashboards/ward_publicity_officer.html', context)
 
 @specific_role_required('Ward Community Support Officer')
+@dashboard_access_required
 def ward_financial_secretary_dashboard(request):
     members_in_ward = User.objects.filter(ward=request.user.ward, status='VERIFIED').count() if request.user.ward else 0
     
@@ -1713,6 +1613,7 @@ def ward_financial_secretary_dashboard(request):
     return render(request, 'staff/dashboards/ward_financial_secretary.html', context)
 
 @specific_role_required('Ward Monitoring Officer')
+@dashboard_access_required
 def ward_supervisor_dashboard(request):
     members_in_ward = User.objects.filter(ward=request.user.ward, status='VERIFIED').count() if request.user.ward else 0
     
@@ -1723,6 +1624,7 @@ def ward_supervisor_dashboard(request):
     return render(request, 'staff/dashboards/ward_supervisor.html', context)
 
 @specific_role_required('Ward Adviser')
+@dashboard_access_required
 def ward_adviser_dashboard(request):
     members_in_ward = User.objects.filter(ward=request.user.ward, status='VERIFIED').count() if request.user.ward else 0
     
@@ -1742,7 +1644,14 @@ def edit_member_role(request, user_id):
     if request.method == 'POST':
         form = EditMemberRoleForm(request.POST, instance=member)
         if form.is_valid():
-            updated_member = form.save()
+            from staff.services.assignments import assign_member
+            from django.core.exceptions import ValidationError
+            data=form.cleaned_data
+            try:
+                updated_member=assign_member(member.pk,data.get('role_definition'),data.get('zone'),data.get('lga'),data.get('ward'))
+            except ValidationError as exc:
+                messages.error(request, '; '.join(exc.messages))
+                return redirect('staff:edit_member_role', user_id=user_id)
             messages.success(request, f'Successfully updated {updated_member.get_full_name()}\'s role.')
             return redirect('staff:manage_staff')
     else:
@@ -1769,13 +1678,14 @@ def promote_member(request, user_id):
             lga = form.cleaned_data.get('lga')
             ward = form.cleaned_data.get('ward')
             
-            member.role_definition = new_role_def
-            member.role = new_role_def.tier
-            member.zone = zone
-            member.lga = lga
-            member.ward = ward
-            member.save()
-            
+            from staff.services.assignments import assign_member
+            from django.core.exceptions import ValidationError
+            try:
+                member=assign_member(member.pk,new_role_def,zone,lga,ward)
+            except ValidationError as exc:
+                messages.error(request, '; '.join(exc.messages))
+                return redirect('staff:promote_member', user_id=user_id)
+
             messages.success(request, f'Successfully promoted {member.get_full_name()} to {new_role_def.title}.')
             return redirect('staff:manage_staff')
     else:
@@ -1799,29 +1709,20 @@ def demote_member(request, user_id):
         if form.is_valid():
             new_role = form.cleaned_data['new_role']
             
-            if new_role == 'GENERAL':
-                member.role = 'GENERAL'
-                member.role_definition = None
-                member.save()
-                messages.success(request, f'{member.get_full_name()} has been demoted to General Member.')
-            else:
-                new_role_def = form.cleaned_data.get('new_role_definition')
-                zone = form.cleaned_data.get('zone')
-                lga = form.cleaned_data.get('lga')
-                ward = form.cleaned_data.get('ward')
-                
-                if new_role_def:
-                    member.role_definition = new_role_def
-                    member.role = new_role_def.tier
-                    member.zone = zone
-                    member.lga = lga
-                    member.ward = ward
-                    member.save()
-                    messages.success(request, f'Successfully demoted {member.get_full_name()} to {new_role_def.title}.')
-                else:
-                    messages.error(request, 'Please select a specific position.')
-                    return redirect('staff:demote_member', user_id=user_id)
-            
+            from staff.services.assignments import assign_member
+            from django.core.exceptions import ValidationError
+            data=form.cleaned_data
+            definition=None if new_role=='GENERAL' else data.get('new_role_definition')
+            if new_role!='GENERAL' and not definition:
+                messages.error(request, 'Please select a specific position.')
+                return redirect('staff:demote_member', user_id=user_id)
+            try:
+                member=assign_member(member.pk,definition,data.get('zone'),data.get('lga'),data.get('ward'))
+            except ValidationError as exc:
+                messages.error(request, '; '.join(exc.messages))
+                return redirect('staff:demote_member', user_id=user_id)
+            messages.success(request, f"Successfully changed {member.get_full_name()}'s position.")
+
             return redirect('staff:manage_staff')
     else:
         form = DemoteMemberForm(user=member)
@@ -1875,11 +1776,17 @@ def reinstate_member(request, user_id):
     member = get_object_or_404(User, pk=user_id)
     
     if request.method == 'POST':
-        member.status = 'VERIFIED'
-        member.date_approved = timezone.now()
-        member.approved_by = request.user
-        member.save()
-        
+        from staff.services.assignments import assign_member
+        from django.core.exceptions import ValidationError
+        if member.archived_at:
+            messages.error(request, 'Archived applications cannot be reinstated as approved members. Review the application separately.')
+            return redirect('staff:manage_staff')
+        try:
+            member=assign_member(member.pk,member.role_definition,member.zone,member.lga,member.ward,verified=True,approver=request.user)
+        except ValidationError as exc:
+            messages.error(request, '; '.join(exc.messages))
+            return redirect('staff:manage_staff')
+
         messages.success(request, f'{member.get_full_name()} has been reinstated.')
         return redirect('staff:manage_staff')
     
@@ -1899,26 +1806,14 @@ def swap_positions(request):
             member1 = form.cleaned_data['member1']
             member2 = form.cleaned_data['member2']
             
-            temp_role_def = member1.role_definition
-            temp_role = member1.role
-            temp_zone = member1.zone
-            temp_lga = member1.lga
-            temp_ward = member1.ward
-            
-            member1.role_definition = member2.role_definition
-            member1.role = member2.role
-            member1.zone = member2.zone
-            member1.lga = member2.lga
-            member1.ward = member2.ward
-            member1.save()
-            
-            member2.role_definition = temp_role_def
-            member2.role = temp_role
-            member2.zone = temp_zone
-            member2.lga = temp_lga
-            member2.ward = temp_ward
-            member2.save()
-            
+            from staff.services.assignments import swap_members
+            from django.core.exceptions import ValidationError
+            try:
+                member1,member2=swap_members(member1.pk,member2.pk)
+            except ValidationError as exc:
+                messages.error(request, '; '.join(exc.messages))
+                return redirect('staff:swap_positions')
+
             messages.success(request, f'Successfully swapped positions between {member1.get_full_name()} and {member2.get_full_name()}.')
             return redirect('staff:manage_staff')
     else:
@@ -3089,8 +2984,10 @@ def create_announcement(request):
             announcement.created_by = request.user
             
             try:
-                announcement.full_clean()
-                announcement.save()
+                from django.db import transaction
+                with transaction.atomic():
+                    announcement.full_clean()
+                    announcement.save()
                 messages.success(request, 'Announcement created successfully! It is now active and visible to the targeted members.')
                 return redirect('staff:announcements_list')
             except Exception as e:

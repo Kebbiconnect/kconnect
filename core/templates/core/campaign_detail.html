@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load campaign_extras %}
 
 {% block title %}{{ campaign.title }} - KPN{% endblock %}
 
@@ -19,7 +20,7 @@
         </div>
         
         <div class="prose dark:prose-invert max-w-none">
-            {{ campaign.content|safe }}
+            {{ campaign.content|clean_article_html }}
         </div>
     </article>
 </div>

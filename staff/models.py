@@ -54,6 +54,10 @@ class User(AbstractUser):
     
     role_definition = models.ForeignKey(RoleDefinition, on_delete=models.SET_NULL, null=True, blank=True, related_name='holders')
     
+    archived_at = models.DateTimeField(null=True, blank=True)
+    archived_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='archived_applications')
+    archive_reason = models.TextField(blank=True)
+
     facebook_verified = models.BooleanField(default=False)
     date_approved = models.DateTimeField(null=True, blank=True)
     approved_by = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_members')
@@ -63,6 +67,8 @@ class User(AbstractUser):
     
     class Meta:
         ordering = ['-created_at']
+        # Migration-owned write guards preserve existing duplicate occupants
+        # while enforcing vacancy for new/reassigned verified memberships.
         indexes = [
             models.Index(fields=['status', 'role'], name='user_status_role_idx'),
             models.Index(fields=['status', 'zone'], name='user_status_zone_idx'),
@@ -70,6 +76,23 @@ class User(AbstractUser):
             models.Index(fields=['status', 'ward'], name='user_status_ward_idx'),
         ]
     
+    def clean(self):
+        super().clean()
+        if self.status != 'VERIFIED' or not self.role_definition_id or self.role not in {'STATE','ZONAL','LGA','WARD'}:
+            return
+        key = {'ZONAL':'zone_id','LGA':'lga_id','WARD':'ward_id'}.get(self.role)
+        if key and getattr(self,key) is None:
+            return  # Existing location validation/preflight handles missing scope.
+        columns = ['status','role','role_definition_id'] + ([key] if key else [])
+        old = type(self).objects.filter(pk=self.pk).values(*columns).first() if self.pk else None
+        if old and old['status']=='VERIFIED' and old['role']==self.role and old['role_definition_id']==self.role_definition_id and (not key or old[key]==getattr(self,key)):
+            return  # Grandfather the unchanged assignment, not new occupants.
+        scope = {'status':'VERIFIED','role':self.role,'role_definition_id':self.role_definition_id}
+        if key: scope[key] = getattr(self,key)
+        if type(self).objects.filter(**scope).exclude(pk=self.pk).exists():
+            from django.core.exceptions import ValidationError
+            raise ValidationError('This leadership seat is already occupied.')
+
     def __str__(self):
         return f"{self.get_full_name()} ({self.get_role_display()})"
     
@@ -410,6 +433,7 @@ class WardMeetingAttendance(models.Model):
 class Announcement(models.Model):
     SCOPE_CHOICES = [
         ('GENERAL', 'General - All KPN Members'),
+        ('STATE', 'State - State Executive Team'),
         ('ZONAL', 'Zonal - Specific Zone'),
         ('LGA', 'LGA - Specific LGA'),
         ('WARD', 'Ward - Specific Ward'),
@@ -456,9 +480,9 @@ class Announcement(models.Model):
     def clean(self):
         from django.core.exceptions import ValidationError
         
-        if self.scope == 'GENERAL':
+        if self.scope in {'GENERAL', 'STATE'}:
             if self.target_zone or self.target_lga or self.target_ward:
-                raise ValidationError("General announcements should not have zone, LGA, or ward targets.")
+                raise ValidationError("General and State announcements should not have zone, LGA, or ward targets.")
         elif self.scope == 'ZONAL':
             if not self.target_zone:
                 raise ValidationError("Zonal announcements must have a target zone.")
@@ -488,6 +512,10 @@ class Announcement(models.Model):
         )
         
         query = Q(scope='GENERAL')
+        if (user.role == 'STATE' and user.status == 'VERIFIED' and user.is_active
+                and not user.is_superuser and user.role_definition_id
+                and user.role_definition.tier == 'STATE'):
+            query |= Q(scope='STATE')
         
         if user.zone:
             query |= Q(scope='ZONAL', target_zone=user.zone)
@@ -503,6 +531,8 @@ class Announcement(models.Model):
     def get_target_display(self):
         if self.scope == 'GENERAL':
             return 'All KPN Members'
+        elif self.scope == 'STATE':
+            return 'State Executive Team'
         elif self.scope == 'ZONAL' and self.target_zone:
             return f'{self.target_zone.name} Zone'
         elif self.scope == 'LGA' and self.target_lga:

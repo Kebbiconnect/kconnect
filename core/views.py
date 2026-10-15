@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Q, F
 from campaigns.models import Campaign
 from media.models import MediaItem
 from staff.models import User
@@ -17,9 +17,15 @@ def home(request):
     from .models import AdvocacyCampaign
     featured_campaigns = AdvocacyCampaign.objects.filter(is_active=True).order_by('-created_at')[:3]
     latest_news = Campaign.objects.filter(status='PUBLISHED').order_by('-published_at')[:6]
+    latest_opportunities = Opportunity.objects.filter(
+        status__in=['OPEN', 'CLOSING_SOON']
+    ).filter(Q(deadline__isnull=True) | Q(deadline__gte=timezone.localdate())).order_by(
+        F('deadline').asc(nulls_last=True), '-created_at'
+    )[:3]
     context = {
         'featured_campaigns': featured_campaigns,
         'latest_news': latest_news,
+        'latest_opportunities': latest_opportunities,
     }
     return render(request, 'core/home.html', context)
 
@@ -348,7 +354,7 @@ This message was sent via the KPN contact form.
                 subject=email_subject,
                 message=email_body,
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=['info@kpn.com.ng'],
+                recipient_list=[settings.CONTACT_RECIPIENT_EMAIL],
                 fail_silently=False,
             )
             

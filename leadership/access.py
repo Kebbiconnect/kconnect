@@ -6,7 +6,10 @@ def role_title(user):
  role=getattr(user,"role_definition",None)
  return canonical_role_title(role.title) if role else None
 
-def is_verified(user): return bool(getattr(user,"is_authenticated",False) and user.status=="VERIFIED")
+def is_verified(user): return bool(getattr(user,"is_authenticated",False) and getattr(user,"is_active",False) and user.status=="VERIFIED")
+
+def has_full_access(user):
+ return is_verified(user) and role_title(user) in {"President", "Director of Media & Communications"}
 
 def users_in_jurisdiction(user,queryset=None):
  queryset=queryset if queryset is not None else User.objects.all()
