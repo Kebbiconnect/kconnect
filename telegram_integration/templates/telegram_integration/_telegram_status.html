@@ -1,5 +1,5 @@
 {# Reusable Telegram status partial. Include in any dashboard template. #}
-{# Usage: {% include 'telegram_integration/_telegram_status.html' with telegram_required=True %} #}
+{# Called by dashboard_telegram_status; requirements come from central permissions. #}
 
 {% load static %}
 
@@ -9,12 +9,16 @@
         <i class="fab fa-telegram mr-2 text-blue-500"></i>KPN Telegram Status
     </h3>
 
+    {% if not telegram_required %}
+    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Telegram verification is optional for your role and does not block dashboard access.</p>
+    {% endif %}
+
     {% if tm and tm.is_verified %}
     <!-- ACTIVE / VERIFIED -->
     <div class="flex items-center justify-between flex-wrap gap-3">
         <div class="flex items-center">
             <span class="inline-flex items-center px-3 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-sm font-bold">
-                <i class="fas fa-circle text-xs mr-1"></i> ACTIVE
+                <i class="fas fa-circle text-xs mr-1"></i> TELEGRAM VERIFIED
             </span>
             <span class="ml-3 text-sm text-gray-600 dark:text-gray-400">
                 Connected as
@@ -51,7 +55,7 @@
     <div class="flex items-center justify-between flex-wrap gap-3">
         <div class="flex items-center">
             <span class="inline-flex items-center px-3 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 text-sm font-bold">
-                <i class="fas fa-circle text-xs mr-1"></i> INACTIVE
+                <i class="fas fa-circle text-xs mr-1"></i> NOT VERIFIED
             </span>
             <span class="ml-3 text-sm text-gray-600 dark:text-gray-400">
                 Connected but not an active channel member
@@ -80,7 +84,7 @@
             <i class="fas fa-circle text-xs mr-1"></i> NOT CONNECTED
         </span>
         {% if not telegram_required %}
-        <span class="ml-3 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 px-2 py-0.5 rounded">Status: INACTIVE</span>
+        <span class="ml-3 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 px-2 py-0.5 rounded">Verification optional</span>
         {% endif %}
     </div>
     <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
@@ -88,7 +92,7 @@
         {% if telegram_required %}
         <strong class="text-red-500">Required for your role.</strong>
         {% else %}
-        Optional — shown as INACTIVE until connected.
+        Optional for dashboard access. Connect and verify to show your Telegram verified badge.
         {% endif %}
     </p>
     <a href="{% url 'telegram_integration:connect' %}"

@@ -1,8 +1,15 @@
+{% load dashboard_actions %}
 <header class="kpn-workspace-header">
     <div>
         <p class="kpn-eyebrow">Your KPN workspace</p>
         <h1><i class="{{ icon_class|default:'fas fa-tachometer-alt' }}" aria-hidden="true"></i> {{ title }}</h1>
+        <p class="kpn-workspace-meta" aria-live="off">
+            <span class="typing-text" aria-hidden="true" data-messages="{{ welcome_messages|default:'Welcome to your KPN dashboard.|One Voice, One Change.' }}" data-speed="70" data-delete-speed="35" data-pause="2000">Welcome to your KPN dashboard.</span>
+            <span class="sr-only">Welcome to your KPN dashboard.</span>
+        </p>
         <p class="kpn-workspace-meta">{{ user.role_definition.title|default:"KPN member" }} · {{ user.get_jurisdiction }}</p>
     </div>
     <div class="kpn-workspace-identity"><span>Signed in as</span><strong>{{ user.get_full_name }}</strong></div>
 </header>
+
+{% dashboard_telegram_status %}
