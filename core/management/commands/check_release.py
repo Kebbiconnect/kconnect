@@ -29,5 +29,14 @@ class Command(BaseCommand):
                 if invalid: raise CommandError(f'{invalid} verified assignments are missing required scope; resolve before migration.')
                 for tier,scope in [('STATE',[]),('ZONAL',['zone_id']),('LGA',['lga_id']),('WARD',['ward_id'])]:
                     duplicates=User.objects.filter(status='VERIFIED',role=tier,role_definition__isnull=False).values('role_definition_id',*scope).annotate(total=Count('id')).filter(total__gt=1).count()
-                    if duplicates: raise CommandError(f'{duplicates} duplicate {tier} seat groups exist; no data has been changed.')
+                    if duplicates:
+                        self.stdout.write(self.style.WARNING(
+                            f'{duplicates} existing duplicate {tier} seat groups retained unchanged; new occupied-seat assignments remain blocked.'))
+                from django.db.migrations.recorder import MigrationRecorder
+                recorder=MigrationRecorder(connection)
+                upgraded=recorder.Migration.objects.filter(app='staff',name='0016_legacy_seat_compatibility_guard').exists()
+                if upgraded:
+                    from staff.migrations._seat_integrity import guard_is_installed
+                    if not guard_is_installed(connection,User._meta.db_table):
+                        raise CommandError('Verified-seat write guard is missing; stop deployment and repair the migration-owned guard.')
         self.stdout.write(self.style.SUCCESS('Release configuration'+(' and database preflight' if options['database'] else '')+' passed. Provider delivery, backup recovery and device acceptance must still be verified.'))
