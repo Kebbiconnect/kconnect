@@ -1,3 +1,4 @@
+
 """
 Django settings for KPN project.
 
@@ -37,15 +38,19 @@ if not SECRET_KEY.strip():
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
-KPN_ENV = config('KPN_ENV', default='production' if os.getenv('RENDER') else 'development')
+KPN_ENV = config(
+    'KPN_ENV',
+    default='production' if os.getenv('RENDER') else 'development',
+)
 IS_PRODUCTION = KPN_ENV == 'production'
 if KPN_ENV not in {'development', 'test', 'production'}:
-    raise ImproperlyConfigured('KPN_ENV must be development, test or production.')
+    raise ImproperlyConfigured(
+        'KPN_ENV must be development, test or production.'
+    )
 if IS_PRODUCTION and DEBUG:
     raise ImproperlyConfigured('DEBUG must be False in production.')
 
-# --- START: New and Improved ALLOWED_HOSTS logic ---
-# In DEBUG mode, allow all hosts for easier development
+# Allowed hosts
 ALLOWED_HOSTS = []
 
 # Render default domain
@@ -58,10 +63,10 @@ ALLOWED_HOSTS.extend([
     "kpn.com.ng",
     "www.kpn.com.ng",
     "127.0.0.1",
-    "localhost"
+    "localhost",
 ])
 
-# Allow Replit preview domains (optional)
+# Replit preview domains (optional)
 REPLIT_DOMAINS = os.environ.get("REPLIT_DOMAINS")
 if REPLIT_DOMAINS:
     ALLOWED_HOSTS.extend(REPLIT_DOMAINS.split(","))
@@ -70,12 +75,13 @@ if REPLIT_DOMAINS:
 if DEBUG:
     ALLOWED_HOSTS = ["*"]
 
-# Store these for CSRF_TRUSTED_ORIGINS
 CSRF_TRUSTED_ORIGINS = []
 
 # Render default domain
 if RENDER_EXTERNAL_HOSTNAME:
-    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
+    CSRF_TRUSTED_ORIGINS.append(
+        f"https://{RENDER_EXTERNAL_HOSTNAME}"
+    )
 
 # Custom domains
 CSRF_TRUSTED_ORIGINS.extend([
@@ -90,7 +96,6 @@ if REPLIT_DOMAINS:
         CSRF_TRUSTED_ORIGINS.append(f"http://{domain}")
 
 # Application definition
-
 INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
@@ -107,10 +112,10 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
 
-    # Security Apps
+    # Security apps
     'axes',
-    
-    # KPN Apps
+
+    # KPN apps
     'core',
     'staff',
     'telegram_integration',
@@ -132,7 +137,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'axes.middleware.AxesMiddleware',  # Brute-force protection
+    'axes.middleware.AxesMiddleware',
 ]
 
 ROOT_URLCONF = 'KPN.urls'
@@ -160,96 +165,144 @@ TEMPLATES = [
 WSGI_APPLICATION = 'KPN.wsgi.application'
 
 # Database configuration
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 # Production cannot silently use an ephemeral SQLite database on Render.
 DATABASE_URL = config('DATABASE_URL', default='')
 if IS_PRODUCTION and not DATABASE_URL:
-    raise ImproperlyConfigured('DATABASE_URL must be configured for Neon PostgreSQL.')
-DATABASES = {'default': dj_database_url.parse(
-    DATABASE_URL or f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-    conn_max_age=config('DB_CONN_MAX_AGE', default=60, cast=int),
-    conn_health_checks=True,
-)}
-if IS_PRODUCTION and DATABASES['default'].get('ENGINE') != 'django.db.backends.postgresql':
-    raise ImproperlyConfigured('Production requires PostgreSQL, not SQLite.')
-if DATABASES['default'].get('ENGINE') == 'django.db.backends.postgresql':
-    options=DATABASES['default'].setdefault('OPTIONS', {})
-    options['connect_timeout']=15
+    raise ImproperlyConfigured(
+        'DATABASE_URL must be configured for Neon PostgreSQL.'
+    )
+
+DATABASES = {
+    'default': dj_database_url.parse(
+        DATABASE_URL or f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=config(
+            'DB_CONN_MAX_AGE',
+            default=60,
+            cast=int,
+        ),
+        conn_health_checks=True,
+    ),
+}
+
+if (
+    IS_PRODUCTION
+    and DATABASES['default'].get('ENGINE')
+    != 'django.db.backends.postgresql'
+):
+    raise ImproperlyConfigured(
+        'Production requires PostgreSQL, not SQLite.'
+    )
+
+if (
+    DATABASES['default'].get('ENGINE')
+    == 'django.db.backends.postgresql'
+):
+    options = DATABASES['default'].setdefault('OPTIONS', {})
+    options['connect_timeout'] = 15
     if IS_PRODUCTION:
         options.setdefault('sslmode', 'require')
-        if options['sslmode'] not in {'require','verify-ca','verify-full'}:
-            raise ImproperlyConfigured('Production PostgreSQL connections must require TLS.')
+        if options['sslmode'] not in {
+            'require',
+            'verify-ca',
+            'verify-full',
+        }:
+            raise ImproperlyConfigured(
+                'Production PostgreSQL connections must require TLS.'
+            )
 
 # Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'Africa/Lagos'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
 # ======================================
-# Static files (CSS, JavaScript, Images)
+# Static files
 # ======================================
-# For serving CSS/JS files in production
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # ======================================
-# Cloudinary Configuration
+# Cloudinary configuration
 # ======================================
+CLOUDINARY_CLOUD_NAME = config(
+    'CLOUDINARY_CLOUD_NAME',
+    default='',
+)
+CLOUDINARY_API_KEY = config(
+    'CLOUDINARY_API_KEY',
+    default='',
+)
+CLOUDINARY_API_SECRET = config(
+    'CLOUDINARY_API_SECRET',
+    default='',
+)
 
-CLOUDINARY_CLOUD_NAME = config('CLOUDINARY_CLOUD_NAME', default='')
-CLOUDINARY_API_KEY = config('CLOUDINARY_API_KEY', default='')
-CLOUDINARY_API_SECRET = config('CLOUDINARY_API_SECRET', default='')
+USE_CLOUDINARY = all([
+    CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET,
+])
 
-# Only configure Cloudinary if all credentials are provided
-USE_CLOUDINARY = all([CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET])
 if IS_PRODUCTION and not USE_CLOUDINARY:
-    raise ImproperlyConfigured('All Cloudinary credentials are required in production; local uploads are not a fallback.')
-CLOUDINARY_STORAGE = {'CLOUD_NAME':CLOUDINARY_CLOUD_NAME,'API_KEY':CLOUDINARY_API_KEY,'API_SECRET':CLOUDINARY_API_SECRET,'SECURE':True}
+    raise ImproperlyConfigured(
+        'All Cloudinary credentials are required in production; '
+        'local uploads are not a fallback.'
+    )
+
+# Cloudinary fields store full public IDs, including folder paths.
+# Explicitly disable the implicit MEDIA_URL prefix.
+# Existing public IDs beginning with "media/" remain unchanged.
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
+    'API_KEY': CLOUDINARY_API_KEY,
+    'API_SECRET': CLOUDINARY_API_SECRET,
+    'SECURE': True,
+    'PREFIX': '',
+}
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-
 
 if USE_CLOUDINARY:
     cloudinary.config(
         cloud_name=CLOUDINARY_CLOUD_NAME,
         api_key=CLOUDINARY_API_KEY,
         api_secret=CLOUDINARY_API_SECRET,
-        secure=True
+        secure=True,
     )
 
 # Django 4.2+ and 5.x media/static storage setup
 STORAGES = {
     "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage" if USE_CLOUDINARY else "django.core.files.storage.FileSystemStorage",
+        "BACKEND": (
+            "cloudinary_storage.storage.MediaCloudinaryStorage"
+            if USE_CLOUDINARY
+            else "django.core.files.storage.FileSystemStorage"
+        ),
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": (
+            "whitenoise.storage."
+            "CompressedManifestStaticFilesStorage"
+        ),
     },
 }
 
-# If not using Cloudinary, use local file storage
+# Local file storage is only a non-production fallback.
 if not USE_CLOUDINARY:
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'
 
-# WhiteNoise static file serving optimization
-WHITENOISE_MAX_AGE = 31536000  # 1 year cache for static files
+# WhiteNoise static file serving
+WHITENOISE_MAX_AGE = 31536000
 WHITENOISE_COMPRESSION = True
 WHITENOISE_USE_FINDERS = False
 
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom User Model
+# Custom user model
 AUTH_USER_MODEL = 'staff.User'
 
 # Login URLs
@@ -257,130 +310,205 @@ LOGIN_URL = 'staff:login'
 LOGIN_REDIRECT_URL = 'staff:dashboard'
 LOGOUT_REDIRECT_URL = 'core:home'
 
-# Production site URL — used to build absolute URLs in emails (e.g. password reset links).
-# Set this in your Render environment variables.
-# Example: SITE_URL=https://kpn.com.ng
+# Used for absolute URLs in emails and other public links.
 SITE_URL = config('SITE_URL', default='')
 
-# Email Configuration
-# ─────────────────────────────────────────────────────────────────────────────
-# Lockally Sending API (primary email delivery for production)
+# ======================================
+# Email configuration
+# ======================================
+# Lockally is the default delivery backend.
 LOCKALLY_API_KEY = config('LOCKALLY_API_KEY', default='')
 LOCKALLY_API_URL = config('LOCKALLY_API_URL', default='')
 LOCKALLY_FROM_EMAIL = config('LOCKALLY_FROM_EMAIL', default='')
-LOCKALLY_FROM_NAME = config('LOCKALLY_FROM_NAME', default='KPN - Kebbi Progressive Youth Network')
-
-# Lockally is the default. Missing configuration must not silently switch to
-# console output and imply that a real message was delivered. EMAIL_BACKEND
-# remains an explicit override for tests/development or a chosen SMTP service.
-EMAIL_BACKEND = config(
-    'EMAIL_BACKEND', default='staff.lockally_backend.LockallyEmailBackend'
+LOCKALLY_FROM_NAME = config(
+    'LOCKALLY_FROM_NAME',
+    default='KPN - Kebbi Progressive Youth Network',
 )
 
-# SMTP settings retained for reference / manual override (not used when Lockally is active)
+# Missing configuration must not silently fall back to console email.
+# EMAIL_BACKEND remains an explicit override.
+EMAIL_BACKEND = config(
+    'EMAIL_BACKEND',
+    default='staff.lockally_backend.LockallyEmailBackend',
+)
+
+# SMTP is used only when explicitly selected.
 EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
 _email_port = config('EMAIL_PORT', default='587')
 EMAIL_PORT = int(_email_port) if _email_port else 587
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@kpn.com.ng')
-# Bound SMTP failures instead of letting a blocked provider hang a request.
+DEFAULT_FROM_EMAIL = config(
+    'DEFAULT_FROM_EMAIL',
+    default='noreply@kpn.com.ng',
+)
 EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=10, cast=int)
-CONTACT_RECIPIENT_EMAIL = config('CONTACT_RECIPIENT_EMAIL', default='info@kpn.com.ng')
+CONTACT_RECIPIENT_EMAIL = config(
+    'CONTACT_RECIPIENT_EMAIL',
+    default='info@kpn.com.ng',
+)
 
-# Security Settings
-# HTTPS/SSL Configuration
-# Force SSL redirect off if we're on local dev (even if DEBUG is False in env)
-SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=IS_PRODUCTION, cast=bool)
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_HSTS_SECONDS = 31536000  # 1 year
+# ======================================
+# Security settings
+# ======================================
+SECURE_SSL_REDIRECT = config(
+    'SECURE_SSL_REDIRECT',
+    default=IS_PRODUCTION,
+    cast=bool,
+)
+SECURE_PROXY_SSL_HEADER = (
+    'HTTP_X_FORWARDED_PROTO',
+    'https',
+)
+SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
-# Cookie Security
-SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
+# Cookie security
+SESSION_COOKIE_SECURE = config(
+    'SESSION_COOKIE_SECURE',
+    default=not DEBUG,
+    cast=bool,
+)
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_AGE = 3600  # 1 hour session timeout
-CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=not DEBUG, cast=bool)
+SESSION_COOKIE_AGE = 3600
+
+CSRF_COOKIE_SECURE = config(
+    'CSRF_COOKIE_SECURE',
+    default=not DEBUG,
+    cast=bool,
+)
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Lax'
 
-# Security Headers
+# Security headers
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = 'DENY'
 SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 
-# Password Validation - Simplified for easier memorable passwords
+# Existing password-validation policy
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'MinimumLengthValidator'
+        ),
         'OPTIONS': {
             'min_length': 6,
-        }
+        },
     },
 ]
 
-# Authentication Backends
+# Authentication backends
 AUTHENTICATION_BACKENDS = [
-    'axes.backends.AxesStandaloneBackend',  # AxesBackend should be first
+    'axes.backends.AxesStandaloneBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-# Django Axes Configuration - Brute Force Protection
-AXES_FAILURE_LIMIT = 5  # Lock after 5 failed attempts
-AXES_COOLOFF_TIME = 1  # Lock for 1 hour (in hours)
+# Django Axes brute-force protection
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = 1
 AXES_RESET_ON_SUCCESS = True
-AXES_LOCKOUT_TEMPLATE = None  # Use default lockout behavior
+AXES_LOCKOUT_TEMPLATE = None
 AXES_LOCKOUT_PARAMETERS = [['username', 'ip_address']]
 AXES_ENABLE_ACCESS_FAILURE_LOG = True
 AXES_RESET_COOL_OFF_ON_FAILURE_DURING_LOCKOUT = True
 
-# Telegram & AI Configuration
+# ======================================
+# Telegram and AI configuration
+# ======================================
 TELEGRAM_BOT_TOKEN = config('TELEGRAM_BOT_TOKEN', default='')
-TELEGRAM_CHANNEL_ID = config('TELEGRAM_CHANNEL_ID', default='-1002364023770') # Can be @officialkpn or numeric ID
-TELEGRAM_WEBHOOK_SECRET = config('TELEGRAM_WEBHOOK_SECRET', default='')
-TELEGRAM_BOT_USERNAME = config('TELEGRAM_BOT_USERNAME', default='KPNKebbiBot')
+TELEGRAM_CHANNEL_ID = config(
+    'TELEGRAM_CHANNEL_ID',
+    default='-1002364023770',
+)
+TELEGRAM_WEBHOOK_SECRET = config(
+    'TELEGRAM_WEBHOOK_SECRET',
+    default='',
+)
+TELEGRAM_BOT_USERNAME = config(
+    'TELEGRAM_BOT_USERNAME',
+    default='KPNKebbiBot',
+)
 
 OPENROUTER_API_KEY = config('OPENROUTER_API_KEY', default='')
-OPENROUTER_MODEL = config('OPENROUTER_MODEL', default='google/gemma-3-27b-it:free')
+OPENROUTER_MODEL = config(
+    'OPENROUTER_MODEL',
+    default='google/gemma-3-27b-it:free',
+)
 GOOGLE_AI_API_KEY = config('GOOGLE_AI_API_KEY', default='')
 
-AI_PROVIDERS = config('AI_PROVIDERS', default='openrouter,google')
-AI_MAX_REQUESTS_PER_HOUR = config('AI_MAX_REQUESTS_PER_HOUR', default=20, cast=int)
-AI_MAX_REQUESTS_PER_DAY = config('AI_MAX_REQUESTS_PER_DAY', default=100, cast=int)
+AI_PROVIDERS = config(
+    'AI_PROVIDERS',
+    default='openrouter,google',
+)
+AI_MAX_REQUESTS_PER_HOUR = config(
+    'AI_MAX_REQUESTS_PER_HOUR',
+    default=20,
+    cast=int,
+)
+AI_MAX_REQUESTS_PER_DAY = config(
+    'AI_MAX_REQUESTS_PER_DAY',
+    default=100,
+    cast=int,
+)
 
 TELEGRAM_REQUIRED_ROLE_TITLES = [
-    'President', 'Vice President', 'General Secretary', 'Assistant General Secretary',
-    'Director of Monitoring & Compliance', 'Director of Legal Affairs & Ethics',
-    'Director of Finance', 'Finance Operations Officer',
-    'Director of Community Engagement', 'Assistant Director of Community Engagement',
-    'Director of Programmes & Events', 'Assistant Director of Programmes & Events',
-    'Director of Audit & Accountability', 'Director of Member Support & Welfare',
-    'Director of Youth Development', "Director of Women's Development",
-    "Assistant Director of Women's Development", 'Director of Media & Communications',
-    'Assistant Director of Media & Communications', 'Director of Public Relations & Partnerships',
-    'Senatorial Director', 'Senatorial Administrative Officer', 'Senatorial Communications Officer',
+    'President',
+    'Vice President',
+    'General Secretary',
+    'Assistant General Secretary',
+    'Director of Monitoring & Compliance',
+    'Director of Legal Affairs & Ethics',
+    'Director of Finance',
+    'Finance Operations Officer',
+    'Director of Community Engagement',
+    'Assistant Director of Community Engagement',
+    'Director of Programmes & Events',
+    'Assistant Director of Programmes & Events',
+    'Director of Audit & Accountability',
+    'Director of Member Support & Welfare',
+    'Director of Youth Development',
+    "Director of Women's Development",
+    "Assistant Director of Women's Development",
+    'Director of Media & Communications',
+    'Assistant Director of Media & Communications',
+    'Director of Public Relations & Partnerships',
+    'Senatorial Director',
+    'Senatorial Administrative Officer',
+    'Senatorial Communications Officer',
     'LGA Network Lead',
     'Ward Community Lead',
 ]
 
-
+# ======================================
+# REST API and JWT configuration
+# ======================================
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    'DEFAULT_PARSER_CLASSES': ('rest_api.parsers.JSONObjectParser','rest_framework.parsers.FormParser','rest_framework.parsers.MultiPartParser'),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_api.parsers.JSONObjectParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
+    ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    'DEFAULT_PAGINATION_CLASS': 'rest_api.pagination.StandardPagination',
+    'DEFAULT_PAGINATION_CLASS': (
+        'rest_api.pagination.StandardPagination'
+    ),
     'PAGE_SIZE': 20,
     'EXCEPTION_HANDLER': 'rest_api.errors.api_exception_handler',
-    'DEFAULT_THROTTLE_RATES': {'auth_login': '10/min'},
+    'DEFAULT_THROTTLE_RATES': {
+        'auth_login': '10/min',
+    },
 }
 
 from datetime import timedelta
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=14),
@@ -395,20 +523,59 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
 }
 
+# CORS
 CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOWED_ORIGINS = [origin.strip() for origin in config('CORS_ALLOWED_ORIGINS', default='https://kpn.com.ng,https://www.kpn.com.ng').split(',') if origin.strip()]
-FIREBASE_CREDENTIALS_FILE = config('FIREBASE_CREDENTIALS_FILE', default='')
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in config(
+        'CORS_ALLOWED_ORIGINS',
+        default='https://kpn.com.ng,https://www.kpn.com.ng',
+    ).split(',')
+    if origin.strip()
+]
 
+# Firebase Admin service-account file path
+FIREBASE_CREDENTIALS_FILE = config(
+    'FIREBASE_CREDENTIALS_FILE',
+    default='',
+)
 
-# Production invariants; HTTPS is terminated at Render and forwarded over its trusted proxy.
+# ======================================
+# Production invariants
+# ======================================
+# Render terminates HTTPS and forwards the trusted proxy header.
 if IS_PRODUCTION:
     from urllib.parse import urlsplit
-    if not SITE_URL or urlsplit(SITE_URL).scheme != 'https' or not urlsplit(SITE_URL).netloc:
-        raise ImproperlyConfigured('SITE_URL must be the canonical HTTPS production address.')
-    if not SECURE_SSL_REDIRECT or not SESSION_COOKIE_SECURE or not CSRF_COOKIE_SECURE:
-        raise ImproperlyConfigured('HTTPS redirection and secure session/CSRF cookies are mandatory in production.')
-    ALLOWED_HOSTS=[host for host in ALLOWED_HOSTS if host not in {'localhost','127.0.0.1'}]
-    site_host=urlsplit(SITE_URL).hostname
-    if site_host not in ALLOWED_HOSTS: ALLOWED_HOSTS.append(site_host)
-    site_origin=f"https://{urlsplit(SITE_URL).netloc}"
-    if site_origin not in CSRF_TRUSTED_ORIGINS: CSRF_TRUSTED_ORIGINS.append(site_origin)
+
+    if (
+        not SITE_URL
+        or urlsplit(SITE_URL).scheme != 'https'
+        or not urlsplit(SITE_URL).netloc
+    ):
+        raise ImproperlyConfigured(
+            'SITE_URL must be the canonical HTTPS production address.'
+        )
+
+    if (
+        not SECURE_SSL_REDIRECT
+        or not SESSION_COOKIE_SECURE
+        or not CSRF_COOKIE_SECURE
+    ):
+        raise ImproperlyConfigured(
+            'HTTPS redirection and secure session/CSRF cookies '
+            'are mandatory in production.'
+        )
+
+    ALLOWED_HOSTS = [
+        host
+        for host in ALLOWED_HOSTS
+        if host not in {'localhost', '127.0.0.1'}
+    ]
+
+    site_host = urlsplit(SITE_URL).hostname
+    if site_host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(site_host)
+
+    site_origin = f"https://{urlsplit(SITE_URL).netloc}"
+    if site_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(site_origin)
