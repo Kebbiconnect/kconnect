@@ -3,7 +3,7 @@ core/context_processors.py
 Injects notification data into every template automatically.
 Register this in settings.py under TEMPLATES -> OPTIONS -> context_processors.
 """
-from .models import Notification
+from .notification_queries import visible_notifications
 
 
 def notifications_processor(request):
@@ -12,12 +12,8 @@ def notifications_processor(request):
         return {}
 
     try:
-        unread_count = Notification.objects.filter(
-            user=request.user, is_read=False
-        ).count()
-        recent = Notification.objects.filter(
-            user=request.user
-        ).order_by('-created_at')[:6]
+        unread_count = visible_notifications(request.user).filter(is_read=False).count()
+        recent = visible_notifications(request.user).order_by('-created_at')[:6]
     except Exception:
         unread_count = 0
         recent = []

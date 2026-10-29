@@ -124,6 +124,7 @@ INSTALLED_APPS = [
     'donations',
     'media',
     'events',
+    'editorial.apps.EditorialConfig',
 ]
 
 MIDDLEWARE = [
@@ -157,6 +158,7 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'staff.context_processors.announcements',
                 'core.context_processors.notifications_processor',
+                'editorial.context_processors.editorial_navigation',
             ],
         },
     },
@@ -579,3 +581,14 @@ if IS_PRODUCTION:
     site_origin = f"https://{urlsplit(SITE_URL).netloc}"
     if site_origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(site_origin)
+# KPN review-first editorial automation. Disabled until migrations and owner configuration are complete.
+# Drafting intelligence is Muse, the owner's external agent. No third-party
+# AI provider is configured anywhere in this app and no provider key exists.
+KPN_EDITORIAL_ENABLED = config('KPN_EDITORIAL_ENABLED', default=False, cast=bool)
+# Member/community report drafting stays off until the owner approves the privacy policy for it.
+KPN_EDITORIAL_REPORT_DRAFTING_ENABLED = config('KPN_EDITORIAL_REPORT_DRAFTING_ENABLED', default=False, cast=bool)
+KPN_EDITORIAL_NOTIFICATIONS = config('KPN_EDITORIAL_NOTIFICATIONS', default=False, cast=bool)
+KPN_EDITORIAL_DAILY_DRAFTS = config('KPN_EDITORIAL_DAILY_DRAFTS', default=5, cast=int)
+# Secret token for Muse's Brain API access (see editorial/brain_api.py).
+# Empty (default) means the Brain API endpoints do not exist at all.
+KPN_EDITORIAL_BRAIN_TOKEN = config('KPN_EDITORIAL_BRAIN_TOKEN', default='')

@@ -5,7 +5,7 @@ from django.urls import path
 from django.utils.html import format_html
 from django.views.decorators.http import require_POST
 from django.contrib.admin.views.decorators import staff_member_required
-from .models import TelegramMembership, KPNMeeting, MeetingAttendance, TelegramAuthState, AIRateLimit, AIProviderConfig, BotKnowledgeBase
+from .models import BotOutbox, BrainQuestion, TelegramMembership, KPNMeeting, MeetingAttendance, TelegramAuthState, AIRateLimit, AIProviderConfig, BotKnowledgeBase
 
 
 @admin.register(TelegramMembership)
@@ -168,3 +168,17 @@ class BotKnowledgeBaseAdmin(admin.ModelAdmin):
     list_filter = ('is_active',)
     search_fields = ('topic', 'content')
     ordering = ('topic',)
+
+
+@admin.register(BotOutbox)
+class BotOutboxAdmin(admin.ModelAdmin):
+    list_display = ('kind', 'state', 'chat_id', 'created_at', 'sent_at')
+    list_filter = ('kind', 'state')
+    readonly_fields = ('state', 'telegram_message_id', 'error', 'created_at', 'sent_at')
+
+
+@admin.register(BrainQuestion)
+class BrainQuestionAdmin(admin.ModelAdmin):
+    list_display = ('telegram_user_id', 'state', 'created_at', 'answered_at')
+    list_filter = ('state',)
+    readonly_fields = ('telegram_user_id', 'question', 'created_at')

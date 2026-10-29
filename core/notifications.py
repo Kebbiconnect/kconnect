@@ -4,6 +4,9 @@ from django.db import transaction
 
 def _push(notification):
     try:
+        # Suppress a callback if its notification was deleted before commit.
+        if not Notification.objects.filter(pk=notification.pk).exists():
+            return
         from rest_api.push import send_to_devices
         send_to_devices(notification.user.devices, title=notification.title, body=notification.message,
                         data={'notification_id':notification.id,'event':notification.event,

@@ -370,3 +370,60 @@ class BotKnowledgeBase(models.Model):
     def __str__(self):
         return self.topic
 
+
+
+class BotOutbox(models.Model):
+    """Messages Muse (the brain) sends through the KPN bot.
+
+    Everything the bot posts on Muse's instruction — announcements,
+    shares of newly published website articles, answers to members —
+    passes through this table first, so there is always a record of what
+    was sent, when, and whether Telegram accepted it.
+    """
+    KIND_CHOICES = [
+        ('ANNOUNCEMENT', 'Announcement'),
+        ('ARTICLE', 'Article share'),
+        ('ANSWER', 'Answer to member'),
+        ('CUSTOM', 'Custom'),
+    ]
+    STATE_CHOICES = [('QUEUED', 'Queued'), ('SENT', 'Sent'), ('FAILED', 'Failed')]
+    kind = models.CharField(max_length=20, choices=KIND_CHOICES, default='CUSTOM')
+    article = models.ForeignKey('campaigns.Campaign', null=True, blank=True,
+                                on_delete=models.SET_NULL, related_name='telegram_shares')
+    chat_id = models.CharField(max_length=64, blank=True,
+                               help_text='Blank sends to the configured KPN channel.')
+    text = models.TextField()
+    state = models.CharField(max_length=10, choices=STATE_CHOICES, default='QUEUED')
+    telegram_message_id = models.BigIntegerField(null=True, blank=True)
+    error = models.CharField(max_length=300, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.kind} #{self.pk} [{self.state}]'
+
+
+class BrainQuestion(models.Model):
+    """A member question the bot's instant providers could not answer.
+
+    Queued here for Muse, the brain. Muse reads the queue through the
+    Brain API, writes the answer, and the bot delivers it to the member
+    in the same chat.
+    """
+    STATE_CHOICES = [('QUEUED', 'Queued'), ('SENT', 'Sent'), ('FAILED', 'Failed')]
+    telegram_user_id = models.BigIntegerField()
+    question = models.TextField()
+    answer = models.TextField(blank=True)
+    state = models.CharField(max_length=10, choices=STATE_CHOICES, default='QUEUED')
+    error = models.CharField(max_length=300, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    answered_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f'Question #{self.pk} from {self.telegram_user_id} [{self.state}]'

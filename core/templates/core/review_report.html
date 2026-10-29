@@ -10,6 +10,7 @@
         </a>
     </div>
     
+    {% if editorial_available %}<p class="mb-4"><a class="kpn-btn kpn-btn-outline" href="{% url 'editorial:index' %}?report={{ report.pk }}">Review AI wording suggestions — approval stays separate</a></p>{% endif %}
     <div class="kpn-card p-6">
         <h1 class="text-3xl font-bold mb-6">
             <i class="fas fa-clipboard-check"></i> Review Report

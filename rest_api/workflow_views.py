@@ -1,3 +1,4 @@
+from core.notification_queries import visible_notifications
 from decimal import Decimal
 import secrets
 from datetime import timedelta
@@ -183,16 +184,16 @@ class DisciplineDecisionView(APIView):
 class NotificationListView(generics.ListAPIView):
     serializer_class=NotificationSerializer
     permission_classes=[permissions.IsAuthenticated]
-    def get_queryset(self): return Notification.objects.filter(user=self.request.user)
+    def get_queryset(self): return visible_notifications(self.request.user)
 class NotificationReadView(APIView):
     permission_classes=[permissions.IsAuthenticated]
     def post(self,request,pk):
-        updated=Notification.objects.filter(pk=pk,user=request.user).update(is_read=True)
+        updated=visible_notifications(request.user).filter(pk=pk).update(is_read=True)
         if not updated: raise NotFound('Notification not found.')
         return Response(status=status.HTTP_204_NO_CONTENT)
 class NotificationReadAllView(APIView):
     permission_classes=[permissions.IsAuthenticated]
-    def post(self,request): Notification.objects.filter(user=request.user,is_read=False).update(is_read=True); return Response(status=status.HTTP_204_NO_CONTENT)
+    def post(self,request): visible_notifications(request.user).filter(is_read=False).update(is_read=True); return Response(status=status.HTTP_204_NO_CONTENT)
 
 class DeviceListCreateView(generics.ListCreateAPIView):
     serializer_class=DeviceRegistrationSerializer

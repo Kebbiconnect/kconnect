@@ -1,3 +1,4 @@
+from core.notification_queries import visible_notifications
 from drf_spectacular.utils import extend_schema
 """Additive native-mobile endpoints. Website views, models, and migrations are unchanged."""
 from django.shortcuts import get_object_or_404
@@ -39,12 +40,12 @@ class PublicLeaderDetailView(APIView):
 class NotificationSummaryView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request):
-        return Response({'unread_count':Notification.objects.filter(user=request.user,is_read=False).count()})
+        return Response({'unread_count':visible_notifications(request.user).filter(is_read=False).count()})
 class NotificationStateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     def post(self, request, pk):
         state = serializers.BooleanField().run_validation(request.data.get('is_read'))
-        row = get_object_or_404(Notification, pk=pk, user=request.user)
+        row = get_object_or_404(visible_notifications(request.user), pk=pk)
         row.is_read=state; row.save(update_fields=['is_read'])
         return Response({'id':row.id,'is_read':row.is_read})
 

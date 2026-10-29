@@ -1,0 +1,28 @@
+<div class="relative" x-data="{ bellOpen: false }" @click.outside="bellOpen = false" @keydown.escape.window="if (bellOpen) { bellOpen = false; $refs.bell.focus(); }">
+    <button type="button" x-ref="bell" @click="bellOpen = !bellOpen" class="kpn-icon-btn relative" aria-label="Notifications" aria-controls="kpn-notifications-{{ bell_id }}" :aria-expanded="bellOpen.toString()">
+        <i class="fas fa-bell text-sm" aria-hidden="true"></i>
+        {% if unread_notifications_count %}<span class="kpn-count-badge bg-red-500 text-white absolute -top-1 -right-1 text-[9px]">{{ unread_notifications_count }}</span>{% endif %}
+    </button>
+    <section id="kpn-notifications-{{ bell_id }}" x-show="bellOpen" x-cloak class="kpn-notification-menu kpn-card{% if compact %} kpn-notification-menu--mobile{% endif %}" aria-label="Recent notifications">
+        <div class="kpn-card-header">
+            <span class="text-sm font-semibold">Notifications</span>
+            {% if unread_notifications_count %}
+            <form method="post" action="{% url 'core:mark_notifications_read' %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" class="kpn-btn kpn-btn-ghost kpn-btn-sm">Mark all read</button>
+            </form>
+            {% endif %}
+        </div>
+        <div class="kpn-notification-scroll">
+            {% for notif in recent_notifications %}
+            <a href="{% url 'core:notification_detail' notif.pk %}" class="kpn-notification-row{% if not notif.is_read %} kpn-notification-row--unread{% endif %}">
+                <span class="kpn-notification-title">{{ notif.title }}</span>
+                <span class="kpn-notification-preview">{{ notif.message|truncatechars:100 }}</span>
+                <span class="kpn-notification-time">{% if not notif.is_read %}Unread · {% endif %}{{ notif.created_at|timesince }} ago</span>
+            </a>
+            {% empty %}<p class="kpn-card-body">No notifications yet.</p>{% endfor %}
+        </div>
+        <div class="kpn-card-footer"><a href="{% url 'core:notification_list' %}" class="kpn-btn kpn-btn-ghost kpn-btn-sm">View all notifications</a></div>
+    </section>
+</div>

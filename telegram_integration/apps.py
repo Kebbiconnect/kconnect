@@ -7,4 +7,4 @@ class TelegramIntegrationConfig(AppConfig):
     verbose_name = 'KPN Telegram Integration'
 
     def ready(self):
-        pass  # Signal handlers would be imported here if needed
+        from . import signals  # noqa: F401  (article -> Telegram share)

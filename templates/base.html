@@ -18,7 +18,7 @@
     <script src="{% static 'staff/js/appearance.js' %}"></script>
     <link rel="stylesheet" href="{% static 'staff/css/tailwind.css' %}">
     <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
-    <link rel="stylesheet" href="{% static 'staff/css/kpn-design.css' %}?v=state-actions-v1">
+    <link rel="stylesheet" href="{% static 'staff/css/kpn-design.css' %}?v=editorial-assistant-v1">
     <script defer src="{% static 'vendor/alpine/alpine.min.js' %}"></script>
 
     {% block extra_css %}{% endblock %}
@@ -86,62 +86,8 @@
                             <i class="fas fa-bullhorn text-xs mr-0.5"></i>Report Story
                         </a>
 
-                        <!-- Notification Bell -->
-                        <div class="relative" x-data="{ bellOpen: false }" @click.outside="bellOpen = false">
-                            <button @click="bellOpen = !bellOpen"
-                                    class="kpn-icon-btn relative"
-                                    aria-label="Notifications">
-                                <i class="fas fa-bell text-sm"></i>
-                                {% if unread_notifications_count %}
-                                <span class="kpn-count-badge bg-red-500 text-white absolute -top-1 -right-1 text-[9px]">
-                                    {{ unread_notifications_count }}
-                                </span>
-                                {% endif %}
-                            </button>
-
-                            <!-- Bell dropdown -->
-                            <div x-show="bellOpen" x-cloak
-                                 x-transition:enter="transition ease-out duration-150"
-                                 x-transition:enter-start="opacity-0 translate-y-1"
-                                 x-transition:enter-end="opacity-100 translate-y-0"
-                                 class="absolute right-0 mt-1 w-80 kpn-card z-50">
-                                <div class="kpn-card-header">
-                                    <span class="text-sm font-semibold">Notifications</span>
-                                    {% if unread_notifications_count %}
-                                    <a href="{% url 'core:mark_notifications_read' %}"
-                                       class="text-xs text-kpn-blue hover:underline">
-                                        Mark all read
-                                    </a>
-                                    {% endif %}
-                                </div>
-                                <div class="max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
-                                    {% for notif in recent_notifications %}
-                                    <a href="{{ notif.link|default:'#' }}"
-                                       class="flex items-start gap-3 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors {% if not notif.is_read %}bg-green-50/60 dark:bg-green-900/10{% endif %}">
-                                        <div class="mt-0.5 w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 text-xs
-                                            {% if notif.notif_type == 'SUCCESS' %}bg-green-100 text-green-600
-                                            {% elif notif.notif_type == 'WARNING' %}bg-yellow-100 text-yellow-600
-                                            {% elif notif.notif_type == 'ACTION' %}bg-red-100 text-red-600
-                                            {% else %}bg-blue-100 text-blue-600{% endif %}">
-                                            <i class="fas {% if notif.notif_type == 'SUCCESS' %}fa-check{% elif notif.notif_type == 'WARNING' %}fa-exclamation{% elif notif.notif_type == 'ACTION' %}fa-bolt{% else %}fa-info{% endif %}"></i>
-                                        </div>
-                                        <div class="min-w-0 flex-1">
-                                            <p class="text-xs font-semibold text-gray-800 dark:text-white truncate">{{ notif.title }}</p>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">{{ notif.message|truncatechars:70 }}</p>
-                                            <p class="text-[10px] text-gray-400 mt-0.5">{{ notif.created_at|timesince }} ago</p>
-                                        </div>
-                                    </a>
-                                    {% empty %}
-                                    <div class="kpn-empty py-8">
-                                        <div class="kpn-empty-icon">
-                                            <i class="fas fa-bell-slash"></i>
-                                        </div>
-                                        <p class="kpn-empty-title text-sm">No notifications</p>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
+                        {% include 'includes/notification_bell.html' with bell_id="desktop" %}
+                        {% if editorial_available %}<a href="{% url 'editorial:index' %}" class="kpn-nav-link">Editorial Assistant</a>{% endif %}
 
                         <a href="{% url 'staff:dashboard' %}"
                            class="kpn-btn kpn-btn-primary kpn-btn-sm">
@@ -170,42 +116,7 @@
                 <!-- Mobile Controls -->
                 <div class="xl:hidden flex items-center gap-1">
                     {% if user.is_authenticated %}
-                    <div class="relative" x-data="{ bellOpen: false }" @click.outside="bellOpen = false">
-                        <button @click="bellOpen = !bellOpen" class="kpn-icon-btn relative">
-                            <i class="fas fa-bell text-sm"></i>
-                            {% if unread_notifications_count %}
-                            <span class="kpn-count-badge bg-red-500 text-white absolute -top-1 -right-1 text-[9px]">
-                                {{ unread_notifications_count }}
-                            </span>
-                            {% endif %}
-                        </button>
-                        <div x-show="bellOpen" x-cloak
-                             class="absolute right-0 mt-1 w-72 kpn-card z-50">
-                            <div class="kpn-card-header">
-                                <span class="text-sm font-semibold">Notifications</span>
-                            </div>
-                            <div class="max-h-64 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
-                                {% for notif in recent_notifications %}
-                                <a href="{{ notif.link|default:'#' }}"
-                                   class="flex items-start gap-2.5 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                    <div class="mt-0.5 w-5 h-5 rounded flex items-center justify-center flex-shrink-0 text-[10px]
-                                        {% if notif.notif_type == 'SUCCESS' %}bg-green-100 text-green-600
-                                        {% elif notif.notif_type == 'WARNING' %}bg-yellow-100 text-yellow-600
-                                        {% elif notif.notif_type == 'ACTION' %}bg-red-100 text-red-600
-                                        {% else %}bg-blue-100 text-blue-600{% endif %}">
-                                        <i class="fas {% if notif.notif_type == 'SUCCESS' %}fa-check{% elif notif.notif_type == 'WARNING' %}fa-exclamation{% elif notif.notif_type == 'ACTION' %}fa-bolt{% else %}fa-info{% endif %}"></i>
-                                    </div>
-                                    <div class="min-w-0">
-                                        <p class="text-xs font-semibold truncate">{{ notif.title }}</p>
-                                        <p class="text-[10px] text-gray-400">{{ notif.created_at|timesince }} ago</p>
-                                    </div>
-                                </a>
-                                {% empty %}
-                                <p class="text-xs text-center text-gray-400 py-4">No notifications</p>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
+                    {% include 'includes/notification_bell.html' with bell_id="mobile" compact=True %}
                     {% endif %}
 
                     <select data-appearance-select class="kpn-appearance-select" aria-label="Appearance">
@@ -286,6 +197,7 @@
                         <a href="{% url 'staff:dashboard' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-semibold text-white bg-kpn-green hover:bg-green-600 transition-colors">
                             <i class="fas fa-th-large w-4 text-center text-xs"></i>Dashboard
                         </a>
+                        {% if editorial_available %}<a href="{% url 'editorial:index' %}" class="kpn-nav-link">Editorial Assistant</a>{% endif %}
                         <a href="{% url 'staff:logout' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                             <i class="fas fa-sign-out-alt w-4 text-center text-xs"></i>Logout
                         </a>

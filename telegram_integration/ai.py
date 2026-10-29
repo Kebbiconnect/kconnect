@@ -499,6 +499,28 @@ def test_provider_connection(provider_config) -> dict:
 
 # ─── Main AI Query Function ───────────────────────────────────────────────────
 
+def _escalate_to_brain(telegram_user_id, message):
+    """Queue an unanswered question for Muse, the KPN brain.
+
+    Returns the member-facing reply when the question was queued, or None
+    when escalation is unavailable (no user id / queue failure), so the
+    caller can fall back to the standard unavailable message.
+    """
+    if not telegram_user_id:
+        return None
+    try:
+        from .brain_service import queue_question
+        queue_question(telegram_user_id, message)
+    except Exception as e:
+        logger.warning(f"Brain escalation failed: {e}")
+        return None
+    return (
+        "I've passed your question to the KPN media team. "
+        "You'll receive the answer here in this chat as soon as it's ready.\n\n"
+        "For urgent KPN matters, please contact KPN leadership directly."
+    )
+
+
 def ask_kpn_assistant(message: str, telegram_user_id: int = None,
                       extra_context: str = '') -> str:
     """
@@ -575,7 +597,7 @@ def ask_kpn_assistant(message: str, telegram_user_id: int = None,
 
     if not all_providers:
         logger.error("No AI providers configured (neither DB nor ENV).")
-        return (
+        return _escalate_to_brain(telegram_user_id, message) or (
             "The KPN Assistant is temporarily unavailable. "
             "Please try again later or contact KPN leadership."
         )
@@ -604,7 +626,7 @@ def ask_kpn_assistant(message: str, telegram_user_id: int = None,
         f"All AI providers failed for user {telegram_user_id}. "
         f"Last error: {last_error}"
     )
-    return (
+    return _escalate_to_brain(telegram_user_id, message) or (
         "I'm having trouble connecting to my knowledge system right now. "
         "Please try again in a few minutes. "
         "For urgent KPN matters, please contact KPN leadership directly."

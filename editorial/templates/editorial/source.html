@@ -1,0 +1,3 @@
+{% extends 'base.html' %}
+{% block title %}Approved source · KPN{% endblock %}
+{% block content %}<div class="kpn-page editorial-workspace"><a href="{% url 'editorial:index' %}">← Editorial Assistant</a><h1 class="kpn-h1">Approve a source</h1><div class="kpn-card kpn-card-body"><p>Use an official RSS/Atom feed or one monitored page. Confirm the publisher, reuse terms and relevance. Only exact approved HTTPS hostnames can be fetched; redirects to other hosts are rejected. For application-link checks, explicitly add the original provider hostname here.</p><form method="post" class="editorial-form">{% csrf_token %}{{ form.as_p }}<button class="kpn-btn kpn-btn-primary">Save source</button></form></div></div>{% endblock %}

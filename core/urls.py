@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import views, notification_views
 from .pwa import service_worker
 
 app_name = 'core'
@@ -28,5 +28,7 @@ urlpatterns = [
     path('submit-report/', views.submit_report, name='submit_report'),
     path('review-report/<int:report_id>/', views.review_report, name='review_report'),
     path('network-rankings/', views.network_rankings, name='network_rankings'),
+    path('notifications/', notification_views.notification_list, name='notification_list'),
+    path('notifications/<int:pk>/', notification_views.notification_detail, name='notification_detail'),
     path('notifications/mark-read/', views.mark_notifications_read, name='mark_notifications_read'),
 ]

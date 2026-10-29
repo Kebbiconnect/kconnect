@@ -685,7 +685,12 @@ def network_rankings(request):
 @login_required
 def mark_notifications_read(request):
     """Mark all of the logged-in user's notifications as read and redirect back."""
-    from .models import Notification
-    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
-    next_url = request.GET.get('next', '/')
+    from .notification_queries import visible_notifications
+    from django.utils.http import url_has_allowed_host_and_scheme
+    visible_notifications(request.user).filter(is_read=False).update(is_read=True)
+    next_url = request.POST.get('next') or request.GET.get('next', '/')
+    if not url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        next_url = '/'
     return redirect(next_url)

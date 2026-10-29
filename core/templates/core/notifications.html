@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Notifications · KPN{% endblock %}
+{% block content %}
+<div class="kpn-page kpn-notification-page">
+    <h1 class="kpn-h1">Notifications</h1>
+    <p class="kpn-notification-preview">Your KPN updates and workflow messages.</p>
+    <div class="kpn-card mt-4">
+        {% for notice in notification_page %}
+        <a href="{% url 'core:notification_detail' notice.pk %}" class="kpn-notification-row{% if not notice.is_read %} kpn-notification-row--unread{% endif %}">
+            <span class="kpn-notification-title">{{ notice.title }}</span>
+            <span class="kpn-notification-preview">{{ notice.message|truncatechars:180 }}</span>
+            <span class="kpn-notification-time">{% if not notice.is_read %}Unread · {% endif %}{{ notice.created_at|date:"j M Y · H:i" }}</span>
+        </a>
+        {% empty %}<div class="kpn-card-body">No notifications yet.</div>{% endfor %}
+    </div>
+    {% if notification_page.has_other_pages %}<nav class="kpn-card-footer" aria-label="Notification pages">
+        {% if notification_page.has_previous %}<a class="kpn-btn kpn-btn-secondary" href="?page={{ notification_page.previous_page_number }}">Previous</a>{% endif %}
+        <span>Page {{ notification_page.number }} of {{ notification_page.paginator.num_pages }}</span>
+        {% if notification_page.has_next %}<a class="kpn-btn kpn-btn-secondary" href="?page={{ notification_page.next_page_number }}">Next</a>{% endif %}
+    </nav>{% endif %}
+</div>
+{% endblock %}

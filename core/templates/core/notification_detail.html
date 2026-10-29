@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}{{ notice.title }} · KPN Notifications{% endblock %}
+{% block content %}
+<div class="kpn-page kpn-notification-page">
+    <a href="{% url 'core:notification_list' %}" class="kpn-btn kpn-btn-ghost">← All notifications</a>
+    <article class="kpn-card mt-4">
+        <header class="kpn-card-body"><p class="kpn-eyebrow">Notification</p><h1 class="kpn-h1">{{ notice.title }}</h1><p class="kpn-notification-time">{{ notice.created_at|date:"j M Y · H:i" }}</p></header>
+        <div class="kpn-card-body kpn-notification-message">{{ notice.message|linebreaksbr }}</div>
+        {% if related_url %}<div class="kpn-card-footer"><a href="{{ related_url }}" class="kpn-btn kpn-btn-primary">Open related page</a></div>{% endif %}
+    </article>
+</div>
+{% endblock %}

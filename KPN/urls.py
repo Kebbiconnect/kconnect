@@ -32,6 +32,7 @@ def custom_403(request, exception=None):
 handler403 = custom_403
 
 urlpatterns = [
+    path('editorial/', include('editorial.urls')),
     path('api/v1/', include('rest_api.urls')),
     path('admin/', admin.site.urls),
     path('', include('core.urls')),
