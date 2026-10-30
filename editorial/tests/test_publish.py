@@ -7,6 +7,7 @@ from unittest import mock
 
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
 
 from campaigns.models import Campaign
 from core.models import Opportunity
@@ -200,6 +201,54 @@ class PublishItemGateTests(TestCase):
                                     content_type='application/json', **AUTH)
         self.assertEqual(response.status_code, 403)
         self.assertFalse(Opportunity.objects.exists())
+
+
+class EditPublishedFlowTests(TestCase):
+    """Owner report 2026-10-30: editing a published article must be
+    save-only — the edit page must not offer 'Submit for Review', and
+    following that URL for a live article must not scold the editor."""
+
+    def setUp(self):
+        self.director = media_director()
+        self.article = Campaign.objects.create(
+            author=self.director, title='Live Story', slug='live-story-flow',
+            status='PUBLISHED', content='Body text',
+            published_at=timezone.now(), reporter_credit='KPN_EDITORIAL')
+
+    def test_edit_page_has_no_submit_for_review_for_published(self):
+        self.client.force_login(self.director)
+        response = self.client.get(f'/campaigns/edit/{self.article.pk}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'Submit for Review')
+        self.assertContains(response, 'Save Changes')
+
+    def test_submit_url_for_published_redirects_without_error(self):
+        self.client.force_login(self.director)
+        response = self.client.get(
+            f'/campaigns/submit-review/{self.article.pk}/', follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.article.refresh_from_db()
+        self.assertEqual(self.article.status, 'PUBLISHED')
+        messages = [str(m) for m in response.context['messages']]
+        self.assertTrue(any('already published' in m for m in messages), messages)
+
+    def test_returned_article_can_be_resubmitted(self):
+        self.article.status = 'REJECTED'
+        self.article.save(update_fields=['status'])
+        self.client.force_login(self.director)
+        response = self.client.post(f'/campaigns/submit-review/{self.article.pk}/')
+        self.assertEqual(response.status_code, 302)
+        self.article.refresh_from_db()
+        self.assertEqual(self.article.status, 'PENDING')
+
+    def test_my_articles_is_a_primary_quick_action_for_media_director(self):
+        from staff.quick_actions import actions_for
+        actions = actions_for(self.director)
+        keys = [a['key'] for a in actions]
+        self.assertIn('my_articles', keys)
+        self.assertLess(keys.index('my_articles'), 4)
+        mine = [a for a in actions if a['key'] == 'my_articles'][0]
+        self.assertEqual(mine['url'], '/campaigns/my-articles/')
 
 
 class DuplicateGuardTests(TestCase):

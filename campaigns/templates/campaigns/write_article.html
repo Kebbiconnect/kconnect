@@ -51,7 +51,7 @@
                     <i class="fas fa-eye mr-1"></i> Preview
                 </button>
                 <button type="button" onclick="submitArticle()" class="px-5 py-2 bg-kpn-green text-white font-bold rounded shadow hover:bg-green-700 transition">
-                    <i class="fas fa-save mr-1"></i> Save Draft
+                    <i class="fas fa-save mr-1"></i> {% if article %}{% if article.status == 'PUBLISHED' %}Save Changes (stays live){% else %}Save Changes{% endif %}{% else %}Save Draft{% endif %}
                 </button>
             </div>
         </div>
@@ -60,6 +60,13 @@
         <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded">
             <h3 class="text-red-800 font-bold"><i class="fas fa-exclamation-circle mr-2"></i> Returned for Revision</h3>
             <p class="text-red-700 mt-1">{{ article.rejection_note }}</p>
+        </div>
+        {% endif %}
+
+        {% if article and article.status == 'PUBLISHED' %}
+        <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded">
+            <h3 class="text-green-800 font-bold"><i class="fas fa-check-circle mr-2"></i> This article is published</h3>
+            <p class="text-green-700 mt-1">Saving changes updates the live article immediately. There is no review step for edits to a published article.</p>
         </div>
         {% endif %}
 
@@ -153,11 +160,21 @@
                     </div>
                 </div>
                 
-                {% if article and article.pk %}
+                {% if article and article.pk and article.status == 'DRAFT' or article and article.status == 'REJECTED' %}
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 text-center">
                      <a href="{% url 'campaigns:submit_for_review' article.pk %}" class="block w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded transition">
                          Submit for Review <i class="fas fa-arrow-right ml-1"></i>
                      </a>
+                     <p class="text-xs text-gray-500 mt-2">Save your changes first, then submit.</p>
+                </div>
+                {% elif article and article.status == 'PUBLISHED' %}
+                <div class="bg-green-50 dark:bg-gray-800 rounded-xl shadow-sm border border-green-200 dark:border-gray-700 p-5 text-center">
+                     <p class="text-sm font-semibold text-green-800 dark:text-green-300"><i class="fas fa-check-circle mr-1"></i> Published — edits save live, no review needed.</p>
+                     <a href="{% url 'campaigns:article_detail' article.slug %}" target="_blank" class="inline-block mt-2 text-sm text-kpn-blue font-medium hover:underline">View live article <i class="fas fa-external-link-alt ml-1"></i></a>
+                </div>
+                {% elif article and article.status == 'PENDING' %}
+                <div class="bg-yellow-50 dark:bg-gray-800 rounded-xl shadow-sm border border-yellow-200 dark:border-gray-700 p-5 text-center">
+                     <p class="text-sm font-semibold text-yellow-800 dark:text-yellow-300"><i class="fas fa-clock mr-1"></i> In review — saving updates the article directly.</p>
                 </div>
                 {% endif %}
             </div>

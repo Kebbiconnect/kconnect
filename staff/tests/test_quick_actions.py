@@ -50,7 +50,7 @@ class QuickActionTests(TestCase):
         media=next(u for u in self.users if u.role_definition and u.role_definition.title=='Director of Media & Communications')
         self.assertNotIn('SUBMIT_REPORTS',capabilities_for(media))
         self.assertIn('REVIEW_REPORTS',capabilities_for(media))
-        self.assertEqual([a['key'] for a in actions_for(media)][:4],['editorial','upload','articles','announcements'])
+        self.assertEqual([a['key'] for a in actions_for(media)][:4],['my_articles','editorial','articles','announcements'])
         self.assertNotIn('submit_report',{a['key'] for a in actions_for(media)})
         client=APIClient();client.credentials(HTTP_AUTHORIZATION='Bearer '+str(AccessToken.for_user(media)))
         self.assertEqual(client.get('/api/v1/reports/recipient/').status_code,403)

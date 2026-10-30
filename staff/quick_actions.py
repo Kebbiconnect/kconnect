@@ -37,6 +37,7 @@ def actions_for(user):
     add('members', 'Members', 'users', 'staff:my_jurisdiction_members', 'VIEW_MEMBERS' in caps)
     add('announcements', 'Announcement', 'bullhorn', 'staff:create_announcement', 'CREATE_ANNOUNCEMENT' in caps)
     add('articles', 'Write article', 'pen', 'campaigns:create_campaign', 'WRITE_ARTICLES' in caps)
+    add('my_articles', 'My Articles', 'folder-open', 'campaigns:my_articles', 'WRITE_ARTICLES' in caps)
     add('opportunities_manage', 'Manage opportunities', 'briefcase', 'staff:manage_opportunities', 'MANAGE_HUBS' in caps)
     add('community_manage', 'Community hub', 'hands-helping', 'staff:manage_community_initiatives', 'MANAGE_HUBS' in caps)
     add('advocacy_manage', 'Advocacy hub', 'vote-yea', 'staff:manage_advocacy_campaigns', 'MANAGE_HUBS' in caps)
@@ -56,7 +57,8 @@ def actions_for(user):
     add('rankings', 'Network rankings', 'trophy', 'core:network_rankings')
     priority = {
         'President': ['applications','reports','announcements','members'],
-        'Director of Media & Communications': ['editorial','upload','articles','announcements'],
+        'Director of Media & Communications': ['my_articles','editorial','articles','announcements'],
+        'Assistant Director of Media & Communications': ['my_articles','editorial','articles','upload'],
         'Vice President': ['members','reports','announcements','calendar'],
         'Director of Finance': ['donations','announcements','members','calendar'],
         'Finance Operations Officer': ['expenses','financial_reports','announcements','members'],

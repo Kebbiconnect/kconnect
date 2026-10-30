@@ -234,10 +234,25 @@ def delete_article(request, article_id):
 
 @approved_leader_required
 def submit_for_review(request, article_id):
-    """Submit a draft article to the editorial review queue."""
-    article = get_object_or_404(Campaign, pk=article_id, author=request.user)
+    """Submit a draft (or returned) article to the editorial review queue.
 
-    if article.status != 'DRAFT':
+    Published and pending articles are NOT errors here (owner report
+    2026-10-30: the edit page used to offer this action for a live
+    article and then scold the editor). A published article simply does
+    not need review — edits to it save live — and a pending article is
+    already in the queue."""
+    if _is_editor(request.user):
+        article = get_object_or_404(Campaign, pk=article_id)
+    else:
+        article = get_object_or_404(Campaign, pk=article_id, author=request.user)
+
+    if article.status == 'PUBLISHED':
+        messages.success(request, 'This article is already published. Edits to it save live — no review is needed.')
+        return redirect('campaigns:my_articles')
+    if article.status == 'PENDING':
+        messages.success(request, 'This article is already in review.')
+        return redirect('campaigns:my_articles')
+    if article.status not in ('DRAFT', 'REJECTED'):
         messages.error(request, 'Only draft articles can be submitted for review.')
         return redirect('campaigns:my_articles')
 
