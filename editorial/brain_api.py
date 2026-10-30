@@ -1,11 +1,15 @@
 """Token-gated Brain API: how Muse, the owner's external automation agent,
 connects to this site directly.
 
-Three endpoints, all under /editorial/brain/:
+Endpoints, all under /editorial/brain/:
 
-- GET  outbox/     -> WAITING items as JSON (same payload as brain_outbox)
-- POST inbox/      -> [{item_id, version, draft}] -> per-item accept/reject
-- POST test-item/  -> create one private synthetic WAITING item (loop test)
+- GET  outbox/       -> WAITING items as JSON (same payload as brain_outbox)
+- POST inbox/        -> [{item_id, version, draft}] -> per-item accept/reject
+- POST submit-item/  -> a story/opportunity Muse found, with its draft
+- POST publish-item/ -> publish one REVIEW item now, with optional draft
+                        corrections ({item_id, draft_overrides})
+- POST test-item/    -> create one private synthetic WAITING item (loop test)
+- telegram-*         -> bot control (see the telegram views below)
 
 Security contract:
 - Requires the KPN_EDITORIAL_BRAIN_TOKEN setting (a long random secret the
@@ -13,8 +17,13 @@ Security contract:
   only). When no token is configured the endpoints do not exist (404).
 - Wrong or missing token -> 401. Comparison is constant-time.
 - Drafts pass through exactly the same validation as the management
-  commands (editorial.brain.submit_draft) and land in human REVIEW.
-  This API can never publish, hand off, or change site content.
+  commands (editorial.brain.submit_draft).
+
+Publishing (changed in v2.4 at the owner's explicit request, 2026-10-30):
+when KPN_EDITORIAL_AUTO_PUBLISH is on, validated NEWS/OPPORTUNITY brain
+drafts publish immediately on submission, and publish-item can publish or
+repair a REVIEW item. When the flag is off, drafts only ever reach REVIEW
+and publish-item refuses. Synthetic items can never publish either way.
 """
 import hmac
 import json
@@ -29,6 +38,8 @@ from .brain import BrainError, submit_candidate, submit_draft, waiting_items
 from .models import Audit, Item, Job
 
 MAX_BODY_BYTES = 1_000_000
+# submit-item / publish-item may carry a base64 featured image for a story.
+MAX_SUBMIT_BYTES = 9_000_000
 MAX_ENTRIES = 50
 
 
@@ -82,8 +93,12 @@ def inbox(request):
             continue
         try:
             item = submit_draft(int(entry['item_id']), entry['draft'], int(entry['version']))
-            results.append({'item_id': item.pk, 'status': 'accepted',
-                            'state': item.state, 'version': item.version})
+            row = {'item_id': item.pk, 'status': 'accepted',
+                   'state': item.state, 'version': item.version}
+            publish_result = getattr(item, '_publish_result', None)
+            if publish_result:
+                row.update(publish_result)
+            results.append(row)
         except (KeyError, TypeError, ValueError):
             results.append({'item_id': entry.get('item_id'), 'status': 'rejected', 'code': 'malformed'})
         except BrainError as exc:
@@ -99,11 +114,13 @@ def inbox(request):
 def submit_item(request):
     """Register a story/opportunity Muse found by its own searching
     (news sites, Facebook/social, official pages) with its draft attached.
-    Lands in human REVIEW; duplicates by source URL are rejected."""
+    Lands in human REVIEW, or publishes immediately when the owner has
+    enabled KPN_EDITORIAL_AUTO_PUBLISH; duplicates by source URL are
+    rejected."""
     blocked = _gate(request)
     if blocked:
         return blocked
-    if len(request.body) > MAX_BODY_BYTES:
+    if len(request.body) > MAX_SUBMIT_BYTES:
         return JsonResponse({'error': 'payload_too_large'}, status=413)
     try:
         payload = json.loads(request.body.decode('utf-8'))
@@ -113,8 +130,76 @@ def submit_item(request):
         item = submit_candidate(payload)
     except BrainError as exc:
         return JsonResponse({'status': 'rejected', 'code': exc.code}, status=400)
-    return JsonResponse({'item_id': item.pk, 'status': 'accepted',
-                         'state': item.state, 'version': item.version}, status=201)
+    body = {'item_id': item.pk, 'status': 'accepted',
+            'state': item.state, 'version': item.version}
+    publish_result = getattr(item, '_publish_result', None)
+    if publish_result:
+        body.update(publish_result)
+    return JsonResponse(body, status=201)
+
+
+@csrf_exempt
+@require_POST
+def publish_item(request):
+    """Publish one REVIEW brain item now (owner-enabled auto-publish only).
+
+    Body: {item_id, draft_overrides?} — overrides are merged into the
+    stored draft and re-validated before publishing, which is how a stuck
+    item is repaired (e.g. a wrong category or a free-text deadline from
+    an older draft) without database access. When auto-publish is off
+    this endpoint refuses: human REVIEW remains the only path."""
+    blocked = _gate(request)
+    if blocked:
+        return blocked
+    if not getattr(settings, 'KPN_EDITORIAL_AUTO_PUBLISH', False):
+        return JsonResponse({'error': 'auto_publish_disabled'}, status=403)
+    if len(request.body) > MAX_SUBMIT_BYTES:
+        return JsonResponse({'error': 'payload_too_large'}, status=413)
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+        item = Item.objects.get(pk=int(payload['item_id']))
+    except (ValueError, UnicodeDecodeError, KeyError, TypeError, Item.DoesNotExist):
+        return JsonResponse({'error': 'item_not_found'}, status=404)
+    from .publish import publish_brain_item
+    try:
+        result = publish_brain_item(item, overrides=payload.get('draft_overrides') or None)
+    except BrainError as exc:
+        return JsonResponse({'status': 'rejected', 'code': exc.code}, status=400)
+    if result.get('duplicate'):
+        # Already live: the item was dismissed as a duplicate, nothing to fix.
+        return JsonResponse({'item_id': item.pk, 'state': item.state, **result}, status=200)
+    Audit.objects.create(item=item, action='BRAIN_PUBLISH_ITEM',
+                         detail={'slug': result.get('slug', '')})
+    return JsonResponse({'item_id': item.pk, 'state': item.state, **result}, status=201)
+
+
+@csrf_exempt
+@require_GET
+def published(request):
+    """What is already live / already tracked, so Muse can check BEFORE
+    submitting and never repeat a story or opportunity: recent published
+    articles, open opportunities, and brain items that carry drafts."""
+    blocked = _gate(request)
+    if blocked:
+        return blocked
+    from campaigns.models import Campaign
+    from core.models import Opportunity
+    articles = [{'title': a.title, 'slug': a.slug,
+                 'url_path': f'/campaigns/article/{a.slug}/'}
+                for a in Campaign.objects.filter(status='PUBLISHED')
+                .order_by('-published_at', '-created_at')[:100]]
+    opportunities = [{'title': o.title, 'slug': o.slug,
+                      'application_link': o.application_link,
+                      'deadline': o.deadline.isoformat() if o.deadline else ''}
+                     for o in Opportunity.objects.exclude(status='CLOSED')
+                     .order_by('-created_at')[:100]]
+    items = [{'item_id': i.pk, 'kind': i.kind, 'title': i.title,
+              'source_url': i.source_url, 'state': i.state}
+             for i in Item.objects.filter(kind__in=('NEWS', 'OPPORTUNITY'),
+                                          state__in=('REVIEW', 'HANDED_OFF'))
+             .order_by('-created_at')[:100]]
+    return JsonResponse({'articles': articles, 'opportunities': opportunities,
+                         'brain_items': items})
 
 
 @csrf_exempt

@@ -75,9 +75,8 @@ class BrainApiTests(TestCase):
         self.assertTrue(item.original['synthetic'])
         self.assertEqual(item.state, 'WAITING')
 
-    def test_api_cannot_publish_anything(self):
-        # The API surface has no publish/handoff route at all; a draft only
-        # ever reaches REVIEW.
+    def test_inbox_does_not_publish_while_auto_publish_is_off(self):
+        # Default (owner flag off): a brain draft only ever reaches REVIEW.
         item = make_item()
         payload = [{'item_id': item.pk, 'version': item.version,
                     'draft': {'title': 'API story', 'body': 'Body.'}}]
@@ -147,7 +146,8 @@ class SubmitItemApiTests(TestCase):
             source_url='https://www.afterschoolafrica.com/100124/liberty-career-academy-scholarships/',
             text='Liberty Career Academy scholarships, deadline 3 November 2026.',
             draft={'title': 'LCA Scholarship 2026', 'body': 'Scholarships for Nigerian students.',
-                   'provider': 'Liberty Career Academy', 'deadline': '2026-11-03',
+                   'provider': 'Liberty Career Academy', 'category': 'SCHOLARSHIP',
+                   'deadline': '2026-11-03',
                    'application_link': 'https://www.afterschoolafrica.com/100124/liberty-career-academy-scholarships/'})
         response = self._post(payload)
         self.assertEqual(response.status_code, 201)

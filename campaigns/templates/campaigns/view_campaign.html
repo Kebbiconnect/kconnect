@@ -14,7 +14,7 @@
         <h1 class="text-4xl font-bold mb-4">{{ campaign.title }}</h1>
         
         <div class="flex items-center space-x-4 text-sm text-gray-500 mb-6">
-            <span><i class="fas fa-user mr-1"></i> {{ campaign.author.get_full_name }}</span>
+            <span><i class="fas fa-user mr-1"></i> {{ campaign.get_reporter_credit_display }}</span>
             <span><i class="fas fa-calendar mr-1"></i> {{ campaign.published_at|date:"F d, Y" }}</span>
             <span><i class="fas fa-eye mr-1"></i> {{ campaign.views }} views</span>
         </div>

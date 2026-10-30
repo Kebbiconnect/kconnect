@@ -15,7 +15,7 @@
             </div>
             <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-5 mb-6 border border-gray-200 dark:border-gray-600">
                 <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ article.title }}</h2>
-                <p class="text-gray-500 text-xs mt-1">Draft &bull; Created {{ article.created_at|date:"M d, Y" }}</p>
+                <p class="text-gray-500 text-xs mt-1">{{ article.get_status_display }} &bull; Created {{ article.created_at|date:"M d, Y" }}</p>
             </div>
             <div class="flex justify-end gap-3">
                 <a href="{% url 'campaigns:my_articles' %}" class="px-5 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 transition font-medium">Cancel</a>

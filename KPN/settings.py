@@ -592,3 +592,11 @@ KPN_EDITORIAL_DAILY_DRAFTS = config('KPN_EDITORIAL_DAILY_DRAFTS', default=5, cas
 # Secret token for Muse's Brain API access (see editorial/brain_api.py).
 # Empty (default) means the Brain API endpoints do not exist at all.
 KPN_EDITORIAL_BRAIN_TOKEN = config('KPN_EDITORIAL_BRAIN_TOKEN', default='')
+# Owner decision 2026-10-30: Muse's verified, Kebbi-related brain items
+# publish straight to the website (news -> PUBLISHED article, opportunity ->
+# OPEN hub entry) instead of waiting in REVIEW, because review delays made
+# time-sensitive posts late. The owner edits or deletes afterwards if a
+# published item needs a correction. Human-submitted items are unaffected:
+# the editorial human handoff and newsroom review flow keep their gates
+# unless this flag also covers the handoff (see editorial/services.py).
+KPN_EDITORIAL_AUTO_PUBLISH = config('KPN_EDITORIAL_AUTO_PUBLISH', default=False, cast=bool)

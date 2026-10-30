@@ -146,28 +146,49 @@ def write_article(request):
     })
 
 
+def _is_editor(user):
+    """Editors (Media Director, Assistant, President, General Secretary)
+    manage every article, including published ones."""
+    return getattr(user.role_definition, 'title', '') in EDITOR_ROLES
+
+
 @approved_leader_required
 def my_articles(request):
-    """List articles authored by the current user."""
-    articles = Campaign.objects.filter(author=request.user).order_by('-updated_at')
-    context = {'articles': articles}
+    """List articles the current user manages. Editors see all articles
+    (they run the newsroom); other writers see only their own."""
+    if _is_editor(request.user):
+        articles = Campaign.objects.all().select_related('author').order_by('-updated_at')
+    else:
+        articles = Campaign.objects.filter(author=request.user).order_by('-updated_at')
+    context = {'articles': articles, 'is_editor': _is_editor(request.user)}
     return render(request, 'campaigns/my_articles.html', context)
 
 
 @approved_leader_required
 def edit_article(request, article_id):
-    """CMS editor — edit an existing draft or rejected article."""
-    article = get_object_or_404(Campaign, pk=article_id, author=request.user)
+    """CMS editor — edit an existing article.
 
-    if article.status == 'PUBLISHED':
-        messages.error(request, 'Published articles cannot be edited. Contact the Media Director.')
-        return redirect('campaigns:my_articles')
+    Authors can edit their own drafts/returned articles. Editors can edit
+    ANY article, including PUBLISHED ones, and a published article stays
+    published after an editor saves it (owner request 2026-10-30: the
+    Director of Media must be able to fix a live article himself)."""
+    if _is_editor(request.user):
+        article = get_object_or_404(Campaign, pk=article_id)
+    else:
+        article = get_object_or_404(Campaign, pk=article_id, author=request.user)
+        if article.status == 'PUBLISHED':
+            messages.error(request, 'Published articles cannot be edited. Contact the Media Director.')
+            return redirect('campaigns:my_articles')
+        if article.status == 'PENDING':
+            messages.error(request, 'This article is in review and locked. Contact the Media Director.')
+            return redirect('campaigns:my_articles')
 
     if request.method == 'POST':
         form = ArticleForm(request.POST, request.FILES, instance=article)
         if form.is_valid():
             updated = form.save(commit=False)
-            # Reset status to DRAFT if it was REJECTED, so it goes back through review
+            # Reset status to DRAFT if it was REJECTED, so it goes back through review.
+            # Editors editing a PUBLISHED article keep it PUBLISHED.
             if updated.status == 'REJECTED':
                 updated.status = 'DRAFT'
                 updated.rejection_note = ''
@@ -192,12 +213,16 @@ def edit_article(request, article_id):
 
 @approved_leader_required
 def delete_article(request, article_id):
-    """Delete a draft or rejected article."""
-    article = get_object_or_404(Campaign, pk=article_id, author=request.user)
-
-    if article.status in ['PUBLISHED', 'PENDING']:
-        messages.error(request, 'Cannot delete a published or pending article.')
-        return redirect('campaigns:my_articles')
+    """Delete an article. Authors: their own drafts/returned articles.
+    Editors: any article, including PUBLISHED ones (owner request
+    2026-10-30: there must be a way to delete a published article)."""
+    if _is_editor(request.user):
+        article = get_object_or_404(Campaign, pk=article_id)
+    else:
+        article = get_object_or_404(Campaign, pk=article_id, author=request.user)
+        if article.status in ['PUBLISHED', 'PENDING']:
+            messages.error(request, 'Cannot delete a published or pending article.')
+            return redirect('campaigns:my_articles')
 
     if request.method == 'POST':
         article.delete()

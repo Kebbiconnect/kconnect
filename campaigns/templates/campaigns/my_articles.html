@@ -82,6 +82,13 @@
                                         <a href="{% url 'campaigns:delete_article' article.id %}" class="text-red-500 hover:text-red-800" title="Delete"><i class="fas fa-trash"></i></a>
                                     {% elif article.status == 'PUBLISHED' %}
                                         <a href="{% url 'campaigns:article_detail' article.slug %}" class="text-gray-600 dark:text-gray-400 hover:text-kpn-blue" target="_blank" title="View Public Article"><i class="fas fa-external-link-alt"></i> View</a>
+                                        {% if is_editor %}
+                                            <a href="{% url 'campaigns:edit_article' article.id %}" class="text-kpn-blue hover:text-blue-800" title="Edit Published Article"><i class="fas fa-edit"></i></a>
+                                            <a href="{% url 'campaigns:delete_article' article.id %}" class="text-red-500 hover:text-red-800" title="Delete Published Article"><i class="fas fa-trash"></i></a>
+                                        {% endif %}
+                                    {% elif is_editor %}
+                                        <a href="{% url 'campaigns:edit_article' article.id %}" class="text-kpn-blue hover:text-blue-800" title="Edit Article"><i class="fas fa-edit"></i></a>
+                                        <a href="{% url 'campaigns:delete_article' article.id %}" class="text-red-500 hover:text-red-800" title="Delete"><i class="fas fa-trash"></i></a>
                                     {% else %}
                                         <span class="text-gray-400 italic text-xs">Locked (In Review)</span>
                                     {% endif %}

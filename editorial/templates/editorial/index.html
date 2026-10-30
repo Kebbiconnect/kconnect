@@ -3,7 +3,7 @@
 {% block content %}
 <div class="kpn-page editorial-workspace">
 <h1 class="kpn-h1">Editorial Assistant</h1>
-<p class="editorial-muted">Discover. Prepare. Verify. Human review always comes before publication.</p>
+<p class="editorial-muted">Discover. Prepare. Verify. {% if editorial_auto_publish %}Muse publishes verified Kebbi items directly; the rest wait here for a human decision.{% else %}Human review always comes before publication.{% endif %}</p>
 <div class="kpn-card kpn-card-body editorial-status"><strong>{% if feature_enabled and control.enabled %}Automation enabled{% else %}Automation paused or disabled{% endif %}</strong><p>Scheduled runs require a configured runner. Enabling this switch alone does not start a background process.</p>
 {% if can_manage %}<form method="post" action="{% url 'editorial:control' %}">{% csrf_token %}{% if control.enabled %}<button class="kpn-btn kpn-btn-outline" name="enabled" value="no">Pause automation</button>{% else %}<button class="kpn-btn kpn-btn-primary" name="enabled" value="yes">Enable automation</button>{% endif %}</form>{% endif %}</div>
 <form method="get" class="editorial-filters"><label>Type<select name="kind" class="kpn-input"><option value="">All permitted types</option>{% for value,label in kinds %}<option value="{{ value }}" {% if value == kind %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label><label>Status<select name="state" class="kpn-input"><option value="">All statuses</option>{% for value,label in states %}<option value="{{ value }}" {% if value == state %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label><button class="kpn-btn kpn-btn-outline">Filter</button></form>

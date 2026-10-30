@@ -29,5 +29,15 @@ class DraftForm(forms.Form):
             'COMMUNITY_EDIT':['title','what_happened','who_was_involved','why_is_it_important','notes'],
         }.get(item.kind,['title','body','notes'])
         for name in names:
-            self.fields[name]=forms.CharField(required=name=='title',max_length=300 if name=='title' else 20000,widget=forms.TextInput if name in {'title','category','provider','deadline','application_link'} else forms.Textarea(attrs={'rows':6}),initial=item.draft.get(name,item.title if name=='title' else ''))
+            initial=item.draft.get(name,item.title if name=='title' else '')
+            if name=='category' and item.kind in {'NEWS','OPPORTUNITY'}:
+                # Category is a dropdown of the REAL backend categories for
+                # this kind (news and opportunity lists are different), so a
+                # reviewer can never save a category the handoff will reject.
+                from campaigns.models import Campaign
+                from core.models import Opportunity
+                choices=(Campaign.CATEGORY_CHOICES if item.kind=='NEWS' else Opportunity.CATEGORY_CHOICES)
+                self.fields[name]=forms.ChoiceField(choices=choices,required=True,initial=initial if initial in dict(choices) else '')
+            else:
+                self.fields[name]=forms.CharField(required=name=='title',max_length=300 if name=='title' else 20000,widget=forms.TextInput if name in {'title','provider','deadline','application_link'} else forms.Textarea(attrs={'rows':6}),initial=initial)
         self.fields['version'].initial=item.version

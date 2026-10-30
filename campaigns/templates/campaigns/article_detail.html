@@ -52,17 +52,11 @@
         <!-- Author + meta bar -->
         <div class="flex flex-wrap items-center gap-4 border-t border-b border-gray-100 dark:border-gray-800 py-4 mt-6">
             <div class="flex items-center gap-3">
-                {% if article.author.photo %}
-                    <img src="{{ article.author.photo.url }}" alt="{{ article.author.get_full_name }}"
-                         class="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-600">
-                {% else %}
-                    <div class="w-10 h-10 rounded-full bg-kpn-green flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                        {{ article.author.first_name|first|default:article.author.username|first|upper }}
-                    </div>
-                {% endif %}
+                <div class="w-10 h-10 rounded-full bg-kpn-green flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                    KPN
+                </div>
                 <div>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-white leading-tight">{{ article.author.get_full_name }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ article.get_reporter_credit_display }}</p>
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white leading-tight">{{ article.get_reporter_credit_display }}</p>
                 </div>
             </div>
 
