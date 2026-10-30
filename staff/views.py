@@ -334,32 +334,9 @@ def forgot_password(request):
                     f'/account/reset-password/{uid}/{token}/'
                 )
 
-            full_name = user.get_full_name() or user.username
-
-            message = f"""Hello {full_name},
-
-You requested a password reset for your KPN account.
-
-Click the link below to set a new password:
-
-{reset_link}
-
-This link expires in 24 hours. If you did not request this reset, you can safely ignore this email.
-
-Best regards,
-Kebbi Progressive Youth Network (KPN)
-{site_url or 'https://kpn.com.ng'}
-"""
-
             try:
-                from django.core.mail import send_mail
-                sent = send_mail(
-                    subject='KPN Password Reset Request',
-                    message=message,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[user.email],
-                    fail_silently=False,
-                )
+                from staff.emails import send_password_reset_email
+                sent = send_password_reset_email(user, reset_link)
                 if sent != 1:
                     raise RuntimeError('Email provider did not accept the reset message.')
                 logger.info('Password reset email accepted for user pk=%s', user.pk)

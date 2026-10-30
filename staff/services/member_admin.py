@@ -46,6 +46,19 @@ def decide_application(approver,applicant_id,decision,reason=""):
    applicant.save(update_fields=["status","approved_by","date_approved","updated_at"])
    from core.notifications import notify
    notify(applicant,notif_type="SUCCESS",title="Membership Approved",message="Congratulations! Your KPN membership has been approved.",link="/account/dashboard/",event="MEMBER_APPROVED",target_type="member",target_id=applicant.id)
+   # Branded approval email (owner request 2026-10-30), sent only after
+   # the approval transaction commits, and never allowed to break the
+   # approval itself if delivery fails.
+   def _send_approval_email(applicant_id=applicant.id):
+    try:
+     from staff.emails import send_account_approved_email
+     from staff.models import User as _User
+     send_account_approved_email(_User.objects.get(pk=applicant_id))
+    except Exception:
+     import logging
+     logging.getLogger(__name__).exception(
+      "Approval email failed for user pk=%s; approval itself succeeded.", applicant_id)
+   transaction.on_commit(_send_approval_email)
    return applicant
   applicant.status="REJECTED"
   applicant.is_active=False

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Your KPN membership has been approved</title></head>
+<body style="margin:0; padding:0; background-color:#eef3ee;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#eef3ee; padding:24px 0;">
+<tr><td align="center">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px; width:100%; background-color:#ffffff; border-radius:12px; overflow:hidden; font-family:Arial, Helvetica, sans-serif;">
+  <tr><td style="background-color:#0b6b38; padding:26px 32px;">
+    <div style="color:#ffffff; font-size:20px; font-weight:bold; letter-spacing:0.4px;">KEBBI PROGRESSIVE YOUTH NETWORK</div>
+    <div style="color:#cfe8d6; font-size:13px; margin-top:4px;">One Voice, One Change</div>
+  </td></tr>
+  <tr><td style="padding:30px 32px 8px 32px; color:#1f2937;">
+    <h1 style="font-size:21px; margin:0 0 14px 0; color:#14532d;">Your membership has been approved 🎉</h1>
+    <p style="font-size:15px; line-height:1.6; margin:0 0 14px 0;">Hello {{ full_name }},</p>
+    <p style="font-size:15px; line-height:1.6; margin:0 0 14px 0;">Congratulations! Your application to join the Kebbi Progressive Youth Network has been approved.{% if role_title %} Your approved role is <strong>{{ role_title }}</strong>.{% endif %}</p>
+    <p style="font-size:15px; line-height:1.6; margin:0 0 22px 0;">You can now sign in and open your dashboard to see your role, your community and everything happening across the network.</p>
+  </td></tr>
+  <tr><td align="center" style="padding:0 32px 8px 32px;">
+    <a href="{{ dashboard_url }}" style="display:inline-block; background-color:#0b6b38; color:#ffffff; font-size:16px; font-weight:bold; text-decoration:none; padding:14px 34px; border-radius:8px;">Open Your Dashboard</a>
+  </td></tr>
+  <tr><td style="padding:14px 32px 6px 32px; color:#1f2937;">
+    <p style="font-size:13px; line-height:1.6; color:#6b7280; margin:0 0 6px 0;">If the button does not work, copy and paste this link into your browser:</p>
+    <p style="font-size:12px; line-height:1.5; word-break:break-all; margin:0 0 14px 0;"><a href="{{ dashboard_url }}" style="color:#0b6b38;">{{ dashboard_url }}</a></p>
+    <p style="font-size:14px; line-height:1.6; margin:0 0 10px 0;">Welcome to the network. One Voice, One Change.</p>
+  </td></tr>
+  <tr><td style="padding:18px 32px 26px 32px; border-top:1px solid #e5e7eb; color:#6b7280; font-size:12px; line-height:1.6;">
+    Kebbi Progressive Youth Network (KPN)<br>
+    Sani Abacha Bypass Road, Birnin Kebbi, Kebbi State<br>
+    <a href="{{ site_url }}" style="color:#0b6b38; text-decoration:none;">{{ site_url }}</a>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>
