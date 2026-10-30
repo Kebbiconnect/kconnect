@@ -104,6 +104,16 @@
                 {{ article.content|linebreaks }}
             {% endif %}
         </div>
+
+        {% if article.source_url %}
+        <!-- Original source (v2.4.4): a real link button, not dead text -->
+        <div class="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+            <a href="{{ article.source_url }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-5 py-2.5 bg-kpn-green text-white font-semibold rounded-lg shadow hover:bg-green-700 transition">
+                <i class="fas fa-external-link-alt"></i>
+                <span>Source: {{ article.source_name|default:"Original report" }}</span>
+            </a>
+        </div>
+        {% endif %}
     </div>
 
 </article>

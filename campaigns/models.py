@@ -54,6 +54,16 @@ class Campaign(models.Model):
     content = models.TextField(blank=True)
     featured_image = models.ImageField(upload_to='campaigns/', blank=True, null=True)
 
+    # Original source attribution for syndicated / brain-published
+    # stories (v2.4.4): rendered as a proper Source button on the
+    # article page instead of a plain-text "Source: ..." line.
+    source_name = models.CharField(
+        max_length=200, blank=True,
+        help_text="Original publisher (e.g. Punch, Independent NG)")
+    source_url = models.URLField(
+        max_length=500, blank=True,
+        help_text="Link to the original story")
+
     # KPN 2.0 newsroom fields
     subheadline = models.CharField(
         max_length=500, blank=True,

@@ -223,20 +223,26 @@ def publish_brain_item(item, overrides=None):
         if author is None:
             raise BrainError('no_publishing_author')
         from campaigns.models import Campaign
+        from campaigns.source_backfill import name_from_url, source_name_for
         paragraphs = [p.strip() for p in draft['body'].split('\n') if p.strip()]
-        source_line = f'Source: {item.source_url or item.original.get("source_url", "")}'.strip()
+        source_url = (item.source_url or item.original.get('source_url', '') or '')[:500]
+        source_line = f'Source: {source_url}'.strip()
+        # v2.4.4: the source is stored in dedicated fields and rendered
+        # as a link BUTTON on the article page — no more dead text line
+        # inside the article blocks. The plain-text `content` fallback
+        # keeps the text line for non-HTML surfaces.
         blocks = [{'type': 'paragraph', 'data': {'text': str(escape(p))}} for p in paragraphs]
-        if source_line != 'Source:':
-            blocks.append({'type': 'paragraph', 'data': {'text': str(escape(source_line))}})
         article = Campaign.objects.create(
             author=author, title=draft['title'],
             slug=unique_slug(Campaign, draft['title']),
-            content=str(escape(draft['body'])) + ('\n\n' + str(escape(source_line)) if source_line != 'Source:' else ''),
+            content=str(escape(draft['body'])) + ('\n\n' + str(escape(source_line)) if source_url else ''),
             content_json={'blocks': blocks},
             category=draft.get('category', 'GENERAL'),
             status='PUBLISHED', published_at=timezone.now(),
             approved_by=author, verification_status='DEVELOPING',
             reporter_credit='KPN_EDITORIAL',
+            source_url=source_url,
+            source_name=(source_name_for(item) or name_from_url(source_url)) if source_url else '',
             meta_description=_excerpt(draft['body']))
         item.article = article
         result = {'published': True, 'kind': 'NEWS', 'slug': article.slug,

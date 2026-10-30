@@ -203,6 +203,54 @@ class PublishItemGateTests(TestCase):
         self.assertFalse(Opportunity.objects.exists())
 
 
+@override_settings(KPN_EDITORIAL_ENABLED=True, KPN_EDITORIAL_BRAIN_TOKEN=TOKEN,
+                   KPN_EDITORIAL_AUTO_PUBLISH=True)
+class SourceButtonTests(TestCase):
+    """v2.4.4 (owner request): the source of a brain-published story
+    must be a clickable link button on the article page, stored in
+    dedicated fields — not a dead plain-text line inside the article."""
+
+    def setUp(self):
+        self.director = media_director('src_director')
+
+    def test_published_news_stores_source_fields_and_page_shows_button(self):
+        response = self.client.post(
+            reverse('editorial:brain_submit_item'),
+            data=json.dumps({
+                'kind': 'NEWS', 'title': 'Kebbi farmers receive inputs',
+                'source_url': 'https://example.com/kebbi-farmers',
+                'source_name': 'Example News', 'text': 'Farmers in Kebbi received inputs.',
+                'draft': {'title': 'Kebbi farmers receive inputs',
+                          'body': 'Farmers in Kebbi received inputs today.',
+                          'category': 'AGRICULTURE'}}),
+            content_type='application/json', **AUTH)
+        self.assertEqual(response.status_code, 201)
+        article = Campaign.objects.get(slug=response.json()['slug'])
+        self.assertEqual(article.source_url, 'https://example.com/kebbi-farmers')
+        self.assertEqual(article.source_name, 'Example News')
+        block_texts = [b['data'].get('text', '') for b in article.content_json['blocks']]
+        self.assertFalse(any(t.startswith('Source:') for t in block_texts), block_texts)
+        page = self.client.get(f'/campaigns/article/{article.slug}/')
+        self.assertEqual(page.status_code, 200)
+        self.assertContains(page, 'href="https://example.com/kebbi-farmers"')
+        self.assertContains(page, 'Source: Example News')
+
+    def test_backfill_extracts_trailing_text_source(self):
+        from campaigns.source_backfill import extract_text_source
+        article = Campaign.objects.create(
+            author=self.director, title='Old story', slug='old-story-src',
+            status='PUBLISHED', reporter_credit='KPN_EDITORIAL',
+            content='Body text\n\nSource: https://punchng.com/story',
+            content_json={'blocks': [
+                {'type': 'paragraph', 'data': {'text': 'Body text'}},
+                {'type': 'paragraph', 'data': {'text': 'Source: https://punchng.com/story'}}]})
+        url, changed = extract_text_source(article)
+        self.assertTrue(changed)
+        self.assertEqual(url, 'https://punchng.com/story')
+        self.assertEqual(len(article.content_json['blocks']), 1)
+        self.assertNotIn('Source:', article.content)
+
+
 class EditPublishedFlowTests(TestCase):
     """Owner report 2026-10-30: editing a published article must be
     save-only — the edit page must not offer 'Submit for Review', and

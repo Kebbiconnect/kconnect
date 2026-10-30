@@ -106,14 +106,15 @@ def act(user,item_id,action,version,confirmed=False):
             paragraphs=[p.strip() for p in d['body'].split('\n') if p.strip()]
             source_line=f'Source: {item.source_url}' if item.source_url else ''
             blocks=[{'type':'paragraph','data':{'text':str(escape(p))}} for p in paragraphs]
-            if source_line:blocks.append({'type':'paragraph','data':{'text':str(escape(source_line))}})
+            from campaigns.source_backfill import name_from_url as _nfu, source_name_for as _snf
+            _src_name=(_snf(item) or _nfu(item.source_url)) if item.source_url else ''
             # With auto-publish on (owner decision 2026-10-30), a handoff
             # from the editorial desk is the final step: the article goes
             # straight to PUBLISHED instead of sitting in the newsroom
             # PENDING queue, where it could not be edited or submitted
             # again ("Only draft articles can be submitted for review").
             auto=settings.KPN_EDITORIAL_AUTO_PUBLISH
-            item.article=Campaign.objects.create(author=user,title=d['title'],slug=unique_slug(Campaign,d['title']),content=str(escape(d['body']))+'\n\n'+str(escape(source_line)),content_json={'blocks':blocks},category=category,status='PUBLISHED' if auto else 'PENDING',published_at=timezone.now() if auto else None,approved_by=user if auto else None,verification_status='DEVELOPING',reporter_credit='KPN_EDITORIAL')
+            item.article=Campaign.objects.create(author=user,title=d['title'],slug=unique_slug(Campaign,d['title']),content=str(escape(d['body']))+'\n\n'+str(escape(source_line)),content_json={'blocks':blocks},category=category,status='PUBLISHED' if auto else 'PENDING',published_at=timezone.now() if auto else None,approved_by=user if auto else None,verification_status='DEVELOPING',reporter_credit='KPN_EDITORIAL',source_url=(item.source_url or '')[:500],source_name=_src_name)
         else:
             from leadership.capabilities import capabilities_for
             if not user.is_superuser and 'MANAGE_HUBS' not in capabilities_for(user):raise PermissionDenied
