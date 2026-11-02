@@ -140,7 +140,11 @@ class ArchiveBrowseTests(ArchiveFixture):
             'township-road-repairs-begin'})
         content = response.content.decode()
         self.assertIn('KPN-SI-2026-00101', content)
-        self.assertIn('Browsing the archive', content)
+        # v2.9.2: the archive opens straight into its content — the
+        # explainer paragraphs that used to sit under the heading and
+        # above the results were removed on the owner's instruction.
+        self.assertNotIn('Browsing the archive', content)
+        self.assertNotIn('permanent record of KPN journalism', content)
 
     def test_browse_mode_hides_non_public_articles(self):
         response = self.client.get(ARCHIVE_URL)

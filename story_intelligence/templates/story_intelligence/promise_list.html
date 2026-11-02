@@ -1,55 +1,65 @@
 {% extends 'base.html' %}
 {% block title %}Promise Tracker | KPN — Kebbi Progressive Youth Network{% endblock %}
 {% block content %}
-<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-10">
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-    <header class="mb-8 text-center">
-      <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white">KPN Promise Tracker</h1>
-      <p class="text-gray-600 dark:text-gray-300 mt-3 max-w-2xl mx-auto">
-        Public promises made by institutions in Kebbi State — and what has actually happened since.
-        KPN records each promise, follows it up, and only marks a promise
-        <strong>completed</strong> when there is evidence to show for it.
-      </p>
-    </header>
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen">
 
-    <nav class="flex flex-wrap justify-center gap-2 mb-8" aria-label="Filter promises by status">
-      <a href="{% url 'promises:list' %}" class="text-sm px-4 py-2 rounded-full border {% if not current_status %}bg-kpn-green text-white border-kpn-green{% else %}bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600{% endif %}">All promises</a>
-      {% for value, label in status_choices %}
-      <a href="{% url 'promises:list' %}?status={{ value }}" class="text-sm px-4 py-2 rounded-full border {% if current_status == value %}bg-kpn-green text-white border-kpn-green{% else %}bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600{% endif %}">{{ label }}</a>
-      {% endfor %}
-    </nav>
-
-    <div class="space-y-5">
-      {% for promise in promises %}
-      <article class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
-        <div class="flex flex-wrap items-start justify-between gap-3">
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-            <a href="{% url 'promises:detail' promise.pk %}" class="hover:text-kpn-green">{{ promise.title }}</a>
-          </h2>
-          <span class="text-xs font-semibold px-3 py-1 rounded-full
-            {% if promise.status == 'COMPLETED_VERIFIED' %}bg-green-100 text-green-800
-            {% elif promise.status == 'IN_PROGRESS' %}bg-blue-100 text-blue-800
-            {% elif promise.status == 'DELAYED' %}bg-red-100 text-red-800
-            {% elif promise.status == 'DISPUTED' %}bg-red-100 text-red-800
-            {% elif promise.status == 'DOCUMENTED' %}bg-yellow-100 text-yellow-800
-            {% else %}bg-gray-200 text-gray-700{% endif %}">{{ promise.get_status_display }}</span>
-        </div>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ promise.status_label }}</p>
-        <p class="text-gray-700 dark:text-gray-300 mt-3">{{ promise.description|truncatewords:40 }}</p>
-        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-4 text-sm text-gray-600 dark:text-gray-300">
-          <div><dt class="inline font-semibold">Responsible:</dt> <dd class="inline">{{ promise.institution.name }}</dd></div>
-          {% if promise.location_label %}<div><dt class="inline font-semibold">Where:</dt> <dd class="inline">{{ promise.location_label }}</dd></div>{% endif %}
-          <div><dt class="inline font-semibold">Announced:</dt> <dd class="inline">{{ promise.announced_on|date:"F j, Y" }}{% if promise.announced_by %} by {{ promise.announced_by }}{% endif %}</dd></div>
-          {% if promise.deadline %}<div><dt class="inline font-semibold">Promised by:</dt> <dd class="inline">{{ promise.deadline|date:"F j, Y" }}</dd></div>{% endif %}
-        </dl>
-        <a href="{% url 'promises:detail' promise.pk %}" class="inline-block mt-4 text-sm font-semibold text-kpn-green hover:underline">Follow this promise &rarr;</a>
-      </article>
-      {% empty %}
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-10 text-center">
-        <p class="text-gray-600 dark:text-gray-300">No promises are being tracked{% if current_status %} with this status{% endif %} yet. When public institutions announce commitments in Kebbi State, KPN records them here.</p>
-      </div>
-      {% endfor %}
+  <!-- Header -->
+  <section class="bg-kpn-green text-white py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold">KPN Promise Tracker</h1>
     </div>
-  </div>
+  </section>
+
+  <!-- Status filter -->
+  <section class="py-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav class="flex flex-wrap gap-2 justify-center" aria-label="Filter promises by status">
+        <a href="{% url 'promises:list' %}" class="px-4 py-2 rounded-full text-sm font-semibold transition {% if not current_status %}bg-kpn-green text-white{% else %}bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">All promises</a>
+        {% for value, label in status_choices %}
+        <a href="{% url 'promises:list' %}?status={{ value }}" class="px-4 py-2 rounded-full text-sm font-semibold transition {% if current_status == value %}bg-kpn-green text-white{% else %}bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">{{ label }}</a>
+        {% endfor %}
+      </nav>
+    </div>
+  </section>
+
+  <section class="py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-5xl mx-auto space-y-5">
+        {% for promise in promises %}
+        <article class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+              <a href="{% url 'promises:detail' promise.pk %}" class="hover:text-kpn-green">{{ promise.title }}</a>
+            </h2>
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-md
+              {% if promise.status == 'COMPLETED_VERIFIED' %}bg-green-100 text-green-800
+              {% elif promise.status == 'IN_PROGRESS' %}bg-blue-100 text-blue-800
+              {% elif promise.status == 'DELAYED' %}bg-red-100 text-red-800
+              {% elif promise.status == 'DISPUTED' %}bg-red-100 text-red-800
+              {% elif promise.status == 'DOCUMENTED' %}bg-yellow-100 text-yellow-800
+              {% else %}bg-gray-200 text-gray-700{% endif %}">{{ promise.get_status_display }}</span>
+          </div>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ promise.status_label }}</p>
+          <p class="text-gray-700 dark:text-gray-300 mt-3">{{ promise.description|truncatewords:40 }}</p>
+          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-4 text-sm text-gray-600 dark:text-gray-300">
+            <div><dt class="inline font-semibold">Responsible:</dt> <dd class="inline">{{ promise.institution.name }}</dd></div>
+            {% if promise.location_label %}<div><dt class="inline font-semibold">Where:</dt> <dd class="inline">{{ promise.location_label }}</dd></div>{% endif %}
+            <div><dt class="inline font-semibold">Announced:</dt> <dd class="inline">{{ promise.announced_on|date:"F j, Y" }}{% if promise.announced_by %} by {{ promise.announced_by }}{% endif %}</dd></div>
+            {% if promise.deadline %}<div><dt class="inline font-semibold">Promised by:</dt> <dd class="inline">{{ promise.deadline|date:"F j, Y" }}</dd></div>{% endif %}
+          </dl>
+          <a href="{% url 'promises:detail' promise.pk %}" class="inline-block mt-4 text-sm font-semibold text-kpn-green hover:underline">Follow this promise &rarr;</a>
+        </article>
+        {% empty %}
+        <div class="text-center py-20 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-50 dark:bg-green-900/30 text-kpn-green mb-6">
+            <i class="fas fa-handshake text-3xl"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">No promises found</h3>
+          <p class="text-gray-500 dark:text-gray-400">{% if current_status %}No promises are being tracked with this status yet.{% else %}No promises are being tracked yet.{% endif %}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
 </div>
 {% endblock %}

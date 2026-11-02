@@ -1,58 +1,63 @@
 {% extends 'base.html' %}
 {% block title %}Human Impact Files | KPN — Kebbi Progressive Youth Network{% endblock %}
 {% block content %}
-<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-10">
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-    <header class="mb-8 text-center">
-      <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white">KPN Human Impact Files</h1>
-      <p class="text-gray-600 dark:text-gray-300 mt-3 max-w-2xl mx-auto">
-        Behind every policy, project and headline are people. Human Impact Files tell their stories —
-        who is affected, what their situation is, and what they need. People's details are shared only
-        with their consent; where a story is anonymised, it is to protect the people in it.
-      </p>
-    </header>
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen">
 
-    <div class="space-y-5">
-      {% for story in stories %}
-      <article class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
-        <div class="flex flex-wrap items-start justify-between gap-3">
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-            <a href="{% url 'campaigns:article_detail' story.slug %}" class="hover:text-kpn-green">{{ story.title }}</a>
-          </h2>
-          <span class="text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-800">Human Impact File</span>
-        </div>
-        {% with profile=story.story_profile %}
-        {% if profile.who_is_affected %}
-        <div class="mt-4">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">Who is affected</h3>
-          <p class="text-gray-700 dark:text-gray-300">{{ profile.who_is_affected|linebreaksbr }}</p>
-        </div>
-        {% endif %}
-        {% if profile.why_it_matters %}
-        <div class="mt-4">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">Their situation</h3>
-          <p class="text-gray-700 dark:text-gray-300">{{ profile.why_it_matters|linebreaksbr }}</p>
-        </div>
-        {% endif %}
-        {% if profile.what_to_watch %}
-        <div class="mt-4">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">What they need — and what to watch</h3>
-          <p class="text-gray-700 dark:text-gray-300">{{ profile.what_to_watch|linebreaksbr }}</p>
-        </div>
-        {% endif %}
-        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-4 text-sm text-gray-600 dark:text-gray-300">
-          {% if story.story_id %}<div><dt class="inline font-semibold">Story ID:</dt> <dd class="inline font-mono text-xs">{{ story.story_id }}</dd></div>{% endif %}
-          {% if story.published_at %}<div><dt class="inline font-semibold">Published:</dt> <dd class="inline">{{ story.published_at|date:"F j, Y" }}</dd></div>{% endif %}
-        </dl>
-        {% endwith %}
-        <a href="{% url 'campaigns:article_detail' story.slug %}" class="inline-block mt-4 text-sm font-semibold text-kpn-green hover:underline">Read their story &rarr;</a>
-      </article>
-      {% empty %}
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-10 text-center">
-        <p class="text-gray-600 dark:text-gray-300">No Human Impact Files have been published yet. When KPN reports on the people behind an issue — with their consent, and with care — their stories will appear here.</p>
-      </div>
-      {% endfor %}
+  <!-- Header -->
+  <section class="bg-kpn-green text-white py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold">KPN Human Impact Files</h1>
     </div>
-  </div>
+  </section>
+
+  <section class="py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-5xl mx-auto space-y-5">
+        {% for story in stories %}
+        <article class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+              <a href="{% url 'campaigns:article_detail' story.slug %}" class="hover:text-kpn-green">{{ story.title }}</a>
+            </h2>
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-blue-100 text-blue-800">Human Impact File</span>
+          </div>
+          {% with profile=story.story_profile %}
+          {% if profile.who_is_affected %}
+          <div class="mt-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">Who is affected</h3>
+            <p class="text-gray-700 dark:text-gray-300">{{ profile.who_is_affected|linebreaksbr }}</p>
+          </div>
+          {% endif %}
+          {% if profile.why_it_matters %}
+          <div class="mt-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">Their situation</h3>
+            <p class="text-gray-700 dark:text-gray-300">{{ profile.why_it_matters|linebreaksbr }}</p>
+          </div>
+          {% endif %}
+          {% if profile.what_to_watch %}
+          <div class="mt-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">What they need — and what to watch</h3>
+            <p class="text-gray-700 dark:text-gray-300">{{ profile.what_to_watch|linebreaksbr }}</p>
+          </div>
+          {% endif %}
+          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-4 text-sm text-gray-600 dark:text-gray-300">
+            {% if story.story_id %}<div><dt class="inline font-semibold">Story ID:</dt> <dd class="inline font-mono text-xs">{{ story.story_id }}</dd></div>{% endif %}
+            {% if story.published_at %}<div><dt class="inline font-semibold">Published:</dt> <dd class="inline">{{ story.published_at|date:"F j, Y" }}</dd></div>{% endif %}
+          </dl>
+          {% endwith %}
+          <a href="{% url 'campaigns:article_detail' story.slug %}" class="inline-block mt-4 text-sm font-semibold text-kpn-green hover:underline">Read their story &rarr;</a>
+        </article>
+        {% empty %}
+        <div class="text-center py-20 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-50 dark:bg-blue-900/30 text-kpn-blue mb-6">
+            <i class="fas fa-heart text-3xl"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">No Human Impact Files published yet</h3>
+          <p class="text-gray-500 dark:text-gray-400">New stories will appear here as they are published.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
 </div>
 {% endblock %}

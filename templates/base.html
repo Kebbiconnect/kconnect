@@ -40,15 +40,44 @@
                 <!-- Desktop Menu -->
                 <div class="hidden xl:flex items-center gap-1">
                     <a href="{% url 'core:home' %}" class="kpn-nav-link">Home</a>
-                    <a href="{% url 'campaigns:newsroom' %}" class="kpn-nav-link">Newsroom</a>
+
+                    <!-- Newsroom Dropdown -->
+                    <div class="relative" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
+                        <button class="kpn-nav-link flex items-center gap-1">
+                            Newsroom
+                            <i class="fas fa-chevron-down text-[10px] opacity-60"></i>
+                        </button>
+                        <div x-show="open"
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 translate-y-1"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-100"
+                             x-transition:leave-start="opacity-100 translate-y-0"
+                             x-transition:leave-end="opacity-0 translate-y-1"
+                             class="kpn-dropdown top-full left-0"
+                             x-cloak>
+                            <a href="{% url 'campaigns:newsroom' %}" class="kpn-dropdown-item">
+                                <i class="fas fa-newspaper text-orange-500 w-4 text-center"></i>News
+                            </a>
+                            <a href="{% url 'promises:list' %}" class="kpn-dropdown-item">
+                                <i class="fas fa-handshake text-kpn-green w-4 text-center"></i>Promise Tracker
+                            </a>
+                            <a href="{% url 'archive:home' %}" class="kpn-dropdown-item">
+                                <i class="fas fa-archive text-blue-500 w-4 text-center"></i>Story Archive
+                            </a>
+                            <a href="{% url 'signals:list' %}" class="kpn-dropdown-item">
+                                <i class="fas fa-chart-line text-purple-500 w-4 text-center"></i>Future Signal
+                            </a>
+                            <a href="{% url 'impact_files:list' %}" class="kpn-dropdown-item">
+                                <i class="fas fa-heart text-red-500 w-4 text-center"></i>Human Impact Files
+                            </a>
+                        </div>
+                    </div>
+
                     <a href="{% url 'core:community' %}" class="kpn-nav-link">Community</a>
                     <a href="{% url 'core:opportunities' %}" class="kpn-nav-link">Opportunities</a>
                     <a href="{% url 'core:civic' %}" class="kpn-nav-link">Civic</a>
                     <a href="{% url 'core:advocacy' %}" class="kpn-nav-link">Advocacy</a>
-                    <a href="{% url 'promises:list' %}" class="kpn-nav-link">Promise Tracker</a>
-                    <a href="{% url 'archive:home' %}" class="kpn-nav-link">Archive</a>
-                    <a href="{% url 'signals:list' %}" class="kpn-nav-link">Future Signal</a>
-                    <a href="{% url 'impact_files:list' %}" class="kpn-nav-link">Human Impact</a>
 
                     <!-- KPN Network Dropdown -->
                     <div class="relative" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
@@ -153,9 +182,6 @@
                 <a href="{% url 'core:home' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                     <i class="fas fa-home text-kpn-green w-4 text-center text-xs"></i>Home
                 </a>
-                <a href="{% url 'campaigns:newsroom' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                    <i class="fas fa-newspaper text-orange-500 w-4 text-center text-xs"></i>Newsroom
-                </a>
                 <a href="{% url 'core:community' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                     <i class="fas fa-users text-blue-500 w-4 text-center text-xs"></i>Community
                 </a>
@@ -168,18 +194,28 @@
                 <a href="{% url 'core:advocacy' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                     <i class="fas fa-bullhorn text-red-500 w-4 text-center text-xs"></i>Advocacy
                 </a>
-                <a href="{% url 'promises:list' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                    <i class="fas fa-handshake text-kpn-green w-4 text-center text-xs"></i>Promise Tracker
-                </a>
-                <a href="{% url 'archive:home' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                    <i class="fas fa-archive text-kpn-green w-4 text-center text-xs"></i>Archive
-                </a>
-                <a href="{% url 'signals:list' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                    <i class="fas fa-chart-line text-kpn-green w-4 text-center text-xs"></i>Future Signal
-                </a>
-                <a href="{% url 'impact_files:list' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                    <i class="fas fa-heart text-kpn-green w-4 text-center text-xs"></i>Human Impact
-                </a>
+
+                <!-- Newsroom Section -->
+                <div class="pt-2 pb-1">
+                    <p class="px-3 text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Newsroom</p>
+                </div>
+                <div class="pl-4 border-l border-gray-200 dark:border-gray-700 ml-3 space-y-0.5">
+                    <a href="{% url 'campaigns:newsroom' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fas fa-newspaper text-orange-500 w-4 text-center text-xs"></i>News
+                    </a>
+                    <a href="{% url 'promises:list' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fas fa-handshake text-kpn-green w-4 text-center text-xs"></i>Promise Tracker
+                    </a>
+                    <a href="{% url 'archive:home' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fas fa-archive text-blue-500 w-4 text-center text-xs"></i>Story Archive
+                    </a>
+                    <a href="{% url 'signals:list' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fas fa-chart-line text-purple-500 w-4 text-center text-xs"></i>Future Signal
+                    </a>
+                    <a href="{% url 'impact_files:list' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fas fa-heart text-red-500 w-4 text-center text-xs"></i>Human Impact Files
+                    </a>
+                </div>
 
                 <!-- KPN Network Section -->
                 <div class="pt-2 pb-1">

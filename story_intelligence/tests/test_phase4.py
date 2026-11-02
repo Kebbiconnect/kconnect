@@ -162,20 +162,30 @@ class SignalPublicTests(TestCase):
         self.assertContains(response, reverse('campaigns:article_detail',
                                               args=[self.signal.slug]))
 
-    def test_signals_page_labels_analysis_not_fact(self):
+    def test_signals_page_uses_field_labels_without_explainer_copy(self):
         response = self.client.get(reverse('signals:list'))
+        # The field labels over the editor-entered content stay.
         self.assertContains(response, 'What we are seeing')
         self.assertContains(response, 'Why it matters')
         self.assertContains(response, 'What to watch')
-        self.assertContains(response, 'not predictions')
-        self.assertContains(response, 'not</strong> reports of established fact')
+        # v2.9.2: the intro paragraph explaining the feature was
+        # removed on the owner's instruction — the page opens
+        # straight into its heading and content.
+        self.assertNotContains(response, 'not predictions')
+        self.assertNotContains(response, 'reports of established fact')
+        self.assertNotContains(response, 'judge for yourself')
+        self.assertNotContains(response, 'what our editors are seeing')
 
     def test_article_page_renders_signal_framing(self):
         response = self.client.get(
             reverse('campaigns:article_detail', args=[self.signal.slug]))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Future Signal — KPN analysis')
-        self.assertContains(response, 'not a prediction')
+        # v2.9.2: the disclaimer sentence that used to sit under the
+        # panel heading was removed on the owner's instruction; the
+        # "KPN analysis" label itself stays.
+        self.assertNotContains(response, 'not a prediction')
+        self.assertNotContains(response, 'not a report of established fact')
         self.assertContains(response, 'Early rains arrived, then stopped.')
         self.assertContains(response, 'Developing — the evidence is growing')
         self.assertContains(response, 'Three weeks of steady rain.')
@@ -378,8 +388,15 @@ class ImpactPublicTests(TestCase):
         response = self.client.get(
             reverse('campaigns:article_detail', args=[self.story.slug]))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Human Impact File')
+        # The panel keeps its kind badge and the impact framing labels
+        # over the editor-entered content.
+        self.assertContains(response, 'Human Impact')
+        self.assertContains(response, 'Who is affected')
         self.assertContains(response, 'Their situation')
+        # v2.9.2: the explainer sentence that used to open the impact
+        # panel was removed on the owner's instruction.
+        self.assertNotContains(response, 'people behind this issue')
+        self.assertNotContains(response, 'shared with consent')
         self.assertContains(response, 'Market women in Argungu.')
         self.assertNotContains(response, DESCRIPTOR)
         self.assertNotContains(response, CONSENT_NOTES)

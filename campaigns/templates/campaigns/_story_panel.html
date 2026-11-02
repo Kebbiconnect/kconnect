@@ -21,8 +21,7 @@ no draft updates, no private evidence.
     <div class="px-5 py-5 space-y-6">
         {% if story_panel.profile and story_panel.profile.kind == 'SIGNAL' %}
         <div class="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-900/20 px-4 py-4">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-1">Future Signal — KPN analysis</h3>
-            <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">This piece is analysis based on the evidence linked in this story file. It is not a report of established fact, and it is not a prediction.</p>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-3">Future Signal — KPN analysis</h3>
             {% if story_panel.profile.signal_observation %}
             <h4 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">What we are seeing</h4>
             <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-3">{{ story_panel.profile.signal_observation|linebreaksbr }}</p>
@@ -46,10 +45,6 @@ no draft updates, no private evidence.
             </ul>
             {% endif %}
         </div>
-        {% endif %}
-
-        {% if story_panel.profile and story_panel.profile.kind == 'IMPACT' %}
-        <p class="text-sm text-gray-600 dark:text-gray-400">A KPN Human Impact File — the people behind this issue. Details are shared with consent, or anonymised to protect the people involved.</p>
         {% endif %}
 
         {% if story_panel.profile %}

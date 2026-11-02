@@ -1,201 +1,218 @@
 {% extends 'base.html' %}
 {% block title %}Story Archive | KPN — Kebbi Progressive Youth Network{% endblock %}
 {% block content %}
-<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-10">
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-    <header class="mb-8 text-center">
-      <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white">KPN Story Archive</h1>
-      <p class="text-gray-600 dark:text-gray-300 mt-3 max-w-2xl mx-auto">
-        The permanent record of KPN journalism. Search past stories, their updates and tracked
-        promises by keyword — or type a Story ID (for example <span class="font-mono">KPN-SI-2026-00001</span>)
-        to go straight to that story.
-      </p>
-    </header>
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen">
 
-    <form method="get" action="{% url 'archive:home' %}" class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-5 mb-8">
-      <div class="flex flex-col sm:flex-row gap-3">
-        <label class="sr-only" for="archive-q">Search the archive</label>
-        <input id="archive-q" type="search" name="q" value="{{ params.q }}"
-               placeholder="Search stories, updates and promises — or enter a Story ID"
-               class="flex-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-4 py-2.5 text-sm">
-        <button type="submit" class="px-5 py-2.5 rounded-md bg-kpn-green text-white text-sm font-semibold">Search</button>
-      </div>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1" for="archive-type">Show</label>
-          <select id="archive-type" name="type" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm">
-            <option value="all" {% if params.type == 'all' %}selected{% endif %}>Everything</option>
-            {% for value, label in type_choices %}
-            <option value="{{ value }}" {% if params.type == value %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1" for="archive-category">Category</label>
-          <select id="archive-category" name="category" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm">
-            <option value="">All categories</option>
-            {% for value, label in categories %}
-            <option value="{{ value }}" {% if params.category == value %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1" for="archive-zone">Senatorial zone</label>
-          <select id="archive-zone" name="zone" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm">
-            <option value="">All zones</option>
-            {% for zone in zones %}
-            <option value="{{ zone.pk }}" {% if params.zone == zone.pk %}selected{% endif %}>{{ zone.name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1" for="archive-lga">LGA</label>
-          <select id="archive-lga" name="lga" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm">
-            <option value="">All LGAs</option>
-            {% for lga in lgas %}
-            <option value="{{ lga.pk }}" {% if params.lga == lga.pk %}selected{% endif %}>{{ lga.name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1" for="archive-ward">Ward</label>
-          <select id="archive-ward" name="ward" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm">
-            <option value="">All wards</option>
-            {% for ward in wards %}
-            <option value="{{ ward.pk }}" {% if params.ward == ward.pk %}selected{% endif %}>{{ ward }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1" for="archive-institution">Institution (promises)</label>
-          <select id="archive-institution" name="institution" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm">
-            <option value="">All institutions</option>
-            {% for institution in institutions %}
-            <option value="{{ institution.pk }}" {% if params.institution == institution.pk %}selected{% endif %}>{{ institution.name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1" for="archive-from">From date</label>
-          <input id="archive-from" type="date" name="date_from" value="{{ params.date_from|date:'Y-m-d' }}"
-                 class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1" for="archive-to">To date</label>
-          <input id="archive-to" type="date" name="date_to" value="{{ params.date_to|date:'Y-m-d' }}"
-                 class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm">
-        </div>
-      </div>
-      {% if not browsing %}
-      <p class="mt-4 text-sm"><a href="{% url 'archive:home' %}" class="text-kpn-green font-semibold hover:underline">Clear search and filters</a></p>
-      {% endif %}
-    </form>
-
-    {% if browsing %}
-    <p class="text-gray-600 dark:text-gray-300 mb-6">
-      Browsing the archive: the most recent published stories are listed below.
-      Every story carries a permanent Story ID — search for it above to return to the story at any time.
-    </p>
-    {% else %}
-    <p class="text-gray-700 dark:text-gray-200 mb-6" role="status">
-      <strong>{{ total_results }}</strong> result{{ total_results|pluralize }} found
-      {% if params.q %}for &ldquo;{{ params.q }}&rdquo;{% endif %}
-      {% if show_stories %}— {{ stories_total }} stor{{ stories_total|pluralize:"y,ies" }}{% endif %}
-      {% if show_updates %}, {{ updates_total }} update{{ updates_total|pluralize }}{% endif %}
-      {% if show_promises %}, {{ promises_total }} promise{{ promises_total|pluralize }}{% endif %}.
-    </p>
-    {% endif %}
-
-    {% if not browsing and total_results == 0 %}
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-10 text-center">
-      <p class="text-gray-600 dark:text-gray-300">Nothing in the archive matches that search yet. Try a different keyword, or clear the filters to browse the full record.</p>
+  <!-- Header -->
+  <section class="bg-kpn-green text-white py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold">KPN Story Archive</h1>
     </div>
-    {% endif %}
+  </section>
 
-    {% if show_stories and stories_page %}
-    <section aria-label="Stories" class="mb-10">
-      <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Stories{% if not browsing %} <span class="text-sm font-semibold text-gray-500">({{ stories_total }})</span>{% endif %}</h2>
-      <div class="space-y-5">
-        {% for article in stories_page %}
-        <article class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
-          <div class="flex flex-wrap items-center gap-2 mb-2">
-            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-kpn-green text-white">Story</span>
-            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-200 text-gray-700">{{ article.get_category_display }}</span>
-            {% if article.story_id %}<span class="text-xs font-mono font-semibold bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-2.5 py-1 rounded-md">{{ article.story_id }}</span>{% endif %}
+  <!-- Search & Filters -->
+  <section class="py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <form method="get" action="{% url 'archive:home' %}">
+        <div class="flex flex-col sm:flex-row gap-3">
+          <div class="relative flex-1">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+              <i class="fas fa-search text-xs"></i>
+            </span>
+            <label class="sr-only" for="archive-q">Search the archive</label>
+            <input id="archive-q" type="search" name="q" value="{{ params.q }}"
+                   placeholder="Search stories, updates and promises, or enter a Story ID"
+                   class="kpn-input pl-8">
           </div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-            <a href="{% url 'campaigns:article_detail' article.slug %}" class="hover:text-kpn-green">{{ article.title }}</a>
-          </h3>
-          {% if article.excerpt %}<p class="text-gray-700 dark:text-gray-300 mt-2">{{ article.excerpt }}</p>{% endif %}
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-3">
-            Published {{ article.published_at|date:"F j, Y" }}
-            {% if article.lga %} &middot; {{ article.lga.name }}{% endif %}
-            {% if article.location %} &middot; {{ article.location }}{% endif %}
-          </p>
-        </article>
-        {% empty %}
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-10 text-center">
-          <p class="text-gray-600 dark:text-gray-300">No published stories yet.</p>
+          <div class="flex gap-2">
+            <button type="submit" class="kpn-btn kpn-btn-primary">
+              <i class="fas fa-search"></i> Search
+            </button>
+            {% if not browsing %}
+            <a href="{% url 'archive:home' %}" class="kpn-btn kpn-btn-secondary">
+              <i class="fas fa-times"></i> Clear
+            </a>
+            {% endif %}
+          </div>
         </div>
-        {% endfor %}
-      </div>
-      {% include 'story_intelligence/_archive_pagination.html' with page_obj=stories_page param='sp' %}
-    </section>
-    {% endif %}
-
-    {% if show_updates and updates_page %}
-    <section aria-label="Story updates" class="mb-10">
-      <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Story updates <span class="text-sm font-semibold text-gray-500">({{ updates_total }})</span></h2>
-      <div class="space-y-5">
-        {% for update in updates_page %}
-        <article class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
-          <div class="flex flex-wrap items-center gap-2 mb-2">
-            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-600 text-white">Story update</span>
-            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-200 text-gray-700">{{ update.get_kind_display }}</span>
-            {% if update.article.story_id %}<span class="text-xs font-mono font-semibold bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-2.5 py-1 rounded-md">{{ update.article.story_id }}</span>{% endif %}
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1" for="archive-type">Show</label>
+            <select id="archive-type" name="type" class="kpn-input kpn-select w-full">
+              <option value="all" {% if params.type == 'all' %}selected{% endif %}>Everything</option>
+              {% for value, label in type_choices %}
+              <option value="{{ value }}" {% if params.type == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
           </div>
-          <h3 class="text-lg font-bold text-gray-900 dark:text-white">
-            <a href="{% url 'campaigns:article_detail' update.article.slug %}" class="hover:text-kpn-green">{{ update.title }}</a>
-          </h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Update on: {{ update.article.title }}</p>
-          {% if update.excerpt %}<p class="text-gray-700 dark:text-gray-300 mt-2">{{ update.excerpt }}</p>{% endif %}
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-3">Published {{ update.published_at|date:"F j, Y" }}</p>
-        </article>
-        {% endfor %}
-      </div>
-      {% include 'story_intelligence/_archive_pagination.html' with page_obj=updates_page param='up' %}
-    </section>
-    {% endif %}
-
-    {% if show_promises and promises_page %}
-    <section aria-label="Promises" class="mb-10">
-      <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Promises <span class="text-sm font-semibold text-gray-500">({{ promises_total }})</span></h2>
-      <div class="space-y-5">
-        {% for promise in promises_page %}
-        <article class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
-          <div class="flex flex-wrap items-center gap-2 mb-2">
-            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-purple-600 text-white">Promise</span>
-            <span class="text-xs font-semibold px-2.5 py-1 rounded-full
-              {% if promise.status == 'COMPLETED_VERIFIED' %}bg-green-100 text-green-800
-              {% elif promise.status == 'IN_PROGRESS' %}bg-blue-100 text-blue-800
-              {% elif promise.status == 'DELAYED' or promise.status == 'DISPUTED' %}bg-red-100 text-red-800
-              {% elif promise.status == 'DOCUMENTED' %}bg-yellow-100 text-yellow-800
-              {% else %}bg-gray-200 text-gray-700{% endif %}">{{ promise.get_status_display }}</span>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1" for="archive-category">Category</label>
+            <select id="archive-category" name="category" class="kpn-input kpn-select w-full">
+              <option value="">All categories</option>
+              {% for value, label in categories %}
+              <option value="{{ value }}" {% if params.category == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
           </div>
-          <h3 class="text-lg font-bold text-gray-900 dark:text-white">
-            <a href="{% url 'promises:detail' promise.pk %}" class="hover:text-kpn-green">{{ promise.title }}</a>
-          </h3>
-          {% if promise.excerpt %}<p class="text-gray-700 dark:text-gray-300 mt-2">{{ promise.excerpt }}</p>{% endif %}
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-3">
-            {{ promise.institution.name }} &middot; Announced {{ promise.announced_on|date:"F j, Y" }}
-            {% if promise.location_label %} &middot; {{ promise.location_label }}{% endif %}
-          </p>
-        </article>
-        {% endfor %}
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1" for="archive-zone">Senatorial zone</label>
+            <select id="archive-zone" name="zone" class="kpn-input kpn-select w-full">
+              <option value="">All zones</option>
+              {% for zone in zones %}
+              <option value="{{ zone.pk }}" {% if params.zone == zone.pk %}selected{% endif %}>{{ zone.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1" for="archive-lga">LGA</label>
+            <select id="archive-lga" name="lga" class="kpn-input kpn-select w-full">
+              <option value="">All LGAs</option>
+              {% for lga in lgas %}
+              <option value="{{ lga.pk }}" {% if params.lga == lga.pk %}selected{% endif %}>{{ lga.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1" for="archive-ward">Ward</label>
+            <select id="archive-ward" name="ward" class="kpn-input kpn-select w-full">
+              <option value="">All wards</option>
+              {% for ward in wards %}
+              <option value="{{ ward.pk }}" {% if params.ward == ward.pk %}selected{% endif %}>{{ ward }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1" for="archive-institution">Institution (promises)</label>
+            <select id="archive-institution" name="institution" class="kpn-input kpn-select w-full">
+              <option value="">All institutions</option>
+              {% for institution in institutions %}
+              <option value="{{ institution.pk }}" {% if params.institution == institution.pk %}selected{% endif %}>{{ institution.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1" for="archive-from">From date</label>
+            <input id="archive-from" type="date" name="date_from" value="{{ params.date_from|date:'Y-m-d' }}"
+                   class="kpn-input w-full">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1" for="archive-to">To date</label>
+            <input id="archive-to" type="date" name="date_to" value="{{ params.date_to|date:'Y-m-d' }}"
+                   class="kpn-input w-full">
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      {% if not browsing %}
+      <p class="text-gray-700 dark:text-gray-200 mb-6" role="status">
+        <strong>{{ total_results }}</strong> result{{ total_results|pluralize }} found
+        {% if params.q %}for &ldquo;{{ params.q }}&rdquo;{% endif %}
+        {% if show_stories %}— {{ stories_total }} stor{{ stories_total|pluralize:"y,ies" }}{% endif %}
+        {% if show_updates %}, {{ updates_total }} update{{ updates_total|pluralize }}{% endif %}
+        {% if show_promises %}, {{ promises_total }} promise{{ promises_total|pluralize }}{% endif %}.
+      </p>
+      {% endif %}
+
+      {% if not browsing and total_results == 0 %}
+      <div class="text-center py-20 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-50 dark:bg-green-900/30 text-kpn-green mb-6">
+          <i class="fas fa-search text-3xl"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">No results found</h3>
+        <p class="text-gray-500 dark:text-gray-400">Try a different keyword, or clear the filters.</p>
       </div>
-      {% include 'story_intelligence/_archive_pagination.html' with page_obj=promises_page param='pp' %}
-    </section>
-    {% endif %}
-  </div>
+      {% endif %}
+
+      {% if show_stories and stories_page %}
+      <section aria-label="Stories" class="mb-10">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 border-l-4 border-kpn-green pl-3">Stories{% if not browsing %} <span class="text-sm font-semibold text-gray-500">({{ stories_total }})</span>{% endif %}</h2>
+        <div class="space-y-5">
+          {% for article in stories_page %}
+          <article class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-kpn-green text-white">Story</span>
+              <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-gray-200 text-gray-700">{{ article.get_category_display }}</span>
+              {% if article.story_id %}<span class="text-xs font-mono font-semibold bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-2.5 py-1 rounded-md">{{ article.story_id }}</span>{% endif %}
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+              <a href="{% url 'campaigns:article_detail' article.slug %}" class="hover:text-kpn-green">{{ article.title }}</a>
+            </h3>
+            {% if article.excerpt %}<p class="text-gray-700 dark:text-gray-300 mt-2">{{ article.excerpt }}</p>{% endif %}
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-3">
+              Published {{ article.published_at|date:"F j, Y" }}
+              {% if article.lga %} &middot; {{ article.lga.name }}{% endif %}
+              {% if article.location %} &middot; {{ article.location }}{% endif %}
+            </p>
+          </article>
+          {% empty %}
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-10 text-center">
+            <p class="text-gray-500 dark:text-gray-400">No published stories yet.</p>
+          </div>
+          {% endfor %}
+        </div>
+        {% include 'story_intelligence/_archive_pagination.html' with page_obj=stories_page param='sp' %}
+      </section>
+      {% endif %}
+
+      {% if show_updates and updates_page %}
+      <section aria-label="Story updates" class="mb-10">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 border-l-4 border-kpn-green pl-3">Story updates <span class="text-sm font-semibold text-gray-500">({{ updates_total }})</span></h2>
+        <div class="space-y-5">
+          {% for update in updates_page %}
+          <article class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-blue-600 text-white">Story update</span>
+              <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-gray-200 text-gray-700">{{ update.get_kind_display }}</span>
+              {% if update.article.story_id %}<span class="text-xs font-mono font-semibold bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-2.5 py-1 rounded-md">{{ update.article.story_id }}</span>{% endif %}
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+              <a href="{% url 'campaigns:article_detail' update.article.slug %}" class="hover:text-kpn-green">{{ update.title }}</a>
+            </h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Update on: {{ update.article.title }}</p>
+            {% if update.excerpt %}<p class="text-gray-700 dark:text-gray-300 mt-2">{{ update.excerpt }}</p>{% endif %}
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-3">Published {{ update.published_at|date:"F j, Y" }}</p>
+          </article>
+          {% endfor %}
+        </div>
+        {% include 'story_intelligence/_archive_pagination.html' with page_obj=updates_page param='up' %}
+      </section>
+      {% endif %}
+
+      {% if show_promises and promises_page %}
+      <section aria-label="Promises" class="mb-10">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 border-l-4 border-kpn-green pl-3">Promises <span class="text-sm font-semibold text-gray-500">({{ promises_total }})</span></h2>
+        <div class="space-y-5">
+          {% for promise in promises_page %}
+          <article class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-purple-600 text-white">Promise</span>
+              <span class="text-xs font-semibold px-2.5 py-1 rounded-md
+                {% if promise.status == 'COMPLETED_VERIFIED' %}bg-green-100 text-green-800
+                {% elif promise.status == 'IN_PROGRESS' %}bg-blue-100 text-blue-800
+                {% elif promise.status == 'DELAYED' or promise.status == 'DISPUTED' %}bg-red-100 text-red-800
+                {% elif promise.status == 'DOCUMENTED' %}bg-yellow-100 text-yellow-800
+                {% else %}bg-gray-200 text-gray-700{% endif %}">{{ promise.get_status_display }}</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+              <a href="{% url 'promises:detail' promise.pk %}" class="hover:text-kpn-green">{{ promise.title }}</a>
+            </h3>
+            {% if promise.excerpt %}<p class="text-gray-700 dark:text-gray-300 mt-2">{{ promise.excerpt }}</p>{% endif %}
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-3">
+              {{ promise.institution.name }} &middot; Announced {{ promise.announced_on|date:"F j, Y" }}
+              {% if promise.location_label %} &middot; {{ promise.location_label }}{% endif %}
+            </p>
+          </article>
+          {% endfor %}
+        </div>
+        {% include 'story_intelligence/_archive_pagination.html' with page_obj=promises_page param='pp' %}
+      </section>
+      {% endif %}
+    </div>
+  </section>
 </div>
 {% endblock %}
