@@ -1,0 +1,169 @@
+{% comment %}
+KPN Media Phase 1 — "Story file" panel. Rendered only when the article
+has story data (story_panel context from story_intelligence.services).
+Contains ONLY reader-safe data: no consent records, no audit entries,
+no draft updates, no private evidence.
+{% endcomment %}
+{% if story_panel %}
+<section class="mt-10 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 overflow-hidden">
+    <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center gap-3">
+        <h2 class="text-base font-bold text-gray-900 dark:text-white">
+            <i class="fas fa-folder-open text-kpn-green mr-2"></i>Story File
+        </h2>
+        {% if story_panel.story_id %}
+        <a href="{% url 'archive:home' %}?q={{ story_panel.story_id }}" title="Find this story in the KPN Story Archive" class="text-xs font-mono font-semibold bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-2.5 py-1 rounded-md hover:border-kpn-green hover:text-kpn-green">{{ story_panel.story_id }}</a>
+        {% endif %}
+        {% if story_panel.profile and story_panel.profile.kind != 'NEWS' %}
+        <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-kpn-green text-white">{{ story_panel.profile.get_kind_display }}</span>
+        {% endif %}
+    </div>
+
+    <div class="px-5 py-5 space-y-6">
+        {% if story_panel.profile and story_panel.profile.kind == 'SIGNAL' %}
+        <div class="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-900/20 px-4 py-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-1">Future Signal — KPN analysis</h3>
+            <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">This piece is analysis based on the evidence linked in this story file. It is not a report of established fact, and it is not a prediction.</p>
+            {% if story_panel.profile.signal_observation %}
+            <h4 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">What we are seeing</h4>
+            <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-3">{{ story_panel.profile.signal_observation|linebreaksbr }}</p>
+            {% endif %}
+            {% if story_panel.profile.signal_confidence or story_panel.profile.signal_horizon %}
+            <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                {% if story_panel.profile.signal_confidence %}<span class="font-semibold">Strength of evidence:</span> {{ story_panel.profile.get_signal_confidence_display }}{% endif %}
+                {% if story_panel.profile.signal_horizon %}<br><span class="font-semibold">Looking at:</span> {{ story_panel.profile.signal_horizon }}{% endif %}
+            </p>
+            {% endif %}
+            {% if story_panel.profile.signal_change_condition %}
+            <h4 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">What would change this assessment</h4>
+            <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-3">{{ story_panel.profile.signal_change_condition|linebreaksbr }}</p>
+            {% endif %}
+            {% if story_panel.related_stories %}
+            <h4 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">Stories this analysis is based on</h4>
+            <ul class="list-disc list-inside space-y-1">
+                {% for related in story_panel.related_stories %}
+                <li class="text-sm"><a href="{% url 'campaigns:article_detail' related.slug %}" class="text-kpn-blue hover:underline">{{ related.title }}</a></li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if story_panel.profile and story_panel.profile.kind == 'IMPACT' %}
+        <p class="text-sm text-gray-600 dark:text-gray-400">A KPN Human Impact File — the people behind this issue. Details are shared with consent, or anonymised to protect the people involved.</p>
+        {% endif %}
+
+        {% if story_panel.profile %}
+        <div class="grid gap-5 sm:grid-cols-2">
+            {% if story_panel.profile.why_it_matters %}
+            <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">{% if story_panel.profile.kind == 'IMPACT' %}Their situation{% else %}Why this matters{% endif %}</h3>
+                <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ story_panel.profile.why_it_matters|linebreaksbr }}</p>
+            </div>
+            {% endif %}
+            {% if story_panel.profile.who_is_affected %}
+            <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">Who is affected</h3>
+                <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ story_panel.profile.who_is_affected|linebreaksbr }}</p>
+            </div>
+            {% endif %}
+            {% if story_panel.profile.what_is_unknown %}
+            <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-amber-600 mb-1">{% if story_panel.profile.kind == 'IMPACT' %}What is still unclear{% else %}What is not yet known{% endif %}</h3>
+                <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ story_panel.profile.what_is_unknown|linebreaksbr }}</p>
+            </div>
+            {% endif %}
+            {% if story_panel.profile.what_to_watch %}
+            <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-blue mb-1">{% if story_panel.profile.kind == 'IMPACT' %}What they need — and what to watch{% else %}What to watch{% endif %}</h3>
+                <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ story_panel.profile.what_to_watch|linebreaksbr }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if story_panel.claims %}
+        <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">What we know — claim by claim</h3>
+            <ul class="space-y-3">
+                {% for claim in story_panel.claims %}
+                <li class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3">
+                    <p class="text-sm text-gray-800 dark:text-gray-200">{{ claim.text }}</p>
+                    <p class="mt-2 flex flex-wrap items-center gap-2">
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded
+                            {% if claim.status == 'CONFIRMED' %}bg-green-100 text-green-800
+                            {% elif claim.status == 'OFFICIAL_STATEMENT' %}bg-blue-100 text-blue-800
+                            {% elif claim.status == 'DISPUTED' %}bg-red-100 text-red-800
+                            {% elif claim.status == 'NOT_ESTABLISHED' %}bg-gray-200 text-gray-700
+                            {% else %}bg-yellow-100 text-yellow-800{% endif %}">{{ claim.status_label }}</span>
+                        {% if claim.source_url %}
+                        <a href="{{ claim.source_url }}" target="_blank" rel="noopener noreferrer" class="text-xs text-kpn-blue hover:underline">Source{% if claim.source_name %}: {{ claim.source_name }}{% endif %}</a>
+                        {% elif claim.source_name %}
+                        <span class="text-xs text-gray-500">Source: {{ claim.source_name }}</span>
+                        {% endif %}
+                    </p>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if story_panel.updates %}
+        <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Story updates</h3>
+            <ol class="relative border-l-2 border-gray-200 dark:border-gray-700 ml-2 space-y-5">
+                {% for update in story_panel.updates %}
+                <li class="pl-5 relative">
+                    <span class="absolute -left-[7px] top-1 w-3 h-3 rounded-full bg-kpn-green border-2 border-white dark:border-gray-800"></span>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ update.published_at|date:"F j, Y, g:i a" }} &bull; {{ update.get_kind_display }}</p>
+                    <h4 class="text-sm font-bold text-gray-900 dark:text-white mt-0.5">{{ update.title }}</h4>
+                    <div class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mt-1">{{ update.body|linebreaks }}</div>
+                </li>
+                {% endfor %}
+            </ol>
+        </div>
+        {% endif %}
+
+        {% if story_panel.evidence %}
+        <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Evidence</h3>
+            <ul class="space-y-2">
+                {% for item in story_panel.evidence %}
+                <li class="text-sm">
+                    {% if item.url %}
+                    <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" class="text-kpn-blue hover:underline font-medium">{{ item.title }}</a>
+                    {% elif item.file %}
+                    <a href="{{ item.file.url }}" target="_blank" rel="noopener noreferrer" class="text-kpn-blue hover:underline font-medium">{{ item.title }}</a>
+                    {% else %}
+                    <span class="font-medium text-gray-800 dark:text-gray-200">{{ item.title }}</span>
+                    {% endif %}
+                    <span class="text-xs text-gray-500">({{ item.get_kind_display }})</span>
+                    {% if item.description %}<p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ item.description }}</p>{% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if story_panel.community_sources %}
+        <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+                <i class="fas fa-users text-kpn-green mr-1"></i>
+                This story includes reporting from KPN community reporters in
+                {% for area in story_panel.community_sources %}{{ area }}{% if not forloop.last %}, {% endif %}{% endfor %}.
+            </p>
+        </div>
+        {% endif %}
+
+        {% if story_panel.corrections %}
+        <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Corrections &amp; clarifications</h3>
+            {% for correction in story_panel.corrections %}
+            <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                <strong>{{ correction.get_kind_display }}</strong> ({{ correction.created_at|date:"F j, Y" }}): {{ correction.text }}
+            </p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}

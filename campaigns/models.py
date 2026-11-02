@@ -64,6 +64,16 @@ class Campaign(models.Model):
         max_length=500, blank=True,
         help_text="Link to the original story")
 
+    # Permanent Story ID (KPN Media Phase 1, v2.5.0): assigned by
+    # story_intelligence.services.allocate_story_id inside the publish
+    # transaction. Nullable because drafts legitimately have no ID yet;
+    # unique + non-null for PUBLISHED articles is enforced by the
+    # publishing service (campaigns.services.publish_campaign), not by
+    # the column. Format: KPN-SI-<YYYY>-<NNNNN>.
+    story_id = models.CharField(
+        max_length=20, unique=True, null=True, blank=True, db_index=True,
+        help_text="Permanent KPN Story ID (assigned at publication)")
+
     # KPN 2.0 newsroom fields
     subheadline = models.CharField(
         max_length=500, blank=True,

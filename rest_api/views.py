@@ -526,7 +526,14 @@ class MyArticleDetailView(generics.RetrieveUpdateDestroyAPIView):
         if instance.status in {'PUBLISHED','PENDING'}:
             from rest_framework.exceptions import ValidationError
             raise ValidationError({'non_field_errors':['Cannot delete a published or pending article.']})
-        instance.delete()
+        # KPN Media Phase 1: articles with a Story ID or story records
+        # are part of the permanent archive — archive, never delete.
+        from campaigns.services import ProtectedArticleError, delete_campaign
+        try:
+            delete_campaign(instance)
+        except ProtectedArticleError as exc:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({'non_field_errors':[str(exc)]})
 
 class ArticleSubmitView(APIView):
     permission_classes=[permissions.IsAuthenticated,IsVerifiedMember,capability_permission('WRITE_ARTICLES')]
@@ -552,12 +559,48 @@ class ArticleDecisionView(APIView):
         article=Campaign.objects.filter(pk=pk,status='PENDING').first()
         if not article: raise NotFound('Pending article not found.')
         action=serializers.CharField(max_length=32).run_validation(request.data.get('action')); note=serializers.CharField(allow_blank=True,max_length=20000).run_validation(request.data.get('note','')).strip()
-        if action=='publish': article.status='PUBLISHED'; article.approved_by=request.user; article.published_at=timezone.now(); article.rejection_note=''
+        if action=='publish':
+            # Single publishing service (Phase 1): allocates the permanent
+            # Story ID in the same transaction; failure leaves the article
+            # PENDING and recoverable.
+            from campaigns.services import publish_campaign
+            from story_intelligence.services import ConsentRequiredError
+            try: publish_campaign(article,request.user)
+            except ConsentRequiredError as exc: raise ValidationError({'non_field_errors':[str(exc)]})
+            except Exception: raise ValidationError({'non_field_errors':['Publishing failed and nothing was changed. The article is still pending — please try again.']})
+            return Response(CampaignSerializer(article,context={'request':request}).data)
         elif action in {'return','reject'}:
             if not note: raise ValidationError({'note':['An editor note is required.']})
             article.status='REJECTED'; article.rejection_note=note
         else: raise ValidationError({'action':['Use publish or return.']})
         article.save(); return Response(CampaignSerializer(article,context={'request':request}).data)
+
+class ArticleArchiveView(APIView):
+    """Archive a published article (KPN Media Phase 1): it leaves public
+    view but its record, Story ID and story history are preserved."""
+    permission_classes=[permissions.IsAuthenticated,IsVerifiedMember,capability_permission('WRITE_ARTICLES')]
+    def post(self,request,pk):
+        from rest_framework.exceptions import ValidationError
+        from leadership.capabilities import capabilities_for
+        article=Campaign.objects.filter(pk=pk).first()
+        if not article or (article.author_id!=request.user.pk and 'ALL_ARTICLES' not in capabilities_for(request.user)): raise NotFound('Article not found.')
+        if article.status!='PUBLISHED': raise ValidationError({'non_field_errors':['Only published articles can be archived.']})
+        from campaigns.services import archive_campaign
+        archive_campaign(article,actor=request.user)
+        return Response(CampaignSerializer(article,context={'request':request}).data)
+
+class ArticleRestoreView(APIView):
+    """Restore an archived article to PUBLISHED with its Story ID intact."""
+    permission_classes=[permissions.IsAuthenticated,IsVerifiedMember,capability_permission('WRITE_ARTICLES')]
+    def post(self,request,pk):
+        from rest_framework.exceptions import ValidationError
+        from leadership.capabilities import capabilities_for
+        article=Campaign.objects.filter(pk=pk).first()
+        if not article or (article.author_id!=request.user.pk and 'ALL_ARTICLES' not in capabilities_for(request.user)): raise NotFound('Article not found.')
+        if article.status!='ARCHIVED': raise ValidationError({'non_field_errors':['Only archived articles can be restored.']})
+        from campaigns.services import restore_campaign
+        restore_campaign(article,actor=request.user)
+        return Response(CampaignSerializer(article,context={'request':request}).data)
 
 class MyMediaListCreateView(generics.ListCreateAPIView):
     serializer_class=MediaItemSerializer

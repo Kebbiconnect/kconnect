@@ -113,9 +113,15 @@ def article_detail(request, slug):
         status='PUBLISHED', category=article.category
     ).exclude(pk=article.pk).order_by('-published_at')[:4]
 
+    # KPN Media Phase 1: reader-safe story panel data (None when the
+    # article has no story records — the page then renders as before).
+    from story_intelligence.services import story_panel_context
+    story_panel = story_panel_context(article) if article.status == 'PUBLISHED' else None
+
     context = {
         'article': article,
         'related': related,
+        'story_panel': story_panel,
     }
     return render(request, 'campaigns/article_detail.html', context)
 
@@ -186,6 +192,7 @@ def edit_article(request, article_id):
     if request.method == 'POST':
         form = ArticleForm(request.POST, request.FILES, instance=article)
         if form.is_valid():
+            previous_verification = article.verification_status
             updated = form.save(commit=False)
             # Reset status to DRAFT if it was REJECTED, so it goes back through review.
             # Editors editing a PUBLISHED article keep it PUBLISHED.
@@ -193,6 +200,12 @@ def edit_article(request, article_id):
                 updated.status = 'DRAFT'
                 updated.rejection_note = ''
             updated.save()
+            # Truth Layers: keep a history of verification-status changes.
+            if updated.verification_status != previous_verification:
+                from story_intelligence.services import record_verification_event
+                record_verification_event(
+                    updated, updated.verification_status, request.user,
+                    old_value=previous_verification)
             messages.success(request, 'Article updated successfully.')
             return redirect('campaigns:my_articles')
         else:
@@ -214,8 +227,11 @@ def edit_article(request, article_id):
 @approved_leader_required
 def delete_article(request, article_id):
     """Delete an article. Authors: their own drafts/returned articles.
-    Editors: any article, including PUBLISHED ones (owner request
-    2026-10-30: there must be a way to delete a published article)."""
+    Editors: any UNPROTECTED article. Since KPN Media Phase 1 (owner
+    spec 2026-11-01, superseding the 2026-10-30 delete-anything rule for
+    these records), published articles, articles with a Story ID and
+    articles with story records cannot be hard-deleted — they are
+    archived instead, preserving the permanent story record."""
     if _is_editor(request.user):
         article = get_object_or_404(Campaign, pk=article_id)
     else:
@@ -224,12 +240,70 @@ def delete_article(request, article_id):
             messages.error(request, 'Cannot delete a published or pending article.')
             return redirect('campaigns:my_articles')
 
+    from .services import ProtectedArticleError, article_is_protected, delete_campaign
+    if article_is_protected(article):
+        messages.error(
+            request,
+            'This article is part of the permanent story archive and cannot '
+            'be deleted. Archive it instead to remove it from public view.')
+        return redirect('campaigns:my_articles')
+
     if request.method == 'POST':
-        article.delete()
+        try:
+            delete_campaign(article)
+        except ProtectedArticleError as exc:
+            messages.error(request, str(exc))
+            return redirect('campaigns:my_articles')
         messages.success(request, 'Article deleted.')
         return redirect('campaigns:my_articles')
 
     return render(request, 'campaigns/delete_article.html', {'article': article})
+
+
+@approved_leader_required
+def archive_article(request, article_id):
+    """Archive a published article: removed from public view, record,
+    Story ID and story history preserved (KPN Media Phase 1)."""
+    if _is_editor(request.user):
+        article = get_object_or_404(Campaign, pk=article_id)
+    else:
+        article = get_object_or_404(Campaign, pk=article_id, author=request.user)
+
+    if article.status != 'PUBLISHED':
+        messages.error(request, 'Only published articles can be archived.')
+        return redirect('campaigns:my_articles')
+
+    if request.method == 'POST':
+        from .services import archive_campaign
+        archive_campaign(article, actor=request.user)
+        messages.success(
+            request,
+            f'"{article.title}" has been archived. It is no longer public, '
+            'but its record and Story ID are preserved.')
+        return redirect('campaigns:my_articles')
+
+    return render(request, 'campaigns/archive_article.html', {'article': article})
+
+
+@approved_leader_required
+def restore_article(request, article_id):
+    """Restore an archived article to published, keeping its Story ID."""
+    if _is_editor(request.user):
+        article = get_object_or_404(Campaign, pk=article_id)
+    else:
+        article = get_object_or_404(Campaign, pk=article_id, author=request.user)
+
+    if article.status != 'ARCHIVED':
+        messages.error(request, 'Only archived articles can be restored.')
+        return redirect('campaigns:my_articles')
+
+    if request.method == 'POST':
+        from .services import restore_campaign
+        restore_campaign(article, actor=request.user)
+        messages.success(request, f'"{article.title}" is published again.')
+        return redirect('campaigns:my_articles')
+
+    return render(request, 'campaigns/restore_article.html', {'article': article})
 
 
 @approved_leader_required
@@ -366,11 +440,24 @@ def publish_article(request, article_id):
         return redirect('campaigns:review_queue')
 
     if request.method == 'POST':
-        article.status = 'PUBLISHED'
-        article.approved_by = request.user
-        article.published_at = timezone.now()
-        article.rejection_note = ''
-        article.save(update_fields=['status', 'approved_by', 'published_at', 'rejection_note'])
+        # Single publishing service (Phase 1): allocates the permanent
+        # Story ID inside the same transaction; on failure the article
+        # stays PENDING and recoverable.
+        from .services import publish_campaign
+        from story_intelligence.services import ConsentRequiredError
+        try:
+            publish_campaign(article, request.user)
+        except ConsentRequiredError as exc:
+            # Phase 4 consent guard: show the editor the exact reason
+            # (e.g. a Human Impact story with no consent on file).
+            messages.error(request, str(exc))
+            return redirect('campaigns:review_queue')
+        except Exception:
+            messages.error(
+                request,
+                'Publishing failed and nothing was changed. The article is '
+                'still in the review queue — please try again.')
+            return redirect('campaigns:review_queue')
         messages.success(request, f'"{article.title}" is now published.')
         return redirect('campaigns:review_queue')
 

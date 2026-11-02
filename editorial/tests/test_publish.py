@@ -409,11 +409,20 @@ class EditorArticlePowersTests(TestCase):
         self.article.refresh_from_db()
         self.assertEqual(self.article.title, 'Live story')
 
-    def test_director_can_delete_published_article(self):
+    def test_director_cannot_delete_published_article_but_can_archive_it(self):
+        # Behaviour changed in v2.5.0 (KPN Media Phase 1, owner spec
+        # 2026-11-01): published articles are part of the permanent
+        # story archive and can no longer be hard-deleted — this
+        # supersedes the 2026-10-30 delete-anything rule for published
+        # records. The director archives instead; the record survives.
         self.client.force_login(self.director)
         response = self.client.post(reverse('campaigns:delete_article', args=[self.article.pk]))
         self.assertEqual(response.status_code, 302)
-        self.assertFalse(Campaign.objects.filter(pk=self.article.pk).exists())
+        self.assertTrue(Campaign.objects.filter(pk=self.article.pk).exists())
+        response = self.client.post(reverse('campaigns:archive_article', args=[self.article.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.article.refresh_from_db()
+        self.assertEqual(self.article.status, 'ARCHIVED')
 
     def test_writer_cannot_delete_published_article(self):
         own = Campaign.objects.create(author=self.writer, title='Mine', slug='mine-live',

@@ -125,6 +125,7 @@ INSTALLED_APPS = [
     'media',
     'events',
     'editorial.apps.EditorialConfig',
+    'story_intelligence.apps.StoryIntelligenceConfig',
 ]
 
 MIDDLEWARE = [

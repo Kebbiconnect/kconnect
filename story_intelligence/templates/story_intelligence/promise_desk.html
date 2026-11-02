@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Promise Desk — KPN{% endblock %}
+{% block content %}
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-10">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+
+    <header class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+      <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">KPN Promise Desk</p>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Public Promise Tracker — editorial desk</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+        Record promises exactly as announced. Never invent a deadline, a progress figure or a verification result.
+        A promise can only be marked <strong>Completed — verified</strong> with verification evidence on record
+        {% if can_verify %}and you hold the verify capability{% else %}by an editor with the verify capability{% endif %}.
+      </p>
+      <div class="mt-4 flex flex-wrap gap-3">
+        <a href="{% url 'story_intelligence:promise_create' %}" class="px-4 py-2 bg-kpn-green text-white rounded-lg text-sm font-medium hover:bg-green-700 transition">Record a new promise</a>
+        <a href="{% url 'promises:list' %}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-medium">View public tracker</a>
+        <a href="{% url 'story_intelligence:radar' %}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-medium">Community Radar</a>
+      </div>
+    </header>
+
+    <section class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+      <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Tracked promises</h2>
+      {% for promise in promises %}
+      <div class="border-b border-gray-100 dark:border-gray-700 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <a href="{% url 'story_intelligence:promise_detail_desk' promise.pk %}" class="font-semibold text-gray-900 dark:text-white hover:text-kpn-green">{{ promise.title }}</a>
+          <p class="text-xs text-gray-500 mt-0.5">
+            {{ promise.institution.name }} &bull; Announced {{ promise.announced_on|date:"M j, Y" }}
+            {% if promise.deadline %} &bull; Promised by {{ promise.deadline|date:"M j, Y" }}{% endif %}
+            &bull; {{ promise.updates.count }} update{{ promise.updates.count|pluralize }}
+          </p>
+          {% if promise.next_check_date %}
+          <p class="text-xs mt-0.5 {% if promise.next_check_date <= today and promise.status != 'COMPLETED_VERIFIED' %}text-red-600 font-semibold{% else %}text-gray-500{% endif %}">
+            Next check: {{ promise.next_check_date|date:"M j, Y" }}{% if promise.next_check_date <= today and promise.status != 'COMPLETED_VERIFIED' %} — due now{% endif %}
+          </p>
+          {% endif %}
+        </div>
+        <span class="text-xs font-semibold px-3 py-1 rounded-full
+          {% if promise.status == 'COMPLETED_VERIFIED' %}bg-green-100 text-green-800
+          {% elif promise.status == 'IN_PROGRESS' %}bg-blue-100 text-blue-800
+          {% elif promise.status == 'DELAYED' or promise.status == 'DISPUTED' %}bg-red-100 text-red-800
+          {% elif promise.status == 'DOCUMENTED' %}bg-yellow-100 text-yellow-800
+          {% else %}bg-gray-200 text-gray-700{% endif %}">{{ promise.get_status_display }}</span>
+      </div>
+      {% empty %}
+      <p class="text-sm text-gray-500">No promises recorded yet.</p>
+      {% endfor %}
+    </section>
+
+    <section class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+      <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Institutions</h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Contact notes and internal notes are never shown on the public tracker.</p>
+      {% for institution in institutions %}
+      <p class="text-sm text-gray-700 dark:text-gray-300 py-1">{{ institution.name }} <span class="text-xs text-gray-500">({{ institution.get_kind_display }})</span></p>
+      {% empty %}
+      <p class="text-sm text-gray-500">No institutions recorded yet.</p>
+      {% endfor %}
+      <form method="POST" action="{% url 'story_intelligence:add_institution' %}" class="space-y-4 mt-6">
+        {% csrf_token %}
+        {{ institution_form.as_p }}
+        <button type="submit" class="px-5 py-2.5 bg-kpn-green text-white rounded-lg font-semibold hover:bg-green-700 transition">Add institution</button>
+      </form>
+    </section>
+
+  </div>
+</div>
+{% endblock %}

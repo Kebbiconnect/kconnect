@@ -13,6 +13,8 @@ urlpatterns = [
     path('my-articles/', views.my_articles, name='my_articles'),
     path('edit/<int:article_id>/', views.edit_article, name='edit_article'),
     path('delete/<int:article_id>/', views.delete_article, name='delete_article'),
+    path('archive/<int:article_id>/', views.archive_article, name='archive_article'),
+    path('restore/<int:article_id>/', views.restore_article, name='restore_article'),
     path('submit-review/<int:article_id>/', views.submit_for_review, name='submit_for_review'),
     
     # CMS: Editors

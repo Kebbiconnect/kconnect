@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Future Signal | KPN — Kebbi Progressive Youth Network{% endblock %}
+{% block content %}
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-10">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header class="mb-8 text-center">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white">KPN Future Signal</h1>
+      <p class="text-gray-600 dark:text-gray-300 mt-3 max-w-2xl mx-auto">
+        Future Signal is KPN's <strong>analysis</strong>: what our editors are seeing in Kebbi State,
+        the evidence it rests on, and what to watch next. These pieces are analysis based on evidence —
+        they are <strong>not</strong> reports of established fact, and they are <strong>not predictions</strong>.
+        Each one links to the stories and evidence behind it, so you can judge for yourself.
+      </p>
+    </header>
+
+    <div class="space-y-5">
+      {% for story in stories %}
+      <article class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+            <a href="{% url 'campaigns:article_detail' story.slug %}" class="hover:text-kpn-green">{{ story.title }}</a>
+          </h2>
+          <span class="text-xs font-semibold px-3 py-1 rounded-full bg-amber-100 text-amber-800">Future Signal — analysis</span>
+        </div>
+        {% with profile=story.story_profile %}
+        {% if profile.signal_observation %}
+        <div class="mt-4">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">What we are seeing</h3>
+          <p class="text-gray-700 dark:text-gray-300">{{ profile.signal_observation|linebreaksbr }}</p>
+        </div>
+        {% endif %}
+        {% if profile.why_it_matters %}
+        <div class="mt-4">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">Why it matters</h3>
+          <p class="text-gray-700 dark:text-gray-300">{{ profile.why_it_matters|linebreaksbr }}</p>
+        </div>
+        {% endif %}
+        {% if profile.what_to_watch %}
+        <div class="mt-4">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">What to watch</h3>
+          <p class="text-gray-700 dark:text-gray-300">{{ profile.what_to_watch|linebreaksbr }}</p>
+        </div>
+        {% endif %}
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-4 text-sm text-gray-600 dark:text-gray-300">
+          {% if profile.signal_confidence %}<div><dt class="inline font-semibold">Strength of evidence:</dt> <dd class="inline">{{ profile.get_signal_confidence_display }}</dd></div>{% endif %}
+          {% if profile.signal_horizon %}<div><dt class="inline font-semibold">Looking at:</dt> <dd class="inline">{{ profile.signal_horizon }}</dd></div>{% endif %}
+          {% if story.story_id %}<div><dt class="inline font-semibold">Story ID:</dt> <dd class="inline font-mono text-xs">{{ story.story_id }}</dd></div>{% endif %}
+          {% if story.published_at %}<div><dt class="inline font-semibold">Published:</dt> <dd class="inline">{{ story.published_at|date:"F j, Y" }}</dd></div>{% endif %}
+        </dl>
+        {% endwith %}
+        <a href="{% url 'campaigns:article_detail' story.slug %}" class="inline-block mt-4 text-sm font-semibold text-kpn-green hover:underline">Read the analysis and its evidence &rarr;</a>
+      </article>
+      {% empty %}
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-10 text-center">
+        <p class="text-gray-600 dark:text-gray-300">No Future Signal analysis has been published yet. When KPN's editors identify a development worth analysing — with the evidence to back it — it will appear here.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

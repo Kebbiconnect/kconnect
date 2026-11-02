@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Promise Desk — {{ promise.title }}{% endblock %}
+{% block content %}
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-10">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+
+    <header class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+      <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">KPN Promise Desk</p>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ promise.title }}</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+        Institution: <strong>{{ promise.institution.name }}</strong>
+        &bull; Status: <strong>{{ promise.get_status_display }}</strong>
+        &bull; Verification evidence on record: <strong>{% if has_verification_evidence %}Yes{% else %}No{% endif %}</strong>
+      </p>
+      <div class="mt-4 flex flex-wrap gap-3">
+        <a href="{% url 'promises:detail' promise.pk %}" class="px-4 py-2 bg-kpn-green text-white rounded-lg text-sm font-medium hover:bg-green-700 transition">View public page</a>
+        <a href="{% url 'story_intelligence:promise_desk' %}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-medium">All promises</a>
+      </div>
+    </header>
+
+    <section class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+      <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Change status</h2>
+      <form method="POST" action="{% url 'story_intelligence:promise_change_status' promise.pk %}" class="space-y-4">
+        {% csrf_token %}
+        {{ status_form.as_p }}
+        <button type="submit" class="px-5 py-2.5 bg-kpn-green text-white rounded-lg font-semibold hover:bg-green-700 transition">Change status</button>
+      </form>
+      <p class="text-xs text-gray-500 mt-3">“Completed — verified” is refused unless verification evidence is on record (a CONFIRMED claim with evidence on a linked story, or an update carrying an evidence link) and you hold the verify capability. Every change is written into the public timeline and the audit log.</p>
+    </section>
+
+    <section class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+      <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Progress timeline</h2>
+      {% for update in updates %}
+      <div class="border-b border-gray-100 dark:border-gray-700 py-3">
+        <p class="text-xs text-gray-500">{{ update.update_date|date:"M j, Y" }}{% if update.status_after %} &bull; Status &rarr; <strong>{{ update.get_status_after_display }}</strong>{% endif %}{% if update.author %} &bull; by {{ update.author.get_full_name|default:update.author.username }}{% endif %}</p>
+        <p class="font-semibold text-gray-900 dark:text-white mt-0.5">{{ update.title }}</p>
+        {% if update.body %}<p class="text-sm text-gray-600 dark:text-gray-300 mt-1">{{ update.body }}</p>{% endif %}
+        {% if update.evidence_url %}<p class="text-xs text-kpn-blue break-all mt-1">Evidence: {{ update.evidence_title|default:update.evidence_url }} — {{ update.evidence_url }}</p>{% endif %}
+      </div>
+      {% empty %}
+      <p class="text-sm text-gray-500">No updates yet.</p>
+      {% endfor %}
+      <form method="POST" action="{% url 'story_intelligence:promise_add_update' promise.pk %}" class="space-y-4 mt-6">
+        {% csrf_token %}
+        {{ update_form.as_p }}
+        <button type="submit" class="px-5 py-2.5 bg-kpn-green text-white rounded-lg font-semibold hover:bg-green-700 transition">Add update</button>
+      </form>
+    </section>
+
+    <section class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+      <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Promise details</h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Status is not edited here — use the status form above so every change is recorded in the timeline.</p>
+      <form method="POST" action="{% url 'story_intelligence:promise_save' promise.pk %}" class="space-y-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="px-5 py-2.5 bg-kpn-green text-white rounded-lg font-semibold hover:bg-green-700 transition">Save details</button>
+      </form>
+    </section>
+
+    <section class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+      <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Verification claim</h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Optionally link a claim from one of this promise's stories. Only a claim with status <strong>Confirmed</strong> that has evidence attached counts as verification evidence.</p>
+      <form method="POST" action="{% url 'story_intelligence:promise_save_verification_claim' promise.pk %}" class="space-y-4">
+        {% csrf_token %}
+        {{ claim_form.as_p }}
+        <button type="submit" class="px-5 py-2.5 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-800 transition">Save verification claim</button>
+      </form>
+    </section>
+
+    <section class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+      <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Promise audit (internal)</h2>
+      {% for entry in audit_entries %}
+      <p class="text-sm text-gray-600 dark:text-gray-400 py-1">{{ entry.created_at|date:"M d, Y H:i" }} — <strong>{{ entry.action }}</strong>{% if entry.actor %} by {{ entry.actor.get_full_name|default:entry.actor.username }}{% endif %}</p>
+      {% empty %}
+      <p class="text-sm text-gray-500">No audit entries yet.</p>
+      {% endfor %}
+    </section>
+
+  </div>
+</div>
+{% endblock %}

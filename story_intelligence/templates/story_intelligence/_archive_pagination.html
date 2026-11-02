@@ -1,0 +1,22 @@
+{% comment %}
+Archive pagination for one section. Expects: page_obj, param (the GET
+parameter carrying this section's page number) and base_qs (every
+other query parameter, urlencoded, built by the view).
+{% endcomment %}
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="flex flex-wrap items-center justify-between gap-3 mt-5" aria-label="Archive pagination">
+  {% if page_obj.has_previous %}
+  <a href="{% url 'archive:home' %}?{{ base_qs }}{% if base_qs %}&amp;{% endif %}{{ param }}={{ page_obj.previous_page_number }}"
+     class="text-sm px-4 py-2 rounded-full border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:border-kpn-green">&larr; Previous</a>
+  {% else %}
+  <span class="text-sm px-4 py-2 rounded-full border bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700">&larr; Previous</span>
+  {% endif %}
+  <span class="text-sm text-gray-600 dark:text-gray-300">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="{% url 'archive:home' %}?{{ base_qs }}{% if base_qs %}&amp;{% endif %}{{ param }}={{ page_obj.next_page_number }}"
+     class="text-sm px-4 py-2 rounded-full border bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:border-kpn-green">Next &rarr;</a>
+  {% else %}
+  <span class="text-sm px-4 py-2 rounded-full border bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700">Next &rarr;</span>
+  {% endif %}
+</nav>
+{% endif %}

@@ -115,6 +115,22 @@ def act(user,item_id,action,version,confirmed=False):
             # again ("Only draft articles can be submitted for review").
             auto=settings.KPN_EDITORIAL_AUTO_PUBLISH
             item.article=Campaign.objects.create(author=user,title=d['title'],slug=unique_slug(Campaign,d['title']),content=str(escape(d['body']))+'\n\n'+str(escape(source_line)),content_json={'blocks':blocks},category=category,status='PUBLISHED' if auto else 'PENDING',published_at=timezone.now() if auto else None,approved_by=user if auto else None,verification_status='DEVELOPING',reporter_credit='KPN_EDITORIAL',source_url=(item.source_url or '')[:500],source_name=_src_name)
+            if auto:
+                # KPN Media Phase 1: a handoff that publishes immediately
+                # must allocate the permanent Story ID inside this
+                # transaction; failure rolls the handoff back so nothing
+                # is left half-published.
+                from story_intelligence.services import allocate_story_id as _allocate_story_id
+                from story_intelligence.services import ensure_consent_for_publish as _ensure_consent, ConsentRequiredError as _ConsentRequiredError
+                try:
+                    _ensure_consent(item.article)
+                except _ConsentRequiredError as _consent_exc:
+                    raise ValidationError(str(_consent_exc))
+                try:
+                    _allocate_story_id(item.article)
+                    item.article.save(update_fields=['story_id'])
+                except Exception:
+                    raise ValidationError('Story ID allocation failed; nothing was published. Please try again.')
         else:
             from leadership.capabilities import capabilities_for
             if not user.is_superuser and 'MANAGE_HUBS' not in capabilities_for(user):raise PermissionDenied

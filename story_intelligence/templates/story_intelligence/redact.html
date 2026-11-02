@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Emergency Redaction — {{ article.title }}{% endblock %}
+{% block content %}
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-10">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-red-300 dark:border-red-800 p-6">
+      <h1 class="text-2xl font-bold text-red-700 dark:text-red-400 mb-2">Emergency redaction</h1>
+      <p class="text-sm text-gray-600 dark:text-gray-300 mb-2"><strong>{{ article.title }}</strong></p>
+      <p class="text-sm text-gray-600 dark:text-gray-300 mb-6">
+        Redaction is immediate and cannot be undone. The selected material is replaced with a
+        redaction notice. If the record carries an uploaded file, the file itself is removed
+        from storage and the removal is verified before anything is saved — if removal cannot
+        be confirmed, nothing changes. A public redaction notice and an internal audit entry
+        are recorded; neither contains the removed material.
+      </p>
+
+      <div class="text-sm bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6 space-y-1">
+        <p><strong>Article body</strong> — target type "article", ID {{ article.pk }}{% if article.featured_image %} (includes its featured image file){% endif %}</p>
+        {% for update in updates %}<p><strong>Update</strong> — ID {{ update.pk }}: {{ update.title }}</p>{% endfor %}
+        {% for claim in claims %}<p><strong>Claim</strong> — ID {{ claim.pk }}: {{ claim.text|truncatewords:12 }}</p>{% endfor %}
+        {% for item in evidence %}<p><strong>Evidence</strong> — ID {{ item.pk }}: {{ item.title }}{% if item.file %} (has stored file){% endif %}</p>{% endfor %}
+      </div>
+
+      <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="flex gap-3">
+          <a href="{% url 'story_intelligence:desk' article.pk %}" class="px-5 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-medium">Cancel</a>
+          <button type="submit" class="px-5 py-2.5 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition">Redact now</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

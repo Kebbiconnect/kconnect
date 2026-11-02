@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Community Radar — KPN{% endblock %}
+{% block content %}
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-10">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+
+    <header class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+      <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">KPN Community Radar</p>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Connect community reports to stories</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+        Linking is an editorial act. A community report stays a submission — never a verified
+        claim — until KPN checks it. Reporter names and phone numbers are never shown publicly;
+        the public story page may only say that reporting came from community reporters in an area.
+      </p>
+    </header>
+
+    <section class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+      <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Approved reports not yet linked to a story</h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">These reports passed review but no story uses them yet.</p>
+      {% for report in unlinked_approved %}
+      <div class="border-b border-gray-100 dark:border-gray-700 py-3">
+        <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ report.get_category_display }} — {{ report.location_details }}{% if report.lga %} ({{ report.lga.name }}){% endif %}</p>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">{{ report.what_happened|truncatewords:30 }}</p>
+        <form method="POST" action="{% url 'story_intelligence:radar_link' %}" class="flex flex-wrap gap-2 mt-2 items-end">
+          {% csrf_token %}
+          <input type="hidden" name="report_id" value="{{ report.pk }}">
+          <select name="article_id" class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm px-2 py-1 max-w-full">
+            {% for article in published_articles %}
+            <option value="{{ article.pk }}">{{ article.title|truncatechars:70 }}</option>
+            {% endfor %}
+          </select>
+          <select name="kind" class="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm px-2 py-1">
+            {% for value, label in link_kinds %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+          </select>
+          <button class="text-xs px-3 py-1.5 bg-kpn-green text-white rounded">Link to story</button>
+        </form>
+      </div>
+      {% empty %}
+      <p class="text-sm text-gray-500">Every approved report is linked to a story.</p>
+      {% endfor %}
+    </section>
+
+    <section class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+      <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Recent reports and their stories</h2>
+      {% for report in reports %}
+      <div class="border-b border-gray-100 dark:border-gray-700 py-3">
+        <p class="text-sm font-semibold text-gray-900 dark:text-white">
+          {{ report.get_category_display }} — {{ report.location_details }}{% if report.lga %} ({{ report.lga.name }}){% endif %}
+          <span class="text-xs font-medium px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ report.get_status_display }}</span>
+        </p>
+        {% for link in report.story_links.all %}
+        <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+          &rarr; <a href="{% url 'story_intelligence:desk' link.article.pk %}" class="text-kpn-blue hover:underline">{{ link.article.title }}</a>
+          <span class="text-xs text-gray-500">({{ link.get_kind_display }})</span>
+        </p>
+        {% empty %}
+        <p class="text-xs text-gray-500 mt-1">Not linked to any story yet.</p>
+        {% endfor %}
+      </div>
+      {% empty %}
+      <p class="text-sm text-gray-500">No community reports yet.</p>
+      {% endfor %}
+    </section>
+
+  </div>
+</div>
+{% endblock %}

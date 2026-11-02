@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Restore Article - KPN Newsroom{% endblock %}
+{% block content %}
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-12">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-8">
+            <div class="flex items-center mb-6">
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                    <i class="fas fa-undo text-green-600 text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Restore Article</h1>
+                    <p class="text-gray-500 text-sm">The article becomes public again with the same Story ID{% if article.story_id %} ({{ article.story_id }}){% endif %} and its full story history.</p>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-5 mb-6 border border-gray-200 dark:border-gray-600">
+                <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ article.title }}</h2>
+                <p class="text-gray-500 text-xs mt-1">{{ article.get_status_display }} &bull; Created {{ article.created_at|date:"M d, Y" }}</p>
+            </div>
+            <div class="flex justify-end gap-3">
+                <a href="{% url 'campaigns:my_articles' %}" class="px-5 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 transition font-medium">Cancel</a>
+                <form method="POST" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="px-5 py-2.5 bg-kpn-green text-white rounded-lg hover:bg-green-700 transition font-bold">
+                        <i class="fas fa-undo mr-2"></i> Restore Article
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

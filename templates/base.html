@@ -45,6 +45,10 @@
                     <a href="{% url 'core:opportunities' %}" class="kpn-nav-link">Opportunities</a>
                     <a href="{% url 'core:civic' %}" class="kpn-nav-link">Civic</a>
                     <a href="{% url 'core:advocacy' %}" class="kpn-nav-link">Advocacy</a>
+                    <a href="{% url 'promises:list' %}" class="kpn-nav-link">Promise Tracker</a>
+                    <a href="{% url 'archive:home' %}" class="kpn-nav-link">Archive</a>
+                    <a href="{% url 'signals:list' %}" class="kpn-nav-link">Future Signal</a>
+                    <a href="{% url 'impact_files:list' %}" class="kpn-nav-link">Human Impact</a>
 
                     <!-- KPN Network Dropdown -->
                     <div class="relative" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
@@ -163,6 +167,18 @@
                 </a>
                 <a href="{% url 'core:advocacy' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                     <i class="fas fa-bullhorn text-red-500 w-4 text-center text-xs"></i>Advocacy
+                </a>
+                <a href="{% url 'promises:list' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <i class="fas fa-handshake text-kpn-green w-4 text-center text-xs"></i>Promise Tracker
+                </a>
+                <a href="{% url 'archive:home' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <i class="fas fa-archive text-kpn-green w-4 text-center text-xs"></i>Archive
+                </a>
+                <a href="{% url 'signals:list' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <i class="fas fa-chart-line text-kpn-green w-4 text-center text-xs"></i>Future Signal
+                </a>
+                <a href="{% url 'impact_files:list' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <i class="fas fa-heart text-kpn-green w-4 text-center text-xs"></i>Human Impact
                 </a>
 
                 <!-- KPN Network Section -->

@@ -41,6 +41,11 @@ urlpatterns = [
     path('events/', include('events.urls')),
     path('finance/', include('donations.urls')),
     path('media/', include(('media.urls', 'media'), namespace='media')),
+    path('story/', include('story_intelligence.urls')),
+    path('promises/', include('story_intelligence.promises_urls')),
+    path('archive/', include('story_intelligence.archive_urls')),
+    path('signals/', include('story_intelligence.signals_urls')),
+    path('impact/stories/', include('story_intelligence.impact_urls')),
     path('', include('telegram_integration.urls')),
 ]
 

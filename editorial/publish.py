@@ -244,6 +244,25 @@ def publish_brain_item(item, overrides=None):
             source_url=source_url,
             source_name=(source_name_for(item) or name_from_url(source_url)) if source_url else '',
             meta_description=_excerpt(draft['body']))
+        # KPN Media Phase 1: every published article carries a permanent
+        # Story ID. Allocation runs inside this publish transaction; if
+        # it fails, the whole publish rolls back and the item stays in
+        # REVIEW, recoverable — the caller sees a stable error code.
+        # KPN Media Phase 4: the Human Impact consent guard runs in the
+        # same transaction, before allocation; a blocked publish rolls
+        # back identically and the item stays in REVIEW.
+        from story_intelligence.services import (
+            ConsentRequiredError, allocate_story_id,
+            ensure_consent_for_publish)
+        try:
+            ensure_consent_for_publish(article)
+        except ConsentRequiredError:
+            raise BrainError('consent_required')
+        try:
+            allocate_story_id(article)
+            article.save(update_fields=['story_id'])
+        except Exception:
+            raise BrainError('story_id_allocation_failed')
         item.article = article
         result = {'published': True, 'kind': 'NEWS', 'slug': article.slug,
                   'url_path': f'/campaigns/article/{article.slug}/',

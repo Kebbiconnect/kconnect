@@ -102,6 +102,79 @@
             </div>
         </div>
 
+        <!-- KPN Media -->
+        <div class="mb-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">KPN Media: How Our Newsroom Works for You</h2>
+                <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">KPN Media is our newsroom, built on one idea: a story should not disappear after publication day. Here is how we follow stories, show our evidence, and keep the public record open to everyone.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Living Stories -->
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <h4 class="text-xl font-bold text-kpn-green mb-3"><i class="fas fa-book-open mr-2"></i> Living Stories</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                        Important stories do not end on the day they are published. KPN keeps each one as a living record: the original report, every later development added in order, and a permanent Story ID printed on the article so you can always find its full history.
+                    </p>
+                </div>
+
+                <!-- Public Promise Tracker -->
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <h4 class="text-xl font-bold text-kpn-blue mb-3"><i class="fas fa-handshake mr-2"></i> Public Promise Tracker</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                        When leaders and public institutions make promises, KPN records them and keeps checking: what was promised, what evidence exists, and whether it has been delivered. Follow every tracked promise on the <a href="{% url 'promises:list' %}" class="font-semibold underline">Promise Tracker</a>.
+                    </p>
+                </div>
+
+                <!-- Future Signal -->
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <h4 class="text-xl font-bold text-indigo-600 mb-3"><i class="fas fa-chart-line mr-2"></i> Future Signal</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                        Careful analysis of changes taking shape in Kebbi &mdash; new trends, risks and opportunities, and the evidence behind them. <a href="{% url 'signals:list' %}" class="font-semibold underline">Future Signal</a> pieces are clearly labelled as analysis. They are not reports of established fact, and they are not predictions.
+                    </p>
+                </div>
+
+                <!-- Community Radar -->
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <h4 class="text-xl font-bold text-yellow-600 mb-3"><i class="fas fa-satellite-dish mr-2"></i> Community Radar</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                        People across our 225 wards see things first. Community reports bring local problems and achievements to the newsroom, where editors review them before anything is treated as news. A reporter&rsquo;s private details are never published.
+                    </p>
+                </div>
+
+                <!-- Truth Layers -->
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <h4 class="text-xl font-bold text-red-600 mb-3"><i class="fas fa-layer-group mr-2"></i> Truth Layers</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                        Not everything reported is equally certain. On important stories, KPN shows what is confirmed, what is only an official statement, what is still developing, and what sources dispute &mdash; so you can see exactly how sure we are, and why.
+                    </p>
+                </div>
+
+                <!-- Human Impact Files -->
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <h4 class="text-xl font-bold text-kpn-green mb-3"><i class="fas fa-heart mr-2"></i> Human Impact Files</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                        Behind every policy and project are people. <a href="{% url 'impact_files:list' %}" class="font-semibold underline">Human Impact Files</a> tell their stories with their knowledge and consent, protecting their privacy and dignity &mdash; including the choice to remain anonymous.
+                    </p>
+                </div>
+
+                <!-- KPN Knowledge Archive -->
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm md:col-span-2 lg:col-span-3">
+                    <h4 class="text-xl font-bold text-kpn-blue mb-3"><i class="fas fa-archive mr-2"></i> KPN Knowledge Archive</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                        Every published story, update and tracked promise becomes part of a permanent public record. In the <a href="{% url 'archive:home' %}" class="font-semibold underline">KPN Knowledge Archive</a> you can search the whole record &mdash; by topic, place, institution, or a story&rsquo;s permanent Story ID &mdash; and revisit how events developed over time.
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-8 bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 shadow-sm">
+                <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-3"><i class="fas fa-shield-alt text-kpn-green mr-2"></i> How KPN checks what it publishes</h4>
+                <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    Before KPN calls anything confirmed, editors check it against evidence and show the source on the article itself. Where we rely on an official statement, we say so plainly &mdash; an official statement is not the same as a confirmed fact. And when we get something wrong, we publish a correction openly instead of quietly changing the story.
+                </p>
+            </div>
+        </div>
+
         <!-- Network Structure -->
         <div>
             <div class="text-center mb-10">

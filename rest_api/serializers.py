@@ -24,7 +24,8 @@ class CampaignSerializer(serializers.ModelSerializer):
         model = Campaign
         fields = ['id','slug','title','subheadline','category','category_label','location','lga','lga_name',
                   'ward','ward_name','verification_status','verification_status_label','reporter_credit',
-                  'author_name','image','content','content_json','meta_description','views','read_time','published_at','status']
+                  'author_name','image','content','content_json','meta_description','views','read_time','published_at','status',
+                  'story_id','source_name','source_url']
 
     def get_read_time(self, obj) -> int:
         return obj.get_read_time()
@@ -288,8 +289,8 @@ class ReportCreateSerializer(serializers.Serializer):
 class ArticleWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Campaign
-        fields = ['id','slug','status','rejection_note','title','subheadline','category','location','lga','ward','verification_status','reporter_credit','content','content_json','featured_image','meta_description']
-        read_only_fields = ['id','slug','status','rejection_note']
+        fields = ['id','slug','status','rejection_note','title','subheadline','category','location','lga','ward','verification_status','reporter_credit','content','content_json','featured_image','meta_description','story_id','source_name','source_url']
+        read_only_fields = ['id','slug','status','rejection_note','story_id']
     def validate(self,attrs):
         lga=attrs.get('lga',getattr(self.instance,'lga',None))
         ward=attrs.get('ward',getattr(self.instance,'ward',None))
