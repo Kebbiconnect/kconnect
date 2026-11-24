@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Governance & Accountability - Civic Engagement & Advocacy · KPN{% endblock %}
+
+{% block content %}
+<section class="kpn-page-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/civic-hero.jpg' %}')">
+    <div class="kpn-home-container">
+        <p class="kpn-eyebrow">Civic Engagement &amp; Advocacy</p>
+        <h1>Governance &amp; Accountability</h1>
+        <p>Connects visitors to the Promise Tracker and the Project Tracker, where promises and public projects remain traceable.</p>
+    </div>
+</section>
+
+<div class="kpn-home-container">
+    {% include 'includes/breadcrumbs.html' %}
+    {% include 'core/_civic_subnav.html' with active='governance' %}
+</div>
+
+<section class="py-12 pt-6">
+    <div class="kpn-home-container">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-7">
+                <span class="kpn-tag soft"><i class="fas fa-handshake" aria-hidden="true"></i> Promises</span>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-3 mb-2">Promise Tracker</h2>
+                <p class="text-gray-600 dark:text-gray-300 mb-3">Public promises by institutions, tracked against what was actually delivered — with the evidence shown.</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ promise_count }} promise{{ promise_count|pluralize }} tracked</p>
+                {% for promise in recent_promises %}
+                <p class="mb-2"><a href="{% url 'promises:detail' promise.pk %}" class="kpn-home-link">{{ promise.title }}</a> <span class="text-xs text-gray-500">· {{ promise.status_label }}</span></p>
+                {% endfor %}
+                <a href="{% url 'promises:list' %}" class="kpn-btn kpn-btn-primary mt-2">Open the Promise Tracker</a>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-7">
+                <span class="kpn-tag soft"><i class="fas fa-hard-hat" aria-hidden="true"></i> Projects</span>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-3 mb-2">Project Tracker</h2>
+                <p class="text-gray-600 dark:text-gray-300 mb-3">Public projects across Kebbi's LGAs — reported status kept separate from verified status, with the basis shown.</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ project_count }} project{{ project_count|pluralize }} tracked</p>
+                {% for project in recent_projects %}
+                <p class="mb-2"><a href="{% url 'projects:detail' project.pk %}" class="kpn-home-link">{{ project.title }}</a></p>
+                {% endfor %}
+                <a href="{% url 'projects:list' %}" class="kpn-btn kpn-btn-primary mt-2">Open the Project Tracker</a>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-7">
+                <span class="kpn-tag soft"><i class="fas fa-archive" aria-hidden="true"></i> Record</span>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-3 mb-2">Story Archive</h2>
+                <p class="text-gray-600 dark:text-gray-300 mb-4">Every published KPN story keeps its permanent Story ID, sources and corrections in the searchable archive.</p>
+                <a href="{% url 'archive:home' %}" class="kpn-btn kpn-btn-primary mt-2">Search the Story Archive</a>
+            </div>
+        </div>
+
+        <div class="kpn-notice" style="margin-top:28px">
+            <b>Seen a promise broken or a project stalled?</b>
+            <span><a href="{% url 'core:community_report' %}">Report it to KPN</a> — documented concerns are reviewed and can be published on Community Voice.</span>
+        </div>
+    </div>
+</section>
+{% endblock %}

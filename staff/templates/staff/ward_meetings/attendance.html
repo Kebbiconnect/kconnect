@@ -23,7 +23,7 @@
                     <div class="ml-3">
                         <span class="font-medium">{{ member.get_full_name }}</span>
                         <span class="text-sm text-gray-600 dark:text-gray-400 ml-2">
-                            ({% if member.role_definition %}{{ member.role_definition.title }}{% else %}General Member{% endif %})
+                            ({% if member.role_definition %}{{ member.role_definition.canonical_title }}{% else %}General Member{% endif %})
                         </span>
                     </div>
                 </label>

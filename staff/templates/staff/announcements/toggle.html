@@ -3,9 +3,9 @@
 {% block title %}Toggle Announcement - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
-        <h1 class="text-3xl font-bold mb-6">
+<div class="kpn-page" style="max-width:42rem">
+    <div class="kpn-card p-8">
+        <h1 class="kpn-h1 mb-6">
             {% if announcement.is_active %}Deactivate{% else %}Activate{% endif %} Announcement
         </h1>
         

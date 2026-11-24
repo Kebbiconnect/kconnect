@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Article Locations · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">LGA News Pages</p>
+<h1 class="kpn-h1">Article Locations</h1>
+<p class="intel-hero-sub">The stored article↔LGA links the public LGA pages read. Links appear here from desk conversions and from each article's own LGA field; use this page to tag a story by hand or correct a link.</p>
+<div class="intel-chips">
+<span class="intel-chip"><i class="fas fa-location-dot"></i>{{ total_links }} link{{ total_links|pluralize }} on record</span>
+<span class="intel-chip"><i class="fas fa-filter"></i>{{ rows|length }} article{{ rows|length|pluralize }} shown</span>
+</div>
+</header>
+
+<div class="kpn-card kpn-card-body">
+<form method="get" class="editorial-form">
+<p><label for="al-q">Search articles by title</label>
+<input id="al-q" type="search" name="q" value="{{ query }}" placeholder="Search by title..."></p>
+<button class="kpn-btn kpn-btn-primary" type="submit">Search</button>
+</form>
+</div>
+
+<div class="kpn-card kpn-card-body">
+{% for row in rows %}
+<div class="intel-promise">
+<strong>{{ row.article.title }}</strong>
+<small>
+{{ row.article.get_status_display }} · {{ row.article.get_category_display }}{% if row.article.published_at %} · Published {{ row.article.published_at|date:'j M Y' }}{% endif %}{% if row.article.story_id %} · {{ row.article.story_id }}{% endif %}
+</small>
+<p style="margin-top:.45rem">
+{% for link in row.links %}
+<span class="intel-badge intel-badge-cat">{{ link.lga.name }} · {{ link.get_kind_display }}</span>
+<form method="post" action="{% url 'intelligence:article_location_remove' link.pk %}" style="display:inline">{% csrf_token %}<button type="submit" class="kpn-btn" title="Remove the {{ link.lga.name }} link">Remove</button></form>
+{% empty %}
+<span>No LGA links yet.</span>
+{% endfor %}
+</p>
+<form method="post" action="{% url 'intelligence:article_location_add' row.article.pk %}" class="editorial-form" style="margin-top:.5rem">{% csrf_token %}
+{{ row.form.as_p }}
+<button class="kpn-btn" type="submit">Tag article</button>
+</form>
+</div>
+{% empty %}
+<p>No articles found.</p>
+{% endfor %}
+</div>
+<p><a href="{% url 'lga_news:index' %}">Public LGA index</a> · <a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

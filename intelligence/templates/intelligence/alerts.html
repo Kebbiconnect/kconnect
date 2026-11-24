@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Alerts · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Alerts</p>
+<h1 class="kpn-h1">My Alerts</h1>
+<div class="intel-chips">
+<span class="intel-chip"><i class="fas fa-bell"></i>{{ unread }} unread</span>
+<span class="intel-chip"><i class="fas fa-inbox"></i>{{ page_obj.paginator.count }} alerts</span>
+</div>
+{% if can_configure %}<p><a class="kpn-btn" style="background:#fff;color:#176b36" href="{% url 'intelligence:alert_rules' %}">Alert rules &amp; delivery log</a></p>{% endif %}
+</header>
+
+<div class="kpn-card kpn-card-body">
+{% for delivery in page_obj %}
+<div class="intel-promise">
+<strong>{{ delivery.alert.title }}</strong>{% if not delivery.is_read %} <span class="intel-badge intel-badge-ready">Unread</span>{% endif %}
+<div><small>{{ delivery.alert.get_kind_display }} · {{ delivery.created_at|date:'j M Y, H:i' }}</small></div>
+<p>{{ delivery.alert.message }}</p>
+{% if delivery.alert.link %}<small><a href="{{ delivery.alert.link }}">Open</a></small> · {% endif %}
+{% if not delivery.is_read %}<form method="post" action="{% url 'intelligence:alert_mark_read' delivery.pk %}" style="display:inline">{% csrf_token %}<button class="kpn-btn" type="submit">Mark read</button></form>{% endif %}
+</div>
+{% empty %}
+<p>No alerts have been delivered to you yet.</p>
+{% endfor %}
+{% if page_obj.has_other_pages %}
+<p>
+{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+</p>
+{% endif %}
+</div>
+
+<p><a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

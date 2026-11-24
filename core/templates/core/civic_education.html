@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Civic Education - Civic Engagement & Advocacy · KPN{% endblock %}
+
+{% block content %}
+<section class="kpn-page-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/civic-hero.jpg' %}')">
+    <div class="kpn-home-container">
+        <p class="kpn-eyebrow">Civic Engagement &amp; Advocacy</p>
+        <h1>Civic Education</h1>
+        <p>Civic Education explains democratic participation, voter education, citizens' rights and responsibilities, and how public institutions work.</p>
+    </div>
+</section>
+
+<div class="kpn-home-container">
+    {% include 'includes/breadcrumbs.html' %}
+    {% include 'core/_civic_subnav.html' with active='education' %}
+</div>
+
+<section class="py-12 pt-6">
+    <div class="kpn-home-container">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm border-t-4 border-kpn-green">
+                <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 text-kpn-green rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-vote-yea text-xl" aria-hidden="true"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Voter Education</h2>
+                <p class="text-gray-600 dark:text-gray-400">Learn about voter registration, PVC collection, and your voting rights. Your vote is your voice in shaping Kebbi's future.</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm border-t-4 border-kpn-green">
+                <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 text-kpn-green rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-landmark text-xl" aria-hidden="true"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Good Governance</h2>
+                <p class="text-gray-600 dark:text-gray-400">We advocate for transparency, accountability, and responsive leadership at all levels of government in Kebbi State.</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm border-t-4 border-kpn-green">
+                <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 text-kpn-green rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-eye text-xl" aria-hidden="true"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Election Monitoring</h2>
+                <p class="text-gray-600 dark:text-gray-400">Our trained observers monitor polling units across Kebbi State to ensure free, fair, and credible elections. <a href="{% url 'core:election_observation' %}" class="kpn-home-link">See Election Observation</a></p>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-7 mt-8">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Know your part in public life</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">Democratic participation starts with understanding how public institutions work and what citizens can ask of them. Follow the records in <a href="{% url 'core:civic_governance' %}" class="kpn-home-link">Governance &amp; Accountability</a>, and raise what you see in your community through <a href="{% url 'core:community_voice' %}" class="kpn-home-link">Community Voice</a>.</p>
+            <div class="flex flex-wrap gap-3">
+                <a href="{% url 'staff:register' %}" class="kpn-btn kpn-btn-primary">Join Our Civic Observer Network</a>
+                <a href="{% url 'core:community_report' %}" class="kpn-btn kpn-btn-secondary">Report a community concern</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

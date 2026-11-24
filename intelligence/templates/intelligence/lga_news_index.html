@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}LGA News | KPN — Kebbi Progressive Youth Network{% endblock %}
+{% block extra_css %}{% include 'story_intelligence/_pt_styles.html' %}{% include 'intelligence/_pj_styles.html' %}{% include 'intelligence/_lga_styles.html' %}{% endblock %}
+{% block content %}
+<div class="pt bg-gray-50 dark:bg-gray-900 min-h-screen">
+
+  <!-- Hero -->
+  <section class="pt-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/lga-hero.jpg' %}')">
+    <i class="fas fa-location-dot pt-hero-mark" aria-hidden="true"></i>
+    <div class="pt-hero-inner">
+      <span class="pt-eyebrow">KPN Newsroom</span>
+      <h1>News from every LGA.<br>One Kebbi State.</h1>
+      <p class="pt-hero-sub">Published KPN stories, tracked promises and tracked projects — organised by the Local Government Area they belong to, across all 21 LGAs of Kebbi State.</p>
+      <div class="pt-trust" aria-label="About LGA news">
+        <span><i class="fas fa-location-dot" aria-hidden="true"></i> 21 LGAs</span>
+        <span><i class="fas fa-newspaper" aria-hidden="true"></i> Published Stories</span>
+        <span><i class="fas fa-shield-halved" aria-hidden="true"></i> Verified Records</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- At a glance -->
+  <section class="pt-stats" aria-label="LGA news at a glance">
+    <div class="pt-stats-card" style="display:block;">
+      <div class="pt-stats-intro" style="border-bottom:1px solid var(--kpn-line);">
+        <h2><i class="fas fa-chart-simple" aria-hidden="true"></i> At a Glance</h2>
+        <p>Key figures from LGA News</p>
+      </div>
+      <div class="pj-stat-grid">
+        <div class="pj-stat-cell"><div class="pt-stat-value">21</div><div class="pt-stat-label">LGAs Covered</div></div>
+        <div class="pj-stat-cell"><div class="pt-stat-value">{{ total_stories }}</div><div class="pt-stat-label">Stories Published</div></div>
+        <div class="pj-stat-cell"><div class="pt-stat-value">{{ total_promises }}</div><div class="pt-stat-label">Promises Tracked</div></div>
+        <div class="pj-stat-cell"><div class="pt-stat-value">{{ total_projects }}</div><div class="pt-stat-label">Projects Tracked</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="pt-main">
+    {% regroup rows by zone as zone_rows %}
+    {% for zone in zone_rows %}
+    <section class="lga-zone" aria-label="{{ zone.grouper }}">
+      <h2><i class="fas fa-map" aria-hidden="true"></i>{{ zone.grouper }}</h2>
+      <div class="lga-grid">
+        {% for row in zone.list %}
+        <a class="lga-card" href="{% url 'lga_news:detail' row.slug %}">
+          <h3>{{ row.lga.name }}</h3>
+          <p class="lga-zone-line">{{ row.zone }}</p>
+          <p class="lga-figures">
+            <span><strong>{{ row.stories }}</strong>Stories</span>
+            <span><strong>{{ row.promises }}</strong>Promises</span>
+            <span><strong>{{ row.projects }}</strong>Projects</span>
+          </p>
+          <p class="lga-go">Open LGA page <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i></p>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endfor %}
+
+    <!-- Coverage / How / Values -->
+    <div class="pt-bottom">
+      <div class="pt-coverage">
+        <i class="fas fa-location-dot bg" aria-hidden="true"></i>
+        <h3><i class="fas fa-location-dot" aria-hidden="true"></i> Kebbi State Coverage</h3>
+        <p>Every one of the 21 LGAs has its own page — stories, promises and projects in one place.</p>
+      </div>
+      <div class="pt-how">
+        <h3><i class="fas fa-shield-halved" aria-hidden="true"></i> How a Story Gets Here</h3>
+        <ol class="pt-steps">
+          <li><span class="pt-step-num">1</span>Report gathered or monitored</li>
+          <li><span class="pt-step-num">2</span>Verified at the KPN desk</li>
+          <li><span class="pt-step-num">3</span>Published by the newsroom</li>
+          <li><span class="pt-step-num">4</span>Filed under its LGA</li>
+        </ol>
+      </div>
+      <div class="pt-values">
+        <i class="fas fa-scale-balanced main" aria-hidden="true"></i>
+        <h3>Building a more accountable Kebbi State.</h3>
+        <p>Transparency. Progress. Public Trust.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

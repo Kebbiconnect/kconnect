@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Promise Candidates · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Promise Detection</p>
+<h1 class="kpn-h1">Promise Candidates</h1>
+<p class="intel-hero-sub">Commitment-like statements flagged by the monitoring detector in collected reports. Each candidate quotes its source exactly. Nothing becomes a public promise until a person confirms it here.</p>
+<div class="intel-chips">
+<span class="intel-chip"><i class="fas fa-inbox"></i>{{ pending_total }} awaiting review</span>
+<span class="intel-chip"><i class="fas fa-filter"></i>{{ page_obj.paginator.count }} shown</span>
+</div>
+</header>
+
+<div class="kpn-card kpn-card-body">
+<form method="get" class="editorial-form">
+<p><label for="cand-status">Queue</label>
+<select id="cand-status" name="status">
+{% for value, label in statuses %}<option value="{{ value }}"{% if status == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+</select></p>
+<button class="kpn-btn kpn-btn-primary" type="submit">Show</button>
+</form>
+</div>
+
+<div class="kpn-card kpn-card-body">
+{% for candidate in page_obj %}
+<div class="intel-promise">
+<strong>“{{ candidate.quote }}”</strong>
+<small>
+{{ candidate.publication.source.name }} · <a href="{{ candidate.publication.original_url }}" target="_blank" rel="noopener">{{ candidate.publication.title }}</a>
+· Collected {{ candidate.publication.discovered_at|date:'j M Y, H:i' }}
+{% if candidate.institution_name %} · Institution named in text: {{ candidate.institution_name }}{% endif %}
+{% if candidate.lga %} · {{ candidate.lga.name }} LGA{% endif %}
+{% if candidate.deadline_text %} · Stated timeline: “{{ candidate.deadline_text }}”{% endif %}
+{% if candidate.cluster %} · Part of cluster: {{ candidate.cluster.title }}{% endif %}
+</small>
+{% if candidate.status == 'PENDING' %}
+<p style="margin-top:.6rem">
+<a class="kpn-btn kpn-btn-primary" href="{% url 'intelligence:promise_candidate_confirm' candidate.pk %}">Confirm as promise</a>
+</p>
+<form method="post" class="editorial-form intel-action-form" action="{% url 'intelligence:promise_candidate_dismiss' candidate.pk %}">
+{% csrf_token %}
+<p><label for="dismiss-{{ candidate.pk }}">Dismissal reason (required)</label>
+<input id="dismiss-{{ candidate.pk }}" type="text" name="reason"></p>
+<button class="kpn-btn" type="submit">Dismiss candidate</button>
+</form>
+{% elif candidate.status == 'CONFIRMED' %}
+<small>Confirmed{% if candidate.promise %} — <a href="{% url 'promises:detail' candidate.promise.pk %}">{{ candidate.promise.public_code }}: {{ candidate.promise.title }}</a>{% endif %}{% if candidate.decided_by %} · by {{ candidate.decided_by.get_full_name|default:candidate.decided_by.username }}{% endif %}{% if candidate.decided_at %} · {{ candidate.decided_at|date:'j M Y, H:i' }}{% endif %}</small>
+{% else %}
+<small>Dismissed{% if candidate.decided_by %} by {{ candidate.decided_by.get_full_name|default:candidate.decided_by.username }}{% endif %}{% if candidate.decided_at %} · {{ candidate.decided_at|date:'j M Y, H:i' }}{% endif %}{% if candidate.decision_note %} · Reason: {{ candidate.decision_note }}{% endif %}</small>
+{% endif %}
+</div>
+{% empty %}
+<p>No candidates in this queue.</p>
+{% endfor %}
+{% if page_obj.has_other_pages %}
+<p>
+{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&status={{ status }}">Previous</a>{% endif %}
+Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&status={{ status }}">Next</a>{% endif %}
+</p>
+{% endif %}
+</div>
+
+<p><a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

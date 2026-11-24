@@ -16,6 +16,7 @@ from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, Welfa
 from .decorators import specific_role_required, role_required, approved_leader_required, dashboard_access_required
 from .forms import MemberMobilizationFilterForm, CommunityOutreachForm, WardMeetingForm, WardMeetingAttendanceForm, AnnouncementForm
 from leadership.models import Zone, LGA, Ward, RoleDefinition
+from leadership.roles import canonical_role_title
 from core.models import Report
 from campaigns.models import Campaign
 from media.models import MediaItem
@@ -117,7 +118,7 @@ def dashboard(request):
         return redirect('staff:general_member_dashboard')
     
     if user.role_definition:
-        role_title = user.role_definition.title
+        role_title = canonical_role_title(user.role_definition.title)
         
         role_mapping = {
         # ── State Executive Team ──────────────────────────────────────────
@@ -171,11 +172,15 @@ def dashboard(request):
         if dashboard_name:
             return redirect(f'staff:{dashboard_name}')
     
+    # Consistency Rounds C+D — the leader's own LGA on the Kebbi map
+    # (their own record only; no new data access).
+    from core.dashboard_charts import member_lga_map
     context = {
         'user': user,
-        'role_title': user.role_definition.title if user.role_definition else 'Leader',
+        'role_title': canonical_role_title(user.role_definition.title) if user.role_definition else 'Leader',
+        'my_lga_map': member_lga_map(user),
     }
-    
+
     return render(request, 'staff/dashboard.html', context)
 
 @login_required
@@ -195,11 +200,18 @@ def general_member_dashboard(request):
     from staff.models import Announcement
     
     latest_campaigns = Campaign.objects.filter(status='PUBLISHED').order_by('-published_at')[:3]
-    
+
+    # Consistency Rounds C+D — the member's own footprint: counts of
+    # their own submissions only, plus their own LGA on the Kebbi map.
+    from core.dashboard_charts import member_lga_map
+    from core.models import CommunityReport
     context = {
         'latest_campaigns': latest_campaigns,
+        'my_reports_count': CommunityReport.objects.filter(submitted_by=user).count(),
+        'my_articles_count': Campaign.objects.filter(author=user).count(),
+        'my_lga_map': member_lga_map(user),
     }
-    
+
     return render(request, 'staff/dashboards/general_member.html', context)
 
 @login_required
@@ -502,7 +514,7 @@ def president_dashboard(request):
     # Content
     total_faqs = FAQ.objects.count()
     
-    pending_applicants = User.objects.filter(status='PENDING').order_by('-created_at')[:10]
+    pending_applicants = User.objects.filter(status='PENDING', is_superuser=False).order_by('-created_at')[:10]
     
     # Exact counts for five non-overlapping rolling seven-day windows.
     import json
@@ -548,7 +560,28 @@ def president_dashboard(request):
         'community_reports_pending': CommunityReport.objects.filter(status='PENDING').count(),
         'recent_activities': [],
     }
-    
+
+    # Consistency Rounds C+D — member-distribution visuals. Additive
+    # context only: every figure is an aggregate of the same member
+    # register this dashboard already reports (counts only, no names).
+    from core.coverage import coverage_rows, coverage_totals
+    from core.dashboard_charts import bar_rows, count_by, donut_rows
+    from intelligence.map_data import VIEWBOX as KEBBI_VIEWBOX
+    verified_members = User.objects.filter(status='VERIFIED')
+    _coverage = coverage_rows()
+    context.update({
+        'member_zone_bars': bar_rows(count_by(
+            verified_members.filter(zone__isnull=False), 'zone__name')),
+        'member_lga_bars': bar_rows(count_by(
+            verified_members.filter(lga__isnull=False), 'lga__name')),
+        'member_status_donut': donut_rows(count_by(
+            User.objects.all(), 'status', User.STATUS_CHOICES)),
+        'coverage_rows': _coverage,
+        'coverage_totals': coverage_totals(_coverage),
+        'map_viewbox': KEBBI_VIEWBOX,
+        'selected_pk': None,
+    })
+
     return render(request, 'staff/dashboards/president.html', context)
 
 @specific_role_required('President')
@@ -556,7 +589,7 @@ def export_members_csv(request):
     import csv
     from django.http import HttpResponse
     
-    members = User.objects.filter(status='VERIFIED').order_by('last_name', 'first_name')
+    members = User.objects.filter(status='VERIFIED', is_superuser=False).order_by('last_name', 'first_name')
     
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="kpn_all_members.csv"'
@@ -588,7 +621,7 @@ def export_members_pdf(request):
     from reportlab.lib.units import inch
     from io import BytesIO
     
-    members = User.objects.filter(status='VERIFIED').order_by('last_name', 'first_name')
+    members = User.objects.filter(status='VERIFIED', is_superuser=False).order_by('last_name', 'first_name')
     
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), topMargin=0.5*inch, bottomMargin=0.5*inch)
@@ -969,12 +1002,18 @@ def media_director_dashboard(request):
     pending_media = MediaItem.objects.filter(status='PENDING').count()
     pending_members = User.objects.filter(status='PENDING').count()
     
+    # Consistency Rounds C+D — community reports by status, aggregated
+    # over the same report register this dashboard already lists.
+    from core.dashboard_charts import bar_rows, count_by
     context = {
         'pending_campaigns': pending_campaigns,
         'pending_media': pending_media,
         'pending_members': pending_members,
         'trusted_reporters_count': User.objects.filter(is_trusted_reporter=True).count(),
         'community_reports': CommunityReport.objects.all().order_by('-created_at')[:30],
+        'report_status_bars': bar_rows(count_by(
+            CommunityReport.objects.all(), 'status',
+            CommunityReport.STATUS_CHOICES)),
     }
     
     return render(request, 'staff/dashboards/media_director.html', context)
@@ -1062,21 +1101,35 @@ def lga_coordinator_dashboard(request):
     from core.models import CommunityReport
     wards_in_lga = Ward.objects.filter(lga=request.user.lga).count()
     members_in_lga = User.objects.filter(lga=request.user.lga, status='VERIFIED').count()
-    
+
     # Get pending reports submitted to LGA Network Lead
     pending_reports = Report.objects.filter(
         submitted_to=request.user,
         status='SUBMITTED'
     ).count()
-    
+
+    community_reports = CommunityReport.objects.filter(lga=request.user.lga).order_by('-created_at')[:20] if request.user.lga else []
+
+    # Round E (additive): status bars shaped from the same recent-20
+    # community reports the page already lists — no new data access.
+    from core.dashboard_charts import bar_rows
+    status_counts = {}
+    for report in community_reports:
+        status_counts[report.status] = status_counts.get(report.status, 0) + 1
+    community_report_status_bars = bar_rows([
+        (label, status_counts.get(value, 0))
+        for value, label in CommunityReport.STATUS_CHOICES
+    ])
+
     context = {
         'wards_in_lga': wards_in_lga,
         'members_in_lga': members_in_lga,
         'pending_reports': pending_reports,
-    
-        'community_reports': CommunityReport.objects.filter(lga=request.user.lga).order_by('-created_at')[:20] if request.user.lga else [],
+
+        'community_reports': community_reports,
+        'community_report_status_bars': community_report_status_bars,
     }
-    
+
     return render(request, 'staff/dashboards/lga_coordinator.html', context)
 
 @specific_role_required('Ward Community Lead')
@@ -1086,15 +1139,29 @@ def ward_coordinator_dashboard(request):
     members_in_ward = User.objects.filter(ward=request.user.ward, status='VERIFIED').count()
     total_meetings = WardMeeting.objects.filter(ward=request.user.ward).count() if request.user.ward else 0
     reports_submitted = Report.objects.filter(submitted_by=request.user).count()
-    
+
+    community_reports = CommunityReport.objects.filter(ward=request.user.ward).order_by('-created_at')[:20] if request.user.ward else []
+
+    # Round E (additive): status bars shaped from the same recent-20
+    # community reports the page already lists — no new data access.
+    from core.dashboard_charts import bar_rows
+    status_counts = {}
+    for report in community_reports:
+        status_counts[report.status] = status_counts.get(report.status, 0) + 1
+    community_report_status_bars = bar_rows([
+        (label, status_counts.get(value, 0))
+        for value, label in CommunityReport.STATUS_CHOICES
+    ])
+
     context = {
         'members_in_ward': members_in_ward,
         'total_meetings': total_meetings,
         'reports_submitted': reports_submitted,
-    
-        'community_reports': CommunityReport.objects.filter(ward=request.user.ward).order_by('-created_at')[:20] if request.user.ward else [],
+
+        'community_reports': community_reports,
+        'community_report_status_bars': community_report_status_bars,
     }
-    
+
     return render(request, 'staff/dashboards/ward_coordinator.html', context)
 
 @specific_role_required('Vice President')
@@ -1131,12 +1198,20 @@ def vice_president_dashboard(request):
     total_leaders = User.objects.filter(status='VERIFIED', is_superuser=False).exclude(role='GENERAL').count()
     pending_members = User.objects.filter(status__in=['PENDING', 'UNDER_REVIEW'], is_superuser=False).count()
     
+    # Round E (additive): bars shaped from the zone_stats rows the
+    # page already tabulates — no new data access.
+    from core.dashboard_charts import bar_rows
+    zone_member_bars = bar_rows([
+        (stat['zone'].name, stat['total_members']) for stat in zone_stats
+    ])
+
     context = {
         'zone_stats': zone_stats,
         'recent_disciplinary_actions': recent_disciplinary_actions,
         'total_members': total_members,
         'total_leaders': total_leaders,
         'pending_members': pending_members,
+        'zone_member_bars': zone_member_bars,
     }
     return render(request, 'staff/dashboards/vice_president.html', context)
 
@@ -1616,7 +1691,8 @@ def ward_adviser_dashboard(request):
 def edit_member_role(request, user_id):
     from .forms import EditMemberRoleForm
     
-    member = get_object_or_404(User, pk=user_id)
+    member = get_object_or_404(
+        User.objects.filter(is_superuser=False), pk=user_id)
     
     if request.method == 'POST':
         form = EditMemberRoleForm(request.POST, instance=member)
@@ -1645,7 +1721,8 @@ def edit_member_role(request, user_id):
 def promote_member(request, user_id):
     from .forms import PromoteMemberForm
     
-    member = get_object_or_404(User, pk=user_id)
+    member = get_object_or_404(
+        User.objects.filter(is_superuser=False), pk=user_id)
     
     if request.method == 'POST':
         form = PromoteMemberForm(request.POST, user=member)
@@ -1679,7 +1756,8 @@ def promote_member(request, user_id):
 def demote_member(request, user_id):
     from .forms import DemoteMemberForm
     
-    member = get_object_or_404(User, pk=user_id)
+    member = get_object_or_404(
+        User.objects.filter(is_superuser=False), pk=user_id)
     
     if request.method == 'POST':
         form = DemoteMemberForm(request.POST, user=member)
@@ -1713,7 +1791,8 @@ def demote_member(request, user_id):
 
 @specific_role_required('President')
 def dismiss_member(request, user_id):
-    member = get_object_or_404(User, pk=user_id)
+    member = get_object_or_404(
+        User.objects.filter(is_superuser=False), pk=user_id)
     
     if request.method == 'POST':
         reason = request.POST.get('reason', '')
@@ -1732,7 +1811,8 @@ def dismiss_member(request, user_id):
 
 @specific_role_required('President')
 def suspend_member(request, user_id):
-    member = get_object_or_404(User, pk=user_id)
+    member = get_object_or_404(
+        User.objects.filter(is_superuser=False), pk=user_id)
     
     if request.method == 'POST':
         reason = request.POST.get('reason', '')
@@ -1750,7 +1830,8 @@ def suspend_member(request, user_id):
 
 @specific_role_required('President')
 def reinstate_member(request, user_id):
-    member = get_object_or_404(User, pk=user_id)
+    member = get_object_or_404(
+        User.objects.filter(is_superuser=False), pk=user_id)
     
     if request.method == 'POST':
         from staff.services.assignments import assign_member
@@ -3030,21 +3111,21 @@ ROLE_SHORTENING = {
     'General Secretary': 'Gen. Secretary',
     'Assistant General Secretary': 'Asst. Secretary',
     'Director of Monitoring & Compliance': 'Dir. Monitoring',
-    'Legal & Ethics Adviser': 'Legal Adviser',
+    'Director of Legal Affairs & Ethics': 'Dir. Legal',
     'Director of Finance': 'Dir. Finance',
-    'Financial Secretary': 'Fin. Secretary',
-    'Director of Membership & Mobilization': 'Dir. Mobilization',
-    'Assistant Director of Membership & Mobilization': 'Asst. Mobilization',
+    'Finance Operations Officer': 'Finance Ops',
+    'Director of Community Engagement': 'Dir. Community',
+    'Assistant Director of Community Engagement': 'Asst. Community',
     'Director of Programmes & Events': 'Dir. Programmes',
     'Assistant Director of Programmes & Events': 'Asst. Programmes',
-    'Auditor General': 'Auditor General',
-    'Director of Welfare & Community Support': 'Dir. Welfare',
-    'Director of Youth Development & Empowerment': 'Dir. Youth',
-    'Director of Women Development': 'Dir. Women',
-    'Assistant Director of Women Development': 'Asst. Women',
+    'Director of Audit & Accountability': 'Dir. Audit',
+    'Director of Member Support & Welfare': 'Dir. Welfare',
+    'Director of Youth Development': 'Dir. Youth',
+    'Director of Women\'s Development': 'Dir. Women',
+    'Assistant Director of Women\'s Development': 'Asst. Women',
     'Director of Media & Communications': 'Dir. Media',
     'Assistant Director of Media & Communications': 'Asst. Media',
-    'Director of Public Relations & Community Engagement': 'PR Director',
+    'Director of Public Relations & Partnerships': 'PR Director',
     'Senatorial Director': 'Sen. Director',
     'Senatorial Administrative Officer': 'Sen. Admin',
     'Senatorial Communications Officer': 'Sen. Comms',
@@ -3055,8 +3136,8 @@ ROLE_SHORTENING = {
     'LGA Community Engagement Officer': 'LGA Engagement',
     'LGA Adviser': 'LGA Adviser',
     'LGA Programmes Officer': 'LGA Programs',
-    'LGA Community Support Officer': 'LGA Support',
-    'LGA Women Development Officer': 'LGA Women',
+    'LGA Member Support Officer': 'LGA Support',
+    'LGA Women\'s Development Officer': 'LGA Women',
     'LGA Finance Officer': 'LGA Finance',
     'Ward Community Lead': 'Ward Lead',
     'Ward Monitoring Officer': 'Ward Monitor',
@@ -3201,7 +3282,7 @@ def generate_id_tag(request):
 
     # 4. Position
     if user.role_definition:
-        role_title = user.role_definition.title
+        role_title = canonical_role_title(user.role_definition.title)
         position = ROLE_SHORTENING.get(role_title, role_title[:20])
     else:
         position = user.get_role_display()
@@ -3407,19 +3488,20 @@ def revoke_trusted_reporter(request, user_id):
 @specific_role_required('President', 'Director of Media & Communications')
 def community_report_review(request, report_id):
     """Newsroom workflow for verifying and publishing community reports."""
-    from core.models import CommunityReport
-    
+    from core.models import CommunityReport, AdvocacyCampaign
+    from django.utils import timezone as _tz
+
     report = get_object_or_404(CommunityReport, id=report_id)
-    
+
     if request.method == 'POST':
         action = request.POST.get('action')
         info_status = request.POST.get('info_status')
         internal_notes = request.POST.get('internal_notes')
-        
+
         # Update notes
         if internal_notes:
             report.internal_notes = internal_notes
-            
+
         # Handle approval/rejection
         if action == 'approve':
             report.status = 'APPROVED'
@@ -3432,12 +3514,43 @@ def community_report_review(request, report_id):
         elif action == 'under_review':
             report.status = 'UNDER_REVIEW'
             messages.info(request, "Report is now marked as under review.")
-            
+        elif action == 'escalate':
+            # Priority 2 (brief §2/§E): record the escalation of a
+            # documented concern into an advocacy campaign. Staff
+            # create the campaign; this only stores the link.
+            campaign_id = request.POST.get('escalated_campaign')
+            campaign = AdvocacyCampaign.objects.filter(pk=campaign_id).first()
+            if campaign:
+                report.escalated_campaign = campaign
+                report.status = 'ESCALATED'
+                messages.success(
+                    request,
+                    f"Report escalated — linked to the campaign “{campaign.title}”.")
+            else:
+                messages.error(request, "Choose a campaign to escalate this report to.")
+
+        # Community Voice publication (Priority 2, D-08) is an explicit
+        # reviewer decision, handled whenever the Voice panel is part of
+        # the submitted form. It never happens automatically.
+        if request.POST.get('voice_panel'):
+            want_voice = bool(request.POST.get('publish_to_voice'))
+            if want_voice and not report.published_to_voice:
+                report.published_to_voice = True
+                report.voice_published_at = _tz.now()
+                if info_status and not report.info_status:
+                    report.info_status = info_status
+                messages.success(request, "Report published to Community Voice.")
+            elif not want_voice and report.published_to_voice:
+                report.published_to_voice = False
+                report.voice_published_at = None
+                messages.info(request, "Report removed from Community Voice.")
+
         report.save()
         return redirect('staff:media_director_dashboard')
-        
+
     context = {
         'report': report,
+        'campaigns': AdvocacyCampaign.objects.all().order_by('-created_at'),
     }
     return render(request, 'staff/community_report_review.html', context)
 
@@ -3467,9 +3580,49 @@ def media_director_or_president_required(view_func):
 
 @media_director_or_president_required
 def manage_opportunities(request):
+    from core.models import OpportunityReport
     opportunities = Opportunity.objects.all().order_by('-created_at')
-    context = {'opportunities': opportunities}
+    listing_reports = OpportunityReport.objects.filter(
+        status='NEW').select_related('opportunity').order_by('-created_at')
+    context = {
+        'opportunities': opportunities,
+        'listing_reports': listing_reports,
+    }
     return render(request, 'staff/manage_opportunities.html', context)
+
+
+@media_director_or_president_required
+def opportunity_report_action(request, report_id):
+    """Triage one suspicious-listing report (D-07). Upholding a report
+    moves the listing to VERIFICATION_PENDING pending re-check; the
+    listing is never deleted by a report."""
+    from core.models import OpportunityReport
+    from django.utils import timezone as _tz
+    report = get_object_or_404(OpportunityReport, pk=report_id)
+    if request.method == 'POST':
+        action = request.POST.get('action', '')
+        if action == 'uphold':
+            report.status = 'UPHELD'
+            opp = report.opportunity
+            if opp.status in ('OPEN', 'CLOSING_SOON'):
+                opp.status = 'VERIFICATION_PENDING'
+                opp.save(update_fields=['status', 'updated_at'])
+            messages.success(
+                request,
+                f'Report upheld. "{opp.title}" is now Verification Pending pending re-check.')
+        elif action == 'dismiss':
+            report.status = 'DISMISSED'
+            messages.success(request, 'Report dismissed.')
+        elif action == 'reviewed':
+            report.status = 'REVIEWED'
+            messages.success(request, 'Report marked reviewed — no action taken.')
+        else:
+            messages.error(request, 'Unknown action.')
+            return redirect('staff:manage_opportunities')
+        report.reviewed_by = request.user
+        report.reviewed_at = _tz.now()
+        report.save(update_fields=['status', 'reviewed_by', 'reviewed_at'])
+    return redirect('staff:manage_opportunities')
 
 @media_director_or_president_required
 def create_opportunity(request):
@@ -3601,6 +3754,40 @@ def delete_advocacy_campaign(request, pk):
         return redirect('staff:manage_advocacy_campaigns')
     context = {'object': campaign, 'cancel_url': 'staff:manage_advocacy_campaigns', 'title': 'Delete Advocacy Campaign'}
     return render(request, 'staff/confirm_delete.html', context)
+
+
+# ── Advocacy activity log (Priority 2, brief §E: progress/activities) ──
+
+@media_director_or_president_required
+def manage_advocacy_activities(request, pk):
+    """Dated progress entries shown on the public campaign page."""
+    from .forms import AdvocacyActivityForm
+    campaign = get_object_or_404(AdvocacyCampaign, pk=pk)
+    if request.method == 'POST':
+        form = AdvocacyActivityForm(request.POST)
+        if form.is_valid():
+            activity = form.save(commit=False)
+            activity.campaign = campaign
+            activity.save()
+            messages.success(request, 'Activity entry added to the campaign log.')
+            return redirect('staff:manage_advocacy_activities', pk=campaign.pk)
+    else:
+        form = AdvocacyActivityForm()
+    return render(request, 'staff/manage_advocacy_activities.html', {
+        'campaign': campaign,
+        'activities': campaign.activities.all(),
+        'form': form,
+    })
+
+
+@media_director_or_president_required
+def delete_advocacy_activity(request, pk, activity_id):
+    campaign = get_object_or_404(AdvocacyCampaign, pk=pk)
+    activity = get_object_or_404(campaign.activities, pk=activity_id)
+    if request.method == 'POST':
+        activity.delete()
+        messages.success(request, 'Activity entry removed.')
+    return redirect('staff:manage_advocacy_activities', pk=campaign.pk)
 
 @media_director_or_president_required
 def manage_patrons(request):

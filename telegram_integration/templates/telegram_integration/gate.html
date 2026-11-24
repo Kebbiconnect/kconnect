@@ -3,14 +3,14 @@
 {% block title %}Telegram Membership Required - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+<div class="kpn-page" style="max-width:48rem">
+    <div class="kpn-card overflow-hidden">
         <!-- Header -->
         <div class="bg-kpn-green text-white px-6 py-8 text-center">
             <div class="mb-4">
                 <i class="fab fa-telegram text-6xl opacity-90"></i>
             </div>
-            <h1 class="text-2xl md:text-3xl font-bold mb-2">Telegram Membership Required</h1>
+            <h1 class="text-2xl md:kpn-h1 mb-2">Telegram Membership Required</h1>
             <p class="text-lg opacity-90">Your KPN leadership role requires channel membership</p>
         </div>
 
@@ -18,10 +18,10 @@
             <!-- Role Info -->
             <div class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-6">
                 <div class="flex items-start">
-                    <i class="fas fa-info-circle text-blue-500 mt-1 mr-3 flex-shrink-0"></i>
+                    <i class="fas fa-info-circle text-kpn-green mt-1 mr-3 flex-shrink-0"></i>
                     <div>
                         <p class="font-semibold text-gray-900 dark:text-white">
-                            Your Role: <span class="text-kpn-green">{{ user.role_definition.title }}</span>
+                            Your Role: <span class="text-kpn-green">{{ user.role_definition.canonical_title }}</span>
                         </p>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                             As a KPN leadership position holder, you must be an active member of the 
@@ -32,7 +32,7 @@
             </div>
 
             <!-- Steps -->
-            <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">
+            <h2 class="kpn-h4 text-gray-900 dark:text-white mb-4">
                 <i class="fas fa-list-ol mr-2 text-kpn-green"></i>Complete These Steps:
             </h2>
 
@@ -43,7 +43,7 @@
                         <div class="font-semibold text-gray-900 dark:text-white">Join the KPN Telegram Channel</div>
                         <p class="text-sm text-gray-500 dark:text-gray-400">Join the official KPN Telegram channel below</p>
                         <a href="https://t.me/officialkpn" target="_blank"
-                           class="inline-flex items-center mt-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-semibold transition">
+                           class="inline-flex items-center mt-2 px-4 py-2 bg-kpn-green hover:bg-green-700 text-white rounded-lg text-sm font-semibold transition">
                             <i class="fab fa-telegram mr-2"></i> Join @officialkpn
                             <i class="fas fa-external-link-alt ml-2 text-xs"></i>
                         </a>
@@ -70,7 +70,7 @@
                         <div class="font-semibold text-gray-900 dark:text-white">Access Your Dashboard</div>
                         <p class="text-sm text-gray-500 dark:text-gray-400">
                             Once verified, you'll have full access to your 
-                            <strong>{{ user.role_definition.title }}</strong> dashboard.
+                            <strong>{{ user.role_definition.canonical_title }}</strong> dashboard.
                         </p>
                     </div>
                 </div>

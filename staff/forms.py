@@ -236,13 +236,13 @@ class SwapPositionsForm(forms.Form):
     """Form for swapping positions between two members"""
     
     member1 = forms.ModelChoiceField(
-        queryset=User.objects.filter(status='VERIFIED').exclude(role='GENERAL'),
+        queryset=User.objects.filter(status='VERIFIED', is_superuser=False).exclude(role='GENERAL'),
         label="First Member",
         widget=forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'})
     )
     
     member2 = forms.ModelChoiceField(
-        queryset=User.objects.filter(status='VERIFIED').exclude(role='GENERAL'),
+        queryset=User.objects.filter(status='VERIFIED', is_superuser=False).exclude(role='GENERAL'),
         label="Second Member",
         widget=forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'})
     )
@@ -983,35 +983,51 @@ class AnnouncementForm(forms.ModelForm):
         
         return cleaned_data
 
-from core.models import Opportunity, CommunityInitiative, AdvocacyCampaign
+from core.models import Opportunity, CommunityInitiative, AdvocacyCampaign, AdvocacyActivity
 
 class OpportunityForm(forms.ModelForm):
     class Meta:
         model = Opportunity
-        fields = ['title', 'provider', 'category', 'description', 'requirements', 
-                  'deadline', 'application_link', 'status', 'is_featured']
+        fields = ['title', 'provider', 'category', 'description', 'requirements',
+                  'benefits', 'opens_at', 'deadline', 'application_link', 'status',
+                  'location_text', 'lga', 'nigerians_eligible',
+                  'verification_source', 'is_featured']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
             'provider': forms.TextInput(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
             'category': forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
             'description': forms.Textarea(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700', 'rows': 4}),
             'requirements': forms.Textarea(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700', 'rows': 4}),
+            'benefits': forms.Textarea(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700', 'rows': 3}),
+            'opens_at': forms.DateInput(attrs={'type': 'date', 'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
             'deadline': forms.DateInput(attrs={'type': 'date', 'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
             'application_link': forms.URLInput(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
             'status': forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
+            'location_text': forms.TextInput(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
+            'lga': forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
+            'verification_source': forms.TextInput(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
             'is_featured': forms.CheckboxInput(attrs={'class': 'w-4 h-4 text-kpn-blue rounded'}),
         }
 
 class CommunityInitiativeForm(forms.ModelForm):
     class Meta:
         model = CommunityInitiative
-        fields = ['title', 'category', 'status', 'description', 'location_text', 'people_reached', 'image']
+        fields = ['title', 'category', 'status', 'description', 'objective',
+                  'location_text', 'lga', 'ward', 'start_date', 'end_date',
+                  'responsible_team', 'results', 'people_reached', 'image']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
             'category': forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
             'status': forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
             'description': forms.Textarea(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700', 'rows': 4}),
+            'objective': forms.Textarea(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700', 'rows': 3}),
             'location_text': forms.TextInput(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
+            'lga': forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
+            'ward': forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
+            'start_date': forms.DateInput(attrs={'type': 'date', 'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
+            'end_date': forms.DateInput(attrs={'type': 'date', 'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
+            'responsible_team': forms.TextInput(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
+            'results': forms.Textarea(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700', 'rows': 3}),
             'people_reached': forms.NumberInput(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
             'image': forms.ClearableFileInput(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
         }
@@ -1019,15 +1035,35 @@ class CommunityInitiativeForm(forms.ModelForm):
 class AdvocacyCampaignForm(forms.ModelForm):
     class Meta:
         model = AdvocacyCampaign
-        fields = ['title', 'issue', 'background', 'kpn_position', 'actions_taken', 'government_response', 'outcome', 'is_active', 'image']
+        fields = ['title', 'issue', 'objective', 'background', 'affected_communities',
+                  'proposed_action', 'kpn_position', 'actions_taken', 'government_response',
+                  'outcome', 'responsible_team', 'status', 'evidence_articles',
+                  'is_active', 'image']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
             'issue': forms.Textarea(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700', 'rows': 4}),
+            'objective': forms.Textarea(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700', 'rows': 3}),
             'background': forms.Textarea(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700', 'rows': 4}),
+            'affected_communities': forms.Textarea(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700', 'rows': 3}),
+            'proposed_action': forms.Textarea(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700', 'rows': 3}),
             'kpn_position': forms.Textarea(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700', 'rows': 3}),
             'actions_taken': forms.Textarea(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700', 'rows': 3}),
             'government_response': forms.Textarea(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700', 'rows': 3}),
             'outcome': forms.Textarea(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700', 'rows': 3}),
+            'responsible_team': forms.TextInput(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
+            'status': forms.Select(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
+            'evidence_articles': forms.CheckboxSelectMultiple(),
             'is_active': forms.CheckboxInput(attrs={'class': 'w-4 h-4 text-kpn-blue rounded'}),
             'image': forms.ClearableFileInput(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700'})
+        }
+
+
+class AdvocacyActivityForm(forms.ModelForm):
+    """One dated entry in a campaign's public progress log (brief §E)."""
+    class Meta:
+        model = AdvocacyActivity
+        fields = ['date', 'entry']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date', 'class': 'w-full p-2 border rounded dark:bg-gray-700'}),
+            'entry': forms.Textarea(attrs={'class': 'w-full p-2 border rounded dark:bg-gray-700', 'rows': 3}),
         }

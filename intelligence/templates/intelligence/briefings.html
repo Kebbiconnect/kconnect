@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Briefings · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Briefings</p>
+<h1 class="kpn-h1">Briefings</h1>
+<div class="intel-chips">
+<span class="intel-chip"><i class="fas fa-file-lines"></i>{{ page_obj.paginator.count }} briefings</span>
+</div>
+</header>
+
+<div class="kpn-card kpn-card-body">
+<form method="post" class="editorial-form" action="{% url 'intelligence:briefing_generate' %}">
+{% csrf_token %}
+<p><label for="brief-period">Generate</label>
+<select id="brief-period" name="period">
+<option value="DAILY">Daily briefing (today)</option>
+<option value="WEEKLY">Weekly briefing (this week)</option>
+</select></p>
+<p><label><input type="checkbox" name="force" value="yes"> Recompose if this period already has a briefing</label></p>
+<button class="kpn-btn kpn-btn-primary" type="submit">Generate briefing</button>
+</form>
+</div>
+
+<div class="kpn-card kpn-card-body">
+{% for briefing in page_obj %}
+<div class="intel-promise">
+<a href="{% url 'intelligence:briefing_detail' briefing.pk %}">{{ briefing.title }}</a>
+<small>{{ briefing.get_period_kind_display }} · {{ briefing.period_start }} to {{ briefing.period_end }} · Generated {{ briefing.created_at|date:'j M Y, H:i' }}{% if briefing.email_status %} · Email: {{ briefing.email_status }}{% endif %}</small>
+</div>
+{% empty %}
+<p>No briefings generated yet.</p>
+{% endfor %}
+{% if page_obj.has_other_pages %}
+<p>
+{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+</p>
+{% endif %}
+</div>
+
+<p><a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

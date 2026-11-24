@@ -1,0 +1,12 @@
+{% comment %}Breadcrumb trail. Usage:
+  {% include 'includes/breadcrumbs.html' with crumbs=crumbs %}
+where crumbs is a list of (label, url) tuples; url None = current page.
+Views may pass crumbs in context, or templates can build the list inline
+with {% with %}.{% endcomment %}
+<nav class="kpn-breadcrumb" aria-label="Breadcrumb">
+    <a href="{% url 'core:home' %}">Home</a>
+    {% for label, url in crumbs %}
+        <span class="sep" aria-hidden="true">›</span>
+        {% if url %}<a href="{{ url }}">{{ label }}</a>{% else %}<span aria-current="page">{{ label }}</span>{% endif %}
+    {% endfor %}
+</nav>

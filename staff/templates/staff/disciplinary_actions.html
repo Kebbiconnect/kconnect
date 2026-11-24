@@ -3,10 +3,10 @@
 {% block title %}Disciplinary Actions - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page">
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold">Disciplinary Actions</h1>
+            <h1 class="kpn-h1">Disciplinary Actions</h1>
             <p class="text-gray-600 dark:text-gray-400">Manage disciplinary cases and organizational compliance</p>
         </div>
         <a href="{% url 'staff:create_disciplinary_action' %}" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition inline-block">
@@ -14,7 +14,7 @@
         </a>
     </div>
     
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
+    <div class="kpn-card overflow-x-auto">
         <table class="w-full">
             <thead class="bg-gray-50 dark:bg-gray-700">
                 <tr>
@@ -32,7 +32,7 @@
                 <tr>
                     <td class="px-6 py-4">
                         <div class="font-medium">{{ action.user.get_full_name }}</div>
-                        <div class="text-sm text-gray-500">{{ action.user.role_definition.title|default:"General Member" }}</div>
+                        <div class="text-sm text-gray-500">{{ action.user.role_definition.canonical_title|default:"General Member" }}</div>
                     </td>
                     <td class="px-6 py-4">
                         {% if action.action_type == 'WARNING' %}

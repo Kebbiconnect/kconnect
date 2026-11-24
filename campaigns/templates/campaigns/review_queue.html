@@ -3,19 +3,19 @@
 {% block title %}Editorial Review Queue - KPN Newsroom{% endblock %}
 
 {% block content %}
-<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div>
+    <div class="kpn-page">
         
         <!-- Header -->
         <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                <h1 class="kpn-h1 text-gray-900 dark:text-white">
                     <i class="fas fa-clipboard-check text-yellow-500 mr-2"></i> Editorial Review Queue
                 </h1>
                 <p class="text-gray-600 dark:text-gray-400 mt-2">Review, verify, and publish articles submitted by KPN reporters.</p>
             </div>
             <div class="mt-4 md:mt-0">
-                <a href="{% url 'staff:dashboard' %}" class="text-gray-600 dark:text-gray-400 hover:text-kpn-blue font-medium">
+                <a href="{% url 'staff:dashboard' %}" class="text-gray-600 dark:text-gray-400 hover:text-kpn-green font-medium">
                     <i class="fas fa-arrow-left mr-1"></i> Dashboard
                 </a>
             </div>
@@ -31,7 +31,7 @@
         {% endif %}
 
         <!-- Articles Table -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="kpn-card overflow-hidden">
             {% if pending %}
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -62,7 +62,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                     <!-- Open preview in new tab for editor to read -->
-                                    <a href="{% url 'campaigns:edit_article' article.id %}" target="_blank" class="text-kpn-blue hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded" title="Read / Edit Draft">
+                                    <a href="{% url 'campaigns:edit_article' article.id %}" target="_blank" class="text-kpn-green hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded" title="Read / Edit Draft">
                                         <i class="fas fa-search-plus mr-1"></i> Review
                                     </a>
                                     
@@ -81,9 +81,9 @@
 
                             <!-- Reject Modal for this article -->
                             <div id="reject-modal-{{ article.id }}" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full p-6">
+                                <div class="kpn-card max-w-lg w-full p-6">
                                     <div class="flex justify-between items-center mb-4">
-                                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Return Article for Revision</h3>
+                                        <h3 class="kpn-h3 text-gray-900 dark:text-white">Return Article for Revision</h3>
                                         <button onclick="document.getElementById('reject-modal-{{ article.id }}').classList.add('hidden')" class="text-gray-500 hover:text-gray-700">
                                             <i class="fas fa-times"></i>
                                         </button>

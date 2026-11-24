@@ -410,11 +410,11 @@ async function updateTierOptions() {
             availableTiers++;
         }
         if (tierCounts.ZONAL > 0) {
-            leadershipTierSelect.innerHTML += '<option value="ZONAL">Zonal Coordinator</option>';
+            leadershipTierSelect.innerHTML += '<option value="ZONAL">Zonal Excos</option>';
             availableTiers++;
         }
         if (tierCounts.LGA > 0) {
-            leadershipTierSelect.innerHTML += '<option value="LGA">LGA Coordinator</option>';
+            leadershipTierSelect.innerHTML += '<option value="LGA">LGA Excos</option>';
             availableTiers++;
         }
         if (wardId && tierCounts.WARD > 0) {

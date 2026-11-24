@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Collected Items · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Collection Intake</p>
+<h1 class="kpn-h1">Collected Items</h1>
+<div class="intel-chips">
+<span class="intel-chip"><i class="fas fa-inbox"></i>{{ total }} items collected</span>
+<span class="intel-chip"><i class="fas fa-filter"></i>{{ page_obj.paginator.count }} shown by current filters</span>
+<span class="intel-chip"><i class="fas fa-layer-group"></i><a href="{% url 'intelligence:clusters' %}" style="color:#fff">Event clusters</a></span>
+</div>
+</header>
+
+<div class="kpn-card kpn-card-body">
+<form method="get" class="editorial-form">
+<p><label for="item-source">Source</label>
+<select id="item-source" name="source">
+<option value="">All sources</option>
+{% for source in sources %}<option value="{{ source.pk }}"{% if source_id == source.pk|stringformat:'s' %} selected{% endif %}>{{ source.name }}</option>{% endfor %}
+</select></p>
+<p><label for="item-status">Fetch status</label>
+<select id="item-status" name="status">
+<option value="">All statuses</option>
+{% for value, label in statuses %}<option value="{{ value }}"{% if status == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+</select></p>
+<p><label for="item-relevance">Relevance</label>
+<select id="item-relevance" name="relevance">
+<option value="">All classifications</option>
+<option value="UNPROCESSED"{% if relevance == 'UNPROCESSED' %} selected{% endif %}>Unprocessed</option>
+{% for value, label in relevances %}<option value="{{ value }}"{% if relevance == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+</select></p>
+<p><label for="item-category">Category</label>
+<select id="item-category" name="category">
+<option value="">All categories</option>
+{% for category in categories %}<option value="{{ category.pk }}"{% if category_id == category.pk|stringformat:'s' %} selected{% endif %}>{{ category.label }}</option>{% endfor %}
+</select></p>
+<button class="kpn-btn kpn-btn-primary">Apply filters</button>
+{% if source_id or status or relevance or category_id %}<a class="kpn-btn" href="{% url 'intelligence:items' %}">Clear filters</a>{% endif %}
+</form>
+</div>
+
+<div class="kpn-card kpn-card-body">
+{% for item in page_obj %}
+<div class="intel-promise">
+<a href="{{ item.original_url }}" target="_blank" rel="noopener">{{ item.title }}</a>
+<small>{{ item.source.name }} · {{ item.get_fetch_status_display }}{% if item.published_at %} · Published {{ item.published_at|date:'j M Y, H:i' }}{% else %} · No publication date declared{% endif %} · Collected {{ item.discovered_at|date:'j M Y, H:i' }} ({{ item.discovered_at|timesince }} ago)</small>
+{% if item.summary %}<small>{{ item.summary|truncatechars:240 }}</small>{% endif %}
+<div class="intel-badges">
+{% if item.relevance == 'CONFIRMED' %}<span class="intel-badge intel-badge-confirmed">Confirmed relevance</span>{% elif item.relevance == 'STRONG_POSSIBLE' %}<span class="intel-badge intel-badge-strong">Strong possible</span>{% elif item.relevance == 'UNCERTAIN' %}<span class="intel-badge intel-badge-uncertain">Uncertain</span>{% elif item.relevance == 'NOT_RELEVANT' %}<span class="intel-badge intel-badge-notrel">Not relevant</span>{% else %}<span class="intel-badge intel-badge-plain">Unprocessed</span>{% endif %}
+{% if item.relevance_manual %}<span class="intel-badge intel-badge-plain">Set by staff</span>{% endif %}
+{% for link in item.category_links.all %}<span class="intel-badge intel-badge-cat">{{ link.category.label }}{% if link.is_primary %} · primary{% endif %}</span>{% endfor %}
+{% if item.duplicate_of %}<span class="intel-badge intel-badge-dup">Near-duplicate of #{{ item.duplicate_of.pk }}</span>{% endif %}
+{% if item.cluster %}<span class="intel-badge intel-badge-plain"><a href="{% url 'intelligence:cluster_detail' item.cluster.pk %}">Cluster #{{ item.cluster.pk }}</a></span>{% endif %}
+</div>
+{% if item.locations.all %}<small>Locations: {% for loc in item.locations.all %}{{ loc.target_name }} ({{ loc.get_match_kind_display|lower }}){% if not forloop.last %} · {% endif %}{% endfor %}</small>{% endif %}
+{% if item.relevance_reasons %}{% for reason in item.relevance_reasons %}<span class="intel-reasons">{{ reason.detail }}</span>{% endfor %}{% endif %}
+{% if can_review %}
+<form method="post" action="{% url 'intelligence:item_reclassify' item.pk %}" class="intel-reclassify">{% csrf_token %}
+<input type="hidden" name="next" value="{{ request.get_full_path }}">
+<select name="relevance" aria-label="Reclassify {{ item.title }}">
+<option value="">Reclassify…</option>
+{% for value, label in relevances %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+</select>
+<button class="kpn-btn" type="submit">Set</button>
+</form>
+{% endif %}
+</div>
+{% empty %}
+<p>No collected items{% if source_id or status or relevance or category_id %} match these filters{% endif %}.</p>
+{% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<p>
+{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if source_id %}&amp;source={{ source_id }}{% endif %}{% if status %}&amp;status={{ status }}{% endif %}{% if relevance %}&amp;relevance={{ relevance }}{% endif %}{% if category_id %}&amp;category={{ category_id }}{% endif %}">Previous</a>{% endif %}
+Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if source_id %}&amp;source={{ source_id }}{% endif %}{% if status %}&amp;status={{ status }}{% endif %}{% if relevance %}&amp;relevance={{ relevance }}{% endif %}{% if category_id %}&amp;category={{ category_id }}{% endif %}">Next</a>{% endif %}
+</p>
+{% endif %}
+
+<p><a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

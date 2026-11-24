@@ -12,12 +12,12 @@
     <!-- My Statistics -->
     <div class="mb-8">
         <h2 class="kpn-section-label mt-6">
-    <i class="fas fa-chart-pie mr-2 text-kpn-blue"></i> My Statistics
+    <i class="fas fa-chart-pie mr-2 text-kpn-green"></i> My Statistics
 </h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="kpn-stat-card">
-    <div class="kpn-stat-icon bg-green-100 dark:bg-green-900/30 text-kpn-green">
-        <i class="fas fa-chart-line"></i>
+    <div class="kpn-stat-icon tone-brand">
+        <i class="fas fa-id-badge"></i>
     </div>
     <div>
         <p class="kpn-stat-value">{{user.get_status_display}}</p>
@@ -25,8 +25,8 @@
     </div>
 </div>
             <div class="kpn-stat-card">
-    <div class="kpn-stat-icon bg-blue-100 dark:bg-blue-900/30 text-kpn-blue">
-        <i class="fas fa-chart-line"></i>
+    <div class="kpn-stat-icon tone-brand">
+        <i class="fas fa-signal"></i>
     </div>
     <div>
         <p class="kpn-stat-value">{{user.get_reporter_level_display}}</p>
@@ -34,8 +34,8 @@
     </div>
 </div>
             <div class="kpn-stat-card">
-    <div class="kpn-stat-icon bg-purple-100 dark:bg-purple-900/30 text-purple-600">
-        <i class="fas fa-chart-line"></i>
+    <div class="kpn-stat-icon tone-ink">
+        <i class="fas fa-map-marker-alt"></i>
     </div>
     <div>
         <p class="kpn-stat-value">{{user.get_jurisdiction}}</p>
@@ -55,27 +55,55 @@
         <!-- My Responsibilities -->
         <div class="kpn-card">
             <h2 class="kpn-section-label mt-6">
-    <i class="fas fa-clipboard-list mr-2 text-purple-500"></i> My Responsibilities
+    <i class="fas fa-clipboard-list mr-2 text-kpn-green"></i> My Responsibilities
 </h2>
             <ul class="space-y-4">
                 <li class="flex items-start">
-                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">1</div>
+                    <div class="kpn-step-num flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3">1</div>
                     <span class="text-gray-700 dark:text-gray-300"><strong>Active Participation:</strong> Attend KPN meetings, events, and community activities in your ward regularly.</span>
                 </li>
                 <li class="flex items-start">
-                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">2</div>
+                    <div class="kpn-step-num flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3">2</div>
                     <span class="text-gray-700 dark:text-gray-300"><strong>Community Engagement:</strong> Support civic initiatives, welfare programs, and positive community development.</span>
                 </li>
                 <li class="flex items-start">
-                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">3</div>
+                    <div class="kpn-step-num flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3">3</div>
                     <span class="text-gray-700 dark:text-gray-300"><strong>Dues Compliance:</strong> Fulfil your financial obligations to the organization as required by the KPN constitution.</span>
                 </li>
                 <li class="flex items-start">
-                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">4</div>
+                    <div class="kpn-step-num flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3">4</div>
                     <span class="text-gray-700 dark:text-gray-300"><strong>Referrals:</strong> Recommend trustworthy individuals to join KPN and grow the network in your community.</span>
                 </li>
             </ul>
         </div>
+    </div>
+
+    <!-- My KPN Footprint (Rounds C+D) -->
+    <div class="mb-8">
+        <h2 class="kpn-section-label mt-6">
+            <i class="fas fa-shoe-prints mr-2 text-kpn-green"></i> My KPN Footprint
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="kpn-stat-card">
+                <div class="kpn-stat-icon tone-brand">
+                    <i class="fas fa-bullhorn"></i>
+                </div>
+                <div>
+                    <p class="kpn-stat-value">{{ my_reports_count }}</p>
+                    <p class="kpn-stat-label">Community Reports Submitted</p>
+                </div>
+            </div>
+            <div class="kpn-stat-card">
+                <div class="kpn-stat-icon tone-gold">
+                    <i class="fas fa-pen"></i>
+                </div>
+                <div>
+                    <p class="kpn-stat-value">{{ my_articles_count }}</p>
+                    <p class="kpn-stat-label">Articles Authored</p>
+                </div>
+            </div>
+        </div>
+        {% include 'includes/_member_lga_map.html' %}
     </div>
 
     <!-- Quick Profile Link -->

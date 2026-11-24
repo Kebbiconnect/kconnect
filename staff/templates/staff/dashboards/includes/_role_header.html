@@ -7,7 +7,7 @@
             <span class="typing-text" aria-hidden="true" data-messages="{{ welcome_messages|default:'Welcome to your KPN dashboard.|One Voice, One Change.' }}" data-speed="70" data-delete-speed="35" data-pause="2000">Welcome to your KPN dashboard.</span>
             <span class="sr-only">Welcome to your KPN dashboard.</span>
         </p>
-        <p class="kpn-workspace-meta">{{ user.role_definition.title|default:"KPN member" }} · {{ user.get_jurisdiction }}</p>
+        <p class="kpn-workspace-meta">{{ user.role_definition.canonical_title|default:"KPN member" }} · {{ user.get_jurisdiction }}</p>
     </div>
     <div class="kpn-workspace-identity"><span>Signed in as</span><strong>{{ user.get_full_name }}</strong></div>
 </header>

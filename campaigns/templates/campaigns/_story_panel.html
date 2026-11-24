@@ -3,6 +3,16 @@ KPN Media Phase 1 — "Story file" panel. Rendered only when the article
 has story data (story_panel context from story_intelligence.services).
 Contains ONLY reader-safe data: no consent records, no audit entries,
 no draft updates, no private evidence.
+
+Page-by-Page Upgrade Priority 3 presentation:
+- SIGNAL articles: the panel becomes the six Future Signal questions
+  (brief §F) with the epistemic separation made visible — confirmed
+  facts, estimates and official statements, analyst judgment and
+  projections are labelled groups, never blended.
+- IMPACT articles: the panel walks the brief §C six-part documentary
+  structure (who is affected, their situation, who contributed, the
+  evidence, how the story developed, what remains).
+- NEWS articles: the original panel layout, unchanged.
 {% endcomment %}
 {% if story_panel %}
 <section class="mt-10 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 overflow-hidden">
@@ -20,38 +30,162 @@ no draft updates, no private evidence.
 
     <div class="px-5 py-5 space-y-6">
         {% if story_panel.profile and story_panel.profile.kind == 'SIGNAL' %}
-        <div class="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-900/20 px-4 py-4">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-3">Future Signal — KPN analysis</h3>
-            {% if story_panel.profile.signal_observation %}
-            <h4 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">What we are seeing</h4>
-            <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-3">{{ story_panel.profile.signal_observation|linebreaksbr }}</p>
+        {% with profile=story_panel.profile %}
+        <div class="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-900/20 px-4 py-4 space-y-6">
+            <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Future Signal — KPN analysis</h3>
+                {% if profile.signal_confidence %}
+                <p class="text-sm text-gray-700 dark:text-gray-300 mt-2"><span class="font-semibold">Strength of evidence:</span> {{ profile.get_signal_confidence_display }}</p>
+                {% endif %}
+            </div>
+
+            {% if profile.signal_observation %}
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">1 · What we are seeing</h4>
+                <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ profile.signal_observation|linebreaksbr }}</p>
+            </div>
             {% endif %}
-            {% if story_panel.profile.signal_confidence or story_panel.profile.signal_horizon %}
-            <p class="text-sm text-gray-700 dark:text-gray-300 mb-3">
-                {% if story_panel.profile.signal_confidence %}<span class="font-semibold">Strength of evidence:</span> {{ story_panel.profile.get_signal_confidence_display }}{% endif %}
-                {% if story_panel.profile.signal_horizon %}<br><span class="font-semibold">Looking at:</span> {{ story_panel.profile.signal_horizon }}{% endif %}
-            </p>
-            {% endif %}
-            {% if story_panel.profile.signal_change_condition %}
-            <h4 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">What would change this assessment</h4>
-            <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-3">{{ story_panel.profile.signal_change_condition|linebreaksbr }}</p>
-            {% endif %}
-            {% if story_panel.related_stories %}
-            <h4 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">Stories this analysis is based on</h4>
-            <ul class="list-disc list-inside space-y-1">
-                {% for related in story_panel.related_stories %}
-                <li class="text-sm"><a href="{% url 'campaigns:article_detail' related.slug %}" class="text-kpn-blue hover:underline">{{ related.title }}</a></li>
+
+            {% if story_panel.claims or story_panel.evidence or story_panel.related_stories %}
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-3">2 · What evidence is available?</h4>
+
+                {% regroup story_panel.claims by status as claim_groups %}
+                {% for group in claim_groups %}
+                {% if group.grouper == 'CONFIRMED' %}
+                <p class="mb-2"><span class="text-xs font-bold px-2 py-0.5 rounded bg-green-100 text-green-800">Confirmed facts</span></p>
+                <ul class="space-y-3 mb-4">
+                    {% for claim in group.list %}{% include 'campaigns/_story_claim.html' %}{% endfor %}
+                </ul>
+                {% endif %}
                 {% endfor %}
-            </ul>
+                {% for group in claim_groups %}
+                {% if group.grouper == 'OFFICIAL_STATEMENT' %}
+                <p class="mb-2"><span class="text-xs font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">Estimates and official statements</span></p>
+                <ul class="space-y-3 mb-4">
+                    {% for claim in group.list %}{% include 'campaigns/_story_claim.html' %}{% endfor %}
+                </ul>
+                {% endif %}
+                {% endfor %}
+                {% for group in claim_groups %}
+                {% if group.grouper != 'CONFIRMED' and group.grouper != 'OFFICIAL_STATEMENT' %}
+                <p class="mb-2"><span class="text-xs font-bold px-2 py-0.5 rounded bg-gray-200 text-gray-700">Still being established</span></p>
+                <ul class="space-y-3 mb-4">
+                    {% for claim in group.list %}{% include 'campaigns/_story_claim.html' %}{% endfor %}
+                </ul>
+                {% endif %}
+                {% endfor %}
+
+                {% if story_panel.evidence %}
+                <h5 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Evidence records</h5>
+                <ul class="space-y-2 mb-4">
+                    {% for item in story_panel.evidence %}
+                    <li class="text-sm">
+                        {% if item.url %}
+                        <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" class="text-kpn-blue hover:underline font-medium">{{ item.title }}</a>
+                        {% elif item.file %}
+                        <a href="{{ item.file.url }}" target="_blank" rel="noopener noreferrer" class="text-kpn-blue hover:underline font-medium">{{ item.title }}</a>
+                        {% else %}
+                        <span class="font-medium text-gray-800 dark:text-gray-200">{{ item.title }}</span>
+                        {% endif %}
+                        <span class="text-xs text-gray-500">({{ item.get_kind_display }})</span>
+                        {% if item.description %}<p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ item.description }}</p>{% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% if story_panel.related_stories %}
+                <h5 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Stories this analysis is based on</h5>
+                <ul class="list-disc list-inside space-y-1">
+                    {% for related in story_panel.related_stories %}
+                    <li class="text-sm"><a href="{% url 'campaigns:article_detail' related.slug %}" class="text-kpn-blue hover:underline">{{ related.title }}</a></li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% if profile.who_is_affected or story_panel.signal_lgas %}
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">3 · Who could be affected?</h4>
+                {% if profile.who_is_affected %}
+                <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ profile.who_is_affected|linebreaksbr }}</p>
+                {% endif %}
+                {% if story_panel.signal_lgas %}
+                <p class="mt-2 flex flex-wrap gap-2">
+                    {% for lga in story_panel.signal_lgas %}
+                    <a href="{% url 'lga_news:detail' lga.name|slugify %}" class="text-xs font-semibold px-2.5 py-1 rounded-md bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-kpn-green hover:text-kpn-green"><i class="fas fa-map-marker-alt text-kpn-green mr-1"></i>{{ lga.name }} LGA</a>
+                    {% endfor %}
+                </p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% if profile.why_it_matters %}
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">4 · Why it matters to Kebbi</h4>
+                <p class="mb-2"><span class="text-xs font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800">Analyst judgment</span></p>
+                <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ profile.why_it_matters|linebreaksbr }}</p>
+            </div>
+            {% endif %}
+
+            {% if profile.what_is_unknown or profile.signal_change_condition %}
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-amber-600 mb-1">5 · What remains uncertain?</h4>
+                {% if profile.what_is_unknown %}
+                <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ profile.what_is_unknown|linebreaksbr }}</p>
+                {% endif %}
+                {% if profile.signal_change_condition %}
+                <h5 class="text-xs font-bold uppercase tracking-wider text-kpn-green mt-3 mb-1">What would change this assessment</h5>
+                <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ profile.signal_change_condition|linebreaksbr }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% if profile.what_to_watch or profile.signal_horizon %}
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-kpn-blue mb-1">6 · What is KPN watching next?</h4>
+                <p class="mb-2"><span class="text-xs font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-800">Projections — forward-looking</span></p>
+                {% if profile.what_to_watch %}
+                <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ profile.what_to_watch|linebreaksbr }}</p>
+                {% endif %}
+                {% if profile.signal_horizon %}
+                <p class="text-sm text-gray-700 dark:text-gray-300 mt-2"><span class="font-semibold">Looking at:</span> {{ profile.signal_horizon }}</p>
+                {% endif %}
+            </div>
             {% endif %}
         </div>
-        {% endif %}
-
-        {% if story_panel.profile %}
+        {% endwith %}
+        {% elif story_panel.profile and story_panel.profile.kind == 'IMPACT' %}
+        {% with profile=story_panel.profile %}
+        <div class="space-y-5">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">The story in six parts</h3>
+            {% if profile.who_is_affected %}
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">Part 1 · Who is affected</h4>
+                <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ profile.who_is_affected|linebreaksbr }}</p>
+            </div>
+            {% endif %}
+            {% if profile.why_it_matters %}
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">Part 2 · Their situation</h4>
+                <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ profile.why_it_matters|linebreaksbr }}</p>
+            </div>
+            {% endif %}
+            {% if profile.who_contributed %}
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">Part 3 · Who contributed to the change</h4>
+                <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ profile.who_contributed|linebreaksbr }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endwith %}
+        {% elif story_panel.profile %}
         <div class="grid gap-5 sm:grid-cols-2">
             {% if story_panel.profile.why_it_matters %}
             <div>
-                <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">{% if story_panel.profile.kind == 'IMPACT' %}Their situation{% else %}Why this matters{% endif %}</h3>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">Why this matters</h3>
                 <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ story_panel.profile.why_it_matters|linebreaksbr }}</p>
             </div>
             {% endif %}
@@ -63,62 +197,34 @@ no draft updates, no private evidence.
             {% endif %}
             {% if story_panel.profile.what_is_unknown %}
             <div>
-                <h3 class="text-xs font-bold uppercase tracking-wider text-amber-600 mb-1">{% if story_panel.profile.kind == 'IMPACT' %}What is still unclear{% else %}What is not yet known{% endif %}</h3>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-amber-600 mb-1">What is not yet known</h3>
                 <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ story_panel.profile.what_is_unknown|linebreaksbr }}</p>
             </div>
             {% endif %}
             {% if story_panel.profile.what_to_watch %}
             <div>
-                <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-blue mb-1">{% if story_panel.profile.kind == 'IMPACT' %}What they need — and what to watch{% else %}What to watch{% endif %}</h3>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-blue mb-1">What to watch</h3>
                 <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ story_panel.profile.what_to_watch|linebreaksbr }}</p>
             </div>
             {% endif %}
         </div>
         {% endif %}
 
-        {% if story_panel.claims %}
+        {% if story_panel.claims and story_panel.profile.kind != 'SIGNAL' %}
         <div>
+            {% if story_panel.profile and story_panel.profile.kind == 'IMPACT' %}
+            <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">Part 4 · What the evidence shows</h3>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">What we know — claim by claim</h4>
+            {% else %}
             <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">What we know — claim by claim</h3>
+            {% endif %}
             <ul class="space-y-3">
-                {% for claim in story_panel.claims %}
-                <li class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3">
-                    <p class="text-sm text-gray-800 dark:text-gray-200">{{ claim.text }}</p>
-                    <p class="mt-2 flex flex-wrap items-center gap-2">
-                        <span class="text-xs font-semibold px-2 py-0.5 rounded
-                            {% if claim.status == 'CONFIRMED' %}bg-green-100 text-green-800
-                            {% elif claim.status == 'OFFICIAL_STATEMENT' %}bg-blue-100 text-blue-800
-                            {% elif claim.status == 'DISPUTED' %}bg-red-100 text-red-800
-                            {% elif claim.status == 'NOT_ESTABLISHED' %}bg-gray-200 text-gray-700
-                            {% else %}bg-yellow-100 text-yellow-800{% endif %}">{{ claim.status_label }}</span>
-                        {% if claim.source_url %}
-                        <a href="{{ claim.source_url }}" target="_blank" rel="noopener noreferrer" class="text-xs text-kpn-blue hover:underline">Source{% if claim.source_name %}: {{ claim.source_name }}{% endif %}</a>
-                        {% elif claim.source_name %}
-                        <span class="text-xs text-gray-500">Source: {{ claim.source_name }}</span>
-                        {% endif %}
-                    </p>
-                </li>
-                {% endfor %}
+                {% for claim in story_panel.claims %}{% include 'campaigns/_story_claim.html' %}{% endfor %}
             </ul>
         </div>
         {% endif %}
 
-        {% if story_panel.updates %}
-        <div>
-            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Story updates</h3>
-            <ol class="relative border-l-2 border-gray-200 dark:border-gray-700 ml-2 space-y-5">
-                {% for update in story_panel.updates %}
-                <li class="pl-5 relative">
-                    <span class="absolute -left-[7px] top-1 w-3 h-3 rounded-full bg-kpn-green border-2 border-white dark:border-gray-800"></span>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ update.published_at|date:"F j, Y, g:i a" }} &bull; {{ update.get_kind_display }}</p>
-                    <h4 class="text-sm font-bold text-gray-900 dark:text-white mt-0.5">{{ update.title }}</h4>
-                    <div class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mt-1">{{ update.body|linebreaks }}</div>
-                </li>
-                {% endfor %}
-            </ol>
-        </div>
-        {% endif %}
-
-        {% if story_panel.evidence %}
+        {% if story_panel.evidence and story_panel.profile.kind != 'SIGNAL' %}
         <div>
             <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Evidence</h3>
             <ul class="space-y-2">
@@ -139,6 +245,49 @@ no draft updates, no private evidence.
         </div>
         {% endif %}
 
+        {% if story_panel.updates %}
+        <div>
+            {% if story_panel.profile and story_panel.profile.kind == 'IMPACT' %}
+            <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">Part 5 · How the story developed</h3>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Story updates</h4>
+            {% else %}
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Story updates</h3>
+            {% endif %}
+            <ol class="relative border-l-2 border-gray-200 dark:border-gray-700 ml-2 space-y-5">
+                {% for update in story_panel.updates %}
+                <li class="pl-5 relative">
+                    <span class="absolute -left-[7px] top-1 w-3 h-3 rounded-full bg-kpn-green border-2 border-white dark:border-gray-800"></span>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ update.published_at|date:"F j, Y, g:i a" }} &bull; {{ update.get_kind_display }}</p>
+                    <h4 class="text-sm font-bold text-gray-900 dark:text-white mt-0.5">{{ update.title }}</h4>
+                    <div class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mt-1">{{ update.body|linebreaks }}</div>
+                </li>
+                {% endfor %}
+            </ol>
+        </div>
+        {% endif %}
+
+        {% if story_panel.profile and story_panel.profile.kind == 'IMPACT' %}
+        {% with profile=story_panel.profile %}
+        {% if profile.what_is_unknown or profile.what_to_watch %}
+        <div class="space-y-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green">Part 6 · What remains</h3>
+            {% if profile.what_is_unknown %}
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-amber-600 mb-1">What is still unclear</h4>
+                <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ profile.what_is_unknown|linebreaksbr }}</p>
+            </div>
+            {% endif %}
+            {% if profile.what_to_watch %}
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-kpn-blue mb-1">What they need — and what to watch</h4>
+                <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ profile.what_to_watch|linebreaksbr }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% endwith %}
+        {% endif %}
+
         {% if story_panel.community_sources %}
         <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
             <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -157,6 +306,22 @@ no draft updates, no private evidence.
                 <strong>{{ correction.get_kind_display }}</strong> ({{ correction.created_at|date:"F j, Y" }}): {{ correction.text }}
             </p>
             {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if story_panel.impact_related %}
+        <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">More Human Impact Files</h3>
+            <ul class="space-y-3">
+                {% for rel in story_panel.impact_related %}
+                <li class="text-sm">
+                    <a href="{% url 'campaigns:article_detail' rel.slug %}" class="font-semibold text-kpn-blue hover:underline">{{ rel.title }}</a>
+                    <span class="block text-xs text-gray-500 mt-0.5">
+                        {% if rel.story_profile.impact_category_label %}{{ rel.story_profile.impact_category_label }} · {% endif %}{% if rel.published_at %}{{ rel.published_at|date:"F j, Y" }}{% endif %}
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
         </div>
         {% endif %}
     </div>

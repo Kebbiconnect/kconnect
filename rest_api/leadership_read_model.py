@@ -4,6 +4,7 @@ Only public fields are projected. Website directory functions/models are untouch
 """
 from leadership.models import RoleDefinition
 from leadership.directory import locations_for, _location, _location_id
+from leadership.roles import canonical_role_title
 from staff.models import User
 
 
@@ -36,7 +37,7 @@ def leadership_seats(tier=None, zone=None, lga=None, ward=None, status='FILLED',
                     photo = request.build_absolute_uri(photo)
                 records.append({
                     'seat_key': f'{current}:{role.pk}:{location_id}',
-                    'role_definition': role.pk, 'role_title': role.title,
+                    'role_definition': role.pk, 'role_title': canonical_role_title(role.title),
                     'tier': current, 'seat_number': role.seat_number,
                     'location': _location(current, location), 'status': state,
                     'holder': {'id': user.pk, 'name': user.get_full_name(), 'photo': photo} if user else None,

@@ -22,7 +22,9 @@ class StoryProfileForm(forms.ModelForm):
                   'signal_observation', 'signal_confidence', 'signal_horizon',
                   'signal_change_condition', 'related_stories',
                   # Phase 4 — Human Impact framing
-                  'features_identifiable_people', 'impact_story']
+                  'features_identifiable_people', 'impact_story',
+                  # Priority 3 — section themes + who contributed
+                  'signal_category', 'impact_category', 'who_contributed']
         widgets = {
             'kind': forms.Select(attrs={'class': _INPUT}),
             'why_it_matters': forms.Textarea(attrs={'class': _INPUT, 'rows': 3}),
@@ -34,6 +36,9 @@ class StoryProfileForm(forms.ModelForm):
             'signal_horizon': forms.TextInput(attrs={'class': _INPUT}),
             'signal_change_condition': forms.Textarea(attrs={'class': _INPUT, 'rows': 2}),
             'related_stories': forms.SelectMultiple(attrs={'class': _INPUT, 'size': 6}),
+            'signal_category': forms.Select(attrs={'class': _INPUT}),
+            'impact_category': forms.Select(attrs={'class': _INPUT}),
+            'who_contributed': forms.Textarea(attrs={'class': _INPUT, 'rows': 3}),
         }
 
     def __init__(self, *args, article=None, **kwargs):
@@ -165,9 +170,12 @@ class PromiseForm(forms.ModelForm):
         model = Promise
         fields = ['institution', 'title', 'description', 'announced_by',
                   'announced_on', 'source_name', 'source_url', 'deadline',
-                  'zone', 'lga', 'ward', 'stories', 'next_check_date']
+                  'sector', 'image', 'zone', 'lga', 'ward', 'stories',
+                  'next_check_date']
         widgets = {
             'institution': forms.Select(attrs={'class': _INPUT}),
+            'sector': forms.Select(attrs={'class': _INPUT}),
+            'image': forms.ClearableFileInput(attrs={'class': _INPUT}),
             'title': forms.TextInput(attrs={'class': _INPUT}),
             'description': forms.Textarea(attrs={'class': _INPUT, 'rows': 4}),
             'announced_by': forms.TextInput(attrs={'class': _INPUT}),

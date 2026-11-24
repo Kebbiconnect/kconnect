@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load campaign_extras %}
+{% load campaign_extras static %}
 
 {% block title %}KPN Newsroom - Kebbi Progressive Youth Network{% endblock %}
 
@@ -7,19 +7,18 @@
 <div class="bg-gray-50 dark:bg-gray-900 min-h-screen">
 
     <!-- Header -->
-    <section class="bg-kpn-green text-white py-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 class="text-4xl md:text-5xl font-bold mb-3">KPN Newsroom</h1>
-            <p class="text-lg max-w-3xl mx-auto opacity-90">
-                Verified civic reporting, community alerts, and development news across all 21 LGAs of Kebbi State.
-            </p>
+    <section class="kpn-page-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/newsroom-hero.jpg' %}')">
+        <div class="kpn-home-container">
+            <p class="kpn-eyebrow">The latest from Kebbi</p>
+            <h1>KPN Newsroom</h1>
+            <p>To provide reliable, timely and clearly classified information about developments affecting Kebbi State and its people.</p>
         </div>
     </section>
 
     <!-- Filters & Search -->
     <section class="py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <form method="GET" action="{% url 'campaigns:newsroom' %}" class="flex flex-wrap gap-3 items-center justify-between">
+            <form method="GET" action="{% url 'campaigns:newsroom' %}" class="kpn-filter-form flex flex-wrap gap-3 items-center justify-between">
 
                 <div class="flex flex-wrap gap-3 flex-grow">
                     <!-- Search -->
@@ -28,7 +27,7 @@
                             <i class="fas fa-search text-xs"></i>
                         </span>
                         <input type="text" name="q" value="{{ search_query }}" placeholder="Search articles, locations…"
-                               class="kpn-input pl-8">
+                               class="kpn-input kpn-search">
                     </div>
 
                     <!-- Category Filter -->
@@ -46,13 +45,35 @@
                             <option value="{{ l.id }}" {% if active_lga == l.id|stringformat:"s" %}selected{% endif %}>{{ l.name }}</option>
                         {% endfor %}
                     </select>
+
+                    <!-- Verification Filter -->
+                    <select name="status" class="kpn-input kpn-select w-auto min-w-[150px]">
+                        <option value="">Any verification</option>
+                        {% for value, label in verification_choices %}
+                            <option value="{{ value }}" {% if active_verification == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <!-- Provenance Filter -->
+                    <select name="source" class="kpn-input kpn-select w-auto min-w-[170px]">
+                        <option value="">All sources</option>
+                        <option value="community" {% if active_provenance == 'community' %}selected{% endif %}>KPN community reports</option>
+                    </select>
+
+                    <!-- Date Filters -->
+                    <label class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">From
+                        <input type="date" name="date_from" value="{{ active_date_from }}" class="kpn-input w-auto">
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">To
+                        <input type="date" name="date_to" value="{{ active_date_to }}" class="kpn-input w-auto">
+                    </label>
                 </div>
 
                 <div class="flex gap-2">
                     <button type="submit" class="kpn-btn kpn-btn-primary">
                         <i class="fas fa-filter"></i> Filter
                     </button>
-                    {% if search_query or active_category or active_lga or active_verification %}
+                    {% if search_query or active_category or active_lga or active_verification or active_date_from or active_date_to or active_provenance %}
                         <a href="{% url 'campaigns:newsroom' %}" class="kpn-btn kpn-btn-secondary">
                             <i class="fas fa-times"></i> Clear
                         </a>
@@ -64,6 +85,15 @@
 
     <section class="py-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            {% if breaking %}
+            <div class="kpn-breaking">
+                <span class="dot" aria-hidden="true"></span><b>DEVELOPING</b>
+                {% for story in breaking %}
+                <span>{{ story.title }} <a href="{% url 'campaigns:article_detail' story.slug %}">Follow the story →</a></span>
+                {% endfor %}
+            </div>
+            {% endif %}
 
             {% if not featured and not rest %}
                 <!-- Empty State -->
@@ -113,6 +143,9 @@
                                 {% if featured.lga %}
                                     <span><i class="fas fa-map-marker-alt mr-1"></i> {{ featured.lga.name }}</span>
                                 {% endif %}
+                                {% if featured.source_name %}
+                                    <span><i class="fas fa-link mr-1"></i> Source: {{ featured.source_name }}</span>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -160,6 +193,9 @@
                                     </span>
                                 {% endif %}
                             </div>
+                            {% if article.source_name %}
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2"><i class="fas fa-link mr-1"></i> Source: {{ article.source_name }}</p>
+                            {% endif %}
                         </div>
                     </article>
                     {% endfor %}

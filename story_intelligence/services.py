@@ -198,6 +198,37 @@ def story_panel_context(article):
         related_stories = list(
             profile.related_stories.filter(status='PUBLISHED')
             .order_by('-published_at'))
+    # Priority 3: a Future Signal's recorded reach — the LGAs named by
+    # explicit ArticleLocation links (intelligence Phase 7) plus the
+    # article's own LGA field. Recorded links only; never guessed
+    # from the article's words at render time.
+    signal_lgas = []
+    if profile is not None and profile.kind == 'SIGNAL':
+        from intelligence.models import ArticleLocation
+        signal_lgas = [link.lga for link in
+                       ArticleLocation.objects.filter(article=article)
+                       .select_related('lga').order_by('lga__name')]
+        seen = {lga.pk for lga in signal_lgas}
+        if article.lga_id and article.lga_id not in seen:
+            signal_lgas.append(article.lga)
+    # Priority 3: more Human Impact Files for an impact story's page —
+    # other PUBLISHED impact stories, same impact theme first, then
+    # most recent. Linked records from the same collection, not copies.
+    impact_related = []
+    if profile is not None and profile.kind == 'IMPACT':
+        from campaigns.models import Campaign
+        others = list(
+            Campaign.objects
+            .filter(status='PUBLISHED', story_profile__kind='IMPACT')
+            .exclude(pk=article.pk)
+            .select_related('story_profile')
+            .order_by('-published_at'))
+        theme = profile.effective_impact_category
+        if theme:
+            others.sort(key=lambda s: (
+                0 if s.story_profile.effective_impact_category == theme else 1,
+                -(s.published_at.timestamp() if s.published_at else 0)))
+        impact_related = others[:3]
     has_profile = bool(profile and profile.has_content())
     if not (article.story_id or has_profile or updates or claims or evidence
             or corrections or community_sources):
@@ -211,6 +242,8 @@ def story_panel_context(article):
         'corrections': corrections,
         'community_sources': community_sources,
         'related_stories': related_stories,
+        'signal_lgas': signal_lgas,
+        'impact_related': impact_related,
     }
 
 

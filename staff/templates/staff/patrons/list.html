@@ -3,10 +3,10 @@
 {% block title %}Manage Patrons - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page">
     <div class="flex justify-between items-center mb-8">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Manage Patrons</h1>
+            <h1 class="kpn-h1 text-gray-900 dark:text-white">Manage Patrons</h1>
             <p class="text-gray-600 dark:text-gray-400 mt-2">Manage the Grand Patron and Patrons for the public page.</p>
         </div>
         <a href="{% url 'staff:create_patron' %}" class="bg-kpn-green text-white px-6 py-2 rounded-lg hover:bg-green-700 transition font-medium flex items-center">
@@ -14,7 +14,7 @@
         </a>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden border border-gray-100 dark:border-gray-700">
+    <div class="kpn-card overflow-hidden border border-gray-100 dark:border-gray-700">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>
@@ -70,7 +70,7 @@
                         </td>
                         <td class="p-4 text-right">
                             <div class="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition">
-                                <a href="{% url 'staff:edit_patron' patron.id %}" class="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition" title="Edit">
+                                <a href="{% url 'staff:edit_patron' patron.id %}" class="p-2 text-kpn-green hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <a href="{% url 'staff:delete_patron' patron.id %}" class="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition" title="Delete">

@@ -90,7 +90,7 @@
             </td>
             <td data-label="Role Applied">
               {% if user.role_definition %}
-                <span class="kpn-badge kpn-badge-blue">{{ user.role_definition.title }}</span>
+                <span class="kpn-badge kpn-badge-blue">{{ user.role_definition.canonical_title }}</span>
               {% else %}
                 <span class="kpn-badge kpn-badge-gray">General Member</span>
               {% endif %}

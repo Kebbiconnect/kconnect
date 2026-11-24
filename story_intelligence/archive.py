@@ -23,21 +23,35 @@ Ordering (documented choice): cheap relevance with no new
 infrastructure — with a text query, title matches rank before
 other-field matches (a Case/When annotation), then newest first.
 Without a query: pure recency.
+
+Page-by-Page Upgrade Priority 4 (brief §G, decision D-13): the
+archive gains a TOPIC axis — the section a record belongs to (News,
+Human Impact Files, Future Signal, Promise Tracker), carried by
+`StoryProfile.kind` and the Promise records themselves; no tagging
+model was built. Text search also reaches the public claims recorded
+on a story or update (the same claims the article's Story File panel
+shows readers). Result rows carry their record status (Published /
+Updated / Corrected, derived from StoryUpdate and Correction
+existence), their section badging, their Promise Tracker links and
+related published stories — all linked records, never copies.
 """
 import re
 from datetime import date
 from html import unescape
 
 from django.core.paginator import Paginator
-from django.db.models import Case, IntegerField, Q, TextField, Value, When
+from django.db.models import (
+    Case, Count, IntegerField, Q, TextField, Value, When,
+)
 from django.db.models.functions import Cast
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils.html import strip_tags
 
 from campaigns.models import Campaign
 from leadership.models import LGA, Ward, Zone
 
-from .models import Institution, Promise, StoryUpdate
+from .models import Correction, Institution, Promise, StoryUpdate
 
 STORY_ID_RE = re.compile(r'^KPN-SI-\d{4}-\d{5}$')
 PAGE_SIZE = 20
@@ -46,6 +60,20 @@ TYPE_CHOICES = [
     ('update', 'Story updates'),
     ('promise', 'Promises'),
 ]
+# D-13: topic = the section a record belongs to. 'news' also covers
+# stories with no StoryProfile at all (the profile is optional; an
+# unprofiled published story is a news story).
+TOPIC_CHOICES = [
+    ('news', 'News'),
+    ('impact', 'Human Impact Files'),
+    ('signal', 'Future Signal'),
+    ('promise', 'Promise Tracker'),
+]
+SECTION_LABELS = {
+    'NEWS': 'News story',
+    'IMPACT': 'Human Impact File',
+    'SIGNAL': 'Future Signal',
+}
 
 
 # ─── Parameter handling ───────────────────────────────────────────────────────
@@ -74,9 +102,13 @@ def parse_archive_params(request):
     result_type = get.get('type', 'all').strip()
     if result_type not in ('story', 'update', 'promise'):
         result_type = 'all'
+    topic = get.get('topic', '').strip()
+    if topic not in dict(TOPIC_CHOICES):
+        topic = ''
     return {
         'q': get.get('q', '').strip(),
         'type': result_type,
+        'topic': topic,
         'category': category,
         'zone': _clean_int(get.get('zone')),
         'lga': _clean_int(get.get('lga')),
@@ -88,9 +120,25 @@ def parse_archive_params(request):
 
 
 def has_active_filters(params):
-    return any([params['category'], params['zone'], params['lga'],
-                params['ward'], params['institution'],
+    return any([params['topic'], params['category'], params['zone'],
+                params['lga'], params['ward'], params['institution'],
                 params['date_from'], params['date_to']])
+
+
+def _topic_condition(params, prefix=''):
+    """Topic condition (D-13) for models carrying a story profile:
+    Campaign directly, or StoryUpdate via `prefix='article__'`.
+    'promise' is handled by the callers (it empties story/update
+    results and keeps only promises), so it maps to no condition here."""
+    topic = params['topic']
+    if topic == 'impact':
+        return Q(**{f'{prefix}story_profile__kind': 'IMPACT'})
+    if topic == 'signal':
+        return Q(**{f'{prefix}story_profile__kind': 'SIGNAL'})
+    if topic == 'news':
+        return (Q(**{f'{prefix}story_profile__isnull': True}) |
+                Q(**{f'{prefix}story_profile__kind': 'NEWS'}))
+    return Q()
 
 
 # ─── Querysets ────────────────────────────────────────────────────────────────
@@ -118,9 +166,13 @@ def _rank(q):
 
 
 def story_queryset(params):
-    qs = Campaign.objects.filter(status='PUBLISHED').select_related('lga', 'ward')
+    qs = Campaign.objects.filter(status='PUBLISHED').select_related(
+        'lga', 'ward', 'story_profile')
     if params['institution']:
         # Institutions belong to promises; the filter empties stories.
+        return qs.none()
+    if params['topic'] == 'promise':
+        # The Promise Tracker topic holds promises only.
         return qs.none()
     q = params['q']
     if q:
@@ -130,12 +182,14 @@ def story_queryset(params):
         ).filter(
             Q(title__icontains=q) | Q(subheadline__icontains=q) |
             Q(location__icontains=q) | Q(content__icontains=q) |
-            Q(json_text__icontains=q) | Q(story_id__icontains=q))
+            Q(json_text__icontains=q) | Q(story_id__icontains=q) |
+            Q(claims__text__icontains=q)).distinct()
         qs = qs.order_by('rank', '-published_at', '-pk')
     else:
         qs = qs.order_by('-published_at', '-pk')
     if params['category']:
         qs = qs.filter(category=params['category'])
+    qs = qs.filter(_topic_condition(params))
     qs = qs.filter(_geo_condition(params))
     if params['date_from']:
         qs = qs.filter(published_at__date__gte=params['date_from'])
@@ -147,18 +201,23 @@ def story_queryset(params):
 def update_queryset(params):
     qs = StoryUpdate.objects.filter(
         status='PUBLISHED', article__status='PUBLISHED',
-    ).select_related('article', 'article__lga', 'article__ward')
+    ).select_related('article', 'article__lga', 'article__ward',
+                     'article__story_profile')
     if params['institution']:
+        return qs.none()
+    if params['topic'] == 'promise':
         return qs.none()
     q = params['q']
     if q:
         qs = qs.annotate(rank=_rank(q)).filter(
-            Q(title__icontains=q) | Q(body__icontains=q))
+            Q(title__icontains=q) | Q(body__icontains=q) |
+            Q(claims__text__icontains=q)).distinct()
         qs = qs.order_by('rank', '-published_at', '-pk')
     else:
         qs = qs.order_by('-published_at', '-pk')
     if params['category']:
         qs = qs.filter(article__category=params['category'])
+    qs = qs.filter(_topic_condition(params, prefix='article__'))
     qs = qs.filter(_geo_condition(params, prefix='article__'))
     if params['date_from']:
         qs = qs.filter(published_at__date__gte=params['date_from'])
@@ -168,9 +227,13 @@ def update_queryset(params):
 
 
 def promise_queryset(params):
-    qs = Promise.objects.select_related('institution', 'zone', 'lga', 'ward')
+    qs = Promise.objects.select_related(
+        'institution', 'zone', 'lga', 'ward').prefetch_related('stories')
     if params['category']:
         # Promises carry no newsroom category; the filter empties them.
+        return qs.none()
+    if params['topic'] in ('news', 'impact', 'signal'):
+        # Story topics hold stories (and their updates) only.
         return qs.none()
     q = params['q']
     if q:
@@ -257,6 +320,103 @@ def make_excerpt(text, query='', context_words=14, tail_words=26, head_words=42)
     return excerpt
 
 
+# ─── Row enrichment (Priority 4) ──────────────────────────────────────────────
+# Everything attached to a result row is derived from records that
+# already exist and are already public: the story's section (its
+# StoryProfile kind), its published updates, its published corrections,
+# the promises that link to it, and other published stories. Nothing
+# is copied and nothing is invented.
+
+def _section_for(article):
+    """(kind, label, section url) for a story: its StoryProfile kind,
+    defaulting to NEWS for stories with no profile. IMPACT and SIGNAL
+    stories also live in their own public sections, so the row links
+    across to them; a news story's record is its article page itself."""
+    profile = getattr(article, 'story_profile', None)
+    kind = profile.kind if profile is not None else 'NEWS'
+    url = None
+    if kind == 'IMPACT':
+        url = reverse('impact_files:list')
+    elif kind == 'SIGNAL':
+        url = reverse('signals:list')
+    return kind, SECTION_LABELS[kind], url
+
+
+def _counts_by(rows):
+    return {row[0]: row[1] for row in rows}
+
+
+def _enrich_stories(articles):
+    ids = [a.pk for a in articles]
+    if not ids:
+        return
+    update_counts = _counts_by(
+        StoryUpdate.objects.filter(article_id__in=ids, status='PUBLISHED')
+        .values_list('article_id').annotate(n=Count('pk')))
+    correction_counts = _counts_by(
+        Correction.objects.filter(article_id__in=ids, published=True)
+        .values_list('article_id').annotate(n=Count('pk')))
+    linked = {}
+    for promise in Promise.objects.filter(stories__in=ids).distinct():
+        for story in promise.stories.all():
+            if story.pk in ids:
+                linked.setdefault(story.pk, []).append(promise)
+    for article in articles:
+        article.section_kind, article.section_label, article.section_url = \
+            _section_for(article)
+        article.update_count = update_counts.get(article.pk, 0)
+        article.correction_count = correction_counts.get(article.pk, 0)
+        article.linked_promises = linked.get(article.pk, [])
+        article.related_stories = _related_stories(article)
+
+
+def _related_stories(article, limit=3):
+    """Other published stories in the same LGA (a story filed under a
+    ward counts for its LGA) or the same news category, newest first."""
+    condition = Q(category=article.category)
+    if article.lga_id:
+        condition |= Q(lga_id=article.lga_id) | Q(ward__lga_id=article.lga_id)
+    elif article.ward_id:
+        condition |= Q(ward__lga_id=article.ward.lga_id)
+    return list(
+        Campaign.objects.filter(status='PUBLISHED').filter(condition)
+        .exclude(pk=article.pk).order_by('-published_at', '-pk')[:limit])
+
+
+def _enrich_updates(updates):
+    ids = [u.pk for u in updates]
+    if not ids:
+        return
+    correction_counts = _counts_by(
+        Correction.objects.filter(update_id__in=ids, published=True)
+        .values_list('update_id').annotate(n=Count('pk')))
+    for update in updates:
+        update.section_kind, update.section_label, update.section_url = \
+            _section_for(update.article)
+        update.correction_count = correction_counts.get(update.pk, 0)
+
+
+def _enrich_promises(promises):
+    for promise in promises:
+        promise.linked_stories = [
+            story for story in promise.stories.all()
+            if story.status == 'PUBLISHED']
+
+
+def _record_counts():
+    """Real totals for the page's trust strip and connected-sections
+    band — the same definitions the sections themselves use."""
+    published = Campaign.objects.filter(status='PUBLISHED')
+    return {
+        'stories': published.count(),
+        'updates': StoryUpdate.objects.filter(
+            status='PUBLISHED', article__status='PUBLISHED').count(),
+        'promises': Promise.objects.count(),
+        'impact': published.filter(story_profile__kind='IMPACT').count(),
+        'signal': published.filter(story_profile__kind='SIGNAL').count(),
+    }
+
+
 # ─── View ─────────────────────────────────────────────────────────────────────
 
 def archive_home(request):
@@ -291,6 +451,12 @@ def archive_home(request):
         'base_qs': base_qs,
         'categories': Campaign.CATEGORY_CHOICES,
         'type_choices': TYPE_CHOICES,
+        'topic_choices': TOPIC_CHOICES,
+        'record_counts': _record_counts(),
+        'crumbs': [
+            ('Newsroom', reverse('campaigns:newsroom')),
+            ('Story Archive', None),
+        ],
         'zones': Zone.objects.all(),
         'lgas': LGA.objects.all(),
         'wards': (Ward.objects.filter(lga_id=params['lga'])
@@ -311,6 +477,7 @@ def archive_home(request):
             if q and q.lower() in (article.subheadline or '').lower():
                 text = article.subheadline
             article.excerpt = make_excerpt(text, q)
+        _enrich_stories(list(page.object_list))
         context['stories_page'] = page
         context['stories_total'] = paginator.count
         total += paginator.count
@@ -319,6 +486,7 @@ def archive_home(request):
         page = paginator.get_page(request.GET.get('up'))
         for update in page.object_list:
             update.excerpt = make_excerpt(update.body, q)
+        _enrich_updates(list(page.object_list))
         context['updates_page'] = page
         context['updates_total'] = paginator.count
         total += paginator.count
@@ -327,6 +495,7 @@ def archive_home(request):
         page = paginator.get_page(request.GET.get('pp'))
         for promise in page.object_list:
             promise.excerpt = make_excerpt(promise.description, q)
+        _enrich_promises(list(page.object_list))
         context['promises_page'] = page
         context['promises_total'] = paginator.count
         total += paginator.count

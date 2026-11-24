@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Projects · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Project Intelligence</p>
+<h1 class="kpn-h1">Project Register</h1>
+<p class="intel-hero-sub">Public projects tracked by KPN. Documented facts only — contractor, amount and dates appear only where a source states them. “Reported abandoned” is a source’s claim; “Verified abandoned” is a KPN finding and requires field or official evidence plus a second-person verification.</p>
+<div class="intel-chips">
+<span class="intel-chip"><i class="fas fa-hard-hat"></i>{{ total }} projects tracked</span>
+<span class="intel-chip"><i class="fas fa-filter"></i>{{ page_obj.paginator.count }} shown by current filters</span>
+</div>
+<p><a class="kpn-btn" style="background:#fff;color:#176b36" href="{% url 'intelligence:project_new' %}">Register a project</a>
+<a class="kpn-btn" style="background:#fff;color:#176b36" href="{% url 'projects:list' %}">Public tracker</a></p>
+</header>
+
+<div class="kpn-card kpn-card-body">
+<form method="get" class="editorial-form">
+<p><label for="pj-status">Status</label>
+<select id="pj-status" name="status">
+<option value="">All statuses</option>
+{% for value, label in statuses %}<option value="{{ value }}"{% if status == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+</select></p>
+<p><label for="pj-lga">LGA</label>
+<select id="pj-lga" name="lga">
+<option value="">All LGAs</option>
+{% for lga in lgas %}<option value="{{ lga.pk }}"{% if lga_id == lga.pk|stringformat:'s' %} selected{% endif %}>{{ lga.name }}</option>{% endfor %}
+</select></p>
+<button class="kpn-btn kpn-btn-primary" type="submit">Apply filters</button>
+</form>
+</div>
+
+<div class="kpn-card kpn-card-body">
+{% for project in page_obj %}
+<div class="intel-promise">
+<a href="{% url 'intelligence:project_detail' project.pk %}">{{ project.title }}</a>
+<small>{{ project.project_code }} · {{ project.get_status_display }} · {{ project.get_category_display }}{% if project.lga %} · {{ project.lga.name }} LGA{% endif %}{% if project.institution %} · {{ project.institution.name }}{% endif %} · Updated {{ project.updated_at|date:'j M Y, H:i' }}</small>
+</div>
+{% empty %}
+<p>No projects match. <a href="{% url 'intelligence:project_new' %}">Register the first project</a>.</p>
+{% endfor %}
+{% if page_obj.has_other_pages %}
+<p>
+{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if status %}&status={{ status }}{% endif %}{% if lga_id %}&lga={{ lga_id }}{% endif %}">Previous</a>{% endif %}
+Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if status %}&status={{ status }}{% endif %}{% if lga_id %}&lga={{ lga_id }}{% endif %}">Next</a>{% endif %}
+</p>
+{% endif %}
+</div>
+
+<p><a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

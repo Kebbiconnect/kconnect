@@ -49,7 +49,9 @@ class BrandedEmailTests(TestCase):
         self.assertIn('approved', message.subject)
         html = self._html(message)
         self.assertIn('Open Your Dashboard', html)
-        self.assertIn('Ward Coordinator', html)
+        # Role-name alignment: a legacy stored title displays canonically.
+        self.assertIn('Ward Community Lead', html)
+        self.assertNotIn('Ward Coordinator', html)
         self.assertIn('https://www.kpn.com.ng/account/dashboard/', html)
 
     def test_approval_through_decide_application_sends_email(self):

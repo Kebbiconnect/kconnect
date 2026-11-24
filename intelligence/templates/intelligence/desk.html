@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Review Desk · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Verification Desk</p>
+<h1 class="kpn-h1">Review Desk</h1>
+<div class="intel-chips">
+<span class="intel-chip"><i class="fas fa-inbox"></i>{{ total_units }} units</span>
+<span class="intel-chip"><i class="fas fa-filter"></i>{{ page_obj.paginator.count }} shown by current filters</span>
+</div>
+</header>
+
+<div class="kpn-card kpn-card-body">
+<form method="get" class="editorial-form">
+<p><label for="desk-state">Desk state</label>
+<select id="desk-state" name="state">
+<option value="">All states</option>
+{% for value, label in states %}<option value="{{ value }}"{% if filters.state == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+</select></p>
+<p><label for="desk-relevance">Relevance</label>
+<select id="desk-relevance" name="relevance">
+<option value="">Any relevance</option>
+<option value="CONFIRMED"{% if filters.relevance == 'CONFIRMED' %} selected{% endif %}>Confirmed</option>
+<option value="STRONG_POSSIBLE"{% if filters.relevance == 'STRONG_POSSIBLE' %} selected{% endif %}>Strong possible</option>
+<option value="UNCERTAIN"{% if filters.relevance == 'UNCERTAIN' %} selected{% endif %}>Uncertain</option>
+<option value="NOT_RELEVANT"{% if filters.relevance == 'NOT_RELEVANT' %} selected{% endif %}>Not relevant</option>
+</select></p>
+<p><label for="desk-category">Category</label>
+<select id="desk-category" name="category">
+<option value="">All categories</option>
+{% for category in categories %}<option value="{{ category.slug }}"{% if filters.category == category.slug %} selected{% endif %}>{{ category.label }}</option>{% endfor %}
+</select></p>
+<p><label for="desk-lga">LGA</label>
+<select id="desk-lga" name="lga">
+<option value="">All LGAs</option>
+{% for lga in lgas %}<option value="{{ lga.pk }}"{% if filters.lga == lga.pk|stringformat:'s' %} selected{% endif %}>{{ lga.name }}</option>{% endfor %}
+</select></p>
+<p><label for="desk-age">Age</label>
+<select id="desk-age" name="age">
+<option value="">Any age</option>
+<option value="24h"{% if filters.age == '24h' %} selected{% endif %}>Within 24 hours</option>
+<option value="3d"{% if filters.age == '3d' %} selected{% endif %}>1 to 3 days old</option>
+<option value="older"{% if filters.age == 'older' %} selected{% endif %}>Over 3 days old</option>
+</select></p>
+<button class="kpn-btn kpn-btn-primary" type="submit">Filter</button>
+</form>
+</div>
+
+<div class="kpn-card kpn-card-body">
+{% for row in page_obj %}
+<div class="intel-promise">
+<a href="{{ row.url }}">{{ row.title }}</a>
+<div class="intel-badges">
+{% if row.state == 'VERIFIED' or row.state == 'APPROVED' %}<span class="intel-badge intel-badge-confirmed">{{ row.state_label }}</span>{% elif row.state == 'PUBLISHED' %}<span class="intel-badge intel-badge-ready">{{ row.state_label }}</span>{% elif row.state == 'REJECTED' or row.state == 'DISPUTED' %}<span class="intel-badge intel-badge-notrel">{{ row.state_label }}</span>{% elif row.state == 'DUPLICATE' %}<span class="intel-badge intel-badge-dup">{{ row.state_label }}</span>{% elif row.state == 'VERIFICATION_IN_PROGRESS' or row.state == 'NEEDS_INFO' %}<span class="intel-badge intel-badge-strong">{{ row.state_label }}</span>{% elif row.state == 'UNDER_REVIEW' %}<span class="intel-badge intel-badge-cat">{{ row.state_label }}</span>{% else %}<span class="intel-badge intel-badge-plain">{{ row.state_label }}</span>{% endif %}
+{% if row.relevance == 'CONFIRMED' %}<span class="intel-badge intel-badge-confirmed">Confirmed relevance</span>{% elif row.relevance == 'STRONG_POSSIBLE' %}<span class="intel-badge intel-badge-strong">Strong possible</span>{% elif row.relevance == 'UNCERTAIN' %}<span class="intel-badge intel-badge-uncertain">Uncertain</span>{% elif row.relevance == 'NOT_RELEVANT' %}<span class="intel-badge intel-badge-notrel">Not relevant</span>{% endif %}
+{% if row.category %}<span class="intel-badge intel-badge-cat">{{ row.category.label }}</span>{% endif %}
+</div>
+<small>{% if row.kind == 'cluster' %}Event cluster #{{ row.obj.pk }} · {{ row.member_count }} item{{ row.member_count|pluralize }}{% else %}Single report #{{ row.obj.pk }}{% endif %}{% if row.lga %} · {{ row.lga.name }} LGA{% endif %} · First reported {{ row.first_seen|date:'j M Y, H:i' }}{% if row.assigned_to %} · Assigned to {{ row.assigned_to.get_full_name|default:row.assigned_to.username }}{% endif %}</small>
+</div>
+{% empty %}
+<p>No units match the current filters.</p>
+{% endfor %}
+{% if page_obj.has_other_pages %}
+<p>
+{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if filters.state %}&amp;state={{ filters.state }}{% endif %}{% if filters.relevance %}&amp;relevance={{ filters.relevance }}{% endif %}{% if filters.category %}&amp;category={{ filters.category }}{% endif %}{% if filters.lga %}&amp;lga={{ filters.lga }}{% endif %}{% if filters.age %}&amp;age={{ filters.age }}{% endif %}">Previous</a>{% endif %}
+Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if filters.state %}&amp;state={{ filters.state }}{% endif %}{% if filters.relevance %}&amp;relevance={{ filters.relevance }}{% endif %}{% if filters.category %}&amp;category={{ filters.category }}{% endif %}{% if filters.lga %}&amp;lga={{ filters.lga }}{% endif %}{% if filters.age %}&amp;age={{ filters.age }}{% endif %}">Next</a>{% endif %}
+</p>
+{% endif %}
+</div>
+
+<p><a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

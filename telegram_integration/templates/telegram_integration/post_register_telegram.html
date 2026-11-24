@@ -3,15 +3,15 @@
 {% block title %}Registration Successful - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+<div class="kpn-page" style="max-width:48rem">
+    <div class="kpn-card overflow-hidden">
         <!-- Success Header -->
         <div class="bg-kpn-green text-white px-6 py-8 text-center">
             <div class="mb-4">
                 <i class="fas fa-check-circle text-6xl opacity-90"></i>
             </div>
-            <h1 class="text-2xl md:text-3xl font-bold mb-2">Registration Successful!</h1>
-            <p class="opacity-90">Your application for <strong>{{ user.role_definition.title }}</strong> has been submitted.</p>
+            <h1 class="text-2xl md:kpn-h1 mb-2">Registration Successful!</h1>
+            <p class="opacity-90">Your application for <strong>{{ user.role_definition.canonical_title }}</strong> has been submitted.</p>
         </div>
 
         <div class="p-6 md:p-8">
@@ -31,18 +31,18 @@
             <!-- Telegram Required Notice -->
             <div class="bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-300 dark:border-blue-600 rounded-lg p-5 mb-6">
                 <div class="flex items-start">
-                    <i class="fab fa-telegram text-blue-500 mt-1 mr-3 flex-shrink-0 text-2xl"></i>
+                    <i class="fab fa-telegram text-kpn-green mt-1 mr-3 flex-shrink-0 text-2xl"></i>
                     <div>
                         <p class="font-bold text-gray-900 dark:text-white mb-1">
                             Action Required: Join the KPN Telegram Channel
                         </p>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                            Your leadership role (<strong>{{ user.role_definition.title }}</strong>) requires active 
+                            Your leadership role (<strong>{{ user.role_definition.canonical_title }}</strong>) requires active 
                             membership of the official KPN Telegram channel. You must complete this step to access 
                             your dashboard once approved.
                         </p>
                         <a href="https://t.me/officialkpn" target="_blank"
-                           class="inline-flex items-center px-5 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold text-sm transition">
+                           class="inline-flex items-center px-5 py-2 bg-kpn-green hover:bg-green-700 text-white rounded-lg font-semibold text-sm transition">
                             <i class="fab fa-telegram mr-2"></i> Join @officialkpn Channel
                             <i class="fas fa-external-link-alt ml-2 text-xs"></i>
                         </a>
@@ -51,7 +51,7 @@
             </div>
 
             <!-- What Happens Next -->
-            <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">
+            <h2 class="kpn-h4 text-gray-900 dark:text-white mb-4">
                 <i class="fas fa-road mr-2 text-kpn-green"></i>What Happens Next
             </h2>
             <div class="space-y-3 mb-8">
@@ -60,10 +60,10 @@
                     <p class="text-sm text-gray-600 dark:text-gray-400">KPN leadership reviews and approves your application</p>
                 </div>
                 <div class="flex items-start">
-                    <div class="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 flex items-center justify-center text-sm font-bold mr-3 flex-shrink-0">2</div>
+                    <div class="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 text-kpn-green flex items-center justify-center text-sm font-bold mr-3 flex-shrink-0">2</div>
                     <p class="text-sm text-gray-600 dark:text-gray-400">
                         Join the KPN Telegram channel at 
-                        <a href="https://t.me/officialkpn" target="_blank" class="text-blue-500 hover:underline font-semibold">t.me/officialkpn</a>
+                        <a href="https://t.me/officialkpn" target="_blank" class="text-kpn-green hover:underline font-semibold">t.me/officialkpn</a>
                     </p>
                 </div>
                 <div class="flex items-start">

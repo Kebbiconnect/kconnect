@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ project.title }} | KPN Project Tracker{% endblock %}
+{% block extra_css %}{% include 'story_intelligence/_pt_styles.html' %}{% include 'intelligence/_pj_styles.html' %}{% endblock %}
+{% block content %}
+<div class="pt bg-gray-50 dark:bg-gray-900 min-h-screen">
+
+  <section class="pt-detail-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/projects-hero.jpg' %}')">
+    <i class="fas fa-hard-hat pt-hero-mark" aria-hidden="true"></i>
+    <div class="pt-detail-inner">
+      <a href="{% url 'projects:list' %}" class="pt-back"><i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Project Tracker</a>
+      <div style="margin-top:.75rem;">
+        <span class="pt-badge pt-badge-{{ project.status|lower }}">{{ project.get_status_display }}</span>
+      </div>
+      <h1>{{ project.title }}</h1>
+      <p class="pt-code" style="margin-top:.8rem; color:#c9d8e8;"><strong>{{ project.project_code }}</strong><span aria-hidden="true">•</span><span>{{ project.get_category_display }}</span>{% if project.sector %}<span aria-hidden="true">•</span><span>{{ project.get_sector_display }}</span>{% endif %}{% if project.location_label %}<span aria-hidden="true">•</span><span><i class="fas fa-location-dot" aria-hidden="true"></i> {{ project.location_label }}</span>{% endif %}</p>
+    </div>
+  </section>
+
+  <div class="pt-detail-body">
+    <article class="pt-detail-card">
+      {% if project.description %}
+      <div class="text-gray-700 dark:text-gray-300 leading-relaxed">{{ project.description|linebreaks }}</div>
+      {% endif %}
+
+      <dl class="pt-info-grid">
+        {% if project.institution %}<div><dt>Responsible Institution</dt><dd>{{ project.institution.name }} ({{ project.institution.get_kind_display }})</dd></div>{% endif %}
+        {% if project.location_label %}<div><dt>Where</dt><dd>{{ project.location_label }}{% if project.lga %} · <a href="{% url 'lga_news:detail' project.lga.name|slugify %}" class="text-kpn-blue hover:underline">{{ project.lga.name }} LGA news page</a>{% endif %}</dd></div>{% endif %}
+        {% if project.contractor_name %}<div><dt>Contractor (as documented)</dt><dd>{{ project.contractor_name }}</dd></div>{% endif %}
+        {% if project.contract_amount is not None %}<div><dt>Contract Amount (as documented)</dt><dd>₦{{ project.contract_amount_display }}</dd></div>{% endif %}
+        {% if project.award_date %}<div><dt>Award Date (as documented)</dt><dd>{{ project.award_date|date:"F j, Y" }}</dd></div>{% endif %}
+        {% if project.commencement_date %}<div><dt>Commencement Date (as documented)</dt><dd>{{ project.commencement_date|date:"F j, Y" }}</dd></div>{% endif %}
+        {% if project.expected_completion_date %}<div><dt>Expected Completion (as announced)</dt><dd>{{ project.expected_completion_date|date:"F j, Y" }}</dd></div>{% endif %}
+        {% if project.source_url %}<div><dt>Original Announcement</dt><dd><a href="{{ project.source_url }}" target="_blank" rel="noopener noreferrer" class="text-kpn-blue hover:underline">View source</a></dd></div>{% endif %}
+      </dl>
+
+      {% if stories %}
+      <div class="mt-6 border-t border-gray-100 dark:border-gray-700 pt-5">
+        <h2 class="pt-section-title">Related KPN stories</h2>
+        <ul class="space-y-2">
+          {% for story in stories %}
+          <li><a href="{% url 'campaigns:article_detail' story.slug %}" class="text-kpn-blue hover:underline font-medium">{{ story.title }}</a>
+          {% if story.story_id %}<span class="text-xs font-mono text-gray-500">({{ story.story_id }})</span>{% endif %}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <div class="mt-8 border-t border-gray-100 dark:border-gray-700 pt-6">
+        <h2 class="pt-section-title">Evidence Timeline</h2>
+        {% if milestones %}
+        <ol class="pj-timeline">
+          {% for milestone in milestones %}
+          <li>
+            <span class="pj-timeline-dot" aria-hidden="true"></span>
+            <p class="pj-timeline-date">{{ milestone.date|date:"F j, Y" }}{% if milestone.status_after %} &bull; Status: <strong>{{ milestone.get_status_after_display }}</strong>{% endif %}</p>
+            <h3>{{ milestone.title }}</h3>
+            {% if milestone.body %}<div class="pj-timeline-body">{{ milestone.body|linebreaks }}</div>{% endif %}
+          </li>
+          {% endfor %}
+        </ol>
+        {% else %}
+        <p class="text-sm text-gray-500">No timeline entries recorded yet.</p>
+        {% endif %}
+      </div>
+
+      {% if evidence %}
+      <div class="mt-8 border-t border-gray-100 dark:border-gray-700 pt-6">
+        <h2 class="pt-section-title">Evidence</h2>
+        {% for record in evidence %}
+        <div class="pj-evidence">
+          <strong>{{ record.title }}</strong>
+          <small>{{ record.get_kind_display }} · {{ record.get_verification_state_display }}{% if record.captured_at %} · {{ record.captured_at|date:"F j, Y" }}{% endif %}</small>
+          {% if record.url %}<p class="mt-1 text-sm"><a href="{{ record.url }}" target="_blank" rel="noopener noreferrer" class="text-kpn-blue hover:underline">View evidence</a></p>{% endif %}
+          {% if record.file %}<p class="mt-1 text-sm"><a href="{{ record.file.url }}" target="_blank" rel="noopener noreferrer" class="text-kpn-blue hover:underline">View file</a></p>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </article>
+  </div>
+</div>
+{% endblock %}

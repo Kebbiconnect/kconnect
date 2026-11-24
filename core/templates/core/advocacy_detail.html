@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ campaign.title }} - Advocacy Campaigns · KPN{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-10">
+    <div class="kpn-home-container">
+        {% include 'includes/breadcrumbs.html' %}
+
+        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-7 md:p-10">
+            <div class="kpn-opp-top" style="margin-bottom:14px">
+                <span class="kpn-tag soft">Advocacy Campaign</span>
+                {% if campaign.status == 'ACTIVE' %}<span class="kpn-status open">Active</span>
+                {% elif campaign.status == 'PAUSED' %}<span class="kpn-status review">Paused</span>
+                {% elif campaign.status == 'COMPLETED' %}<span class="kpn-status closed">Completed</span>
+                {% else %}<span class="kpn-status closed">Closed</span>{% endif %}
+            </div>
+
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white leading-tight mb-3">{{ campaign.title }}</h1>
+
+            {% if campaign.image %}
+            <img src="{{ campaign.image.url }}" alt="{{ campaign.title }}" class="w-full max-h-96 object-cover rounded-xl my-6">
+            {% endif %}
+
+            <dl class="kpn-detail-facts">
+                <div><dt>Status</dt><dd>{{ campaign.get_status_display }}</dd></div>
+                {% if campaign.responsible_team %}<div><dt>Responsible team</dt><dd>{{ campaign.responsible_team }}</dd></div>{% endif %}
+                <div><dt>Campaign opened</dt><dd>{{ campaign.created_at|date:"j F Y" }}</dd></div>
+                {% if campaign.affected_communities %}<div><dt>Affected communities</dt><dd>{{ campaign.affected_communities }}</dd></div>{% endif %}
+            </dl>
+
+            <div class="prose prose-lg dark:prose-invert max-w-none">
+                {% if campaign.objective %}
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-8 mb-3">Objective</h2>
+                {{ campaign.objective|linebreaks }}
+                {% endif %}
+
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-8 mb-3">The issue</h2>
+                {{ campaign.issue|linebreaks }}
+
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-8 mb-3">Background</h2>
+                {{ campaign.background|linebreaks }}
+
+                {% if evidence_articles %}
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-8 mb-3">Evidence</h2>
+                <p>Published KPN reporting documenting this issue:</p>
+                <ul>
+                    {% for article in evidence_articles %}
+                    <li><a href="{% url 'campaigns:article_detail' article.slug %}">{{ article.title }}</a>{% if article.story_id %} <span class="text-sm text-gray-500">· Story ID {{ article.story_id }}</span>{% endif %}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% if campaign.proposed_action %}
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-8 mb-3">Proposed action</h2>
+                {{ campaign.proposed_action|linebreaks }}
+                {% endif %}
+
+                {% if campaign.kpn_position %}
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-8 mb-3">KPN's position</h2>
+                {{ campaign.kpn_position|linebreaks }}
+                {% endif %}
+
+                {% if campaign.actions_taken %}
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-8 mb-3">Action taken so far</h2>
+                {{ campaign.actions_taken|linebreaks }}
+                {% endif %}
+            </div>
+
+            {% if activities %}
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-10 mb-4">Progress and activities</h2>
+            <ol class="space-y-4">
+                {% for activity in activities %}
+                <li class="flex gap-4">
+                    <span class="kpn-tag gold" style="white-space:nowrap">{{ activity.date|date:"j M Y" }}</span>
+                    <span class="text-gray-700 dark:text-gray-200">{{ activity.entry }}</span>
+                </li>
+                {% endfor %}
+            </ol>
+            {% endif %}
+
+            <div class="prose prose-lg dark:prose-invert max-w-none">
+                {% if campaign.government_response %}
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-8 mb-3">Government response</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">As stated by the responsible authority:</p>
+                {{ campaign.government_response|linebreaks }}
+                {% endif %}
+
+                {% if campaign.outcome %}
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-8 mb-3">Outcome</h2>
+                {{ campaign.outcome|linebreaks }}
+                {% endif %}
+            </div>
+
+            <div class="flex flex-wrap gap-3 mt-8">
+                <a href="{% url 'core:community_voice' %}" class="kpn-btn kpn-btn-outline kpn-btn-lg"><i class="fas fa-comments"></i> Community Voice</a>
+                <a href="{% url 'core:advocacy' %}" class="kpn-btn kpn-btn-secondary kpn-btn-lg">All campaigns</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

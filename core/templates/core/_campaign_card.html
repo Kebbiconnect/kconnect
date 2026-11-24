@@ -1,0 +1,23 @@
+{% comment %}One advocacy campaign card. Expects `campaign`.{% endcomment %}
+<article class="kpn-opp-card">
+    {% if campaign.image %}
+    <a href="{% url 'core:advocacy_detail' campaign.pk %}">
+        <img src="{{ campaign.image.url }}" alt="{{ campaign.title }}" class="w-full h-44 object-cover rounded-lg mb-4">
+    </a>
+    {% endif %}
+    <div class="kpn-opp-top">
+        <span class="kpn-tag soft">Advocacy Campaign</span>
+        {% if campaign.status == 'ACTIVE' %}<span class="kpn-status open">Active</span>
+        {% elif campaign.status == 'PAUSED' %}<span class="kpn-status review">Paused</span>
+        {% elif campaign.status == 'COMPLETED' %}<span class="kpn-status closed">Completed</span>
+        {% else %}<span class="kpn-status closed">Closed</span>{% endif %}
+    </div>
+    <h3><a href="{% url 'core:advocacy_detail' campaign.pk %}">{{ campaign.title }}</a></h3>
+    <p>{{ campaign.objective|default:campaign.issue|truncatewords:26 }}</p>
+    <div class="mt-auto pt-3 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between gap-3">
+        <span class="text-sm text-gray-500 dark:text-gray-400">
+            {% with n=campaign.activities.count %}{% if n %}<i class="fas fa-list mr-1"></i> {{ n }} logged activit{{ n|pluralize:"y,ies" }}{% else %}Started {{ campaign.created_at|date:"M Y" }}{% endif %}{% endwith %}
+        </span>
+        <a href="{% url 'core:advocacy_detail' campaign.pk %}" class="kpn-home-link">View campaign <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+    </div>
+</article>

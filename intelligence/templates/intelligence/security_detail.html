@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Security Desk · {{ unit.title }} · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Security Desk · Restricted {% if kind == 'cluster' %}Event Cluster{% else %}Single Report{% endif %} #{{ unit.pk }}</p>
+<h1 class="kpn-h1">{{ unit.title }}</h1>
+<div class="intel-chips">
+<span class="intel-chip"><i class="fas fa-lock"></i>{{ state_label }}</span>
+{% if category %}<span class="intel-chip"><i class="fas fa-tag"></i>{{ category.label }}</span>{% endif %}
+{% if lga %}<span class="intel-chip"><i class="fas fa-location-dot"></i>{{ lga.name }} LGA</span>{% endif %}
+<span class="intel-chip"><i class="fas fa-inbox"></i>{{ members|length }} source item{{ members|length|pluralize }}</span>
+</div>
+</header>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="kpn-h3">Evidence</h2>
+{% for item in members %}
+<div class="intel-promise">
+<strong>{{ item.title }}</strong>
+<div class="intel-badges">
+{% if item.relevance == 'CONFIRMED' %}<span class="intel-badge intel-badge-confirmed">Confirmed relevance</span>{% elif item.relevance == 'STRONG_POSSIBLE' %}<span class="intel-badge intel-badge-strong">Strong possible</span>{% elif item.relevance == 'UNCERTAIN' %}<span class="intel-badge intel-badge-uncertain">Uncertain</span>{% elif item.relevance == 'NOT_RELEVANT' %}<span class="intel-badge intel-badge-notrel">Not relevant</span>{% else %}<span class="intel-badge intel-badge-plain">Unprocessed</span>{% endif %}
+</div>
+<small>{{ item.source.name }} · <a href="{{ item.original_url }}" rel="noopener" target="_blank">Original report</a> · Published {{ item.published_at|date:'j M Y, H:i' }} · Collected {{ item.discovered_at|date:'j M Y, H:i' }}</small>
+{% if item.text %}<p>{{ item.text|truncatechars:600 }}</p>{% elif item.summary %}<p>{{ item.summary|truncatechars:600 }}</p>{% endif %}
+</div>
+{% endfor %}
+</div>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="kpn-h3">Working copy</h2>
+{% if unit.working_text %}
+<pre style="white-space:pre-wrap;font:inherit">{{ unit.working_text }}</pre>
+<form method="post" class="editorial-form" action="{% url 'intelligence:security_working_copy' kind unit.pk %}">
+{% csrf_token %}
+{{ redact_form.as_p }}
+<button class="kpn-btn" type="submit" name="action" value="redact">Blank this passage</button>
+<button class="kpn-btn" type="submit" name="action" value="prepare">Rebuild from evidence</button>
+</form>
+{% else %}
+<p>No working copy yet. Preparing one copies the member reports into a desk copy that can be redacted before any story conversion; the original evidence is never altered.</p>
+<form method="post" action="{% url 'intelligence:security_working_copy' kind unit.pk %}">
+{% csrf_token %}
+<button class="kpn-btn kpn-btn-primary" type="submit" name="action" value="prepare">Prepare working copy</button>
+</form>
+{% endif %}
+</div>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="kpn-h3">Desk actions</h2>
+{% if action_choices %}
+<form method="post" class="editorial-form intel-action-form" action="{% url 'intelligence:security_transition' kind unit.pk %}">
+{% csrf_token %}
+<p><label for="sec-note">Note / reason</label>
+<textarea id="sec-note" name="note" rows="3"></textarea>
+<small>Required when rejecting, requesting more evidence, or withdrawing verification.</small></p>
+<p>
+{% for action, label in action_choices %}<button class="kpn-btn kpn-btn-primary" type="submit" name="action" value="{{ action }}">{{ label }}</button> {% endfor %}
+</p>
+</form>
+{% else %}
+<p>No desk actions are available to you on this unit in its current state.</p>
+{% endif %}
+<p><a href="{% url 'intelligence:security_incident_new' %}?kind={{ kind }}&amp;pk={{ unit.pk }}">Record an incident from this unit</a></p>
+</div>
+
+{% if incidents %}
+<div class="kpn-card kpn-card-body">
+<h2 class="kpn-h3">Linked incidents</h2>
+{% for incident in incidents %}
+<div class="intel-promise">
+<a href="{% url 'intelligence:security_incident' incident.pk %}">{{ incident.title }}</a>
+<small> · {{ incident.get_status_display }} · Reported {{ incident.reported_at|date:'j M Y, H:i' }}</small>
+</div>
+{% endfor %}
+</div>
+{% endif %}
+
+<div class="kpn-card kpn-card-body">
+<h2 class="kpn-h3">Decision history</h2>
+{% for decision in decisions %}
+<div class="intel-promise">
+<strong>{{ decision.get_action_display }}</strong> · {{ decision.from_label }} → {{ decision.to_label }}
+<small>{{ decision.actor.get_full_name|default:decision.actor.username }} · {{ decision.created_at|date:'j M Y, H:i' }}{% if decision.note %} · {{ decision.note }}{% endif %}</small>
+</div>
+{% empty %}
+<p>No decisions recorded yet.</p>
+{% endfor %}
+</div>
+
+<p><a href="{% url 'intelligence:security' %}">Security desk</a> · <a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

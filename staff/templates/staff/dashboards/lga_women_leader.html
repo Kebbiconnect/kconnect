@@ -1,22 +1,22 @@
 {% extends 'base.html' %}
 {% load dashboard_actions %}
 
-{% block title %}LGA Women Leader Dashboard - KPN{% endblock %}
+{% block title %}LGA Women's Development Officer Dashboard - KPN{% endblock %}
 
 {% block content %}
 <div class="kpn-page">
-    {% include 'staff/dashboards/includes/_role_header.html' with title="LGA Women Leader Dashboard" icon_class="fas fa-female" welcome_messages="Leading women in your LGA.|Advocating for women's empowerment locally.|Every woman's voice matters." %}
+    {% include 'staff/dashboards/includes/_role_header.html' with title="LGA Women's Development Officer Dashboard" icon_class="fas fa-female" welcome_messages="Leading women in your LGA.|Advocating for women's empowerment locally.|Every woman's voice matters." %}
     {% include 'staff/dashboards/includes/_profile_section.html' %}
 
     <!-- My Statistics -->
     <div class="mb-8">
         <h2 class="kpn-section-label mt-6">
-    <i class="fas fa-chart-pie mr-2 text-kpn-blue"></i> My Statistics
+    <i class="fas fa-chart-pie mr-2 text-kpn-green"></i> My Statistics
 </h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="kpn-stat-card">
-    <div class="kpn-stat-icon bg-blue-100 dark:bg-blue-900/30 text-kpn-blue">
-        <i class="fas fa-chart-line"></i>
+    <div class="kpn-stat-icon tone-brand">
+        <i class="fas fa-map-marker-alt"></i>
     </div>
     <div>
         <p class="kpn-stat-value">{{user.lga.name|default:'N/A'}}</p>
@@ -24,8 +24,8 @@
     </div>
 </div>
             <div class="kpn-stat-card">
-    <div class="kpn-stat-icon bg-green-100 dark:bg-green-900/30 text-kpn-green">
-        <i class="fas fa-chart-line"></i>
+    <div class="kpn-stat-icon tone-brand">
+        <i class="fas fa-female"></i>
     </div>
     <div>
         <p class="kpn-stat-value">{{women_count|default:0}}</p>
@@ -33,8 +33,8 @@
     </div>
 </div>
             <div class="kpn-stat-card">
-    <div class="kpn-stat-icon bg-purple-100 dark:bg-purple-900/30 text-purple-600">
-        <i class="fas fa-chart-line"></i>
+    <div class="kpn-stat-icon tone-ink">
+        <i class="fas fa-heart"></i>
     </div>
     <div>
         <p class="kpn-stat-value">{{welfare_cases|default:0}}</p>
@@ -54,24 +54,24 @@
         <!-- My Responsibilities -->
         <div class="kpn-card">
             <h2 class="kpn-section-label mt-6">
-    <i class="fas fa-clipboard-list mr-2 text-purple-500"></i> My Responsibilities
+    <i class="fas fa-clipboard-list mr-2 text-kpn-green"></i> My Responsibilities
 </h2>
             <ul class="space-y-4">
                 <li class="flex items-start">
-                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">1</div>
+                    <div class="kpn-step-num flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3">1</div>
                     <span class="text-gray-700 dark:text-gray-300"><strong>Local Women's Advocacy:</strong> Champion the rights and active participation of women within the LGA.</span>
                 </li>
                 <li class="flex items-start">
-                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">2</div>
+                    <div class="kpn-step-num flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3">2</div>
                     <span class="text-gray-700 dark:text-gray-300"><strong>Welfare Coordination:</strong> Coordinate welfare support for women members facing difficulties in the LGA.</span>
                 </li>
                 <li class="flex items-start">
-                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">3</div>
+                    <div class="kpn-step-num flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3">3</div>
                     <span class="text-gray-700 dark:text-gray-300"><strong>Empowerment Events:</strong> Organize local women's training, workshops, and empowerment gatherings.</span>
                 </li>
                 <li class="flex items-start">
-                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">4</div>
-                    <span class="text-gray-700 dark:text-gray-300"><strong>Reporting to State:</strong> Report LGA women's activities and welfare cases to the state Women Leader.</span>
+                    <div class="kpn-step-num flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3">4</div>
+                    <span class="text-gray-700 dark:text-gray-300"><strong>Reporting to State:</strong> Report LGA women's activities and welfare cases to the state Director of Women's Development.</span>
                 </li>
             </ul>
         </div>

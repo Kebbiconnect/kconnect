@@ -1,21 +1,30 @@
 {% extends 'base.html' %}
 
-{% block title %}Manage Donations - Treasurer - KPN{% endblock %}
+{% block title %}Manage Donations - Director of Finance - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page">
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold">Manage Donations</h1>
+            <h1 class="kpn-h1">Manage Donations</h1>
             <p class="text-gray-600 dark:text-gray-400">Verify incoming donations</p>
         </div>
-        <a href="{% url 'donations:add_donation' %}" class="bg-kpn-blue text-white px-4 py-2 rounded hover:bg-blue-700 transition inline-block">
+        <a href="{% url 'donations:add_donation' %}" class="bg-kpn-green text-white px-4 py-2 rounded hover:bg-green-700 transition inline-block">
             <i class="fas fa-plus mr-2"></i> Add Donation
         </a>
     </div>
     
+    <div class="kpn-chart-grid mb-8">
+        <div class="kpn-card"><div class="kpn-card-body">
+            {% include 'includes/_chart_bars.html' with chart_rows=donation_status_bars chart_title='Donations by status (count)' %}
+        </div></div>
+        <div class="kpn-card"><div class="kpn-card-body">
+            {% include 'includes/_chart_bars.html' with chart_rows=donation_month_bars chart_title='Donation amounts by month (₦, last 6 months)' %}
+        </div></div>
+    </div>
+
     <div class="mb-8 kpn-card p-6">
-        <h2 class="text-2xl font-semibold mb-4">Unverified Donations</h2>
+        <h2 class="kpn-h2 mb-4">Unverified Donations</h2>
         {% if unverified_donations %}
             <div class="overflow-x-auto">
                 <table class="w-full">
@@ -51,7 +60,7 @@
     </div>
     
     <div class="kpn-card p-6">
-        <h2 class="text-2xl font-semibold mb-4">Verified Donations</h2>
+        <h2 class="kpn-h2 mb-4">Verified Donations</h2>
         {% if verified_donations %}
             <div class="overflow-x-auto">
                 <table class="w-full">

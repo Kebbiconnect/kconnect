@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Advocacy Campaigns - Civic Engagement & Advocacy · KPN{% endblock %}
+
+{% block content %}
+<section class="kpn-page-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/civic-hero.jpg' %}')">
+    <div class="kpn-home-container">
+        <p class="kpn-eyebrow">Civic Engagement &amp; Advocacy</p>
+        <h1>Advocacy Campaigns</h1>
+        <p>Campaigns are based on documented evidence, a defined objective and a clear proposed action. Each campaign page shows the evidence, the action proposed, the progress made and the outcome.</p>
+    </div>
+</section>
+
+<div class="kpn-home-container">
+    {% include 'includes/breadcrumbs.html' %}
+    {% include 'core/_civic_subnav.html' with active='campaigns' %}
+</div>
+
+<section class="py-12 pt-6">
+    <div class="kpn-home-container">
+        <div class="kpn-notice" style="margin-bottom:28px">
+            <b>KPN is non-partisan.</b>
+            <span>KPN's position on each campaign is labelled as KPN's position. Responses and claims by government or other parties are attributed to whoever made them.</span>
+        </div>
+
+        <div class="kpn-home-section-heading"><div><h2>Current campaigns</h2></div></div>
+        {% if current_campaigns %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for campaign in current_campaigns %}{% include 'core/_campaign_card.html' %}{% endfor %}
+        </div>
+        {% else %}
+        <div class="kpn-home-empty">
+            <p class="kpn-empty-title">No advocacy campaign is under way right now</p>
+            <p class="kpn-empty-desc">Campaigns begin from documented community concerns. When KPN opens one, it appears here with its evidence and objective.</p>
+            <a href="{% url 'core:community_voice' %}" class="kpn-btn kpn-btn-primary">Read Community Voice</a>
+        </div>
+        {% endif %}
+
+        {% if concluded_campaigns %}
+        <div class="kpn-home-section-heading" style="margin-top:48px"><div><h2>Concluded campaigns</h2></div></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for campaign in concluded_campaigns %}{% include 'core/_campaign_card.html' %}{% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

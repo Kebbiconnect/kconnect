@@ -1,0 +1,19 @@
+{% comment %}Member's own LGA on the Kebbi State map (Consistency
+Rounds C+D). Expects ``my_lga_map`` from
+core.dashboard_charts.member_lga_map: the member's LGA in deep brand
+green, every other LGA pale, on the validated HDX COD-AB geometry
+(intelligence.map_data). Renders nothing when the member has no LGA
+on record.{% endcomment %}
+{% if my_lga_map %}
+<div class="kpn-card kpn-chart-map-card">
+  <div class="kpn-card-header"><h3 class="kpn-h4"><i class="fas fa-map-marker-alt text-kpn-green"></i> Your LGA — {{ my_lga_map.own_name }}</h3></div>
+  <div class="kpn-card-body">
+    <svg class="kpn-chart-map" viewBox="{{ my_lga_map.viewbox }}" role="img" aria-label="Map of Kebbi State with {{ my_lga_map.own_name }} highlighted">
+      {% for n in my_lga_map.neighbours %}<path d="{{ n.d }}" class="kpn-chart-map-neighbour"><title>{{ n.name }}</title></path>{% endfor %}
+      <path d="{{ my_lga_map.own.d }}" class="kpn-chart-map-own"><title>{{ my_lga_map.own_name }} — your LGA</title></path>
+      <text x="{{ my_lga_map.own.x }}" y="{{ my_lga_map.own.y }}" class="kpn-chart-map-label">{{ my_lga_map.own_name }}</text>
+    </svg>
+    <p class="kpn-chart-note">Your registered LGA is highlighted. Boundaries: Nigeria subnational administrative boundaries (COD-AB, OCHA via the Humanitarian Data Exchange, CC BY-IGO).</p>
+  </div>
+</div>
+{% endif %}

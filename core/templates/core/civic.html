@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Civic Engagement & Advocacy - Kebbi Progressive Youth Network{% endblock %}
+
+{% block content %}
+<section class="kpn-page-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/civic-hero.jpg' %}')">
+    <div class="kpn-home-container">
+        <p class="kpn-eyebrow">Your voice in public life</p>
+        <h1>Civic Engagement &amp; Advocacy</h1>
+        <p>Civic Engagement &amp; Advocacy should explain democratic participation, public accountability and community concerns. A community concern can be documented, evidenced and — where appropriate — become an advocacy campaign.</p>
+    </div>
+</section>
+
+<div class="kpn-home-container">
+    {% include 'core/_civic_subnav.html' with active='overview' %}
+</div>
+
+<section class="py-12">
+    <div class="kpn-home-container">
+        <div class="kpn-notice" style="margin-bottom:28px">
+            <b>KPN is non-partisan.</b>
+            <span>Where a page states KPN's position, it is labelled as KPN's position. Claims made by communities, officials or other parties are attributed to whoever made them.</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <a href="{% url 'core:civic_education' %}" class="kpn-opp-card block">
+                <span class="kpn-tag soft"><i class="fas fa-graduation-cap" aria-hidden="true"></i> Learn</span>
+                <h3>Civic Education</h3>
+                <p>Explains democratic participation, voter education, citizens' rights and responsibilities, and how public institutions work.</p>
+                <span class="kpn-home-link">Start learning <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </a>
+            <a href="{% url 'core:civic_governance' %}" class="kpn-opp-card block">
+                <span class="kpn-tag soft"><i class="fas fa-balance-scale" aria-hidden="true"></i> Track</span>
+                <h3>Governance &amp; Accountability</h3>
+                <p>Connects visitors to the Promise Tracker and the Project Tracker, where promises and public projects remain traceable.</p>
+                {% if promise_count or project_count %}<p class="text-sm text-gray-500 dark:text-gray-400">{{ promise_count }} promise{{ promise_count|pluralize }} · {{ project_count }} project{{ project_count|pluralize }} tracked</p>{% endif %}
+                <span class="kpn-home-link">Follow the records <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </a>
+            <a href="{% url 'core:community_voice' %}" class="kpn-opp-card block">
+                <span class="kpn-tag soft"><i class="fas fa-comments" aria-hidden="true"></i> Be heard</span>
+                <h3>Community Voice</h3>
+                <p>Gives documented community concerns a visible home. A concern can move from Community Voice to further reporting or, where appropriate, become an advocacy campaign.</p>
+                {% if voice_count %}<p class="text-sm text-gray-500 dark:text-gray-400">{{ voice_count }} documented concern{{ voice_count|pluralize }} published</p>{% endif %}
+                <span class="kpn-home-link">Read community concerns <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </a>
+            <a href="{% url 'core:advocacy' %}" class="kpn-opp-card block">
+                <span class="kpn-tag soft"><i class="fas fa-bullhorn" aria-hidden="true"></i> Act</span>
+                <h3>Advocacy Campaigns</h3>
+                <p>Campaigns are based on documented evidence, a defined objective and a clear proposed action.</p>
+                {% if campaign_count %}<p class="text-sm text-gray-500 dark:text-gray-400">{{ campaign_count }} campaign{{ campaign_count|pluralize }} under way</p>{% endif %}
+                <span class="kpn-home-link">See the campaigns <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </a>
+            <a href="{% url 'core:election_observation' %}" class="kpn-opp-card block">
+                <span class="kpn-tag soft"><i class="fas fa-vote-yea" aria-hidden="true"></i> Observe</span>
+                <h3>Election Observation</h3>
+                <p>May contain observer information and findings from elections KPN has formally observed.</p>
+                <span class="kpn-home-link">Observer information <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </a>
+            <a href="{% url 'core:community_report' %}" class="kpn-opp-card block">
+                <span class="kpn-tag gold"><i class="fas fa-pen" aria-hidden="true"></i> Report</span>
+                <h3>Raise a concern</h3>
+                <p>Communities should be able to raise needs and concerns. Reports are reviewed by the KPN team — nothing is published automatically.</p>
+                <span class="kpn-home-link">Report a concern <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </a>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-7 mt-10">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">How a concern becomes a campaign</h2>
+            <ol class="list-decimal list-inside space-y-2 text-gray-600 dark:text-gray-300">
+                <li>A community member <a href="{% url 'core:community_report' %}" class="kpn-home-link">reports a concern</a>.</li>
+                <li>KPN reviewers check and document it. Published concerns appear on <a href="{% url 'core:community_voice' %}" class="kpn-home-link">Community Voice</a>, labelled as community-raised with their verification level.</li>
+                <li>Where the evidence supports it, the concern informs further reporting — or becomes an <a href="{% url 'core:advocacy' %}" class="kpn-home-link">advocacy campaign</a> with a defined objective and a clear proposed action.</li>
+            </ol>
+        </div>
+    </div>
+</section>
+{% endblock %}

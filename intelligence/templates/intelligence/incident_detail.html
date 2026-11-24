@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Incident · {{ incident.title }} · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Security Desk · Incident #{{ incident.pk }} · Restricted</p>
+<h1 class="kpn-h1">{{ incident.title }}</h1>
+<div class="intel-chips">
+<span class="intel-chip"><i class="fas fa-file-shield"></i>{{ incident.get_status_display }}</span>
+{% if incident.incident_type %}<span class="intel-chip"><i class="fas fa-tag"></i>{{ incident.incident_type }}</span>{% endif %}
+{% if incident.lga %}<span class="intel-chip"><i class="fas fa-location-dot"></i>{{ incident.lga.name }} LGA</span>{% endif %}
+<span class="intel-chip"><i class="fas fa-clock"></i>Reported {{ incident.reported_at|date:'j M Y, H:i' }}</span>
+</div>
+</header>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="kpn-h3">Record</h2>
+<p>
+{% if incident.occurred_at %}Occurred: {{ incident.occurred_at|date:'j M Y, H:i' }}<br>{% endif %}
+{% if incident.location_text %}Area: {{ incident.location_text }}<br>{% endif %}
+{% if incident.has_offline_detail %}Restricted detail was communicated offline and is not stored in this system.<br>{% endif %}
+{% if incident.cluster %}From event cluster #{{ incident.cluster.pk }}: {{ incident.cluster.title }}<br>{% endif %}
+{% if incident.publication %}From report #{{ incident.publication.pk }}: {{ incident.publication.title }}<br>{% endif %}
+</p>
+<form method="post" class="editorial-form" action="{% url 'intelligence:security_incident_status' incident.pk %}">
+{% csrf_token %}
+{{ status_form.as_p }}
+<button class="kpn-btn" type="submit">Update status</button>
+</form>
+</div>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="kpn-h3">Reported figures</h2>
+<p>Every figure here is a claim attributed to the source that reported it. Figures are never shown as verified facts.</p>
+{% for claim in claims %}
+<div class="intel-promise">
+<strong>{{ claim.attribution }}</strong>
+<small>{% if claim.source_url %}<a href="{{ claim.source_url }}" rel="noopener" target="_blank">Source</a> · {% endif %}Recorded {{ claim.created_at|date:'j M Y, H:i' }}</small>
+</div>
+{% empty %}
+<p>No figures recorded.</p>
+{% endfor %}
+<form method="post" class="editorial-form" action="{% url 'intelligence:security_incident_claim' incident.pk %}">
+{% csrf_token %}
+{{ claim_form.as_p }}
+<button class="kpn-btn kpn-btn-primary" type="submit">Record figure as a claim</button>
+</form>
+</div>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="kpn-h3">Working notes</h2>
+{% if incident.working_notes %}<pre style="white-space:pre-wrap;font:inherit">{{ incident.working_notes }}</pre>{% else %}<p>No working notes.</p>{% endif %}
+<form method="post" class="editorial-form" action="{% url 'intelligence:security_incident_redact' incident.pk %}">
+{% csrf_token %}
+{{ redact_form.as_p }}
+<button class="kpn-btn" type="submit">Blank this passage</button>
+</form>
+</div>
+
+<p><a href="{% url 'intelligence:security' %}">Security desk</a> · <a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

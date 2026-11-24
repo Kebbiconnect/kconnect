@@ -3,42 +3,42 @@
 {% block title %}Review Applicant - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page" style="max-width:56rem">
     <div class="mb-6">
-        <a href="{% url 'staff:approve_members' %}" class="text-kpn-blue hover:text-kpn-green">
+        <a href="{% url 'staff:approve_members' %}" class="text-kpn-green hover:text-kpn-green">
             ← Back to Approvals
         </a>
     </div>
     
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-8">
-        <h1 class="text-3xl font-bold mb-6">Review Application</h1>
+    <div class="kpn-card p-8">
+        <h1 class="kpn-h1 mb-6">Review Application</h1>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div>
                 <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Full Name</label>
-                <p class="text-lg font-semibold">{{ applicant.get_full_name }}</p>
+                <p class="kpn-h4">{{ applicant.get_full_name }}</p>
             </div>
             
             <div>
                 <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Username</label>
-                <p class="text-lg font-semibold">{{ applicant.username }}</p>
+                <p class="kpn-h4">{{ applicant.username }}</p>
             </div>
             
             <div>
                 <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Email</label>
-                <p class="text-lg font-semibold">{{ applicant.email }}</p>
+                <p class="kpn-h4">{{ applicant.email }}</p>
             </div>
             
             <div>
                 <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Phone</label>
-                <p class="text-lg font-semibold">{{ applicant.phone }}</p>
+                <p class="kpn-h4">{{ applicant.phone }}</p>
             </div>
             
             <div>
                 <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Role Applied For</label>
-                <p class="text-lg font-semibold">
+                <p class="kpn-h4">
                     {% if applicant.role_definition %}
-                        {{ applicant.role_definition.title }}
+                        {{ applicant.role_definition.canonical_title }}
                     {% else %}
                         General Member
                     {% endif %}
@@ -47,7 +47,7 @@
             
             <div>
                 <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Location</label>
-                <p class="text-lg font-semibold">{{ applicant.get_jurisdiction }}</p>
+                <p class="kpn-h4">{{ applicant.get_jurisdiction }}</p>
             </div>
             
             <div class="md:col-span-2">
@@ -68,7 +68,7 @@
             
             <div>
                 <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Application Date</label>
-                <p class="text-lg font-semibold">{{ applicant.created_at|date:"F d, Y H:i" }}</p>
+                <p class="kpn-h4">{{ applicant.created_at|date:"F d, Y H:i" }}</p>
             </div>
         </div>
         

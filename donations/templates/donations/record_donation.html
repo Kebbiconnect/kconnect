@@ -3,12 +3,12 @@
 {% block title %}Record Donation - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page" style="max-width:48rem">
     <div class="mb-6">
-        <a href="{% url 'donations:financial_secretary_donations' %}" class="text-kpn-blue hover:underline">
+        <a href="{% url 'donations:financial_secretary_donations' %}" class="text-kpn-green hover:underline">
             <i class="fas fa-arrow-left mr-2"></i> Back to Donations
         </a>
-        <h1 class="text-3xl font-bold mt-4">Record Donation</h1>
+        <h1 class="kpn-h1 mt-4">Record Donation</h1>
         <p class="text-gray-600 dark:text-gray-400">Record this verified donation into the financial system</p>
     </div>
     
@@ -18,19 +18,19 @@
                 <i class="fas fa-check-circle mr-2"></i> Verified Donation
             </h3>
             <p class="text-green-700 dark:text-green-400">
-                This donation has been verified by the Treasurer. Record it to include it in the official financial records.
+                This donation has been verified by the Director of Finance. Record it to include it in the official financial records.
             </p>
         </div>
         
         <div class="space-y-4 mb-6">
             <div>
                 <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Donor Name</label>
-                <p class="text-lg font-semibold">{{ donation.donor_name }}</p>
+                <p class="kpn-h4">{{ donation.donor_name }}</p>
             </div>
             
             <div>
                 <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Amount</label>
-                <p class="text-2xl font-bold text-green-600 dark:text-green-400">₦{{ donation.amount|floatformat:2 }}</p>
+                <p class="kpn-h2 text-green-600 dark:text-green-400">₦{{ donation.amount|floatformat:2 }}</p>
             </div>
             
             <div>
@@ -59,7 +59,7 @@
         <form method="post">
             {% csrf_token %}
             <div class="flex gap-4">
-                <button type="submit" class="bg-kpn-blue text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                <button type="submit" class="bg-kpn-green text-white px-6 py-2 rounded hover:bg-green-700 transition">
                     <i class="fas fa-book mr-2"></i> Record Donation
                 </button>
                 <a href="{% url 'donations:financial_secretary_donations' %}" class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600 transition inline-block">

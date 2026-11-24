@@ -5,6 +5,7 @@ from .auth import KpnTokenObtainPairSerializer,LoginIPThrottle,LoginUsernameThro
 from rest_framework_simplejwt.views import TokenObtainPairView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from . import views
+from . import public_content
 from . import dashboard_views
 from . import workflow_views
 from . import mobile_views
@@ -31,10 +32,24 @@ urlpatterns = [
     path("programs/<str:kind>/<int:pk>/participants/", mobile_views.ProgramParticipantsView.as_view()),
     path("ward-meetings/<int:pk>/", mobile_views.WardMeetingDetailView.as_view()),
     path("ward-meetings/<int:pk>/attendance/", mobile_views.WardAttendanceView.as_view()),
+    path('', public_content.ApiRootView.as_view(), name='api-root'),
+    path('health/', public_content.HealthView.as_view(), name='api-health'),
     path('newsroom/', views.NewsroomListView.as_view(), name='newsroom-list'),
     path('newsroom/<slug:slug>/', views.NewsroomDetailView.as_view(), name='newsroom-detail'),
     path('opportunities/', views.OpportunityListView.as_view(), name='opportunity-list'),
+    path('opportunities/archive/', public_content.OpportunityArchiveListView.as_view(), name='opportunity-archive'),
     path('opportunities/<slug:slug>/', views.OpportunityDetailView.as_view(), name='opportunity-detail'),
+    path('promises/', public_content.PromiseListView.as_view(), name='promise-list'),
+    path('promises/<int:pk>/', public_content.PromiseDetailView.as_view(), name='promise-detail'),
+    path('projects/', public_content.ProjectListView.as_view(), name='project-list'),
+    path('projects/<int:pk>/', public_content.ProjectDetailView.as_view(), name='project-detail'),
+    path('signals/', public_content.SignalListView.as_view(), name='signal-list'),
+    path('signals/<slug:slug>/', public_content.SignalDetailView.as_view(), name='signal-detail'),
+    path('impact-files/', public_content.ImpactFileListView.as_view(), name='impact-file-list'),
+    path('impact-files/<slug:slug>/', public_content.ImpactFileDetailView.as_view(), name='impact-file-detail'),
+    path('archive/', public_content.ArchiveView.as_view(), name='story-archive'),
+    path('lgas/news/', public_content.LgaNewsIndexView.as_view(), name='lga-news-index'),
+    path('lgas/news/<slug:slug>/', public_content.LgaNewsDetailView.as_view(), name='lga-news-detail'),
     path('community/', views.CommunityInitiativeListView.as_view(), name='community-list'),
     path('community/<int:pk>/', views.CommunityInitiativeDetailView.as_view(), name='community-detail'),
     path('civic/', views.CivicListView.as_view(), name='civic-list'),

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}{% if project %}Edit Project{% else %}Register Project{% endif %} · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Project Intelligence</p>
+<h1 class="kpn-h1">{% if project %}Edit {{ project.project_code }}{% else %}Register a project{% endif %}</h1>
+{% if from_unit %}<p class="intel-hero-sub">Proposed from the verified desk unit “{{ from_unit.title }}”. The fields below are prefilled only from that unit’s own records — check and complete them before saving.</p>{% else %}<p class="intel-hero-sub">Fill only what a source documents. Contractor, contract amount and dates stay blank when no source states them — they are never estimated.</p>{% endif %}
+</header>
+
+<div class="kpn-card kpn-card-body">
+<form method="post" class="editorial-form">
+{% csrf_token %}
+{{ form.as_p }}
+<button class="kpn-btn kpn-btn-primary" type="submit">{% if project %}Save changes{% else %}Register project{% endif %}</button>
+</form>
+</div>
+
+<p>{% if project %}<a href="{% url 'intelligence:project_detail' project.pk %}">Back to project</a> · {% endif %}<a href="{% url 'intelligence:projects' %}">Project register</a></p>
+</div>
+{% endblock %}

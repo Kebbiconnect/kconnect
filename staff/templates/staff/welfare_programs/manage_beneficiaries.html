@@ -3,21 +3,21 @@
 {% block title %}Manage Beneficiaries - {{ program.title }} - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page">
     <div class="mb-8">
-        <a href="{% url 'staff:welfare_programs_list' %}" class="text-kpn-blue hover:underline mb-4 inline-block">
+        <a href="{% url 'staff:welfare_programs_list' %}" class="text-kpn-green hover:underline mb-4 inline-block">
             <i class="fas fa-arrow-left mr-2"></i>Back to Programs
         </a>
-        <h1 class="text-3xl font-bold">Manage Beneficiaries</h1>
+        <h1 class="kpn-h1">Manage Beneficiaries</h1>
         <p class="text-gray-600 dark:text-gray-400">{{ program.title }}</p>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <div class="kpn-card p-6">
         <form method="post">
             {% csrf_token %}
             
             <div class="mb-6">
-                <h3 class="text-lg font-semibold mb-4">Select Beneficiaries</h3>
+                <h3 class="kpn-h4 mb-4">Select Beneficiaries</h3>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
                     Current beneficiaries: {{ current_beneficiaries|length }} / Target: {{ program.target_beneficiaries }}
                 </p>
@@ -30,7 +30,7 @@
                                value="{{ member.id }}" 
                                id="member_{{ member.id }}"
                                {% if member.id in current_beneficiaries %}checked{% endif %}
-                               class="w-4 h-4 text-kpn-blue border-gray-300 rounded focus:ring-kpn-blue">
+                               class="w-4 h-4 text-kpn-green border-gray-300 rounded focus:ring-kpn-green">
                         <label for="member_{{ member.id }}" class="ml-2 text-sm">
                             {{ member.get_full_name }} 
                             <span class="text-gray-500">({{ member.get_role_display }})</span>
@@ -43,7 +43,7 @@
             </div>
             
             <div class="flex gap-4">
-                <button type="submit" class="bg-kpn-blue hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+                <button type="submit" class="bg-kpn-green hover:bg-green-700 text-white px-6 py-3 rounded-lg transition">
                     <i class="fas fa-save mr-2"></i>Save Beneficiaries
                 </button>
                 <a href="{% url 'staff:welfare_programs_list' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition">

@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Community Hub - Kebbi Progressive Youth Network{% endblock %}
+
+{% block content %}
+<section class="kpn-page-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/community-hero.jpg' %}')">
+    <div class="kpn-home-container">
+        <p class="kpn-eyebrow">KPN in your community</p>
+        <h1>Community Hub</h1>
+        <p>To show what KPN is doing in communities and how people can participate. Community Hub should demonstrate practical work happening at ward and LGA levels.</p>
+    </div>
+</section>
+
+<div class="kpn-home-container">
+    <div class="kpn-trust-strip">
+        <span><i class="fas fa-hands-helping" aria-hidden="true"></i>{{ active_count }} initiative{{ active_count|pluralize }} active now</span>
+        <span><i class="fas fa-check-circle" aria-hidden="true"></i>{{ completed_count }} completed</span>
+        <span><i class="fas fa-comments" aria-hidden="true"></i>{{ voice_count }} documented community concern{{ voice_count|pluralize }} published</span>
+    </div>
+</div>
+
+<section class="py-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800">
+    <div class="kpn-home-container">
+        <form method="GET" action="{% url 'core:community' %}" class="kpn-filter-form flex flex-wrap gap-3 items-center">
+            <div class="relative min-w-[220px] flex-grow md:flex-grow-0">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"><i class="fas fa-search text-xs"></i></span>
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Search initiatives…" class="kpn-input kpn-search">
+            </div>
+            <select name="status" class="kpn-input kpn-select w-auto min-w-[160px]">
+                <option value="">All stages</option>
+                {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if active_status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="category" class="kpn-input kpn-select w-auto min-w-[160px]">
+                <option value="">All types</option>
+                {% for value, label in categories %}
+                <option value="{{ value }}" {% if active_category == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="lga" class="kpn-input kpn-select w-auto min-w-[150px]">
+                <option value="">All LGAs</option>
+                {% for l in lgas %}
+                <option value="{{ l.id }}" {% if active_lga == l.id|stringformat:"s" %}selected{% endif %}>{{ l.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="kpn-btn kpn-btn-primary"><i class="fas fa-filter"></i> Filter</button>
+            {% if has_filters %}<a href="{% url 'core:community' %}" class="kpn-btn kpn-btn-secondary"><i class="fas fa-times"></i> Clear</a>{% endif %}
+        </form>
+    </div>
+</section>
+
+{% if has_filters %}
+<section class="py-12">
+    <div class="kpn-home-container">
+        <div class="kpn-home-section-heading"><div><h2>Matching initiatives</h2></div></div>
+        {% if initiatives %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for initiative in initiatives %}{% include 'core/_initiative_card.html' %}{% endfor %}
+        </div>
+        {% else %}
+        <div class="kpn-home-empty">
+            <p class="kpn-empty-title">No initiatives match those filters</p>
+            <p class="kpn-empty-desc">Try a different stage, type or LGA — or clear the filters to see everything KPN is doing in communities.</p>
+            <a href="{% url 'core:community' %}" class="kpn-btn kpn-btn-primary">Clear filters</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% else %}
+
+{% if upcoming %}
+<section class="py-12">
+    <div class="kpn-home-container">
+        <div class="kpn-home-section-heading"><div><h2>Upcoming outreach</h2></div></div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {% for initiative in upcoming %}
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <span class="kpn-tag gold"><i class="fas fa-calendar-alt" aria-hidden="true"></i> {{ initiative.start_date|date:"j F Y" }}</span>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mt-3"><a href="{% url 'core:community_initiative_detail' initiative.pk %}">{{ initiative.title }}</a></h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><i class="fas fa-map-marker-alt mr-1"></i>{% if initiative.lga %}{{ initiative.lga.name }} LGA · {% endif %}{{ initiative.location_text }}</p>
+                <p class="text-gray-600 dark:text-gray-300 mt-2">{{ initiative.objective|default:initiative.description|truncatewords:20 }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="py-12 {% if upcoming %}pt-0{% endif %}">
+    <div class="kpn-home-container">
+        <div class="kpn-home-section-heading"><div><h2>Active in communities now</h2></div></div>
+        {% if active_list %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for initiative in active_list %}{% include 'core/_initiative_card.html' %}{% endfor %}
+        </div>
+        {% else %}
+        <div class="kpn-home-empty">
+            <p class="kpn-empty-title">No initiative is marked active right now</p>
+            <p class="kpn-empty-desc">When KPN field work is running in a community, it appears here with its location, objective and team.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% if completed_list %}
+<section class="py-12 pt-0">
+    <div class="kpn-home-container">
+        <div class="kpn-home-section-heading"><div><h2>Completed initiatives</h2></div></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for initiative in completed_list %}{% include 'core/_initiative_card.html' %}{% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if other_list %}
+<section class="py-12 pt-0">
+    <div class="kpn-home-container">
+        <div class="kpn-home-section-heading"><div><h2>Planned, paused and closed initiatives</h2></div></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for initiative in other_list %}{% include 'core/_initiative_card.html' %}{% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if volunteer_opps %}
+<section class="py-12 kpn-home-section-soft">
+    <div class="kpn-home-container">
+        <div class="kpn-home-section-heading"><div><h2>Volunteer with KPN</h2></div></div>
+        <p class="text-gray-600 dark:text-gray-300 mb-6">Open volunteer opportunities from the Opportunities Hub.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for opp in volunteer_opps %}{% include 'core/_opportunity_card.html' %}{% endfor %}
+        </div>
+        <p class="mt-6"><a href="{% url 'core:opportunities' %}?category=VOLUNTEER" class="kpn-home-link">See all volunteer opportunities <i class="fas fa-arrow-right" aria-hidden="true"></i></a></p>
+    </div>
+</section>
+{% endif %}
+{% endif %}
+
+<section class="py-12">
+    <div class="kpn-home-container">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-7">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2"><i class="fas fa-bullhorn text-kpn-green mr-2" aria-hidden="true"></i>Report a community need or concern</h2>
+                <p class="text-gray-600 dark:text-gray-300 mb-4">Communities should be able to raise needs and concerns. Reports go to the KPN team for review — nothing is published automatically. Documented concerns that a reviewer publishes appear on Community Voice.</p>
+                <div class="flex flex-wrap gap-3">
+                    <a href="{% url 'core:community_report' %}" class="kpn-btn kpn-btn-primary">Report a concern</a>
+                    <a href="{% url 'core:community_voice' %}" class="kpn-btn kpn-btn-secondary">Read Community Voice</a>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-7">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2"><i class="fas fa-handshake text-kpn-green mr-2" aria-hidden="true"></i>Partner with KPN</h2>
+                <p class="text-gray-600 dark:text-gray-300 mb-4">Organisations and community groups that want to work with KPN on an initiative can reach the team through the contact page.</p>
+                <a href="{% url 'core:contact' %}" class="kpn-btn kpn-btn-primary">Contact KPN</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

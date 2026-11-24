@@ -18,7 +18,7 @@
     </h2>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div class="kpn-stat-card">
-            <div class="kpn-stat-icon bg-green-100 dark:bg-green-900/30 text-kpn-green">
+            <div class="kpn-stat-icon tone-brand">
                 <i class="fas fa-users"></i>
             </div>
             <div>
@@ -33,7 +33,7 @@
             </div>
         </div>
         <div class="kpn-stat-card">
-            <div class="kpn-stat-icon bg-blue-100 dark:bg-blue-900/30 text-kpn-blue">
+            <div class="kpn-stat-icon tone-brand">
                 <i class="fas fa-user-tie"></i>
             </div>
             <div>
@@ -43,7 +43,7 @@
             </div>
         </div>
         <div class="kpn-stat-card">
-            <div class="kpn-stat-icon bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600">
+            <div class="kpn-stat-icon tone-ink">
                 <i class="fas fa-star"></i>
             </div>
             <div>
@@ -52,7 +52,7 @@
             </div>
         </div>
         <div class="kpn-stat-card">
-            <div class="kpn-stat-icon bg-purple-100 dark:bg-purple-900/30 text-purple-600">
+            <div class="kpn-stat-icon tone-ink">
                 <i class="fas fa-sitemap"></i>
             </div>
             <div>
@@ -74,13 +74,35 @@
         </div>
     </div>
 
+    <!-- ── SECTION 1B: Member Distribution (Rounds C+D) ─────────────── -->
+    <h2 class="kpn-section-label">
+        <i class="fas fa-map-marked-alt text-kpn-green"></i> Member Distribution
+    </h2>
+    <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">Verified members across Kebbi State — {{ coverage_totals.lgas_covered }} of {{ coverage_totals.lgas_total }} LGAs covered, {{ coverage_totals.members }} verified members placed by LGA. Counts only; no member names are shown on the map.</p>
+    <div class="kpn-card mb-6">
+        <div class="kpn-card-body">
+            {% include 'core/_coverage_map.html' %}
+        </div>
+    </div>
+    <div class="kpn-chart-grid mb-8">
+        <div class="kpn-card"><div class="kpn-card-body">
+            {% include 'includes/_chart_bars.html' with chart_rows=member_zone_bars chart_title='Verified members by zone' %}
+        </div></div>
+        <div class="kpn-card"><div class="kpn-card-body">
+            {% include 'includes/_chart_donut.html' with donut=member_status_donut chart_title='All accounts by status' %}
+        </div></div>
+    </div>
+    <div class="kpn-card mb-8"><div class="kpn-card-body">
+        {% include 'includes/_chart_bars.html' with chart_rows=member_lga_bars chart_title='Verified members by LGA' %}
+    </div></div>
+
     <!-- ── SECTION 2: Media & Reports ─────────────────────────────────── -->
     <h2 class="kpn-section-label">
         <i class="fas fa-newspaper text-orange-500"></i> Newsroom & Reports
     </h2>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div class="kpn-stat-card">
-            <div class="kpn-stat-icon bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600">
+            <div class="kpn-stat-icon tone-gold">
                 <i class="fas fa-clock"></i>
             </div>
             <div>
@@ -89,7 +111,7 @@
             </div>
         </div>
         <div class="kpn-stat-card">
-            <div class="kpn-stat-icon bg-green-100 dark:bg-green-900/30 text-green-600">
+            <div class="kpn-stat-icon tone-brand">
                 <i class="fas fa-check-circle"></i>
             </div>
             <div>
@@ -109,7 +131,7 @@
             </div>
         </div>
         <div class="kpn-stat-card">
-            <div class="kpn-stat-icon bg-orange-100 dark:bg-orange-900/30 text-orange-600">
+            <div class="kpn-stat-icon tone-gold">
                 <i class="fas fa-calendar"></i>
             </div>
             <div>
@@ -126,7 +148,7 @@
     </h2>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div class="kpn-stat-card">
-            <div class="kpn-stat-icon bg-green-100 dark:bg-green-900/30 text-green-600">
+            <div class="kpn-stat-icon tone-brand">
                 <i class="fas fa-donate"></i>
             </div>
             <div>
@@ -135,7 +157,7 @@
             </div>
         </div>
         <div class="kpn-stat-card">
-            <div class="kpn-stat-icon bg-red-100 dark:bg-red-900/30 text-red-600">
+            <div class="kpn-stat-icon tone-alert">
                 <i class="fas fa-money-bill"></i>
             </div>
             <div>
@@ -154,7 +176,7 @@
             </div>
         </div>
         <div class="kpn-stat-card">
-            <div class="kpn-stat-icon bg-red-100 dark:bg-red-900/30 text-red-600">
+            <div class="kpn-stat-icon tone-alert">
                 <i class="fas fa-gavel"></i>
             </div>
             <div>
@@ -200,7 +222,7 @@
                                 <td data-label="Name" class="font-medium">{{ applicant.get_full_name }}</td>
                                 <td data-label="Role" class="text-gray-500">
                                     {% if applicant.role_definition %}
-                                        <span class="kpn-badge kpn-badge-blue">{{ applicant.role_definition.title }}</span>
+                                        <span class="kpn-badge kpn-badge-blue">{{ applicant.role_definition.canonical_title }}</span>
                                     {% else %}
                                         <span class="kpn-badge kpn-badge-gray">{{ applicant.get_role_display }}</span>
                                     {% endif %}

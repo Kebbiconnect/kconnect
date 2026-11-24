@@ -3,9 +3,9 @@
 {% block title %}Attendance Logs - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page">
     <div class="mb-8">
-        <h1 class="text-3xl font-bold">Attendance Logs</h1>
+        <h1 class="kpn-h1">Attendance Logs</h1>
         <p class="text-gray-600 dark:text-gray-400">Recent attendance records across all events</p>
     </div>
     
@@ -31,7 +31,7 @@
                         </div>
                     </td>
                     <td class="px-6 py-4">
-                        <a href="{% url 'events:event_detail' attendance.event.pk %}" class="text-kpn-blue hover:underline">
+                        <a href="{% url 'events:event_detail' attendance.event.pk %}" class="text-kpn-green hover:underline">
                             {{ attendance.event.title }}
                         </a>
                     </td>
@@ -57,7 +57,7 @@
     {% endif %}
     
     <div class="mt-6">
-        <a href="{% url 'events:event_calendar' %}" class="text-kpn-blue hover:underline">
+        <a href="{% url 'events:event_calendar' %}" class="text-kpn-green hover:underline">
             <i class="fas fa-arrow-left mr-2"></i>Back to Event Calendar
         </a>
     </div>

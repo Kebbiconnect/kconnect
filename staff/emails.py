@@ -12,6 +12,8 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 
+from leadership.roles import canonical_role_title
+
 logger = logging.getLogger(__name__)
 
 
@@ -65,7 +67,7 @@ def send_account_approved_email(user):
     site_url = _site_url()
     role_title = ''
     if getattr(user, 'role_definition_id', None):
-        role_title = user.role_definition.title
+        role_title = canonical_role_title(user.role_definition.title)
     dashboard_url = f'{site_url}/account/dashboard/'
     role_line = f"Your approved role: {role_title}.\n\n" if role_title else ''
     text_body = (

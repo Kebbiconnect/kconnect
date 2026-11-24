@@ -3,19 +3,19 @@
 {% block title %}My Articles - KPN Newsroom{% endblock %}
 
 {% block content %}
-<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div>
+    <div class="kpn-page">
         
         <!-- Header -->
         <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                <h1 class="kpn-h1 text-gray-900 dark:text-white">
                     <i class="fas fa-newspaper text-kpn-green mr-2"></i> My Articles
                 </h1>
                 <p class="text-gray-600 dark:text-gray-400 mt-2">Manage your newsroom submissions and drafts.</p>
             </div>
             <div class="mt-4 md:mt-0">
-                <a href="{% url 'staff:dashboard' %}" class="text-gray-600 dark:text-gray-400 hover:text-kpn-blue mr-4 font-medium">
+                <a href="{% url 'staff:dashboard' %}" class="text-gray-600 dark:text-gray-400 hover:text-kpn-green mr-4 font-medium">
                     <i class="fas fa-arrow-left mr-1"></i> Dashboard
                 </a>
                 <a href="{% url 'campaigns:write_article' %}" class="bg-kpn-green text-white px-6 py-2.5 rounded-lg font-bold hover:bg-green-700 transition shadow">
@@ -34,7 +34,7 @@
         {% endif %}
 
         <!-- Articles Table -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="kpn-card overflow-hidden">
             {% if articles %}
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -77,17 +77,17 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
                                     {% if article.status == 'DRAFT' or article.status == 'REJECTED' %}
-                                        <a href="{% url 'campaigns:edit_article' article.id %}" class="text-kpn-blue hover:text-blue-800" title="Edit Article"><i class="fas fa-edit"></i></a>
+                                        <a href="{% url 'campaigns:edit_article' article.id %}" class="text-kpn-green hover:text-blue-800" title="Edit Article"><i class="fas fa-edit"></i></a>
                                         <a href="{% url 'campaigns:submit_for_review' article.id %}" class="text-kpn-green hover:text-green-800" title="Submit to Editor"><i class="fas fa-paper-plane"></i></a>
                                         <a href="{% url 'campaigns:delete_article' article.id %}" class="text-red-500 hover:text-red-800" title="Delete"><i class="fas fa-trash"></i></a>
                                     {% elif article.status == 'PUBLISHED' %}
-                                        <a href="{% url 'campaigns:article_detail' article.slug %}" class="text-gray-600 dark:text-gray-400 hover:text-kpn-blue" target="_blank" title="View Public Article"><i class="fas fa-external-link-alt"></i> View</a>
+                                        <a href="{% url 'campaigns:article_detail' article.slug %}" class="text-gray-600 dark:text-gray-400 hover:text-kpn-green" target="_blank" title="View Public Article"><i class="fas fa-external-link-alt"></i> View</a>
                                         {% if is_editor %}
-                                            <a href="{% url 'campaigns:edit_article' article.id %}" class="text-kpn-blue hover:text-blue-800" title="Edit Published Article"><i class="fas fa-edit"></i></a>
+                                            <a href="{% url 'campaigns:edit_article' article.id %}" class="text-kpn-green hover:text-blue-800" title="Edit Published Article"><i class="fas fa-edit"></i></a>
                                             <a href="{% url 'campaigns:delete_article' article.id %}" class="text-red-500 hover:text-red-800" title="Delete Published Article"><i class="fas fa-trash"></i></a>
                                         {% endif %}
                                     {% elif is_editor %}
-                                        <a href="{% url 'campaigns:edit_article' article.id %}" class="text-kpn-blue hover:text-blue-800" title="Edit Article"><i class="fas fa-edit"></i></a>
+                                        <a href="{% url 'campaigns:edit_article' article.id %}" class="text-kpn-green hover:text-blue-800" title="Edit Article"><i class="fas fa-edit"></i></a>
                                         <a href="{% url 'campaigns:delete_article' article.id %}" class="text-red-500 hover:text-red-800" title="Delete"><i class="fas fa-trash"></i></a>
                                     {% else %}
                                         <span class="text-gray-400 italic text-xs">Locked (In Review)</span>

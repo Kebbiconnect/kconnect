@@ -3,13 +3,13 @@
 {% block title %}{% if program %}Edit{% else %}Create{% endif %} Youth Program - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page" style="max-width:56rem">
     <div class="mb-8">
-        <h1 class="text-3xl font-bold">{% if program %}Edit{% else %}Create New{% endif %} Youth Program</h1>
+        <h1 class="kpn-h1">{% if program %}Edit{% else %}Create New{% endif %} Youth Program</h1>
         <p class="text-gray-600 dark:text-gray-400">Fill in the program details below</p>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <div class="kpn-card p-6">
         <form method="post">
             {% csrf_token %}
             
@@ -110,7 +110,7 @@
             </div>
 
             <div class="flex gap-4 mt-8">
-                <button type="submit" class="bg-kpn-blue hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+                <button type="submit" class="bg-kpn-green hover:bg-green-700 text-white px-6 py-3 rounded-lg transition">
                     <i class="fas fa-save mr-2"></i>Save Program
                 </button>
                 <a href="{% url 'staff:youth_empowerment_officer_dashboard' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition">

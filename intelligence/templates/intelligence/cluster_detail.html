@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Cluster #{{ cluster.pk }} · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Event Cluster #{{ cluster.pk }}</p>
+<h1 class="kpn-h1">{{ cluster.title }}</h1>
+<div class="intel-chips">
+{% if cluster.category %}<span class="intel-chip"><i class="fas fa-tag"></i>{{ cluster.category.label }}</span>{% endif %}
+{% if cluster.primary_lga %}<span class="intel-chip"><i class="fas fa-location-dot"></i>{{ cluster.primary_lga.name }} LGA</span>{% endif %}
+<span class="intel-chip"><i class="fas fa-inbox"></i>{{ members|length }} item{{ members|length|pluralize }}</span>
+{% if earliest %}<span class="intel-chip"><i class="fas fa-clock"></i>{{ earliest|date:'j M Y, H:i' }} – {{ latest|date:'j M Y, H:i' }}</span>{% endif %}
+</div>
+</header>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="intel-panel-title">Reports in this cluster</h2>
+{% for item in members %}
+<div class="intel-promise">
+<a href="{{ item.original_url }}" target="_blank" rel="noopener">{{ item.title }}</a>
+<small>{{ item.source.name }} · {{ item.get_fetch_status_display }}{% if item.published_at %} · Published {{ item.published_at|date:'j M Y, H:i' }}{% else %} · No publication date declared{% endif %} · Collected {{ item.discovered_at|date:'j M Y, H:i' }}</small>
+<div class="intel-badges">
+{% if item.relevance == 'CONFIRMED' %}<span class="intel-badge intel-badge-confirmed">Confirmed relevance</span>{% elif item.relevance == 'STRONG_POSSIBLE' %}<span class="intel-badge intel-badge-strong">Strong possible</span>{% elif item.relevance == 'UNCERTAIN' %}<span class="intel-badge intel-badge-uncertain">Uncertain</span>{% elif item.relevance == 'NOT_RELEVANT' %}<span class="intel-badge intel-badge-notrel">Not relevant</span>{% else %}<span class="intel-badge intel-badge-plain">Unprocessed</span>{% endif %}
+{% if item.duplicate_of %}<span class="intel-badge intel-badge-dup">Near-duplicate of #{{ item.duplicate_of.pk }}</span>{% endif %}
+</div>
+{% if item.locations.all %}<small>Locations: {% for loc in item.locations.all %}{{ loc.target_name }} ({{ loc.get_match_kind_display|lower }}){% if not forloop.last %} · {% endif %}{% endfor %}</small>{% endif %}
+{% if item.summary %}<small>{{ item.summary|truncatechars:240 }}</small>{% endif %}
+</div>
+{% empty %}
+<p>No items in this cluster.</p>
+{% endfor %}
+</div>
+
+<p><a href="{% url 'intelligence:clusters' %}">All clusters</a> · <a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

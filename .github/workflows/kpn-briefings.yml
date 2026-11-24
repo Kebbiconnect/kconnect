@@ -1,0 +1,83 @@
+name: KPN intelligence briefings (daily and weekly)
+on:
+  workflow_dispatch:
+    inputs:
+      period:
+        description: Briefing period to generate on a manual run
+        type: choice
+        default: 'daily'
+        options: ['daily', 'weekly']
+  schedule:
+    # GitHub cron runs in UTC; Africa/Lagos is UTC+1 all year (no
+    # daylight saving). 21:30 UTC = 22:30 Africa/Lagos.
+    # Daily briefing: every day at 22:30 Lagos.
+    - cron: '30 21 * * *'
+    # Weekly briefing: Sundays at 22:30 Lagos. On Sundays both cron
+    # entries fire, producing two runs at the same minute; each run
+    # generates only its own period (github.event.schedule tells them
+    # apart), so Sunday gets its daily AND its weekly briefing.
+    - cron: '30 21 * * 0'
+permissions:
+  contents: read
+concurrency:
+  group: kpn-briefings-production
+  cancel-in-progress: false
+jobs:
+  briefings:
+    if: github.event_name == 'workflow_dispatch' || vars.KPN_BRIEFINGS_SCHEDULE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      KPN_ENV: production
+      DEBUG: 'False'
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+      # Briefing delivery channels. Telegram short briefings are sent
+      # via the bot outbox; email uses the site's configured backend
+      # (Lockally in production). If a secret is unset the value is
+      # empty and that channel records SKIPPED/FAILED on the briefing —
+      # it never blocks generation.
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      LOCKALLY_API_KEY: ${{ secrets.LOCKALLY_API_KEY }}
+      LOCKALLY_API_URL: ${{ vars.LOCKALLY_API_URL }}
+      LOCKALLY_FROM_EMAIL: ${{ vars.LOCKALLY_FROM_EMAIL }}
+      LOCKALLY_FROM_NAME: ${{ vars.LOCKALLY_FROM_NAME }}
+      PERIOD: ${{ inputs.period || '' }}
+      EVENT_NAME: ${{ github.event_name }}
+      SCHEDULE: ${{ github.event.schedule }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Validate configuration and prepare ephemeral credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in DATABASE_URL; do
+            if [ -z "${!name}" ]; then echo "Missing required GitHub Actions secret for $name"; exit 1; fi
+          done
+          python - <<'PY'
+          import os, secrets
+          secret = secrets.token_urlsafe(64)
+          print('::add-mask::'+secret)
+          with open(os.environ['GITHUB_ENV'],'a') as env: env.write('SESSION_SECRET='+secret+'\n')
+          PY
+      - name: Install the existing backend dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Require deployed migrations and generate the briefing
+        shell: bash
+        run: |
+          set -euo pipefail
+          python manage.py check
+          python manage.py migrate --check
+          if [ "$EVENT_NAME" = 'workflow_dispatch' ]; then
+            python manage.py generate_briefing --period "$PERIOD" --telegram
+          elif [ "$SCHEDULE" = '30 21 * * 0' ]; then
+            python manage.py generate_briefing --period weekly --telegram
+          else
+            python manage.py generate_briefing --period daily --telegram
+          fi

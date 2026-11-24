@@ -3,19 +3,19 @@
 {% block title %}Legal Review Queue - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page">
     <div class="mb-8">
-        <h1 class="text-3xl font-bold">Legal Review Queue</h1>
+        <h1 class="kpn-h1">Legal Review Queue</h1>
         <p class="text-gray-600 dark:text-gray-400">Review pending disciplinary actions from a legal perspective</p>
     </div>
 
     <!-- Pending Reviews -->
     <div class="mb-8">
-        <h2 class="text-2xl font-semibold mb-4">Pending Legal Reviews</h2>
+        <h2 class="kpn-h2 mb-4">Pending Legal Reviews</h2>
         {% if pending_actions %}
         <div class="grid grid-cols-1 gap-4">
             {% for action in pending_actions %}
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="kpn-card p-6">
                 <div class="flex justify-between items-start">
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-3">
@@ -29,7 +29,7 @@
                             </span>
                         </div>
                         
-                        <h3 class="text-lg font-semibold mb-2">{{ action.user.get_full_name }}</h3>
+                        <h3 class="kpn-h4 mb-2">{{ action.user.get_full_name }}</h3>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
                             {{ action.user.get_role_display }} 
                             {% if action.user.lga %}- {{ action.user.lga.name }}{% endif %}
@@ -41,12 +41,12 @@
                         </div>
                         
                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-3">
-                            <strong>Issued by:</strong> {{ action.issued_by.get_full_name }} ({{ action.issued_by.role_definition.title }})
+                            <strong>Issued by:</strong> {{ action.issued_by.get_full_name }} ({{ action.issued_by.role_definition.canonical_title }})
                         </p>
                     </div>
                     
                     <a href="{% url 'staff:legal_review_action' action.id %}" 
-                       class="bg-kpn-blue hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition ml-4">
+                       class="bg-kpn-green hover:bg-green-700 text-white px-6 py-3 rounded-lg transition ml-4">
                         <i class="fas fa-gavel mr-2"></i>Review Now
                     </a>
                 </div>
@@ -54,9 +54,9 @@
             {% endfor %}
         </div>
         {% else %}
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
+        <div class="kpn-card p-12 text-center">
             <i class="fas fa-clipboard-check text-6xl text-gray-400 mb-4"></i>
-            <h3 class="text-xl font-semibold mb-2">No Pending Reviews</h3>
+            <h3 class="kpn-h3 mb-2">No Pending Reviews</h3>
             <p class="text-gray-600 dark:text-gray-400">All disciplinary actions have been legally reviewed.</p>
         </div>
         {% endif %}
@@ -65,8 +65,8 @@
     <!-- Recently Reviewed -->
     {% if reviewed_actions %}
     <div>
-        <h2 class="text-2xl font-semibold mb-4">Recently Reviewed Actions</h2>
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <h2 class="kpn-h2 mb-4">Recently Reviewed Actions</h2>
+        <div class="kpn-card overflow-hidden">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-900">
                     <tr>

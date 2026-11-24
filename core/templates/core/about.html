@@ -1,24 +1,27 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}About Us - Kebbi Progressive Youth Network{% endblock %}
 
 {% block content %}
-<section class="bg-gradient-to-r from-kpn-green to-kpn-blue text-white py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">About Kebbi Progressive Youth Network</h1>
-        <p class="text-xl md:text-2xl max-w-3xl mx-auto opacity-90 font-light">
-            A modern civic network, community media, advocacy, development, and opportunities platform for the people of Kebbi State.
-        </p>
+<section class="kpn-page-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/about-hero.jpg' %}')">
+    <div class="kpn-home-container">
+        <h1>About Kebbi Progressive Youth Network</h1>
+        <p>A modern civic network, community media, advocacy, development, and opportunities platform for the people of Kebbi State.</p>
     </div>
 </section>
 
-<section class="py-16 bg-white dark:bg-gray-900">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="max-w-4xl mx-auto text-center mb-16">
-            <h2 class="text-kpn-green font-bold tracking-widest uppercase text-sm mb-2">Our Motto</h2>
-            <p class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white italic">"One Voice, One Change."</p>
+<div class="kpn-home-container">
+    {% include 'includes/breadcrumbs.html' %}
+</div>
 
-            <div class="mt-12 text-lg text-gray-600 dark:text-gray-300 leading-relaxed text-left space-y-6">
+<section class="py-12 pt-2">
+    <div class="kpn-home-container">
+        <div class="kpn-motto">
+            <p class="kpn-eyebrow" style="text-align:center">Our Motto</p>
+            <p class="quote">"One Voice, One Change."</p>
+
+            <div class="body">
                 <p>
                     The <strong>Kebbi Progressive Youth Network (KPN)</strong> is a youth-driven, state-wide organization dedicated to building unity, transparency, and sustainable development across all 21 Local Government Areas of Kebbi State.
                 </p>
@@ -30,23 +33,23 @@
         </div>
 
         <!-- Mission & Vision -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
-            <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 shadow-sm">
-                <div class="w-14 h-14 bg-kpn-green text-white rounded-full flex items-center justify-center text-2xl mb-6 shadow">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-20">
+            <div class="kpn-feature-card">
+                <div class="icon">
                     <i class="fas fa-bullseye"></i>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Our Vision</h3>
-                <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                <h3>Our Vision</h3>
+                <p>
                     To build a progressive, transparent, and united Kebbi State where every citizen has equal opportunities for growth, development, and meaningful participation in governance and societal advancement.
                 </p>
             </div>
 
-            <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 shadow-sm">
-                <div class="w-14 h-14 bg-kpn-blue text-white rounded-full flex items-center justify-center text-2xl mb-6 shadow">
+            <div class="kpn-feature-card">
+                <div class="icon gold">
                     <i class="fas fa-rocket"></i>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Our Mission</h3>
-                <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                <h3>Our Mission</h3>
+                <p>
                     To build a strong, connected civic network across Kebbi State—a platform where our collective voice influences the future of our state. We mobilize and empower citizens through advocacy, education, and community engagement.
                 </p>
             </div>
@@ -54,48 +57,48 @@
 
         <!-- 5 Core Pillars of KPN 2.0 -->
         <div class="mb-20">
-            <div class="text-center mb-12">
+            <div class="text-center mb-10">
                 <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">The Five Pillars of KPN</h2>
                 <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">Our work is categorized into five core functions that drive progress across the state.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Media -->
-                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <h4 class="text-xl font-bold text-kpn-green mb-3"><i class="fas fa-newspaper mr-2"></i> KPN MEDIA</h4>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                <div class="kpn-feature-card">
+                    <h4><i class="fas fa-newspaper"></i> KPN MEDIA</h4>
+                    <p>
                         The KPN Newsroom provides verified, grassroots reporting, community alerts, and development news from all 225 wards in Kebbi State.
                     </p>
                 </div>
 
                 <!-- Civic -->
-                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <h4 class="text-xl font-bold text-kpn-blue mb-3"><i class="fas fa-landmark mr-2"></i> KPN CIVIC</h4>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                <div class="kpn-feature-card">
+                    <h4><i class="fas fa-landmark"></i> KPN CIVIC</h4>
+                    <p>
                         Promoting good governance, voter education, and holding leadership accountable at the local, zonal, and state levels.
                     </p>
                 </div>
 
                 <!-- Community -->
-                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <h4 class="text-xl font-bold text-yellow-600 mb-3"><i class="fas fa-users mr-2"></i> KPN COMMUNITY</h4>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                <div class="kpn-feature-card">
+                    <h4><i class="fas fa-users"></i> KPN COMMUNITY</h4>
+                    <p>
                         Welfare programs, charity drives, and direct community interventions designed to support the vulnerable and build local resilience.
                     </p>
                 </div>
 
                 <!-- Opportunities -->
-                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <h4 class="text-xl font-bold text-indigo-600 mb-3"><i class="fas fa-briefcase mr-2"></i> KPN OPPORTUNITIES</h4>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                <div class="kpn-feature-card">
+                    <h4><i class="fas fa-briefcase"></i> KPN OPPORTUNITIES</h4>
+                    <p>
                         A centralized hub connecting the youth of Kebbi State to scholarships, grants, jobs, and empowerment fellowships.
                     </p>
                 </div>
 
                 <!-- Advocacy -->
-                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm lg:col-span-2">
-                    <h4 class="text-xl font-bold text-red-600 mb-3"><i class="fas fa-bullhorn mr-2"></i> KPN ADVOCACY</h4>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                <div class="kpn-feature-card lg:col-span-2">
+                    <h4><i class="fas fa-bullhorn"></i> KPN ADVOCACY</h4>
+                    <p>
                         Championing policy changes, infrastructural development, and social justice campaigns that directly impact the lives of Kebbi citizens.
                     </p>
                 </div>
@@ -104,72 +107,72 @@
 
         <!-- KPN Media -->
         <div class="mb-20">
-            <div class="text-center mb-12">
+            <div class="text-center mb-10">
                 <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">KPN Media: How Our Newsroom Works for You</h2>
                 <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">KPN Media is our newsroom, built on one idea: a story should not disappear after publication day. Here is how we follow stories, show our evidence, and keep the public record open to everyone.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Living Stories -->
-                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <h4 class="text-xl font-bold text-kpn-green mb-3"><i class="fas fa-book-open mr-2"></i> Living Stories</h4>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                <div class="kpn-feature-card">
+                    <h4><i class="fas fa-book-open"></i> Living Stories</h4>
+                    <p>
                         Important stories do not end on the day they are published. KPN keeps each one as a living record: the original report, every later development added in order, and a permanent Story ID printed on the article so you can always find its full history.
                     </p>
                 </div>
 
                 <!-- Public Promise Tracker -->
-                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <h4 class="text-xl font-bold text-kpn-blue mb-3"><i class="fas fa-handshake mr-2"></i> Public Promise Tracker</h4>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                <div class="kpn-feature-card">
+                    <h4><i class="fas fa-handshake"></i> Public Promise Tracker</h4>
+                    <p>
                         When leaders and public institutions make promises, KPN records them and keeps checking: what was promised, what evidence exists, and whether it has been delivered. Follow every tracked promise on the <a href="{% url 'promises:list' %}" class="font-semibold underline">Promise Tracker</a>.
                     </p>
                 </div>
 
                 <!-- Future Signal -->
-                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <h4 class="text-xl font-bold text-indigo-600 mb-3"><i class="fas fa-chart-line mr-2"></i> Future Signal</h4>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                <div class="kpn-feature-card">
+                    <h4><i class="fas fa-chart-line"></i> Future Signal</h4>
+                    <p>
                         Careful analysis of changes taking shape in Kebbi &mdash; new trends, risks and opportunities, and the evidence behind them. <a href="{% url 'signals:list' %}" class="font-semibold underline">Future Signal</a> pieces are clearly labelled as analysis. They are not reports of established fact, and they are not predictions.
                     </p>
                 </div>
 
                 <!-- Community Radar -->
-                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <h4 class="text-xl font-bold text-yellow-600 mb-3"><i class="fas fa-satellite-dish mr-2"></i> Community Radar</h4>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                <div class="kpn-feature-card">
+                    <h4><i class="fas fa-satellite-dish"></i> Community Radar</h4>
+                    <p>
                         People across our 225 wards see things first. Community reports bring local problems and achievements to the newsroom, where editors review them before anything is treated as news. A reporter&rsquo;s private details are never published.
                     </p>
                 </div>
 
                 <!-- Truth Layers -->
-                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <h4 class="text-xl font-bold text-red-600 mb-3"><i class="fas fa-layer-group mr-2"></i> Truth Layers</h4>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                <div class="kpn-feature-card">
+                    <h4><i class="fas fa-layer-group"></i> Truth Layers</h4>
+                    <p>
                         Not everything reported is equally certain. On important stories, KPN shows what is confirmed, what is only an official statement, what is still developing, and what sources dispute &mdash; so you can see exactly how sure we are, and why.
                     </p>
                 </div>
 
                 <!-- Human Impact Files -->
-                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <h4 class="text-xl font-bold text-kpn-green mb-3"><i class="fas fa-heart mr-2"></i> Human Impact Files</h4>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                <div class="kpn-feature-card">
+                    <h4><i class="fas fa-heart"></i> Human Impact Files</h4>
+                    <p>
                         Behind every policy and project are people. <a href="{% url 'impact_files:list' %}" class="font-semibold underline">Human Impact Files</a> tell their stories with their knowledge and consent, protecting their privacy and dignity &mdash; including the choice to remain anonymous.
                     </p>
                 </div>
 
                 <!-- KPN Knowledge Archive -->
-                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm md:col-span-2 lg:col-span-3">
-                    <h4 class="text-xl font-bold text-kpn-blue mb-3"><i class="fas fa-archive mr-2"></i> KPN Knowledge Archive</h4>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                <div class="kpn-feature-card md:col-span-2 lg:col-span-3">
+                    <h4><i class="fas fa-archive"></i> KPN Knowledge Archive</h4>
+                    <p>
                         Every published story, update and tracked promise becomes part of a permanent public record. In the <a href="{% url 'archive:home' %}" class="font-semibold underline">KPN Knowledge Archive</a> you can search the whole record &mdash; by topic, place, institution, or a story&rsquo;s permanent Story ID &mdash; and revisit how events developed over time.
                     </p>
                 </div>
             </div>
 
-            <div class="mt-8 bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 border border-gray-100 dark:border-gray-700 shadow-sm">
-                <h4 class="text-xl font-bold text-gray-900 dark:text-white mb-3"><i class="fas fa-shield-alt text-kpn-green mr-2"></i> How KPN checks what it publishes</h4>
-                <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+            <div class="kpn-feature-card mt-6">
+                <h4><i class="fas fa-shield-alt"></i> How KPN checks what it publishes</h4>
+                <p>
                     Before KPN calls anything confirmed, editors check it against evidence and show the source on the article itself. Where we rely on an official statement, we say so plainly &mdash; an official statement is not the same as a confirmed fact. And when we get something wrong, we publish a correction openly instead of quietly changing the story.
                 </p>
             </div>
@@ -181,25 +184,25 @@
                 <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Our Network Structure</h2>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-kpn-green text-white p-6 rounded-xl text-center shadow-sm">
-                    <i class="fas fa-sitemap text-4xl mb-4 opacity-80"></i>
-                    <h6 class="font-bold text-xl mb-1">State Executive</h6>
-                    <p class="text-sm font-medium opacity-90">State-wide Leadership</p>
+                <div class="kpn-structure-tile">
+                    <i class="fas fa-sitemap"></i>
+                    <h6>State Executive</h6>
+                    <p>State-wide Leadership</p>
                 </div>
-                <div class="bg-kpn-blue text-white p-6 rounded-xl text-center shadow-sm">
-                    <i class="fas fa-map-marked-alt text-4xl mb-4 opacity-80"></i>
-                    <h6 class="font-bold text-xl mb-1">Senatorial Zones</h6>
-                    <p class="text-sm font-medium opacity-90">3 Zonal Teams</p>
+                <div class="kpn-structure-tile green">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <h6>Senatorial Zones</h6>
+                    <p>3 Zonal Teams</p>
                 </div>
-                <div class="bg-gray-800 text-white p-6 rounded-xl text-center shadow-sm">
-                    <i class="fas fa-building text-4xl mb-4 opacity-80"></i>
-                    <h6 class="font-bold text-xl mb-1">LGA Network</h6>
-                    <p class="text-sm font-medium opacity-90">21 Local Governments</p>
+                <div class="kpn-structure-tile deep">
+                    <i class="fas fa-building"></i>
+                    <h6>LGA Network</h6>
+                    <p>21 Local Governments</p>
                 </div>
-                <div class="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white p-6 rounded-xl text-center shadow-sm">
-                    <i class="fas fa-home text-4xl mb-4 opacity-60"></i>
-                    <h6 class="font-bold text-xl mb-1">Ward Communities</h6>
-                    <p class="text-sm font-medium opacity-80">225 Wards</p>
+                <div class="kpn-structure-tile gold">
+                    <i class="fas fa-home"></i>
+                    <h6>Ward Communities</h6>
+                    <p>225 Wards</p>
                 </div>
             </div>
         </div>

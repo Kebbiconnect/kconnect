@@ -126,6 +126,7 @@ INSTALLED_APPS = [
     'events',
     'editorial.apps.EditorialConfig',
     'story_intelligence.apps.StoryIntelligenceConfig',
+    'intelligence.apps.IntelligenceConfig',
 ]
 
 MIDDLEWARE = [
@@ -159,6 +160,7 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'staff.context_processors.announcements',
                 'core.context_processors.notifications_processor',
+                'core.context_processors.ict_admin_navigation',
                 'editorial.context_processors.editorial_navigation',
             ],
         },
@@ -590,6 +592,11 @@ KPN_EDITORIAL_ENABLED = config('KPN_EDITORIAL_ENABLED', default=False, cast=bool
 KPN_EDITORIAL_REPORT_DRAFTING_ENABLED = config('KPN_EDITORIAL_REPORT_DRAFTING_ENABLED', default=False, cast=bool)
 KPN_EDITORIAL_NOTIFICATIONS = config('KPN_EDITORIAL_NOTIFICATIONS', default=False, cast=bool)
 KPN_EDITORIAL_DAILY_DRAFTS = config('KPN_EDITORIAL_DAILY_DRAFTS', default=5, cast=int)
+# Statewide intelligence collection cycle (intelligence app). The cycle is
+# driven by an external scheduler invoking `manage.py run_intelligence`;
+# there is no in-site background worker. This value is the expected interval
+# used for missed-cycle detection on the dashboard.
+KPN_INTELLIGENCE_CYCLE_MINUTES = config('KPN_INTELLIGENCE_CYCLE_MINUTES', default=30, cast=int)
 # Secret token for Muse's Brain API access (see editorial/brain_api.py).
 # Empty (default) means the Brain API endpoints do not exist at all.
 KPN_EDITORIAL_BRAIN_TOKEN = config('KPN_EDITORIAL_BRAIN_TOKEN', default='')

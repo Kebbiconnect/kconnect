@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Project Tracker | KPN — Kebbi Progressive Youth Network{% endblock %}
+{% block extra_css %}{% include 'story_intelligence/_pt_styles.html' %}{% include 'intelligence/_pj_styles.html' %}{% endblock %}
+{% block content %}
+<div class="pt bg-gray-50 dark:bg-gray-900 min-h-screen">
+
+  <!-- Hero -->
+  <section class="pt-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/projects-hero.jpg' %}')">
+    <i class="fas fa-hard-hat pt-hero-mark" aria-hidden="true"></i>
+    <div class="pt-hero-inner">
+      <span class="pt-eyebrow">Public Accountability Portal</span>
+      <h1>Public Projects.<br>Documented Evidence.</h1>
+      <p class="pt-hero-sub">Explore public projects across Kebbi State — roads, schools, water, healthcare and more. KPN records what is documented, follows the evidence, and distinguishes clearly between a reported claim and a verified finding.</p>
+
+      <div class="pt-trust" aria-label="About this tracker">
+        <span><i class="fas fa-location-dot" aria-hidden="true"></i> Kebbi State</span>
+        <span><i class="fas fa-shield-halved" aria-hidden="true"></i> Verified Records</span>
+        <span><i class="fas fa-file-lines" aria-hidden="true"></i> Evidence Timelines</span>
+      </div>
+
+      <form class="pt-search" method="get" action="{% url 'projects:list' %}" role="search">
+        <div class="pt-search-field">
+          <i class="fas fa-search" aria-hidden="true"></i>
+          <label class="sr-only" for="pj-hero-q">Search projects, institutions or locations</label>
+          <input id="pj-hero-q" type="search" name="q" value="{{ params.q }}" placeholder="Search projects, institutions or locations...">
+        </div>
+        {% if params.status %}<input type="hidden" name="status" value="{{ params.status }}">{% endif %}
+        {% if params.sector %}<input type="hidden" name="sector" value="{{ params.sector }}">{% endif %}
+        {% if params.lga %}<input type="hidden" name="lga" value="{{ params.lga }}">{% endif %}
+        {% if params.institution %}<input type="hidden" name="institution" value="{{ params.institution }}">{% endif %}
+        <button type="submit">Search</button>
+      </form>
+
+      {% if last_updated %}
+      <div class="pt-updated">
+        <span><i class="far fa-calendar" aria-hidden="true"></i> Last Updated: {{ last_updated|date:"F j, Y" }}</span>
+        <span aria-hidden="true">|</span>
+        <a href="{% url 'core:about' %}">Methodology <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i></a>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- At a glance -->
+  <section class="pt-stats" aria-label="Project Tracker at a glance">
+    <div class="pt-stats-card" style="display:block;">
+      <div class="pt-stats-intro" style="border-bottom:1px solid var(--kpn-line);">
+        <h2><i class="fas fa-chart-simple" aria-hidden="true"></i> At a Glance</h2>
+        <p>Key figures from our Project Tracker</p>
+      </div>
+      <div class="pj-stat-grid">
+        <div class="pj-stat-cell"><div class="pt-stat-value">{{ stats.total }}</div><div class="pt-stat-label">Projects Tracked</div></div>
+        <div class="pj-stat-cell"><div class="pt-stat-value">{{ stats.in_progress }}</div><div class="pt-stat-label">In Progress</div></div>
+        <div class="pj-stat-cell"><div class="pt-stat-value">{{ stats.delayed_stalled }}</div><div class="pt-stat-label">Delayed or Suspended</div></div>
+        <div class="pj-stat-cell"><div class="pt-stat-value">{{ stats.reported_abandoned }}</div><div class="pt-stat-label">Reported Abandoned</div></div>
+        <div class="pj-stat-cell"><div class="pt-stat-value">{{ stats.verified_abandoned }}</div><div class="pt-stat-label">Verified Abandoned</div></div>
+        <div class="pj-stat-cell"><div class="pt-stat-value">{{ stats.completed_verified }}</div><div class="pt-stat-label">Completed — Verified</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="pt-main">
+    <div class="pt-layout">
+
+      <!-- Filters -->
+      <aside class="pt-panel" aria-label="Filter projects">
+        <h2><i class="fas fa-filter" aria-hidden="true"></i> Explore Projects</h2>
+        <form method="get" action="{% url 'projects:list' %}">
+          <div class="pt-field">
+            <label for="pj-f-q">Search</label>
+            <div class="kpn-input-icon-wrap">
+              <span class="kpn-input-icon"><i class="fas fa-search" aria-hidden="true"></i></span>
+              <input id="pj-f-q" type="search" name="q" value="{{ params.q }}" class="kpn-input" placeholder="Search by project, institution or LGA...">
+            </div>
+          </div>
+          <div class="pt-field">
+            <label for="pj-f-status">Status</label>
+            <select id="pj-f-status" name="status" class="kpn-input kpn-select">
+              <option value="">All Statuses</option>
+              {% for value, label in status_choices %}
+              <option value="{{ value }}" {% if params.status == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="pt-field">
+            <label for="pj-f-sector">Sector</label>
+            <select id="pj-f-sector" name="sector" class="kpn-input kpn-select">
+              <option value="">All Sectors</option>
+              {% for value, label in sector_choices %}
+              <option value="{{ value }}" {% if params.sector == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="pt-field">
+            <label for="pj-f-lga">LGA</label>
+            <select id="pj-f-lga" name="lga" class="kpn-input kpn-select">
+              <option value="">All 21 LGAs</option>
+              {% for lga in lgas %}
+              <option value="{{ lga.pk }}" {% if params.lga == lga.pk %}selected{% endif %}>{{ lga.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="pt-field">
+            <label for="pj-f-institution">Institution</label>
+            <select id="pj-f-institution" name="institution" class="kpn-input kpn-select">
+              <option value="">All Institutions</option>
+              {% for institution in institutions %}
+              <option value="{{ institution.pk }}" {% if params.institution == institution.pk %}selected{% endif %}>{{ institution.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="pt-apply"><i class="fas fa-sliders" aria-hidden="true"></i> Apply Filters</button>
+          {% if has_filters %}
+          <a href="{% url 'projects:list' %}" class="pt-clear"><i class="fas fa-rotate-left" aria-hidden="true"></i> Clear All</a>
+          {% endif %}
+        </form>
+      </aside>
+
+      <!-- Register -->
+      <section aria-label="Project register">
+        <div class="pt-register-head">
+          <div>
+            <h2>Project Register</h2>
+            <p>A transparent record of public projects across Kebbi State.</p>
+          </div>
+          <span class="pt-count">{{ result_count }} project{{ result_count|pluralize }} found</span>
+        </div>
+
+        {% for project in projects %}
+        <article class="pt-card">
+          <div class="pt-thumb" aria-hidden="true">
+            <div class="pt-thumb-fallback">
+              <i class="fas {{ project.category_icon }}"></i>
+              <small>{{ project.get_category_display }}</small>
+            </div>
+          </div>
+          <div class="pt-card-body">
+            <div class="pt-card-top">
+              <span class="pt-badge pt-badge-{{ project.status|lower }}">{{ project.get_status_display }}</span>
+            </div>
+            <h3><a href="{% url 'projects:detail' project.pk %}">{{ project.title }}</a></h3>
+            <p class="pt-code"><strong>{{ project.project_code }}</strong>{% if project.sector %}<span aria-hidden="true">•</span><span>{{ project.get_sector_display }}</span>{% endif %}</p>
+            {% if project.location_label %}
+            <p class="pt-loc"><i class="fas fa-location-dot" aria-hidden="true"></i> {{ project.location_label }}</p>
+            {% endif %}
+            <dl class="pt-meta">
+              <div>
+                <dt>Responsible Institution</dt>
+                <dd>{% if project.institution %}{{ project.institution.name }}{% else %}Not documented{% endif %}</dd>
+              </div>
+              <div>
+                <dt>Expected Completion</dt>
+                <dd>{% if project.status == 'COMPLETED_VERIFIED' %}Completed{% elif project.expected_completion_date %}{{ project.expected_completion_date|date:"M Y" }}{% else %}No date announced{% endif %}</dd>
+              </div>
+              <div>
+                <dt>Last Update</dt>
+                <dd>{% if project.last_milestone_date %}{{ project.last_milestone_date|date:"M Y" }}{% else %}{{ project.updated_at|date:"M Y" }}{% endif %}</dd>
+              </div>
+            </dl>
+          </div>
+        </article>
+        {% empty %}
+        <div class="pt-empty">
+          <div class="pt-empty-icon"><i class="fas fa-hard-hat" aria-hidden="true"></i></div>
+          {% if has_filters %}
+          <h3>No projects match these filters</h3>
+          <p>Try a different search, or clear the filters to see every project KPN is tracking.</p>
+          <a href="{% url 'projects:list' %}" class="pt-clear" style="justify-content:center; display:inline-flex;"><i class="fas fa-rotate-left" aria-hidden="true"></i> Clear All</a>
+          {% else %}
+          <h3>No projects tracked yet</h3>
+          <p>Public projects recorded and evidenced by KPN will appear here.</p>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </section>
+    </div>
+
+    <!-- Coverage / How / Values -->
+    <div class="pt-bottom">
+      <div class="pt-coverage">
+        <i class="fas fa-location-dot bg" aria-hidden="true"></i>
+        <h3><i class="fas fa-location-dot" aria-hidden="true"></i> Kebbi State Coverage</h3>
+        <p>View projects across all 21 LGAs in Kebbi State.</p>
+      </div>
+      <div class="pt-how">
+        <h3><i class="fas fa-shield-halved" aria-hidden="true"></i> How KPN Tracks Projects</h3>
+        <ol class="pt-steps">
+          <li><span class="pt-step-num">1</span>Register a public project</li>
+          <li><span class="pt-step-num">2</span>Gather evidence and updates</li>
+          <li><span class="pt-step-num">3</span>Verify the project condition</li>
+          <li><span class="pt-step-num">4</span>Publish findings</li>
+        </ol>
+      </div>
+      <div class="pt-values">
+        <i class="fas fa-scale-balanced main" aria-hidden="true"></i>
+        <h3>Building a more accountable Kebbi State.</h3>
+        <p>Transparency. Progress. Public Trust.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

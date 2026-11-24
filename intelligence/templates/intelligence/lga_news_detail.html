@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ lga.name }} LGA | KPN LGA News{% endblock %}
+{% block extra_css %}{% include 'story_intelligence/_pt_styles.html' %}{% include 'intelligence/_pj_styles.html' %}{% include 'intelligence/_lga_styles.html' %}{% endblock %}
+{% block content %}
+<div class="pt bg-gray-50 dark:bg-gray-900 min-h-screen">
+
+  <!-- Hero -->
+  <section class="pt-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/lga-hero.jpg' %}')">
+    <i class="fas fa-location-dot pt-hero-mark" aria-hidden="true"></i>
+    <div class="pt-hero-inner">
+      <a href="{% url 'lga_news:index' %}" class="pt-back"><i class="fas fa-arrow-left" aria-hidden="true"></i> All LGA News</a>
+      <span class="pt-eyebrow" style="margin-top:.9rem;">{{ lga.zone.name }}</span>
+      <h1>{{ lga.name }} LGA</h1>
+      <p class="pt-hero-sub">Published stories, tracked promises and tracked projects recorded for {{ lga.name }} Local Government Area.</p>
+      <div class="pt-trust" aria-label="About {{ lga.name }}">
+        <span><i class="fas fa-map" aria-hidden="true"></i> {{ lga.zone.name }}</span>
+        <span><i class="fas fa-building-columns" aria-hidden="true"></i> {{ district_count }} District{{ district_count|pluralize }}</span>
+        <span><i class="fas fa-people-group" aria-hidden="true"></i> {{ community_count }} Communit{{ community_count|pluralize:"y,ies" }}</span>
+        <span><i class="fas fa-location-dot" aria-hidden="true"></i> {{ ward_count }} Ward{{ ward_count|pluralize }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- At a glance -->
+  <section class="pt-stats" aria-label="{{ lga.name }} at a glance">
+    <div class="pt-stats-card" style="display:block;">
+      <div class="pt-stats-intro" style="border-bottom:1px solid var(--kpn-line);">
+        <h2><i class="fas fa-chart-simple" aria-hidden="true"></i> At a Glance</h2>
+        <p>Key figures for {{ lga.name }} LGA</p>
+      </div>
+      <div class="pj-stat-grid">
+        <div class="pj-stat-cell"><div class="pt-stat-value">{{ story_total }}</div><div class="pt-stat-label">Stories Published</div></div>
+        <div class="pj-stat-cell"><div class="pt-stat-value">{{ promise_counts.tracked }}</div><div class="pt-stat-label">Promises Tracked</div></div>
+        <div class="pj-stat-cell"><div class="pt-stat-value">{{ promise_counts.delayed }}</div><div class="pt-stat-label">Promises Delayed</div></div>
+        <div class="pj-stat-cell"><div class="pt-stat-value">{{ project_counts.pj_tracked }}</div><div class="pt-stat-label">Projects Tracked</div></div>
+        <div class="pj-stat-cell"><div class="pt-stat-value">{{ project_counts.pj_reported_abandoned }}</div><div class="pt-stat-label">Reported Abandoned</div></div>
+        <div class="pj-stat-cell"><div class="pt-stat-value">{{ project_counts.pj_verified_abandoned }}</div><div class="pt-stat-label">Verified Abandoned</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="pt-main">
+
+    <!-- Stories -->
+    <section aria-label="Stories from {{ lga.name }}">
+      <div class="pt-register-head">
+        <div>
+          <h2>Stories from {{ lga.name }}</h2>
+          <p>Published by the KPN newsroom and filed under this LGA.</p>
+        </div>
+        <span class="pt-count">{{ story_total }} stor{{ story_total|pluralize:"y,ies" }}</span>
+      </div>
+
+      {% for story in stories %}
+      <article class="pt-card">
+        <div class="pt-thumb" aria-hidden="true">
+          {% if story.featured_image %}
+          <img src="{{ story.featured_image.url }}" alt="" loading="lazy">
+          {% else %}
+          <div class="pt-thumb-fallback">
+            <i class="fas fa-newspaper"></i>
+            <small>{{ story.get_category_display }}</small>
+          </div>
+          {% endif %}
+        </div>
+        <div class="pt-card-body">
+          <div class="pt-card-top">
+            <span class="pt-badge">{{ story.get_category_display }}</span>
+            {% if story.story_id %}<span class="pt-code"><strong>{{ story.story_id }}</strong></span>{% endif %}
+          </div>
+          <h3><a href="{% url 'campaigns:article_detail' story.slug %}">{{ story.title }}</a></h3>
+          <p class="pt-loc"><i class="fas fa-location-dot" aria-hidden="true"></i> {{ lga.name }} LGA</p>
+          <dl class="pt-meta">
+            <div>
+              <dt>Published</dt>
+              <dd>{% if story.published_at %}{{ story.published_at|date:"M j, Y" }}{% else %}—{% endif %}</dd>
+            </div>
+            <div>
+              <dt>Byline</dt>
+              <dd>KPN Editorial Team</dd>
+            </div>
+          </dl>
+        </div>
+      </article>
+      {% empty %}
+      <div class="pt-empty">
+        <div class="pt-empty-icon"><i class="fas fa-newspaper" aria-hidden="true"></i></div>
+        <h3>No stories published for {{ lga.name }} yet</h3>
+        <p>When the newsroom publishes a verified story from this LGA, it will appear here.</p>
+      </div>
+      {% endfor %}
+
+      {% if stories.has_other_pages %}
+      <nav class="lga-pager" aria-label="Story pages">
+        {% if stories.has_previous %}<a href="?page={{ stories.previous_page_number }}" class="pt-clear" style="display:inline-flex;"><i class="fas fa-arrow-left" aria-hidden="true"></i> Newer</a>{% endif %}
+        <span>Page {{ stories.number }} of {{ stories.paginator.num_pages }}</span>
+        {% if stories.has_next %}<a href="?page={{ stories.next_page_number }}" class="pt-clear" style="display:inline-flex;">Older <i class="fas fa-arrow-right" aria-hidden="true"></i></a>{% endif %}
+      </nav>
+      {% endif %}
+    </section>
+
+    <!-- Trackers -->
+    <section aria-label="Trackers for {{ lga.name }}" style="margin-top:2.2rem;">
+      <div class="pt-register-head">
+        <div>
+          <h2>{{ lga.name }} on the Trackers</h2>
+          <p>What KPN is holding to account in this LGA.</p>
+        </div>
+      </div>
+      <div class="lga-tracker-grid">
+        <div class="pt-panel">
+          <h2><i class="fas fa-handshake" aria-hidden="true"></i> Promises</h2>
+          <p class="lga-count-line">
+            <span><strong>{{ promise_counts.tracked }}</strong> tracked</span>
+            <span><strong>{{ promise_counts.in_progress }}</strong> in progress</span>
+            <span><strong>{{ promise_counts.delayed }}</strong> delayed</span>
+            <span><strong>{{ promise_counts.verified }}</strong> verified completed</span>
+          </p>
+          {% for promise in promises %}
+          <div class="lga-tracker-row">
+            <a href="{% url 'promises:detail' promise.pk %}">{{ promise.title }}</a>
+            <span class="pt-badge pt-badge-{{ promise.status|lower }}">{{ promise.get_status_display }}</span>
+          </div>
+          {% empty %}
+          <p>No promises tracked for this LGA yet.</p>
+          {% endfor %}
+          <p style="margin-top:.9rem;"><a href="{{ promises_url }}" class="pt-clear" style="display:inline-flex;">All {{ lga.name }} promises <i class="fas fa-arrow-right" aria-hidden="true"></i></a></p>
+        </div>
+        <div class="pt-panel">
+          <h2><i class="fas fa-hard-hat" aria-hidden="true"></i> Projects</h2>
+          <p class="lga-count-line">
+            <span><strong>{{ project_counts.pj_tracked }}</strong> tracked</span>
+            <span><strong>{{ project_counts.pj_delayed_stalled }}</strong> delayed or suspended</span>
+            <span><strong>{{ project_counts.pj_reported_abandoned }}</strong> reported abandoned</span>
+            <span><strong>{{ project_counts.pj_verified_abandoned }}</strong> verified abandoned</span>
+          </p>
+          {% for project in projects %}
+          <div class="lga-tracker-row">
+            <a href="{% url 'projects:detail' project.pk %}">{{ project.title }}</a>
+            <span class="pt-badge pt-badge-{{ project.status|lower }}">{{ project.get_status_display }}</span>
+          </div>
+          {% empty %}
+          <p>No projects tracked for this LGA yet.</p>
+          {% endfor %}
+          <p style="margin-top:.9rem;"><a href="{{ projects_url }}" class="pt-clear" style="display:inline-flex;">All {{ lga.name }} projects <i class="fas fa-arrow-right" aria-hidden="true"></i></a></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Coverage / How / Values -->
+    <div class="pt-bottom">
+      <div class="pt-coverage">
+        <i class="fas fa-location-dot bg" aria-hidden="true"></i>
+        <h3><i class="fas fa-location-dot" aria-hidden="true"></i> Kebbi State Coverage</h3>
+        <p><a href="{% url 'lga_news:index' %}" style="color:inherit; text-decoration:underline;">Browse all 21 LGA pages</a> across Kebbi State.</p>
+      </div>
+      <div class="pt-how">
+        <h3><i class="fas fa-shield-halved" aria-hidden="true"></i> How KPN Tracks {{ lga.name }}</h3>
+        <ol class="pt-steps">
+          <li><span class="pt-step-num">1</span>Gather reports and evidence</li>
+          <li><span class="pt-step-num">2</span>Verify at the desk</li>
+          <li><span class="pt-step-num">3</span>Publish the story</li>
+          <li><span class="pt-step-num">4</span>Follow the promise and the project</li>
+        </ol>
+      </div>
+      <div class="pt-values">
+        <i class="fas fa-scale-balanced main" aria-hidden="true"></i>
+        <h3>Building a more accountable Kebbi State.</h3>
+        <p>Transparency. Progress. Public Trust.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

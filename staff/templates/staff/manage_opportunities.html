@@ -3,9 +3,10 @@
 {% block title %}Manage Opportunities - Staff Dashboard{% endblock %}
 
 {% block content %}
+<div class="kpn-page">
 <div class="mb-6 flex justify-between items-center">
     <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Manage Opportunities Hub</h1>
+        <h1 class="kpn-h2 text-gray-900 dark:text-white">Manage Opportunities Hub</h1>
         <p class="text-gray-600 dark:text-gray-400">Add, edit, or remove opportunities for KPN youth.</p>
     </div>
     <a href="{% url 'staff:create_opportunity' %}" class="bg-kpn-green text-white px-4 py-2 rounded shadow hover:bg-green-700 transition">
@@ -13,7 +14,47 @@
     </a>
 </div>
 
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+{% if listing_reports %}
+<div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl shadow-md overflow-hidden mb-8">
+    <div class="p-4 border-b border-amber-200 dark:border-amber-800">
+        <h2 class="kpn-h4 text-gray-900 dark:text-white"><i class="fas fa-flag text-amber-500 mr-2"></i>Suspicious-listing reports — triage queue</h2>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Visitor reports awaiting review. Upholding a report moves the listing to Verification Pending pending re-check; it never deletes the listing.</p>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-amber-100/60 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                    <th class="p-4 font-semibold">Listing</th>
+                    <th class="p-4 font-semibold">Reason given</th>
+                    <th class="p-4 font-semibold">Reporter</th>
+                    <th class="p-4 font-semibold">Received</th>
+                    <th class="p-4 font-semibold text-right">Triage</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in listing_reports %}
+                <tr class="border-t border-amber-200 dark:border-gray-700">
+                    <td class="p-4 font-medium text-gray-900 dark:text-white">{{ report.opportunity.title }}</td>
+                    <td class="p-4 text-gray-600 dark:text-gray-300">{{ report.reason }}</td>
+                    <td class="p-4 text-gray-600 dark:text-gray-400">{{ report.reporter_name|default:"Anonymous" }}{% if report.reporter_contact %}<br><span class="text-xs">{{ report.reporter_contact }}</span>{% endif %}</td>
+                    <td class="p-4 text-gray-600 dark:text-gray-400">{{ report.created_at|date:"M d, Y H:i" }}</td>
+                    <td class="p-4 text-right whitespace-nowrap">
+                        <form method="post" action="{% url 'staff:opportunity_report_action' report.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" name="action" value="uphold" class="text-amber-600 hover:text-amber-800 font-semibold mr-3">Uphold</button>
+                            <button type="submit" name="action" value="reviewed" class="text-gray-500 hover:text-gray-700 font-semibold mr-3">No action</button>
+                            <button type="submit" name="action" value="dismiss" class="text-red-500 hover:text-red-700 font-semibold">Dismiss</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<div class="kpn-card overflow-hidden">
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
             <thead>
@@ -36,7 +77,7 @@
                         <span class="px-2 py-1 text-xs rounded-full {{ item.get_status_colour }}">{{ item.get_status_display }}</span>
                     </td>
                     <td class="p-4 text-right">
-                        <a href="{% url 'staff:edit_opportunity' item.id %}" class="text-blue-500 hover:text-blue-700 mr-3">
+                        <a href="{% url 'staff:edit_opportunity' item.id %}" class="text-kpn-green hover:text-blue-700 mr-3">
                             <i class="fas fa-edit"></i> Edit
                         </a>
                         <a href="{% url 'staff:delete_opportunity' item.id %}" class="text-red-500 hover:text-red-700">
@@ -54,5 +95,6 @@
             </tbody>
         </table>
     </div>
+</div>
 </div>
 {% endblock %}

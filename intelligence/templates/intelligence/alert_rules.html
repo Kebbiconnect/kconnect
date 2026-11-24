@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Alert Rules · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Alerts</p>
+<h1 class="kpn-h1">Alert Rules</h1>
+<div class="intel-chips">
+<span class="intel-chip"><i class="fas fa-bell"></i>{{ rules|length }} rules</span>
+</div>
+</header>
+
+<div class="kpn-card kpn-card-body">
+{% for rule in rules %}
+<div class="intel-promise">
+<a href="{% url 'intelligence:alert_rule_edit' rule.pk %}">{{ rule.get_key_display }}</a>
+<div class="intel-badges">
+{% if rule.enabled %}<span class="intel-badge intel-badge-confirmed">Enabled</span>{% else %}<span class="intel-badge intel-badge-notrel">Disabled</span>{% endif %}
+{% for channel in rule.channels %}<span class="intel-badge intel-badge-cat">{{ channel }}</span>{% endfor %}
+</div>
+<small>Dashboard recipients: holders of {{ rule.recipient_capability }} · Email: {{ rule.email_list|join:', '|default:'not configured' }} · Telegram chat IDs: {{ rule.telegram_chat_ids|default:'not configured' }}</small>
+</div>
+{% endfor %}
+</div>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="kpn-h3">Recent alerts</h2>
+{% for alert in recent_alerts %}
+<div class="intel-promise">
+<strong>{{ alert.title }}</strong>
+<small>{{ alert.get_kind_display }} · {{ alert.created_at|date:'j M Y, H:i' }}</small>
+</div>
+{% empty %}
+<p>No alerts recorded yet.</p>
+{% endfor %}
+</div>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="kpn-h3">Recent deliveries</h2>
+{% for delivery in recent_deliveries %}
+<div class="intel-promise">
+<strong>{{ delivery.channel }}</strong> → {{ delivery.recipient|default:'—' }} · {{ delivery.status }}
+<small>{{ delivery.alert.title }} · {{ delivery.created_at|date:'j M Y, H:i' }}{% if delivery.error %} · {{ delivery.error }}{% endif %}</small>
+</div>
+{% empty %}
+<p>No deliveries recorded yet.</p>
+{% endfor %}
+</div>
+
+<p><a href="{% url 'intelligence:alerts' %}">My alerts</a> · <a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

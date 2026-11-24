@@ -12,6 +12,7 @@ class Control(models.Model):
 
 class Source(models.Model):
     KIND = [('NEWS','Kebbi news'),('OPPORTUNITY','Opportunities')]
+    CONNECTOR_KIND = [('RSS','RSS/Atom feed'),('PAGE','Web page'),('OFFICIAL_PAGE','Official page'),('YOUTUBE_CHANNEL','YouTube channel'),('MANUAL','Manual submission')]
     name = models.CharField(max_length=160)
     kind = models.CharField(max_length=20, choices=KIND)
     url = models.URLField(max_length=1000)
@@ -20,6 +21,13 @@ class Source(models.Model):
     keywords = models.CharField(max_length=500, default='Kebbi,Birnin Kebbi,Argungu,Yauri,Zuru', blank=True)
     enabled = models.BooleanField(default=False)
     max_items = models.PositiveSmallIntegerField(default=5)
+    # Statewide intelligence monitoring fields (additive; Doc 04 §3.1).
+    connector_kind = models.CharField(max_length=20, choices=CONNECTOR_KIND, default='RSS')
+    poll_interval_minutes = models.PositiveIntegerField(default=30)
+    last_success_at = models.DateTimeField(null=True, blank=True)
+    last_error = models.CharField(max_length=300, blank=True)
+    consecutive_failures = models.PositiveIntegerField(default=0)
+    home_lga = models.ForeignKey('leadership.LGA', null=True, blank=True, on_delete=models.SET_NULL, related_name='home_sources')
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self): return self.name
 

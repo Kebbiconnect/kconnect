@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}My Field Reports · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Field Reporting</p>
+<h1 class="kpn-h1">My Field Reports</h1>
+<p class="intel-hero-sub">Every report you have filed, and where it stands at the verification desk.</p>
+<div class="intel-chips">
+<span class="intel-chip"><i class="fas fa-inbox"></i>{{ rows|length }} report{{ rows|length|pluralize }}</span>
+</div>
+</header>
+
+<div class="kpn-card kpn-card-body">
+{% for row in rows %}
+<div class="intel-promise">
+<strong>{{ row.report.headline }}</strong>
+<small>
+{{ row.report.lga.name }} LGA · {{ row.report.category.label }} · Happened {{ row.report.occurred_at|date:'j M Y, H:i' }} · Filed {{ row.report.created_at|date:'j M Y, H:i' }}
+{% if row.report.photo %} · Photo attached{% endif %}
+</small>
+<p style="margin-top:.45rem">{% if row.desk_state == 'VERIFIED' or row.desk_state == 'APPROVED' %}<span class="intel-badge intel-badge-confirmed">{{ row.status_label }}</span>{% elif row.desk_state == 'PUBLISHED' %}<span class="intel-badge intel-badge-ready">{{ row.status_label }}</span>{% elif row.desk_state == 'REJECTED' or row.desk_state == 'DISPUTED' %}<span class="intel-badge intel-badge-notrel">{{ row.status_label }}</span>{% elif row.desk_state == 'RESTRICTED' %}<span class="intel-badge intel-badge-dup">{{ row.status_label }}</span>{% elif row.desk_state == 'UNDER_REVIEW' or row.desk_state == 'VERIFICATION_IN_PROGRESS' or row.desk_state == 'NEEDS_INFO' %}<span class="intel-badge intel-badge-strong">{{ row.status_label }}</span>{% else %}<span class="intel-badge intel-badge-plain">{{ row.status_label }}</span>{% endif %}</p>
+</div>
+{% empty %}
+<p>You have not filed any field reports yet.</p>
+{% endfor %}
+</div>
+<p><a href="{% url 'intelligence:field_report_new' %}">File a field report</a> · <a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

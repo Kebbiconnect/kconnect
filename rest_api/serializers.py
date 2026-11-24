@@ -32,22 +32,49 @@ class CampaignSerializer(serializers.ModelSerializer):
 
 class OpportunitySerializer(serializers.ModelSerializer):
     organization = serializers.CharField(source='provider')
-    external_apply_link = serializers.URLField(source='application_link', allow_blank=True)
+    # Priority 1 web rule, mirrored: while a listing is
+    # VERIFICATION_PENDING its application link is never handed out.
+    external_apply_link = serializers.SerializerMethodField()
+    application_link = serializers.SerializerMethodField()
     category_label = serializers.CharField(source='get_category_display', read_only=True)
     status_label = serializers.CharField(source='get_status_display', read_only=True)
+    lga_name = serializers.CharField(source='lga.name', allow_null=True, read_only=True)
 
     class Meta:
         model = Opportunity
-        fields = ['id','slug','title','category','category_label','organization','description','requirements',
-                  'benefits','deadline','status','status_label','is_featured','external_apply_link','created_at','updated_at']
+        fields = ['id','slug','title','category','category_label','organization','provider','description','requirements',
+                  'benefits','deadline','opens_at','location_text','lga','lga_name','nigerians_eligible',
+                  'verification_source','status','status_label','is_featured','external_apply_link',
+                  'application_link','created_at','updated_at']
+
+    def _visible_application_link(self, obj) -> str:
+        if obj.status == 'VERIFICATION_PENDING':
+            return ''
+        return obj.application_link or ''
+
+    def get_external_apply_link(self, obj) -> str:
+        return self._visible_application_link(obj)
+
+    def get_application_link(self, obj) -> str:
+        return self._visible_application_link(obj)
 
 class CommunityInitiativeSerializer(serializers.ModelSerializer):
     category_label = serializers.CharField(source='get_category_display', read_only=True)
     status_label = serializers.CharField(source='get_status_display', read_only=True)
+    # Public presentation label (Priority 2): PLANNING reads "Planned"
+    # on public surfaces; the stored value and staff label stay as-is.
+    public_status_label = serializers.SerializerMethodField()
+    lga_name = serializers.CharField(source='lga.name', allow_null=True, read_only=True)
+    ward_name = serializers.CharField(source='ward.name', allow_null=True, read_only=True)
     class Meta:
         model = CommunityInitiative
-        fields = ['id','title','category','category_label','status','status_label','description','location_text',
+        fields = ['id','title','category','category_label','status','status_label','public_status_label',
+                  'description','objective','start_date','end_date','responsible_team','results',
+                  'location_text','lga','lga_name','ward','ward_name',
                   'people_reached','image','created_at','updated_at']
+
+    def get_public_status_label(self, obj) -> str:
+        return CommunityInitiative.PUBLIC_STATUS_LABELS.get(obj.status, obj.get_status_display())
 
 class AdvocacyCampaignSerializer(serializers.ModelSerializer):
     class Meta:
@@ -259,7 +286,10 @@ class LeadershipSeatSerializer(serializers.Serializer):
     holder = LeadershipHolderSerializer(allow_null=True)
 
 class MemberSerializer(serializers.ModelSerializer):
-    role_title = serializers.CharField(source='role_definition.title', allow_null=True, read_only=True)
+    role_title = serializers.SerializerMethodField()
+
+    def get_role_title(self, obj):
+        return role_title(obj)
     zone_name = serializers.CharField(source='zone.name', allow_null=True, read_only=True)
     lga_name = serializers.CharField(source='lga.name', allow_null=True, read_only=True)
     ward_name = serializers.CharField(source='ward.name', allow_null=True, read_only=True)

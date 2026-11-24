@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, notification_views
+from . import ict_views, views, notification_views
 from .pwa import service_worker
 
 app_name = 'core'
@@ -16,9 +16,20 @@ urlpatterns = [
     path('profile/<int:user_id>/', views.view_profile, name='view_profile'),
     path('impact/', views.impact, name='impact'),
     path('opportunities/', views.opportunities, name='opportunities'),
+    path('opportunities/archive/', views.opportunities_archive, name='opportunities_archive'),
+    path('opportunities/<slug:slug>/report/', views.report_opportunity, name='report_opportunity'),
+    path('opportunities/<slug:slug>/', views.opportunity_detail, name='opportunity_detail'),
     path('community/', views.community, name='community'),
+    path('community/initiative/<int:pk>/', views.community_initiative_detail, name='community_initiative_detail'),
+    path('community/report/', views.community_report, name='community_report'),
+    path('community/report/submitted/', views.community_report_submitted, name='community_report_submitted'),
     path('advocacy/', views.advocacy, name='advocacy'),
+    path('advocacy/<int:pk>/', views.advocacy_detail, name='advocacy_detail'),
     path('civic/', views.civic, name='civic'),
+    path('civic/education/', views.civic_education, name='civic_education'),
+    path('civic/governance/', views.civic_governance, name='civic_governance'),
+    path('civic/community-voice/', views.community_voice, name='community_voice'),
+    path('civic/election-observation/', views.election_observation, name='election_observation'),
     path('report-a-story/', views.report_a_story, name='report_a_story'),
     path('gallery/', views.gallery, name='gallery'),
     path('contact/', views.contact, name='contact'),
@@ -28,6 +39,7 @@ urlpatterns = [
     path('submit-report/', views.submit_report, name='submit_report'),
     path('review-report/<int:report_id>/', views.review_report, name='review_report'),
     path('network-rankings/', views.network_rankings, name='network_rankings'),
+    path('ict-admin/', ict_views.ict_admin_console, name='ict_admin'),
     path('notifications/', notification_views.notification_list, name='notification_list'),
     path('notifications/<int:pk>/', notification_views.notification_detail, name='notification_detail'),
     path('notifications/mark-read/', views.mark_notifications_read, name='mark_notifications_read'),

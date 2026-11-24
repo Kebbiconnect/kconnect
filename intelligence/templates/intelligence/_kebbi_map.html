@@ -1,0 +1,9 @@
+{% comment %}Kebbi State LGA map. Geometry: intelligence/map_data.py —
+boundaries from the HDX COD-AB Nigeria dataset (OCHA, CC BY-IGO),
+validated against the 21 directory LGAs. Fills are brand-green shades
+bucketed by the LGA's real tracked-promise count. When
+map_interactive is set, each LGA links to its tracking details.{% endcomment %}
+<svg class="intel-map-svg" viewBox="{{ map_viewbox }}" role="img" aria-label="Map of Kebbi State local government areas">
+{% for row in rows %}{% if row.geometry %}{% if map_interactive %}<a href="{% url 'intelligence:map' %}?lga={{ row.lga.pk }}"><path d="{{ row.geometry.d }}" fill="{{ row.fill }}"{% if row.lga.pk == selected_pk %} class="intel-map-selected"{% endif %}><title>{{ row.lga.name }} — {{ row.tracked }} tracked</title></path></a>{% else %}<path d="{{ row.geometry.d }}" fill="{{ row.fill }}"{% if row.lga.pk == selected_pk %} class="intel-map-selected"{% endif %}><title>{{ row.lga.name }} — {{ row.tracked }} tracked</title></path>{% endif %}{% endif %}{% endfor %}
+{% for row in rows %}{% if row.geometry %}<text x="{{ row.geometry.x }}" y="{{ row.geometry.y }}">{{ row.lga.name }}</text>{% endif %}{% endfor %}
+</svg>

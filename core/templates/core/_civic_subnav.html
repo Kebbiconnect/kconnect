@@ -1,0 +1,10 @@
+{% comment %}Civic Engagement & Advocacy subsection navigation.
+Expects `active` = one of: overview, education, governance, voice, campaigns, elections.{% endcomment %}
+<nav class="kpn-civic-subnav" aria-label="Civic Engagement and Advocacy sections">
+    <a href="{% url 'core:civic' %}" {% if active == 'overview' %}aria-current="page" class="active"{% endif %}>Overview</a>
+    <a href="{% url 'core:civic_education' %}" {% if active == 'education' %}aria-current="page" class="active"{% endif %}>Civic Education</a>
+    <a href="{% url 'core:civic_governance' %}" {% if active == 'governance' %}aria-current="page" class="active"{% endif %}>Governance &amp; Accountability</a>
+    <a href="{% url 'core:community_voice' %}" {% if active == 'voice' %}aria-current="page" class="active"{% endif %}>Community Voice</a>
+    <a href="{% url 'core:advocacy' %}" {% if active == 'campaigns' %}aria-current="page" class="active"{% endif %}>Advocacy Campaigns</a>
+    <a href="{% url 'core:election_observation' %}" {% if active == 'elections' %}aria-current="page" class="active"{% endif %}>Election Observation</a>
+</nav>

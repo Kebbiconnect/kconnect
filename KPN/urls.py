@@ -32,6 +32,7 @@ def custom_403(request, exception=None):
 handler403 = custom_403
 
 urlpatterns = [
+    path('editorial/intelligence/', include('intelligence.urls')),
     path('editorial/', include('editorial.urls')),
     path('api/v1/', include('rest_api.urls')),
     path('admin/', admin.site.urls),
@@ -43,6 +44,8 @@ urlpatterns = [
     path('media/', include(('media.urls', 'media'), namespace='media')),
     path('story/', include('story_intelligence.urls')),
     path('promises/', include('story_intelligence.promises_urls')),
+    path('projects/', include('intelligence.projects_urls')),
+    path('newsroom/lga/', include('intelligence.lga_urls')),
     path('archive/', include('story_intelligence.archive_urls')),
     path('signals/', include('story_intelligence.signals_urls')),
     path('impact/stories/', include('story_intelligence.impact_urls')),

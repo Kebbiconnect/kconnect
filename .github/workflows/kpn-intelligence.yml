@@ -1,0 +1,56 @@
+name: KPN statewide intelligence collection cycle
+on:
+  workflow_dispatch:
+  schedule:
+    # Every 30 minutes. GitHub cron runs in UTC; Africa/Lagos is UTC+1
+    # all year (no daylight saving), so cycles fire at :00 and :30 past
+    # every Lagos hour as well — the 30-minute cadence is exact, only
+    # the clock label shifts by one hour. GitHub schedules can be
+    # delayed; the dashboard shows actual CollectionRun times and the
+    # cycle itself detects and reports missed cycles.
+    - cron: '*/30 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: kpn-intelligence-production
+  cancel-in-progress: false
+jobs:
+  intelligence:
+    if: github.event_name == 'workflow_dispatch' || vars.KPN_INTELLIGENCE_SCHEDULE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      KPN_ENV: production
+      DEBUG: 'False'
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Validate configuration and prepare ephemeral credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in DATABASE_URL; do
+            if [ -z "${!name}" ]; then echo "Missing required GitHub Actions secret for $name"; exit 1; fi
+          done
+          python - <<'PY'
+          import os, secrets
+          secret = secrets.token_urlsafe(64)
+          print('::add-mask::'+secret)
+          with open(os.environ['GITHUB_ENV'],'a') as env: env.write('SESSION_SECRET='+secret+'\n')
+          PY
+      - name: Install the existing backend dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Require deployed migrations and run one collection cycle
+        shell: bash
+        run: |
+          set -euo pipefail
+          python manage.py check
+          python manage.py migrate --check
+          python manage.py run_intelligence --trigger SCHEDULED

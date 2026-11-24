@@ -419,7 +419,7 @@ def add_institution(request):
 @story_capability_required('MANAGE_PROMISES')
 def promise_create(request):
     if request.method == 'POST':
-        form = PromiseForm(request.POST)
+        form = PromiseForm(request.POST, request.FILES)
         if form.is_valid():
             promise = form.save(commit=False)
             promise.created_by = request.user
@@ -460,7 +460,7 @@ def promise_detail_desk(request, promise_id):
 @require_POST
 def promise_save(request, promise_id):
     promise = get_object_or_404(Promise, pk=promise_id)
-    form = PromiseForm(request.POST, instance=promise)
+    form = PromiseForm(request.POST, request.FILES, instance=promise)
     if form.is_valid():
         form.save()
         log_audit(request.user, 'PROMISE_EDITED', 'promise', promise.pk, {})
@@ -539,15 +539,133 @@ def promise_save_verification_claim(request, promise_id):
 # Public views: reader-safe fields ONLY. Institution contact notes,
 # internal notes, audit entries and editor data are never exposed here.
 
+# Period filter for the public tracker: applied to the date the
+# institution announced the promise (`announced_on`). Values are the
+# GET parameter; labels are what the filter panel shows.
+PROMISE_PERIOD_CHOICES = [
+    ('last_30', 'Last 30 days'),
+    ('last_90', 'Last 90 days'),
+    ('this_year', 'This year'),
+    ('last_year', 'Last year'),
+]
+
+
+def _promise_stats(today):
+    """At-a-glance figures for the public tracker, computed from real
+    records only. "Delayed" is honest: explicitly marked DELAYED, or
+    past the institution-announced deadline and not verified complete
+    (the two sets overlap, so they are counted as one queryset)."""
+    from django.db.models import Q
+    base = Promise.objects.all()
+    delayed = base.filter(
+        Q(status='DELAYED')
+        | Q(deadline__isnull=False, deadline__lt=today)
+    ).exclude(status='COMPLETED_VERIFIED')
+    return {
+        'total': base.count(),
+        'in_progress': base.filter(status='IN_PROGRESS').count(),
+        'delayed': delayed.count(),
+        'completed_verified': base.filter(status='COMPLETED_VERIFIED').count(),
+    }
+
+
 def promise_list(request):
-    status = request.GET.get('status', '')
-    promises = Promise.objects.select_related('institution', 'lga', 'zone', 'ward')
-    if status in dict(Promise.STATUS_CHOICES):
-        promises = promises.filter(status=status)
+    from datetime import timedelta
+
+    from django.db.models import Max, Q
+
+    from leadership.models import LGA
+
+    today = timezone.localdate()
+    params = {
+        'q': request.GET.get('q', '').strip(),
+        'sector': request.GET.get('sector', ''),
+        'lga': request.GET.get('lga', ''),
+        'institution': request.GET.get('institution', ''),
+        'status': request.GET.get('status', ''),
+        'period': request.GET.get('period', ''),
+    }
+    # Validate every filter against real vocabularies; anything else is
+    # ignored rather than erroring or silently filtering to nothing.
+    if params['sector'] not in dict(Promise.SECTOR_CHOICES):
+        params['sector'] = ''
+    if params['status'] not in dict(Promise.STATUS_CHOICES):
+        params['status'] = ''
+    if params['period'] not in dict(PROMISE_PERIOD_CHOICES):
+        params['period'] = ''
+    for key, model in (('lga', LGA), ('institution', Institution)):
+        try:
+            params[key] = int(params[key])
+        except (TypeError, ValueError):
+            params[key] = ''
+        else:
+            if not model.objects.filter(pk=params[key]).exists():
+                params[key] = ''
+
+    promises = (Promise.objects
+                .select_related('institution', 'lga', 'zone', 'ward')
+                .prefetch_related('stories')
+                .annotate(last_update_date=Max('updates__update_date')))
+    if params['q']:
+        q = params['q']
+        promises = promises.filter(
+            Q(title__icontains=q) | Q(description__icontains=q)
+            | Q(institution__name__icontains=q)
+            | Q(announced_by__icontains=q)
+            | Q(lga__name__icontains=q) | Q(zone__name__icontains=q)
+            | Q(ward__name__icontains=q))
+    if params['sector']:
+        promises = promises.filter(sector=params['sector'])
+    if params['lga']:
+        promises = promises.filter(lga_id=params['lga'])
+    if params['institution']:
+        promises = promises.filter(institution_id=params['institution'])
+    if params['status']:
+        promises = promises.filter(status=params['status'])
+    if params['period'] == 'last_30':
+        promises = promises.filter(announced_on__gte=today - timedelta(days=30))
+    elif params['period'] == 'last_90':
+        promises = promises.filter(announced_on__gte=today - timedelta(days=90))
+    elif params['period'] == 'this_year':
+        promises = promises.filter(announced_on__year=today.year)
+    elif params['period'] == 'last_year':
+        promises = promises.filter(announced_on__year=today.year - 1)
+    promises = promises.distinct()
+
+    # Attach display helpers the register cards need: the card
+    # thumbnail is the promise's own uploaded image when it has one,
+    # otherwise the first linked published story that carries a real
+    # featured image (never a fabricated photo), and the delayed flag
+    # follows the same honest definition as the headline statistic.
+    promise_list_page = list(promises)
+    for promise in promise_list_page:
+        promise.thumbnail = promise.display_image
+        promise.delayed_flag = promise.is_delayed(today)
+
+    from .models import PromiseUpdate
+    last_updated = None
+    latest_promise = (Promise.objects.order_by('-updated_at')
+                      .values_list('updated_at', flat=True).first())
+    latest_update = (PromiseUpdate.objects.order_by('-updated_at')
+                     .values_list('updated_at', flat=True).first())
+    stamps = [s for s in (latest_promise, latest_update) if s]
+    if stamps:
+        last_updated = max(stamps)
+
     context = {
-        'promises': promises,
+        'promises': promise_list_page,
+        'result_count': len(promise_list_page),
+        'stats': _promise_stats(today),
         'status_choices': Promise.STATUS_CHOICES,
-        'current_status': status,
+        'sector_choices': Promise.SECTOR_CHOICES,
+        'period_choices': PROMISE_PERIOD_CHOICES,
+        'lgas': LGA.objects.select_related('zone').order_by('name'),
+        'institutions': Institution.objects.all(),
+        'params': params,
+        'current_status': params['status'],
+        'has_filters': any(params.values()),
+        'last_updated': last_updated,
+        'today': today,
     }
     return render(request, 'story_intelligence/promise_list.html', context)
 
@@ -560,5 +678,11 @@ def promise_detail(request, promise_id):
         'promise': promise,
         'updates': promise.updates.all(),
         'stories': promise.stories.filter(status='PUBLISHED'),
+        'delayed_flag': promise.is_delayed(),
+        # Provenance (intelligence Phase 5): this promise entered the
+        # tracker through the monitoring candidate queue and a human
+        # confirmation — say so on the public record.
+        'detected_via_monitoring': promise.intelligence_candidates.filter(
+            status='CONFIRMED').exists(),
     }
     return render(request, 'story_intelligence/promise_detail.html', context)

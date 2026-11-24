@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}{{ lga.name }} · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace">
+<h1 class="kpn-h1">{{ lga.name }}</h1>
+<p class="editorial-muted">{{ lga.zone.name }}</p>
+
+<h2 class="kpn-h2">Districts</h2>
+<div class="kpn-card kpn-card-body">
+{% for district in districts %}<p>{{ district.name }}</p>{% empty %}<p>No districts recorded.</p>{% endfor %}
+{% if can_manage_sources %}<form method="post" class="editorial-form" action="{% url 'intelligence:district_add' lga.pk %}">{% csrf_token %}{{ district_form.as_p }}<button class="kpn-btn kpn-btn-outline">Add district</button></form>{% endif %}
+</div>
+
+<h2 class="kpn-h2">Wards</h2>
+<div class="kpn-card kpn-card-body">
+{% for ward in wards %}<p>{{ ward.name }}</p>{% empty %}<p>No wards recorded.</p>{% endfor %}
+</div>
+
+<h2 class="kpn-h2">Communities</h2>
+<div class="kpn-card kpn-card-body">
+{% for community in communities %}<p>{{ community.name }}{% if community.ward %} · {{ community.ward.name }}{% endif %}{% if community.district %} · {{ community.district.name }}{% endif %}</p>{% empty %}<p>No communities recorded.</p>{% endfor %}
+{% if can_manage_sources %}<form method="post" class="editorial-form" action="{% url 'intelligence:community_add' lga.pk %}">{% csrf_token %}{{ community_form.as_p }}<button class="kpn-btn kpn-btn-outline">Add community</button></form>{% endif %}
+</div>
+
+<h2 class="kpn-h2">Geographic entities</h2>
+<div class="kpn-card kpn-card-body">
+{% for entity in entities %}<p>{{ entity.name }} · {{ entity.get_kind_display }}</p>{% empty %}<p>No entities recorded.</p>{% endfor %}
+</div>
+
+<h2 class="kpn-h2">Aliases</h2>
+<div class="kpn-card kpn-card-body">
+{% for alias in aliases %}<p>{{ alias.alias }} · {{ alias.get_status_display }}</p>{% empty %}<p>No aliases recorded.</p>{% endfor %}
+</div>
+
+<p><a href="{% url 'intelligence:lgas' %}">Back to LGA directory</a></p>
+</div>
+{% endblock %}

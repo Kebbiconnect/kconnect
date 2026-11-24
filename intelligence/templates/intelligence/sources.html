@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Source Directory · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace">
+<h1 class="kpn-h1">Source Directory</h1>
+{% if can_manage_sources %}<p><a class="kpn-btn kpn-btn-primary" href="{% url 'intelligence:source_new' %}">Add source</a></p>{% endif %}
+<div class="kpn-card kpn-card-body">
+{% for row in rows %}<p><strong>{{ row.source.name }}</strong> · {{ row.source.get_kind_display }} · {{ row.source.get_connector_kind_display }} · {% if row.source.enabled %}Enabled{% else %}Disabled{% endif %} · every {{ row.source.poll_interval_minutes }} min · Health: {{ row.state }}{% if row.health and row.health.last_error %} · Last error: {{ row.health.last_error }}{% endif %}{% if can_manage_sources %} · <a href="{% url 'intelligence:source_edit' row.source.pk %}">Edit</a>{% endif %}</p>{% empty %}<p>No sources in the directory.</p>{% endfor %}
+</div>
+<p><a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

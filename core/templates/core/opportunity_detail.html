@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ opp.title }} - Opportunities Hub · KPN{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-10">
+    <div class="kpn-home-container">
+        {% include 'includes/breadcrumbs.html' %}
+
+        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-7 md:p-10">
+            <div class="kpn-opp-top" style="margin-bottom:14px">
+                <span class="kpn-tag soft">{{ opp.get_category_display }}</span>
+                {% if opp.status == 'VERIFICATION_PENDING' %}<span class="kpn-status review"><i class="fas fa-hourglass-half"></i> Verifying</span>
+                {% elif opp.status == 'CLOSING_SOON' %}<span class="kpn-status soon">Closing Soon</span>
+                {% elif opp.status == 'CLOSED' %}<span class="kpn-status closed">Closed</span>
+                {% else %}<span class="kpn-status open">Open</span>{% endif %}
+            </div>
+
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white leading-tight mb-3">{{ opp.title }}</h1>
+            <p class="text-base font-semibold text-gray-500 dark:text-gray-400 mb-2"><i class="fas fa-building mr-1"></i> Offered by {{ opp.provider }}</p>
+
+            {% if opp.status == 'VERIFICATION_PENDING' %}
+            <div class="kpn-notice" style="margin:18px 0">
+                <b>Verification pending.</b>
+                <span>Application details are being checked against the provider's official source. The application link will appear here once verification is complete.</span>
+            </div>
+            {% endif %}
+
+            <dl class="kpn-detail-facts">
+                <div><dt>Provider</dt><dd>{{ opp.provider }}</dd></div>
+                <div><dt>Status</dt><dd>{{ opp.get_status_display }}</dd></div>
+                {% if opp.opens_at %}<div><dt>Applications open</dt><dd>{{ opp.opens_at|date:"j F Y" }}</dd></div>{% endif %}
+                <div><dt>Closing date</dt><dd>{% if opp.deadline %}{{ opp.deadline|date:"j F Y" }}{% if days_left is not None and days_left >= 0 %} ({{ days_left }} day{{ days_left|pluralize }} left){% endif %}{% else %}Not stated{% endif %}</dd></div>
+                {% if opp.location_text or opp.lga %}<div><dt>Location</dt><dd>{{ opp.location_text }}{% if opp.location_text and opp.lga %}, {% endif %}{% if opp.lga %}{{ opp.lga.name }} LGA{% endif %}</dd></div>{% endif %}
+                {% if opp.nigerians_eligible is not None %}<div><dt>Nigerians eligible</dt><dd>{% if opp.nigerians_eligible %}Yes{% else %}No{% endif %}</dd></div>{% endif %}
+                {% if opp.verification_source %}<div><dt>Checked against</dt><dd>{{ opp.verification_source }}</dd></div>{% endif %}
+                <div><dt>Listed by KPN</dt><dd>{{ opp.created_at|date:"j F Y" }}</dd></div>
+            </dl>
+
+            <div class="prose prose-lg dark:prose-invert max-w-none">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-8 mb-3">About this opportunity</h2>
+                {{ opp.description|linebreaks }}
+                {% if opp.requirements %}
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-8 mb-3">Eligibility requirements</h2>
+                {{ opp.requirements|linebreaks }}
+                {% endif %}
+                {% if opp.benefits %}
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-8 mb-3">Benefits and funding</h2>
+                {{ opp.benefits|linebreaks }}
+                {% endif %}
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-8 mb-3">How to apply</h2>
+                {% if application_link %}
+                <p>Applications are made through the provider's official application page. Use the button below — it is the official link recorded for this listing.</p>
+                {% elif opp.status == 'CLOSED' %}
+                <p>This opportunity has closed. It is kept in the expired archive so the listing can still be checked.</p>
+                {% elif opp.status == 'VERIFICATION_PENDING' %}
+                <p>Application details are being checked. Please check back — the official link will appear here once verification is complete.</p>
+                {% else %}
+                <p>No application link has been recorded for this listing yet.</p>
+                {% endif %}
+            </div>
+
+            <div class="flex flex-wrap gap-3 mt-8">
+                {% if application_link %}
+                <a href="{{ application_link }}" target="_blank" rel="noopener" class="kpn-btn kpn-btn-primary kpn-btn-lg">Apply on the official site <i class="fas fa-external-link-alt"></i></a>
+                {% endif %}
+                <a href="{% url 'core:report_opportunity' opp.slug %}" class="kpn-btn kpn-btn-outline kpn-btn-lg"><i class="fas fa-flag"></i> Report this listing</a>
+                <a href="{% url 'core:opportunities' %}" class="kpn-btn kpn-btn-secondary kpn-btn-lg">Back to the hub</a>
+            </div>
+        </div>
+
+        {% if related %}
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mt-12 mb-6 border-l-4 border-kpn-green pl-3">More {{ opp.get_category_display }}</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for opp in related %}{% include 'core/_opportunity_card.html' %}{% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

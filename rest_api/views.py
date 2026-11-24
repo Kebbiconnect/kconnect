@@ -47,8 +47,11 @@ class NewsroomListView(generics.ListAPIView):
 
 class NewsroomDetailView(generics.RetrieveAPIView):
     queryset = Campaign.objects.filter(status='PUBLISHED')
-    serializer_class = CampaignSerializer
     lookup_field = 'slug'
+
+    def get_serializer_class(self):
+        from .public_content import CampaignDetailSerializer
+        return CampaignDetailSerializer
     permission_classes = [permissions.AllowAny]
     @extend_schema(auth=[])
     def get(self, request, *args, **kwargs):
@@ -75,7 +78,11 @@ class OpportunityListView(generics.ListAPIView):
 
     def get_queryset(self):
         requested_status = self.request.query_params.get('status')
-        queryset = Opportunity.objects.all() if requested_status == 'all' else Opportunity.objects.filter(status__in=['OPEN','CLOSING_SOON'])
+        # Priority 1: VERIFICATION_PENDING listings are public (with a
+        # badge, link withheld by the serializer), so they list here
+        # alongside OPEN/CLOSING_SOON. CLOSED stays archive-only
+        # unless explicitly requested, exactly as before.
+        queryset = Opportunity.objects.all() if requested_status == 'all' else Opportunity.objects.filter(status__in=['OPEN','CLOSING_SOON','VERIFICATION_PENDING'])
         if requested_status and requested_status != 'all': queryset = queryset.filter(status=requested_status)
         category = self.request.query_params.get('category')
         if category: queryset = queryset.filter(category=category)
@@ -162,6 +169,43 @@ class ImpactMetricsView(APIView):
             "zones_total": Zone.objects.count(),
             "lgas_total": LGA.objects.count(),
             "wards_total": Ward.objects.count(),
+        }
+        # Priority 5 (additive): the public Impact & Metrics page's
+        # six metric groups — every metric with its definition,
+        # reporting period, last-updated date and source — and the
+        # per-LGA coverage data behind the public coverage map. The
+        # legacy flat fields above are unchanged.
+        from core.metrics import metric_groups
+        from core.coverage import coverage_rows, coverage_totals
+        groups = []
+        for group in metric_groups():
+            metrics = []
+            for metric in group['metrics']:
+                row = dict(metric)
+                if row.get('last_updated') is not None:
+                    row['last_updated'] = row['last_updated'].isoformat()
+                metrics.append(row)
+            groups.append({'name': group['name'], 'metrics': metrics})
+        data['groups'] = groups
+        rows = coverage_rows()
+        data['coverage'] = {
+            'totals': coverage_totals(rows),
+            'lgas': [{
+                'lga': row['lga'].pk,
+                'lga_name': row['lga'].name,
+                'zone_name': row['lga'].zone.name if row['lga'].zone_id else None,
+                'slug': row['news_slug'],
+                'members': row['members'],
+                'wards_active': row['wards_active'],
+                'wards_total': row['wards_total'],
+                'stories': row['stories'],
+                'initiatives': row['initiatives'],
+                'promises': row['promises'],
+                'projects': row['projects'],
+                'strength': row['strength'],
+                'covered': row['covered'],
+                'fill': row['fill'],
+            } for row in rows],
         }
         return Response(data)
 
@@ -466,11 +510,12 @@ class ReportRecipientView(APIView):
     permission_classes = [permissions.IsAuthenticated, IsVerifiedMember, capability_permission('SUBMIT_REPORTS')]
     def get(self,request):
         from core.services.reports import recipient_for,report_type_for,ReportWorkflowError
+        from leadership.access import role_title
         from rest_framework.exceptions import ValidationError
         try: recipient=recipient_for(request.user)
         except ReportWorkflowError as exc: raise ValidationError({exc.field or 'non_field_errors':[exc.message]})
         if not recipient: raise ValidationError({'submitted_to':['No verified recipient is set up for your area yet. Contact your lead.']})
-        return Response({'report_type':report_type_for(request.user),'recipient':{'id':recipient.id,'name':recipient.get_full_name(),'role_title':recipient.role_definition.title if recipient.role_definition else None}})
+        return Response({'report_type':report_type_for(request.user),'recipient':{'id':recipient.id,'name':recipient.get_full_name(),'role_title':role_title(recipient)}})
 
 class ReportReviewView(APIView):
     permission_classes = [permissions.IsAuthenticated, IsVerifiedMember, any_capability_permission('REVIEW_REPORTS','OVERSIGHT_REPORTS')]

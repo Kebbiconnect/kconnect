@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}LGA Directory · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace">
+<h1 class="kpn-h1">LGA Directory</h1>
+<div class="kpn-card kpn-card-body">
+{% for lga in lgas %}<p><strong><a href="{% url 'intelligence:lga_detail' lga.pk %}">{{ lga.name }}</a></strong> · {{ lga.zone.name }} · Wards: {{ lga.ward_count }} · Districts: {{ lga.district_count }} · Communities: {{ lga.community_count }}</p>{% empty %}<p>No LGAs in the directory.</p>{% endfor %}
+</div>
+<p><a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

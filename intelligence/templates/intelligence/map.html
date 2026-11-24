@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}Kebbi Tracking Map · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Public Accountability Tracking</p>
+<h1 class="kpn-h1">Kebbi State Tracking Map</h1>
+<p class="intel-hero-sub">Every figure on this page is a live count from the Promise Tracker, the Project Tracker and the geographic directory — nothing is estimated. Select a local government area to see its tracking details.</p>
+<div class="intel-chips">
+<span class="intel-chip"><i class="fas fa-clipboard-list"></i>{{ totals.tracked }} commitments tracked</span>
+<span class="intel-chip"><i class="fas fa-gear"></i>{{ totals.in_progress }} under implementation</span>
+<span class="intel-chip"><i class="fas fa-clock"></i>{{ totals.delayed }} delayed</span>
+<span class="intel-chip"><i class="fas fa-circle-check"></i>{{ totals.verified }} verified completed</span>
+<span class="intel-chip"><i class="fas fa-hard-hat"></i>{{ project_totals.pj_tracked }} projects tracked</span>
+<span class="intel-chip"><i class="fas fa-triangle-exclamation"></i>{{ project_totals.pj_verified_abandoned }} verified abandoned</span>
+<span class="intel-chip"><i class="fas fa-location-dot"></i>{{ rows|length }} LGAs</span>
+</div>
+</header>
+
+<div class="intel-map-layout">
+<div class="intel-map-wrap">
+{% include 'intelligence/_kebbi_map.html' with map_interactive=True %}
+<div class="intel-legend" aria-hidden="true">
+<span><i class="intel-swatch" style="background:#e9f0ea"></i>0 tracked</span>
+<span><i class="intel-swatch" style="background:#c8e6cf"></i>1</span>
+<span><i class="intel-swatch" style="background:#93d3a4"></i>2–3</span>
+<span><i class="intel-swatch" style="background:#57bd78"></i>4–6</span>
+<span><i class="intel-swatch" style="background:#28a745"></i>7–10</span>
+<span><i class="intel-swatch" style="background:#176b36"></i>11+</span>
+</div>
+<p class="intel-panel-sub" style="margin-top:.7rem">Boundaries: Nigeria subnational administrative boundaries (COD-AB, OCHA via the Humanitarian Data Exchange, CC BY-IGO).</p>
+</div>
+
+<aside class="kpn-card kpn-card-body">
+{% if selected %}
+<h2 class="intel-panel-title">{{ selected.row.lga.name }}</h2>
+<p class="intel-panel-sub">{{ selected.row.lga.zone.name }} · {{ selected.row.ward_count }} wards · {{ selected.row.district_count }} districts · {{ selected.row.community_count }} communities</p>
+<div class="intel-counts">
+<div class="intel-count"><strong>{{ selected.row.tracked }}</strong><span>Tracked</span></div>
+<div class="intel-count"><strong>{{ selected.row.in_progress }}</strong><span>In progress</span></div>
+<div class="intel-count"><strong>{{ selected.row.delayed }}</strong><span>Delayed</span></div>
+<div class="intel-count"><strong>{{ selected.row.verified }}</strong><span>Verified completed</span></div>
+</div>
+{% for promise in selected.promises %}
+<div class="intel-promise">
+<a href="{% url 'promises:detail' promise.pk %}">{{ promise.title }}</a>
+<small>{{ promise.public_code }} · {{ promise.get_status_display }} · {{ promise.institution.name }}{% if promise.deadline %} · Target: {{ promise.deadline|date:'M Y' }}{% endif %}</small>
+</div>
+{% empty %}
+<p class="intel-panel-sub">No commitments are tracked in this LGA yet.</p>
+{% endfor %}
+<h3 class="intel-panel-title" style="margin-top:1.2rem">Projects in {{ selected.row.lga.name }}</h3>
+<div class="intel-counts">
+<div class="intel-count"><strong>{{ selected.row.pj_tracked }}</strong><span>Projects tracked</span></div>
+<div class="intel-count"><strong>{{ selected.row.pj_delayed_stalled }}</strong><span>Delayed or suspended</span></div>
+<div class="intel-count"><strong>{{ selected.row.pj_reported_abandoned }}</strong><span>Reported abandoned</span></div>
+<div class="intel-count"><strong>{{ selected.row.pj_verified_abandoned }}</strong><span>Verified abandoned</span></div>
+<div class="intel-count"><strong>{{ selected.row.pj_completed }}</strong><span>Completed — verified</span></div>
+</div>
+{% for project in selected.projects %}
+<div class="intel-promise">
+<a href="{% url 'projects:detail' project.pk %}">{{ project.title }}</a>
+<small>{{ project.project_code }} · {{ project.get_status_display }}{% if project.institution %} · {{ project.institution.name }}{% endif %}</small>
+</div>
+{% empty %}
+<p class="intel-panel-sub">No projects are tracked in this LGA yet.</p>
+{% endfor %}
+<p style="margin-top:1rem"><a href="{% url 'intelligence:lga_detail' selected.row.lga.pk %}">Open the {{ selected.row.lga.name }} directory page</a></p>
+{% else %}
+<h2 class="intel-panel-title">Select a location</h2>
+<p class="intel-panel-sub">Select a local government area to see what is being tracked there — commitments, projects, their status, and the responsible institutions.</p>
+<div class="intel-counts">
+<div class="intel-count"><strong>{{ totals.tracked }}</strong><span>Tracked statewide</span></div>
+<div class="intel-count"><strong>{{ totals.in_progress }}</strong><span>In progress</span></div>
+<div class="intel-count"><strong>{{ totals.delayed }}</strong><span>Delayed</span></div>
+<div class="intel-count"><strong>{{ totals.verified }}</strong><span>Verified completed</span></div>
+</div>
+<div class="intel-counts">
+<div class="intel-count"><strong>{{ project_totals.pj_tracked }}</strong><span>Projects tracked</span></div>
+<div class="intel-count"><strong>{{ project_totals.pj_delayed_stalled }}</strong><span>Projects delayed or suspended</span></div>
+<div class="intel-count"><strong>{{ project_totals.pj_reported_abandoned }}</strong><span>Projects reported abandoned</span></div>
+<div class="intel-count"><strong>{{ project_totals.pj_verified_abandoned }}</strong><span>Projects verified abandoned</span></div>
+<div class="intel-count"><strong>{{ project_totals.pj_completed }}</strong><span>Projects completed — verified</span></div>
+</div>
+{% endif %}
+</aside>
+</div>
+
+<h2 class="kpn-h2">All locations</h2>
+<div class="intel-lga-list">
+{% for row in rows %}
+<a class="intel-lga-row{% if row.lga.pk == selected_pk %} intel-lga-selected{% endif %}" href="{% url 'intelligence:map' %}?lga={{ row.lga.pk }}">
+<strong>{{ row.lga.name }}<span>{{ row.tracked }} tracked</span></strong>
+<small>{{ row.lga.zone.name }} · {{ row.in_progress }} in progress · {{ row.delayed }} delayed · {{ row.verified }} verified completed<br>{{ row.pj_tracked }} projects · {{ row.pj_delayed_stalled }} delayed or suspended · {{ row.pj_reported_abandoned }} reported abandoned · {{ row.pj_verified_abandoned }} verified abandoned · {{ row.pj_completed }} completed — verified</small>
+</a>
+{% empty %}
+<p>No LGAs in the directory.</p>
+{% endfor %}
+</div>
+
+<p style="margin-top:1.5rem"><a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

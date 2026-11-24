@@ -1,55 +1,179 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Our Impact - Kebbi Progressive Youth Network{% endblock %}
+{% block title %}Impact & Metrics - Kebbi Progressive Youth Network{% endblock %}
 
 {% block content %}
-<section class="bg-gradient-to-r from-kpn-green to-kpn-blue text-white py-20 relative overflow-hidden">
-    <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Our Impact</h1>
-        <p class="text-xl md:text-2xl max-w-3xl mx-auto opacity-90 font-light">
-            Measuring our progress, community interventions, and civic milestones across Kebbi State in real-time.
-        </p>
+<section class="kpn-page-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/metrics-hero.jpg' %}')">
+    <div class="kpn-home-container">
+        <p class="kpn-eyebrow">Impact &amp; Metrics</p>
+        <h1>Impact &amp; Metrics</h1>
+        <p>To show what KPN has actually achieved, where it operates and how its work is progressing.</p>
     </div>
 </section>
 
-<section class="py-16 bg-gray-50 dark:bg-gray-900">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <!-- Live Metrics from Database -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-20 -mt-24 relative z-20">
-            <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border-b-4 border-kpn-green text-center">
-                <div class="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">{{ verified_members }}+</div>
-                <div class="text-sm font-bold text-kpn-green uppercase tracking-wide">Verified Members</div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border-b-4 border-kpn-blue text-center">
-                <div class="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">{{ lgas_active|default:"0" }} / 21</div>
-                <div class="text-sm font-bold text-kpn-blue uppercase tracking-wide">Active LGAs</div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border-b-4 border-yellow-500 text-center">
-                <div class="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">{{ wards_active|default:"0" }} / 225</div>
-                <div class="text-sm font-bold text-yellow-600 uppercase tracking-wide">Active Wards</div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border-b-4 border-indigo-500 text-center">
-                <div class="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">{{ communities_reached }}+</div>
-                <div class="text-sm font-bold text-indigo-600 uppercase tracking-wide">Communities Reached</div>
+<div class="kpn-home-container">
+    {% include 'includes/breadcrumbs.html' %}
+    <div class="kpn-trust-strip">
+        <span><i class="fas fa-map-location-dot" aria-hidden="true"></i>{{ coverage_totals.lgas_covered }} of {{ coverage_totals.lgas_total }} LGAs covered</span>
+        <span><i class="fas fa-user-check" aria-hidden="true"></i>{{ verified_members }} verified member{{ verified_members|pluralize }}</span>
+        <span><i class="fas fa-newspaper" aria-hidden="true"></i>{{ coverage_totals.stories }} published stor{{ coverage_totals.stories|pluralize:"y,ies" }} placed by LGA</span>
+    </div>
+</div>
+
+<section class="py-12 pt-6" id="coverage">
+    <div class="kpn-home-container">
+        <div class="kpn-home-section-heading">
+            <div>
+                <p class="kpn-eyebrow">Where we work</p>
+                <h2>Geographic coverage</h2>
+                <p>Coverage is shown only where KPN has a verified member presence or documented activity on record. A location with no published record should not be interpreted as a location with no community activity.</p>
             </div>
         </div>
 
+        <div class="kpn-cov-layout">
+            <div class="kpn-cov-mapwrap">
+                {% include 'core/_coverage_map.html' %}
+                <div class="kpn-cov-legend" aria-hidden="true">
+                    <span><i class="kpn-cov-swatch" style="background:#e9f0ea"></i>Not yet covered</span>
+                    <span><i class="kpn-cov-swatch" style="background:#c8e6cf"></i>1 record type</span>
+                    <span><i class="kpn-cov-swatch" style="background:#93d3a4"></i>2</span>
+                    <span><i class="kpn-cov-swatch" style="background:#57bd78"></i>3</span>
+                    <span><i class="kpn-cov-swatch" style="background:#28a745"></i>4</span>
+                    <span><i class="kpn-cov-swatch" style="background:#176b36"></i>5 record types</span>
+                </div>
+                <p class="kpn-cov-attrib">Boundaries: Nigeria subnational administrative boundaries (COD-AB, OCHA via the Humanitarian Data Exchange, CC BY-IGO).</p>
+            </div>
 
-        <!-- CTA -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border-l-8 border-kpn-green p-8 md:p-12 text-center mt-12 relative overflow-hidden">
-            <div class="relative z-10">
-                <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">Be Part of the Impact</h2>
-                <p class="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-                    Join {{ verified_members }}+ progressives making a difference across Kebbi State today. One Voice, One Change.
+            <aside class="kpn-cov-panel">
+                {% if coverage_selected %}
+                <h3>{{ coverage_selected.lga.name }}</h3>
+                <p class="kpn-cov-sub">{{ coverage_selected.lga.zone.name }}{% if coverage_selected.covered %} · {{ coverage_selected.strength }} of 5 record types present{% else %} · Not yet covered{% endif %}</p>
+                <div class="kpn-cov-counts">
+                    <div><strong>{{ coverage_selected.members }}</strong><span>Verified members</span></div>
+                    <div><strong>{{ coverage_selected.wards_active }} of {{ coverage_selected.wards_total }}</strong><span>Wards with members</span></div>
+                    <div><strong>{{ coverage_selected.stories }}</strong><span>Published stories</span></div>
+                    <div><strong>{{ coverage_selected.initiatives }}</strong><span>Initiatives</span></div>
+                    <div><strong>{{ coverage_selected.promises }}</strong><span>Promises tracked</span></div>
+                    <div><strong>{{ coverage_selected.projects }}</strong><span>Projects tracked</span></div>
+                </div>
+                <p style="margin-top:1rem"><a href="{% url 'lga_news:detail' coverage_selected.news_slug %}">Read {{ coverage_selected.lga.name }} news →</a></p>
+                {% else %}
+                <h3>Kebbi State</h3>
+                <p class="kpn-cov-sub">Select a local government area to see KPN's recorded presence there.</p>
+                <div class="kpn-cov-counts">
+                    <div><strong>{{ coverage_totals.lgas_covered }} of {{ coverage_totals.lgas_total }}</strong><span>LGAs covered</span></div>
+                    <div><strong>{{ coverage_totals.members }}</strong><span>Verified members placed by LGA</span></div>
+                    <div><strong>{{ coverage_totals.stories }}</strong><span>Published stories</span></div>
+                    <div><strong>{{ coverage_totals.initiatives }}</strong><span>Initiatives</span></div>
+                    <div><strong>{{ coverage_totals.promises }}</strong><span>Promises tracked</span></div>
+                    <div><strong>{{ coverage_totals.projects }}</strong><span>Projects tracked</span></div>
+                </div>
+                {% endif %}
+            </aside>
+        </div>
+
+        <div class="kpn-cov-list">
+            {% for row in coverage_rows %}
+            <a class="kpn-cov-row{% if row.lga.pk == selected_pk %} kpn-cov-row-selected{% endif %}" href="{% url 'core:impact' %}?lga={{ row.lga.pk }}#coverage">
+                <strong>{{ row.lga.name }}<span>{% if row.covered %}{{ row.strength }} of 5 record types{% else %}Not yet covered{% endif %}</span></strong>
+                <small>{{ row.lga.zone.name }} · {{ row.members }} member{{ row.members|pluralize }} · {{ row.wards_active }} of {{ row.wards_total }} wards · {{ row.stories }} stor{{ row.stories|pluralize:"y,ies" }} · {{ row.initiatives }} initiative{{ row.initiatives|pluralize }} · {{ row.promises }} promise{{ row.promises|pluralize }} · {{ row.projects }} project{{ row.projects|pluralize }}</small>
+            </a>
+            {% empty %}
+            <p>No LGAs are on record yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% for group in metric_groups %}
+<section class="py-10 {% if forloop.even %}bg-gray-50 dark:bg-gray-900{% endif %}">
+    <div class="kpn-home-container">
+        <div class="kpn-home-section-heading">
+            <div>
+                <p class="kpn-eyebrow">Measurement</p>
+                <h2>{{ group.name }}</h2>
+            </div>
+        </div>
+        <div class="kpn-metric-grid">
+            {% for metric in group.metrics %}
+            <article class="kpn-metric-card">
+                <span class="kpn-metric-group">{{ group.name }}</span>
+                {% if metric.recorded %}
+                <strong class="kpn-metric-value">{{ metric.value }}{{ metric.suffix }}</strong>
+                {% else %}
+                <strong class="kpn-metric-value kpn-metric-unrecorded">Not yet recorded</strong>
+                {% endif %}
+                <b class="kpn-metric-label">{{ metric.label }}</b>
+                <p class="kpn-metric-def">{{ metric.definition }}</p>
+                {% if metric.note %}<p class="kpn-metric-note">{{ metric.note }}</p>{% endif %}
+                <dl class="kpn-metric-prov">
+                    <div><dt>Reporting period</dt><dd>{% if metric.period %}{{ metric.period }}{% else %}—{% endif %}</dd></div>
+                    <div><dt>Last updated</dt><dd>{% if metric.last_updated %}{{ metric.last_updated|date:"j F Y" }}{% else %}—{% endif %}</dd></div>
+                    <div><dt>Source</dt><dd>{{ metric.source }}</dd></div>
+                </dl>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endfor %}
+
+<section class="py-10">
+    <div class="kpn-home-container">
+        <div class="kpn-count-band">
+            <h2>How we count</h2>
+            <div><b>Defined</b><span>Each metric has a published definition, shown with the figure.</span></div>
+            <div><b>Time-bound</b><span>Reporting periods and last-updated dates are visible on every figure.</span></div>
+            <div><b>Sourced</b><span>Every figure names the record it is counted from, and is computed from that record — never typed in.</span></div>
+            <div><b>Honest gaps</b><span>Where nothing is on record, the page says so instead of showing a number.</span></div>
+        </div>
+    </div>
+</section>
+
+<section class="py-10 bg-gray-50 dark:bg-gray-900">
+    <div class="kpn-home-container">
+        <div class="kpn-home-section-heading">
+            <div>
+                <p class="kpn-eyebrow">On record</p>
+                <h2>Documented impact stories</h2>
+            </div>
+        </div>
+        {% if impact_stories %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for story in impact_stories %}
+            <article class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+                <span class="kpn-tag soft">{{ story.get_category_display }}</span>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mt-3 mb-2">{{ story.title }}</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-300">{{ story.description|truncatewords:28 }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">
+                    {{ story.date_achieved|date:"j F Y" }}
+                    {% if story.people_impacted %} · {{ story.people_impacted }} people impacted{% endif %}
+                    {% if story.communities_reached %} · {{ story.communities_reached }} communities reached{% endif %}
                 </p>
-                <a href="{% url 'staff:register' %}" class="inline-block bg-kpn-green text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition shadow-lg transform">
-                    Join KPN Today
-                </a>
-            </div>
+            </article>
+            {% endfor %}
         </div>
+        {% else %}
+        <div class="kpn-home-empty">
+            <p class="kpn-empty-title">No impact stories published yet</p>
+            <p class="kpn-empty-desc">Documented impact stories will appear here as KPN publishes them.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
 
+<section class="py-12">
+    <div class="kpn-home-container">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border-l-8 border-kpn-green p-8 md:p-12 text-center">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">Be Part of the Impact</h2>
+            <p class="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+                Join KPN and be part of the work recorded on this page. One Voice, One Change.
+            </p>
+            <a href="{% url 'staff:register' %}" class="inline-block bg-kpn-green text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition shadow-lg">
+                Join KPN Today
+            </a>
+        </div>
     </div>
 </section>
 {% endblock %}

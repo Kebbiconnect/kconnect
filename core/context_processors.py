@@ -22,3 +22,22 @@ def notifications_processor(request):
         'unread_notifications_count': unread_count,
         'recent_notifications': recent,
     }
+
+
+def ict_admin_navigation(request):
+    """Expose ``ict_admin_available`` for the nav's ICT Admin link.
+
+    The link renders ONLY for the assigned ICT Admin holder or a
+    super admin (server-side conditional, decided here — not CSS).
+    Fail-safe like the notifications processor: any error means the
+    link simply does not render.
+    """
+    if not request.user.is_authenticated:
+        return {'ict_admin_available': False}
+    try:
+        from .ict_admin import can_access_ict_admin
+
+        available = can_access_ict_admin(request.user)
+    except Exception:
+        available = False
+    return {'ict_admin_available': available}

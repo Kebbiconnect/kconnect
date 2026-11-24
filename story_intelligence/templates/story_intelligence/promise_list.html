@@ -1,65 +1,226 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Promise Tracker | KPN — Kebbi Progressive Youth Network{% endblock %}
+{% block extra_css %}{% include 'story_intelligence/_pt_styles.html' %}{% endblock %}
 {% block content %}
-<div class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+<div class="pt bg-gray-50 dark:bg-gray-900 min-h-screen">
 
-  <!-- Header -->
-  <section class="bg-kpn-green text-white py-10">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <h1 class="text-4xl md:text-5xl font-bold">KPN Promise Tracker</h1>
-    </div>
-  </section>
+  <!-- Hero -->
+  <section class="pt-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/promises-hero.jpg' %}')">
+    <i class="fas fa-landmark pt-hero-mark" aria-hidden="true"></i>
+    <div class="pt-hero-inner">
+      <span class="pt-eyebrow">Public Accountability Portal</span>
+      <h1>Public Commitments.<br>Documented Progress.</h1>
+      <p class="pt-hero-sub">Explore public commitments relating to development, infrastructure, education, healthcare and more across Kebbi State. KPN tracks progress and makes verified information accessible to the public.</p>
 
-  <!-- Status filter -->
-  <section class="py-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <nav class="flex flex-wrap gap-2 justify-center" aria-label="Filter promises by status">
-        <a href="{% url 'promises:list' %}" class="px-4 py-2 rounded-full text-sm font-semibold transition {% if not current_status %}bg-kpn-green text-white{% else %}bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">All promises</a>
-        {% for value, label in status_choices %}
-        <a href="{% url 'promises:list' %}?status={{ value }}" class="px-4 py-2 rounded-full text-sm font-semibold transition {% if current_status == value %}bg-kpn-green text-white{% else %}bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600{% endif %}">{{ label }}</a>
-        {% endfor %}
-      </nav>
-    </div>
-  </section>
+      <div class="pt-trust" aria-label="About this tracker">
+        <span><i class="fas fa-location-dot" aria-hidden="true"></i> Kebbi State</span>
+        <span><i class="fas fa-shield-halved" aria-hidden="true"></i> Verified Records</span>
+        <span><i class="fas fa-handshake" aria-hidden="true"></i> Transparent Governance</span>
+      </div>
 
-  <section class="py-10">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="max-w-5xl mx-auto space-y-5">
-        {% for promise in promises %}
-        <article class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition">
-          <div class="flex flex-wrap items-start justify-between gap-3">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-              <a href="{% url 'promises:detail' promise.pk %}" class="hover:text-kpn-green">{{ promise.title }}</a>
-            </h2>
-            <span class="text-xs font-semibold px-2.5 py-1 rounded-md
-              {% if promise.status == 'COMPLETED_VERIFIED' %}bg-green-100 text-green-800
-              {% elif promise.status == 'IN_PROGRESS' %}bg-blue-100 text-blue-800
-              {% elif promise.status == 'DELAYED' %}bg-red-100 text-red-800
-              {% elif promise.status == 'DISPUTED' %}bg-red-100 text-red-800
-              {% elif promise.status == 'DOCUMENTED' %}bg-yellow-100 text-yellow-800
-              {% else %}bg-gray-200 text-gray-700{% endif %}">{{ promise.get_status_display }}</span>
-          </div>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ promise.status_label }}</p>
-          <p class="text-gray-700 dark:text-gray-300 mt-3">{{ promise.description|truncatewords:40 }}</p>
-          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-4 text-sm text-gray-600 dark:text-gray-300">
-            <div><dt class="inline font-semibold">Responsible:</dt> <dd class="inline">{{ promise.institution.name }}</dd></div>
-            {% if promise.location_label %}<div><dt class="inline font-semibold">Where:</dt> <dd class="inline">{{ promise.location_label }}</dd></div>{% endif %}
-            <div><dt class="inline font-semibold">Announced:</dt> <dd class="inline">{{ promise.announced_on|date:"F j, Y" }}{% if promise.announced_by %} by {{ promise.announced_by }}{% endif %}</dd></div>
-            {% if promise.deadline %}<div><dt class="inline font-semibold">Promised by:</dt> <dd class="inline">{{ promise.deadline|date:"F j, Y" }}</dd></div>{% endif %}
-          </dl>
-          <a href="{% url 'promises:detail' promise.pk %}" class="inline-block mt-4 text-sm font-semibold text-kpn-green hover:underline">Follow this promise &rarr;</a>
-        </article>
-        {% empty %}
-        <div class="text-center py-20 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-          <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-50 dark:bg-green-900/30 text-kpn-green mb-6">
-            <i class="fas fa-handshake text-3xl"></i>
-          </div>
-          <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">No promises found</h3>
-          <p class="text-gray-500 dark:text-gray-400">{% if current_status %}No promises are being tracked with this status yet.{% else %}No promises are being tracked yet.{% endif %}</p>
+      <form class="pt-search" method="get" action="{% url 'promises:list' %}" role="search">
+        <div class="pt-search-field">
+          <i class="fas fa-search" aria-hidden="true"></i>
+          <label class="sr-only" for="pt-hero-q">Search promises, projects or locations</label>
+          <input id="pt-hero-q" type="search" name="q" value="{{ params.q }}" placeholder="Search promises, projects or locations...">
         </div>
-        {% endfor %}
+        {% if params.sector %}<input type="hidden" name="sector" value="{{ params.sector }}">{% endif %}
+        {% if params.lga %}<input type="hidden" name="lga" value="{{ params.lga }}">{% endif %}
+        {% if params.institution %}<input type="hidden" name="institution" value="{{ params.institution }}">{% endif %}
+        {% if params.status %}<input type="hidden" name="status" value="{{ params.status }}">{% endif %}
+        {% if params.period %}<input type="hidden" name="period" value="{{ params.period }}">{% endif %}
+        <button type="submit">Search</button>
+      </form>
+
+      {% if last_updated %}
+      <div class="pt-updated">
+        <span><i class="far fa-calendar" aria-hidden="true"></i> Last Updated: {{ last_updated|date:"F j, Y" }}</span>
+        <span aria-hidden="true">|</span>
+        <a href="{% url 'core:about' %}">Methodology <i class="fas fa-arrow-right text-xs" aria-hidden="true"></i></a>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- At a glance -->
+  <section class="pt-stats" aria-label="Promise Tracker at a glance">
+    <div class="pt-stats-card">
+      <div class="pt-stats-intro">
+        <h2><i class="fas fa-chart-simple" aria-hidden="true"></i> At a Glance</h2>
+        <p>Key figures from our Promise Tracker</p>
+      </div>
+      <div class="pt-stat">
+        <span class="pt-stat-icon"><i class="fas fa-file-lines" aria-hidden="true"></i></span>
+        <div><div class="pt-stat-value">{{ stats.total }}</div><div class="pt-stat-label">Commitments Tracked</div></div>
+      </div>
+      <div class="pt-stat">
+        <span class="pt-stat-icon"><i class="fas fa-gear" aria-hidden="true"></i></span>
+        <div><div class="pt-stat-value">{{ stats.in_progress }}</div><div class="pt-stat-label">Under Implementation</div></div>
+      </div>
+      <div class="pt-stat">
+        <span class="pt-stat-icon"><i class="far fa-clock" aria-hidden="true"></i></span>
+        <div><div class="pt-stat-value">{{ stats.delayed }}</div><div class="pt-stat-label">Delayed Commitments</div></div>
+      </div>
+      <div class="pt-stat">
+        <span class="pt-stat-icon pt-stat-icon-gold"><i class="fas fa-check" aria-hidden="true"></i></span>
+        <div><div class="pt-stat-value">{{ stats.completed_verified }}</div><div class="pt-stat-label">Verified Completed</div></div>
       </div>
     </div>
   </section>
+
+  <div class="pt-main">
+    <div class="pt-layout">
+
+      <!-- Filters -->
+      <aside class="pt-panel" aria-label="Filter commitments">
+        <h2><i class="fas fa-filter" aria-hidden="true"></i> Explore Commitments</h2>
+        <form method="get" action="{% url 'promises:list' %}">
+          <div class="pt-field">
+            <label for="pt-f-q">Search</label>
+            <div class="kpn-input-icon-wrap">
+              <span class="kpn-input-icon"><i class="fas fa-search" aria-hidden="true"></i></span>
+              <input id="pt-f-q" type="search" name="q" value="{{ params.q }}" class="kpn-input" placeholder="Search by project, institution or LGA...">
+            </div>
+          </div>
+          <div class="pt-field">
+            <label for="pt-f-sector">Sector</label>
+            <select id="pt-f-sector" name="sector" class="kpn-input kpn-select">
+              <option value="">All Sectors</option>
+              {% for value, label in sector_choices %}
+              <option value="{{ value }}" {% if params.sector == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="pt-field">
+            <label for="pt-f-lga">LGA</label>
+            <select id="pt-f-lga" name="lga" class="kpn-input kpn-select">
+              <option value="">All 21 LGAs</option>
+              {% for lga in lgas %}
+              <option value="{{ lga.pk }}" {% if params.lga == lga.pk %}selected{% endif %}>{{ lga.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="pt-field">
+            <label for="pt-f-institution">Institution</label>
+            <select id="pt-f-institution" name="institution" class="kpn-input kpn-select">
+              <option value="">All Institutions</option>
+              {% for institution in institutions %}
+              <option value="{{ institution.pk }}" {% if params.institution == institution.pk %}selected{% endif %}>{{ institution.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="pt-field">
+            <label for="pt-f-status">Status</label>
+            <select id="pt-f-status" name="status" class="kpn-input kpn-select">
+              <option value="">All Statuses</option>
+              {% for value, label in status_choices %}
+              <option value="{{ value }}" {% if params.status == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="pt-field">
+            <label for="pt-f-period">Period</label>
+            <select id="pt-f-period" name="period" class="kpn-input kpn-select">
+              <option value="">All Dates</option>
+              {% for value, label in period_choices %}
+              <option value="{{ value }}" {% if params.period == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="pt-apply"><i class="fas fa-sliders" aria-hidden="true"></i> Apply Filters</button>
+          {% if has_filters %}
+          <a href="{% url 'promises:list' %}" class="pt-clear"><i class="fas fa-rotate-left" aria-hidden="true"></i> Clear All</a>
+          {% endif %}
+        </form>
+      </aside>
+
+      <!-- Register -->
+      <section aria-label="Commitment register">
+        <div class="pt-register-head">
+          <div>
+            <h2>Commitment Register</h2>
+            <p>A transparent record of public commitments across Kebbi State.</p>
+          </div>
+          <span class="pt-count">{{ result_count }} commitment{{ result_count|pluralize }} found</span>
+        </div>
+
+        {% for promise in promises %}
+        <article class="pt-card">
+          <div class="pt-thumb" aria-hidden="true">
+            {% if promise.thumbnail %}
+            <img src="{{ promise.thumbnail.url }}" alt="{{ promise.title }}" loading="lazy">
+            {% else %}
+            <div class="pt-thumb-fallback">
+              <i class="fas {{ promise.sector_icon }}"></i>
+              <small>{% if promise.sector %}{{ promise.get_sector_display }}{% else %}KPN Tracker{% endif %}</small>
+            </div>
+            {% endif %}
+          </div>
+          <div class="pt-card-body">
+            <div class="pt-card-top">
+              <span class="pt-badge pt-badge-{{ promise.status|lower }}">{% if promise.status == 'COMPLETED_VERIFIED' %}Completed — Verified{% elif promise.status == 'IN_PROGRESS' %}In Progress{% else %}{{ promise.get_status_display }}{% endif %}</span>
+              {% if promise.delayed_flag and promise.status != 'DELAYED' %}<span class="pt-badge pt-badge-delayed">Delayed</span>{% endif %}
+            </div>
+            <h3><a href="{% url 'promises:detail' promise.pk %}">{{ promise.title }}</a></h3>
+            <p class="pt-code"><strong>{{ promise.public_code }}</strong>{% if promise.sector %}<span aria-hidden="true">•</span><span>{{ promise.get_sector_display }}</span>{% endif %}</p>
+            {% if promise.lga or promise.location_label %}
+            <p class="pt-loc"><i class="fas fa-location-dot" aria-hidden="true"></i> {% if promise.lga %}{{ promise.lga.name }} LGA{% else %}{{ promise.location_label }}{% endif %}</p>
+            {% endif %}
+            <dl class="pt-meta">
+              <div>
+                <dt>Responsible Institution</dt>
+                <dd>{{ promise.institution.name }}</dd>
+              </div>
+              <div>
+                <dt>Target Completion</dt>
+                <dd>{% if promise.status == 'COMPLETED_VERIFIED' %}Completed{% elif promise.deadline %}<span {% if promise.delayed_flag %}class="pt-delayed-note"{% endif %}>{{ promise.deadline|date:"M Y" }}</span>{% else %}No date announced{% endif %}</dd>
+              </div>
+              <div>
+                <dt>Last Update</dt>
+                <dd>{% if promise.last_update_date %}{{ promise.last_update_date|date:"M Y" }}{% else %}{{ promise.updated_at|date:"M Y" }}{% endif %}</dd>
+              </div>
+            </dl>
+          </div>
+        </article>
+        {% empty %}
+        <div class="pt-empty">
+          <div class="pt-empty-icon"><i class="fas fa-handshake" aria-hidden="true"></i></div>
+          {% if has_filters %}
+          <h3>No commitments match these filters</h3>
+          <p>Try a different search, or clear the filters to see every commitment KPN is tracking.</p>
+          <a href="{% url 'promises:list' %}" class="pt-clear" style="justify-content:center; display:inline-flex;"><i class="fas fa-rotate-left" aria-hidden="true"></i> Clear All</a>
+          {% else %}
+          <h3>No commitments tracked yet</h3>
+          <p>Public commitments recorded and verified by KPN will appear here.</p>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </section>
+    </div>
+
+    <!-- Coverage / How / Values -->
+    <div class="pt-bottom">
+      <div class="pt-coverage">
+        <i class="fas fa-location-dot bg" aria-hidden="true"></i>
+        <h3><i class="fas fa-location-dot" aria-hidden="true"></i> Kebbi State Coverage</h3>
+        <p>View commitments across all 21 LGAs in Kebbi State.</p>
+      </div>
+      <div class="pt-how">
+        <h3><i class="fas fa-shield-halved" aria-hidden="true"></i> How KPN Tracks Commitments</h3>
+        <ol class="pt-steps">
+          <li><span class="pt-step-num">1</span>Record a public commitment</li>
+          <li><span class="pt-step-num">2</span>Gather evidence and updates</li>
+          <li><span class="pt-step-num">3</span>Verify information</li>
+          <li><span class="pt-step-num">4</span>Publish findings</li>
+        </ol>
+      </div>
+      <div class="pt-values">
+        <i class="fas fa-scale-balanced main" aria-hidden="true"></i>
+        <h3>Building a more accountable Kebbi State.</h3>
+        <p>Transparency. Progress. Public Trust.</p>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

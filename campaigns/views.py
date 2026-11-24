@@ -48,7 +48,15 @@ EDITOR_ROLES = [
 # ─── PUBLIC VIEWS ──────────────────────────────────────────────────────────────
 
 def newsroom(request):
-    """Public newsroom listing — filterable by category and LGA."""
+    """Public newsroom listing — filterable by search, category, LGA,
+    verification status, publication date and provenance.
+
+    Featured rule (Page-by-Page Upgrade D-09, documented selection
+    rule — no manual flag): the latest VERIFIED story leads the page;
+    if none in the current result set is VERIFIED, the latest story
+    leads. DEVELOPING stories published in the last 48 hours carry the
+    breaking/developing treatment."""
+    from datetime import timedelta
     articles = Campaign.objects.filter(status='PUBLISHED').select_related(
         'author', 'lga', 'ward', 'approved_by'
     ).order_by('-published_at')
@@ -57,6 +65,9 @@ def newsroom(request):
     lga_id = request.GET.get('lga', '')
     verification = request.GET.get('status', '')
     search = request.GET.get('q', '').strip()
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+    provenance = request.GET.get('source', '')
 
     if category:
         articles = articles.filter(category=category)
@@ -70,9 +81,31 @@ def newsroom(request):
             Q(subheadline__icontains=search) |
             Q(location__icontains=search)
         )
+    if date_from:
+        articles = articles.filter(published_at__date__gte=date_from)
+    if date_to:
+        articles = articles.filter(published_at__date__lte=date_to)
+    if provenance == 'community':
+        # Stories with a recorded community-report source link
+        # (story_intelligence StorySourceLink — linked records, §6).
+        articles = articles.filter(source_links__isnull=False).distinct()
 
-    featured = articles.first()
-    rest = articles[1:13] if featured else articles[:12]
+    results = list(articles[:13])
+    featured = None
+    for candidate in results:
+        if candidate.verification_status == 'VERIFIED':
+            featured = candidate
+            break
+    if featured is None and results:
+        featured = results[0]
+    rest = [a for a in results if featured is None or a.pk != featured.pk][:12]
+
+    breaking = [
+        a for a in results
+        if a.verification_status == 'DEVELOPING'
+        and a.published_at
+        and a.published_at >= timezone.now() - timedelta(hours=48)
+    ][:3]
 
     lgas = LGA.objects.all().order_by('name')
 
@@ -80,12 +113,16 @@ def newsroom(request):
         'articles': articles,
         'featured': featured,
         'rest': rest,
+        'breaking': breaking,
         'lgas': lgas,
         'categories': Campaign.CATEGORY_CHOICES,
         'verification_choices': Campaign.VERIFICATION_STATUS_CHOICES,
         'active_category': category,
         'active_lga': lga_id,
         'active_verification': verification,
+        'active_date_from': date_from,
+        'active_date_to': date_to,
+        'active_provenance': provenance,
         'search_query': search,
     }
     return render(request, 'campaigns/newsroom.html', context)
@@ -118,10 +155,16 @@ def article_detail(request, slug):
     from story_intelligence.services import story_panel_context
     story_panel = story_panel_context(article) if article.status == 'PUBLISHED' else None
 
+    from django.urls import reverse
+    crumbs = [
+        ('Newsroom', reverse('campaigns:newsroom')),
+        (article.title if len(article.title) <= 60 else article.title[:57] + '…', None),
+    ]
     context = {
         'article': article,
         'related': related,
         'story_panel': story_panel,
+        'crumbs': crumbs,
     }
     return render(request, 'campaigns/article_detail.html', context)
 

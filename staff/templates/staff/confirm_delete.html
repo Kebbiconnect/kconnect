@@ -3,13 +3,13 @@
 {% block title %}Confirm Delete - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 text-center">
+<div class="kpn-page">
+    <div class="kpn-card p-8 text-center">
         <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <i class="fas fa-exclamation-triangle text-2xl"></i>
         </div>
         
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ title|default:"Confirm Deletion" }}</h1>
+        <h1 class="kpn-h2 text-gray-900 dark:text-white mb-2">{{ title|default:"Confirm Deletion" }}</h1>
         <p class="text-gray-600 dark:text-gray-400 mb-6">
             Are you sure you want to delete <strong>{{ object }}</strong>? This action cannot be undone.
         </p>

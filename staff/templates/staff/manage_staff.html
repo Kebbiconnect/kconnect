@@ -39,8 +39,8 @@
             <option value="">All Roles</option>
             <option value="GENERAL" {% if role_filter == 'GENERAL' %}selected{% endif %}>General Member</option>
             <option value="STATE"   {% if role_filter == 'STATE'   %}selected{% endif %}>State Executive</option>
-            <option value="ZONAL"   {% if role_filter == 'ZONAL'   %}selected{% endif %}>Zonal Coordinator</option>
-            <option value="LGA"     {% if role_filter == 'LGA'     %}selected{% endif %}>LGA Coordinator</option>
+            <option value="ZONAL"   {% if role_filter == 'ZONAL'   %}selected{% endif %}>Zonal Excos</option>
+            <option value="LGA"     {% if role_filter == 'LGA'     %}selected{% endif %}>LGA Excos</option>
             <option value="WARD"    {% if role_filter == 'WARD'    %}selected{% endif %}>Ward Leader</option>
           </select>
         </div>
@@ -102,7 +102,7 @@
             </td>
             <td data-label="Role">
               {% if member.role_definition %}
-                <span class="kpn-badge kpn-badge-blue">{{ member.role_definition.title }}</span>
+                <span class="kpn-badge kpn-badge-blue">{{ member.role_definition.canonical_title }}</span>
               {% else %}
                 <span class="kpn-badge kpn-badge-gray">General Member</span>
               {% endif %}

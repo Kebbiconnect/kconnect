@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Confirm Promise Candidate · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Promise Detection</p>
+<h1 class="kpn-h1">Confirm as a public promise</h1>
+<p class="intel-hero-sub">Confirming records this commitment on the public Promise Tracker as Announced, with the source report below as its announcement source. Check every field against the quote first.</p>
+</header>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="intel-panel-title">The statement, exactly as published</h2>
+<p><strong>“{{ candidate.quote }}”</strong></p>
+<p class="intel-panel-sub">
+{{ candidate.publication.source.name }} · <a href="{{ candidate.publication.original_url }}" target="_blank" rel="noopener">{{ candidate.publication.title }}</a>
+{% if candidate.institution_name %} · Institution named in text: {{ candidate.institution_name }}{% endif %}
+{% if candidate.lga %} · {{ candidate.lga.name }} LGA{% endif %}
+{% if candidate.deadline_text %} · Stated timeline, verbatim: “{{ candidate.deadline_text }}” — enter a deadline date only if that phrase states one{% endif %}
+</p>
+</div>
+
+<div class="kpn-card kpn-card-body">
+<form method="post" class="editorial-form">
+{% csrf_token %}
+{{ form.as_p }}
+<button class="kpn-btn kpn-btn-primary" type="submit">Record promise on the tracker</button>
+</form>
+</div>
+
+<p><a href="{% url 'intelligence:promise_candidates' %}">Back to the candidate queue</a></p>
+</div>
+{% endblock %}

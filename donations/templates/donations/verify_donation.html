@@ -3,12 +3,12 @@
 {% block title %}Verify Donation - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page" style="max-width:48rem">
     <div class="mb-6">
-        <a href="{% url 'donations:treasurer_donations' %}" class="text-kpn-blue hover:underline">
+        <a href="{% url 'donations:treasurer_donations' %}" class="text-kpn-green hover:underline">
             <i class="fas fa-arrow-left mr-2"></i> Back to Donations
         </a>
-        <h1 class="text-3xl font-bold mt-4">Verify Donation</h1>
+        <h1 class="kpn-h1 mt-4">Verify Donation</h1>
         <p class="text-gray-600 dark:text-gray-400">Confirm the authenticity of this donation</p>
     </div>
     
@@ -18,19 +18,19 @@
                 <i class="fas fa-info-circle mr-2"></i> Verification Process
             </h3>
             <p class="text-blue-700 dark:text-blue-400">
-                Please verify that this donation transaction is legitimate before proceeding. Once verified, it will be forwarded to the Financial Secretary for recording.
+                Please verify that this donation transaction is legitimate before proceeding. Once verified, it will be forwarded to the Finance Operations Officer for recording.
             </p>
         </div>
         
         <div class="space-y-4 mb-6">
             <div>
                 <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Donor Name</label>
-                <p class="text-lg font-semibold">{{ donation.donor_name }}</p>
+                <p class="kpn-h4">{{ donation.donor_name }}</p>
             </div>
             
             <div>
                 <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Amount</label>
-                <p class="text-2xl font-bold text-green-600 dark:text-green-400">₦{{ donation.amount|floatformat:2 }}</p>
+                <p class="kpn-h2 text-green-600 dark:text-green-400">₦{{ donation.amount|floatformat:2 }}</p>
             </div>
             
             <div>

@@ -3,10 +3,10 @@
 {% block title %}Review Community Report - KPN Newsroom{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page" style="max-width:56rem">
     <div class="flex justify-between items-center mb-6">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
+            <h1 class="kpn-h1 text-gray-900 dark:text-white flex items-center">
                 <i class="fas fa-file-signature text-orange-500 mr-3"></i> Review Community Report
             </h1>
             <p class="text-gray-600 dark:text-gray-400 mt-1">Verify and publish reports from Trusted Reporters.</p>
@@ -17,11 +17,11 @@
     </div>
 
     <!-- Report Details -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+    <div class="kpn-card overflow-hidden mb-8">
         <div class="p-6 border-b border-gray-100 dark:border-gray-700 bg-orange-50/50 dark:bg-orange-900/10">
             <div class="flex justify-between items-start mb-4">
                 <div>
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ report.what_happened|truncatewords:15 }}</h2>
+                    <h2 class="kpn-h2 text-gray-900 dark:text-white mb-2">{{ report.what_happened|truncatewords:15 }}</h2>
                     <div class="flex flex-wrap gap-2 text-sm">
                         <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full"><i class="fas fa-tag mr-1"></i> {{ report.get_category_display }}</span>
                         <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-1 rounded-full"><i class="far fa-clock mr-1"></i> {{ report.created_at|date:"F d, Y h:i A" }}</span>
@@ -107,8 +107,8 @@
     </div>
 
     <!-- Review Action Panel -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-t-4 border-orange-500">
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-gavel text-orange-500 mr-2"></i> Official Review Decision</h2>
+    <div class="kpn-card p-6 border-t-4 border-orange-500">
+        <h2 class="kpn-h3 text-gray-900 dark:text-white mb-4"><i class="fas fa-gavel text-orange-500 mr-2"></i> Official Review Decision</h2>
         
         <form method="POST" action="{% url 'staff:community_report_review' report.id %}">
             {% csrf_token %}
@@ -133,7 +133,7 @@
                     <label class="flex items-start p-3 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/20 transition">
                         <input type="radio" name="info_status" value="CONFIRMED" class="mt-1 text-orange-500 focus:ring-orange-500" {% if report.info_status == 'CONFIRMED' %}checked{% endif %}>
                         <div class="ml-3">
-                            <span class="block font-bold text-blue-600">KPN CONFIRMED</span>
+                            <span class="block font-bold text-kpn-green">KPN CONFIRMED</span>
                             <span class="block text-xs text-gray-500 mt-1">Multiple sources confirm the event occurred.</span>
                         </div>
                     </label>
@@ -154,12 +154,41 @@
                 </div>
             </div>
 
+            <!-- Priority 2: Community Voice publication + advocacy escalation -->
+            <div class="mb-6 p-4 rounded-lg border border-green-200 bg-green-50 dark:bg-gray-700 dark:border-gray-600">
+                <h3 class="font-semibold text-gray-900 dark:text-white mb-2">Community Voice &amp; Escalation</h3>
+                <input type="hidden" name="voice_panel" value="1">
+                <label class="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-200">
+                    <input type="checkbox" name="publish_to_voice" class="mt-1" {% if report.published_to_voice %}checked{% endif %}>
+                    <span>Publish this documented concern to <strong>Community Voice</strong> (public). The reporter's name and phone are never shown; the concern appears under its community with its verification level.
+                    {% if report.published_to_voice %}<br><em>Currently published since {{ report.voice_published_at|date:"d M Y, H:i" }}.</em>{% endif %}</span>
+                </label>
+                <div class="mt-4 flex flex-wrap items-end gap-3">
+                    <div class="flex-1 min-w-[220px]">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Escalate into an advocacy campaign</label>
+                        <select name="escalated_campaign" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <option value="">— Select a campaign —</option>
+                            {% for campaign in campaigns %}
+                            <option value="{{ campaign.pk }}" {% if report.escalated_campaign_id == campaign.pk %}selected{% endif %}>{{ campaign.title }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if report.escalated_campaign %}
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Currently linked to: {{ report.escalated_campaign.title }}</p>
+                        {% endif %}
+                    </div>
+                    <button type="submit" name="action" value="escalate" class="px-4 py-2 bg-amber-500 text-white font-semibold rounded-lg hover:bg-amber-600">
+                        Escalate
+                    </button>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Escalation only records the link — create the campaign first under Manage Advocacy, then link it here. Nothing escalates automatically.</p>
+            </div>
+
             <!-- Action Buttons -->
             <div class="flex flex-wrap gap-3">
                 <button type="submit" name="action" value="approve" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition flex items-center justify-center">
                     <i class="fas fa-check mr-2"></i> Approve & Publish
                 </button>
-                <button type="submit" name="action" value="under_review" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition flex items-center justify-center">
+                <button type="submit" name="action" value="under_review" class="flex-1 bg-kpn-green hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition flex items-center justify-center">
                     <i class="fas fa-search mr-2"></i> Keep Under Review
                 </button>
                 <button type="submit" name="action" value="reject" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition flex items-center justify-center" onclick="return confirm('Are you sure you want to reject this report?');">

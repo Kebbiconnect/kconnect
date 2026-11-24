@@ -1,0 +1,24 @@
+<article class="kpn-opp-card">
+    <div class="kpn-opp-top">
+        <span class="kpn-tag soft">{{ opp.get_category_display }}</span>
+        {% if opp.status == 'VERIFICATION_PENDING' %}<span class="kpn-status review"><i class="fas fa-hourglass-half"></i> Verifying</span>
+        {% elif opp.status == 'CLOSING_SOON' %}<span class="kpn-status soon">Closing Soon</span>
+        {% elif opp.status == 'CLOSED' %}<span class="kpn-status closed">Closed</span>
+        {% else %}<span class="kpn-status open">Open</span>{% endif %}
+    </div>
+    <h3><a href="{% url 'core:opportunity_detail' opp.slug %}">{{ opp.title }}</a></h3>
+    <p><i class="fas fa-building mr-1"></i> {{ opp.provider }}</p>
+    <p>{{ opp.description|truncatewords:26 }}</p>
+    <div class="mt-auto pt-3 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between gap-3">
+        <span class="text-sm text-gray-500 dark:text-gray-400">
+            {% if opp.status == 'VERIFICATION_PENDING' %}Deadline: to confirm
+            {% elif opp.deadline %}<i class="far fa-clock mr-1"></i> Deadline: {{ opp.deadline|date:"j M Y" }}
+            {% else %}No deadline listed{% endif %}
+        </span>
+        {% if opp.status == 'VERIFICATION_PENDING' %}
+        <a href="{% url 'core:opportunity_detail' opp.slug %}" class="kpn-home-link">Details pending</a>
+        {% else %}
+        <a href="{% url 'core:opportunity_detail' opp.slug %}" class="kpn-home-link">View opportunity <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+        {% endif %}
+    </div>
+</article>

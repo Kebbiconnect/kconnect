@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ initiative.title }} - Community Hub · KPN{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-10">
+    <div class="kpn-home-container">
+        {% include 'includes/breadcrumbs.html' %}
+
+        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-7 md:p-10">
+            <div class="kpn-opp-top" style="margin-bottom:14px">
+                <span class="kpn-tag soft">{{ initiative.get_category_display }}</span>
+                <span class="px-2.5 py-1 rounded-full text-xs font-bold {{ initiative.get_status_colour }}">{{ initiative.public_status_label }}</span>
+            </div>
+
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white leading-tight mb-3">{{ initiative.title }}</h1>
+            <p class="text-base font-semibold text-gray-500 dark:text-gray-400 mb-2">
+                <i class="fas fa-map-marker-alt mr-1"></i>{% if initiative.ward %}{{ initiative.ward.name }} Ward, {% endif %}{% if initiative.lga %}{{ initiative.lga.name }} LGA{% endif %}{% if initiative.lga and initiative.location_text %} · {% endif %}{{ initiative.location_text }}
+            </p>
+
+            {% if initiative.image %}
+            <img src="{{ initiative.image.url }}" alt="{{ initiative.title }}" class="w-full max-h-96 object-cover rounded-xl my-6">
+            {% endif %}
+
+            <dl class="kpn-detail-facts">
+                <div><dt>Status</dt><dd>{{ initiative.public_status_label }}</dd></div>
+                <div><dt>Type</dt><dd>{{ initiative.get_category_display }}</dd></div>
+                {% if initiative.start_date %}<div><dt>Starts</dt><dd>{{ initiative.start_date|date:"j F Y" }}</dd></div>{% endif %}
+                {% if initiative.end_date %}<div><dt>Ends</dt><dd>{{ initiative.end_date|date:"j F Y" }}</dd></div>{% endif %}
+                {% if initiative.responsible_team %}<div><dt>Responsible team</dt><dd>{{ initiative.responsible_team }}</dd></div>{% endif %}
+                {% if initiative.people_reached %}<div><dt>People reached</dt><dd>{{ initiative.people_reached }}</dd></div>{% endif %}
+            </dl>
+
+            <div class="prose prose-lg dark:prose-invert max-w-none">
+                {% if initiative.objective %}
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-8 mb-3">Objective</h2>
+                {{ initiative.objective|linebreaks }}
+                {% endif %}
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-8 mb-3">About this initiative</h2>
+                {{ initiative.description|linebreaks }}
+                {% if initiative.results %}
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-8 mb-3">Documented results</h2>
+                {{ initiative.results|linebreaks }}
+                {% endif %}
+            </div>
+
+            <div class="flex flex-wrap gap-3 mt-8">
+                <a href="{% url 'core:community_report' %}" class="kpn-btn kpn-btn-outline kpn-btn-lg"><i class="fas fa-bullhorn"></i> Report a community concern</a>
+                <a href="{% url 'core:community' %}" class="kpn-btn kpn-btn-secondary kpn-btn-lg">Back to the Community Hub</a>
+            </div>
+        </div>
+
+        {% if related %}
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mt-12 mb-6 border-l-4 border-kpn-green pl-3">More in {{ initiative.lga.name }} LGA</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for initiative in related %}{% include 'core/_initiative_card.html' %}{% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

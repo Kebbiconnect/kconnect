@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Event Clusters · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Event Clustering</p>
+<h1 class="kpn-h1">Event Clusters</h1>
+<div class="intel-chips">
+<span class="intel-chip"><i class="fas fa-layer-group"></i>{{ total }} open clusters</span>
+<span class="intel-chip"><i class="fas fa-filter"></i>{{ page_obj.paginator.count }} shown by current filters</span>
+</div>
+</header>
+
+<div class="kpn-card kpn-card-body">
+<form method="get" class="editorial-form">
+<p><label for="cluster-category">Category</label>
+<select id="cluster-category" name="category">
+<option value="">All categories</option>
+{% for category in categories %}<option value="{{ category.pk }}"{% if category_id == category.pk|stringformat:'s' %} selected{% endif %}>{{ category.label }}</option>{% endfor %}
+</select></p>
+<p><label for="cluster-lga">LGA</label>
+<select id="cluster-lga" name="lga">
+<option value="">All LGAs</option>
+{% for lga in lgas %}<option value="{{ lga.pk }}"{% if lga_id == lga.pk|stringformat:'s' %} selected{% endif %}>{{ lga.name }}</option>{% endfor %}
+</select></p>
+<button class="kpn-btn kpn-btn-primary">Apply filters</button>
+{% if category_id or lga_id %}<a class="kpn-btn" href="{% url 'intelligence:clusters' %}">Clear filters</a>{% endif %}
+</form>
+</div>
+
+<div class="kpn-card kpn-card-body">
+{% for cluster in page_obj %}
+<div class="intel-promise">
+<a href="{% url 'intelligence:cluster_detail' cluster.pk %}">{{ cluster.title }}</a>
+<small>Cluster #{{ cluster.pk }} · {{ cluster.member_count }} item{{ cluster.member_count|pluralize }} reporting this event{% if cluster.category %} · {{ cluster.category.label }}{% endif %}{% if cluster.primary_lga %} · {{ cluster.primary_lga.name }} LGA{% endif %} · Updated {{ cluster.updated_at|date:'j M Y, H:i' }}</small>
+</div>
+{% empty %}
+<p>No event clusters{% if category_id or lga_id %} match these filters{% else %} yet{% endif %}.</p>
+{% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<p>
+{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if category_id %}&amp;category={{ category_id }}{% endif %}{% if lga_id %}&amp;lga={{ lga_id }}{% endif %}">Previous</a>{% endif %}
+Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if category_id %}&amp;category={{ category_id }}{% endif %}{% if lga_id %}&amp;lga={{ lga_id }}{% endif %}">Next</a>{% endif %}
+</p>
+{% endif %}
+
+<p><a href="{% url 'intelligence:items' %}">Collected items</a> · <a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

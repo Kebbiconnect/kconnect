@@ -3,9 +3,9 @@
 {% block title %}All Meeting Minutes - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page">
     <div class="mb-8">
-        <h1 class="text-3xl font-bold">All Meeting Minutes</h1>
+        <h1 class="kpn-h1">All Meeting Minutes</h1>
         <p class="text-gray-600 dark:text-gray-400">Published meeting minutes from all events</p>
     </div>
     
@@ -14,7 +14,7 @@
         {% for minutes in all_minutes %}
         <div class="kpn-card p-6">
             <div class="flex items-start justify-between mb-4">
-                <h3 class="text-xl font-semibold">{{ minutes.event.title }}</h3>
+                <h3 class="kpn-h3">{{ minutes.event.title }}</h3>
                 <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded">
                     Published
                 </span>
@@ -28,7 +28,7 @@
             
             <p class="text-gray-700 dark:text-gray-300 mb-4">{{ minutes.summary|truncatewords:30 }}</p>
             
-            <a href="{% url 'events:view_meeting_minutes' minutes.event.pk %}" class="block text-center bg-kpn-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+            <a href="{% url 'events:view_meeting_minutes' minutes.event.pk %}" class="block text-center bg-kpn-green text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
                 Read Full Minutes
             </a>
         </div>
@@ -42,7 +42,7 @@
     {% endif %}
     
     <div class="mt-6">
-        <a href="{% url 'events:event_calendar' %}" class="text-kpn-blue hover:underline">
+        <a href="{% url 'events:event_calendar' %}" class="text-kpn-green hover:underline">
             <i class="fas fa-arrow-left mr-2"></i>Back to Event Calendar
         </a>
     </div>

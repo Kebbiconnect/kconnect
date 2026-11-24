@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Create Newsroom Draft · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Verification Desk · Convert</p>
+<h1 class="kpn-h1">{{ unit.title }}</h1>
+<div class="intel-chips">
+<span class="intel-chip"><i class="fas fa-clipboard-check"></i>Approved — ready</span>
+{% if category %}<span class="intel-chip"><i class="fas fa-tag"></i>{{ category.label }} → {{ mapped_category }}</span>{% endif %}
+<span class="intel-chip"><i class="fas fa-inbox"></i>{{ members|length }} source item{{ members|length|pluralize }}</span>
+</div>
+</header>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="intel-panel-title">Confirm draft creation</h2>
+<p class="intel-panel-sub">This creates a <strong>draft</strong> in the newsroom. Nothing is published: the draft carries the source links below as its evidence and is published only through the normal newsroom review and publish flow.</p>
+{% for item in members %}
+<div class="intel-promise">
+<a href="{{ item.original_url }}" target="_blank" rel="noopener">{{ item.title }}</a>
+<small>{{ item.source.name }}{% if item.published_at %} · Published {{ item.published_at|date:'j M Y, H:i' }}{% endif %}</small>
+</div>
+{% endfor %}
+<form method="post" class="editorial-form">
+{% csrf_token %}
+<input type="hidden" name="confirm" value="yes">
+<button class="kpn-btn kpn-btn-primary" type="submit">Yes, create the draft</button>
+<a class="kpn-btn" href="{% if kind == 'cluster' %}{% url 'intelligence:desk_cluster' unit.pk %}{% else %}{% url 'intelligence:desk_item' unit.pk %}{% endif %}">Cancel</a>
+</form>
+</div>
+</div>
+{% endblock %}

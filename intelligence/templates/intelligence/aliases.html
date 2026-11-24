@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Geographic Aliases · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace">
+<h1 class="kpn-h1">Geographic Aliases</h1>
+<form method="get" class="editorial-filters"><label>Status<select name="status" class="kpn-input"><option value="">All statuses</option>{% for value,label in statuses %}<option value="{{ value }}" {% if value == status %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label><button class="kpn-btn kpn-btn-outline">Filter</button></form>
+<div class="kpn-card kpn-card-body">
+{% for alias in aliases %}<p><strong>{{ alias.alias }}</strong> → {{ alias.target }} · {{ alias.get_status_display }}{% if can_manage_sources and alias.status == 'PENDING' %} · <form method="post" action="{% url 'intelligence:alias_approve' alias.pk %}" style="display:inline">{% csrf_token %}<button class="kpn-btn kpn-btn-outline">Approve</button></form> <form method="post" action="{% url 'intelligence:alias_reject' alias.pk %}" style="display:inline">{% csrf_token %}<button class="kpn-btn kpn-btn-outline">Reject</button></form>{% endif %}</p>{% empty %}<p>No aliases recorded.</p>{% endfor %}
+</div>
+{% if form %}<h2 class="kpn-h2">Add alias</h2>
+<div class="kpn-card kpn-card-body">
+<form method="post" class="editorial-form">{% csrf_token %}{{ form.as_p }}<button class="kpn-btn kpn-btn-primary">Record alias</button></form>
+</div>{% endif %}
+<p><a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

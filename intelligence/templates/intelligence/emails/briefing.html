@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{{ briefing.title }}</title></head>
+<body style="margin:0; padding:0; background-color:#eef3ee;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#eef3ee; padding:24px 0;">
+<tr><td align="center">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px; width:100%; background-color:#ffffff; border-radius:12px; overflow:hidden; font-family:Arial, Helvetica, sans-serif;">
+  <tr><td style="background-color:#0b6b38; padding:26px 32px;">
+    <div style="color:#ffffff; font-size:20px; font-weight:bold; letter-spacing:0.4px;">KEBBI PROGRESSIVE YOUTH NETWORK</div>
+    <div style="color:#cfe8d6; font-size:13px; margin-top:4px;">One Voice, One Change</div>
+  </td></tr>
+  <tr><td style="padding:28px 32px 4px 32px; color:#1f2937;">
+    <div style="display:inline-block; background-color:#d99a16; color:#231a04; font-size:11px; font-weight:bold; letter-spacing:1.2px; padding:5px 10px; border-radius:999px; text-transform:uppercase;">Statewide Intelligence · {{ data.kind_label }} Briefing</div>
+    <h1 style="font-size:21px; margin:14px 0 6px 0; color:#14532d;">{{ data.kind_label }} Briefing — {{ data.period_label }}</h1>
+    <p style="font-size:14px; line-height:1.6; color:#6b7280; margin:0 0 18px 0;">Composed from the intelligence records for {{ briefing.period_start }} to {{ briefing.period_end }} — collection, verification, trackers and source health.</p>
+  </td></tr>
+  <tr><td style="padding:0 32px 6px 32px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+      {% for stat in data.stats %}
+        <td width="25%" style="padding:0 4px 8px 0;">
+          <div style="background-color:#eef6f0; border:1px solid #d7e8dc; border-radius:10px; padding:12px 10px; text-align:center;">
+            <div style="font-size:22px; font-weight:bold; color:#176b36;">{{ stat.value }}</div>
+            <div style="font-size:10px; font-weight:bold; letter-spacing:0.6px; color:#6b7280; text-transform:uppercase; margin-top:3px;">{{ stat.label }}</div>
+          </div>
+        </td>
+      {% endfor %}
+      </tr>
+    </table>
+  </td></tr>
+  {% for section in email_sections %}
+  <tr><td style="padding:16px 32px 2px 32px; color:#1f2937;">
+    <h2 style="font-size:16px; margin:0 0 8px 0; color:#14532d; border-bottom:2px solid #d99a16; padding-bottom:6px;">{{ section.title }}</h2>
+    {% for line in section.lines %}<p style="font-size:14px; line-height:1.65; margin:0 0 5px 0;">{{ line }}</p>{% endfor %}
+  </td></tr>
+  {% endfor %}
+  {% if not email_sections %}
+  <tr><td style="padding:16px 32px 2px 32px; color:#1f2937;">
+    <p style="font-size:14px; line-height:1.65; margin:0;">No activity was recorded in this period.</p>
+  </td></tr>
+  {% endif %}
+  <tr><td align="center" style="padding:20px 32px 6px 32px;">
+    <a href="{{ briefing_url }}" style="display:inline-block; background-color:#0b6b38; color:#ffffff; font-size:15px; font-weight:bold; text-decoration:none; padding:13px 30px; border-radius:8px;">Open the briefing</a>
+  </td></tr>
+  <tr><td style="padding:18px 32px 26px 32px; border-top:1px solid #e5e7eb; color:#6b7280; font-size:12px; line-height:1.6;">
+    Kebbi Progressive Youth Network (KPN)<br>
+    Sani Abacha Bypass Road, Birnin Kebbi, Kebbi State<br>
+    <a href="{{ site_url }}" style="color:#0b6b38; text-decoration:none;">{{ site_url }}</a>
+  </td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>

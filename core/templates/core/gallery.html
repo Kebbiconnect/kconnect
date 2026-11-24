@@ -1,24 +1,21 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Gallery - KPN{% endblock %}
 
 {% block content %}
-<div class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+<section class="kpn-page-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/metrics-hero.jpg' %}')">
+    <div class="kpn-home-container">
+        <h1>Media Gallery</h1>
+        <p>Explore our collection of photos and videos showcasing KPN's journey and achievements.</p>
+    </div>
+</section>
 
-    <!-- Header -->
-    <section class="bg-kpn-green text-white py-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-images text-white text-2xl"></i>
-            </div>
-            <h1 class="text-4xl md:text-5xl font-bold mb-3">Media Gallery</h1>
-            <p class="text-lg max-w-3xl mx-auto opacity-90">
-                Explore our collection of photos and videos showcasing KPN's journey and achievements.
-            </p>
-        </div>
-    </section>
+<div class="kpn-home-container">
+    {% include 'includes/breadcrumbs.html' %}
+</div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+<div class="kpn-home-container pb-12">
 
         <!-- Filter Buttons -->
         <div class="flex flex-wrap justify-center gap-2 mb-10">
@@ -31,7 +28,7 @@
                 <i class="fas fa-camera"></i> Photos
             </a>
             <a href="?type=VIDEO"
-               class="kpn-btn {% if selected_type == 'VIDEO' %}kpn-btn-blue{% else %}kpn-btn-secondary{% endif %}">
+               class="kpn-btn {% if selected_type == 'VIDEO' %}kpn-btn-primary{% else %}kpn-btn-secondary{% endif %}">
                 <i class="fas fa-video"></i> Videos
             </a>
         </div>
@@ -39,43 +36,43 @@
         <!-- Media Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for item in media_items %}
-            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm hover:shadow-md transition group {% if item.media_type == 'PHOTO' %}cursor-pointer{% endif %}"
+            <div class="kpn-media-card group {% if item.media_type == 'PHOTO' %}cursor-pointer{% endif %}"
                  {% if item.media_type == 'PHOTO' %}onclick="openLightbox('{{ item.file.url }}')"{% endif %}>
 
                 {% if item.media_type == 'PHOTO' %}
-                <div class="relative h-64 overflow-hidden bg-gray-100 dark:bg-gray-700">
-                    <img src="{{ item.file.url }}" alt="{{ item.title }}" class="w-full h-full object-cover group- transition duration-500">
+                <div class="photo">
+                    <img src="{{ item.file.url }}" alt="{{ item.title }}">
                     <!-- Type badge -->
-                    <span class="absolute top-3 left-3 kpn-badge kpn-badge-green text-[10px] font-bold uppercase tracking-wide backdrop-blur-sm">
+                    <span class="type-badge kpn-badge kpn-badge-green text-[10px] font-bold uppercase tracking-wide backdrop-blur-sm">
                         <i class="fas fa-camera mr-0.5"></i> Photo
                     </span>
                     <!-- Hover overlay -->
-                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                        <div class="text-white text-center">
+                    <div class="veil">
+                        <div>
                             <i class="fas fa-search-plus text-3xl mb-1"></i>
                             <p class="text-xs font-medium">Click to Enlarge</p>
                         </div>
                     </div>
                 </div>
                 {% else %}
-                <div class="relative h-64 overflow-hidden bg-gray-100 dark:bg-gray-700">
-                    <video controls class="w-full h-full object-cover">
+                <div class="photo">
+                    <video controls>
                         <source src="{{ item.file.url }}" type="video/mp4">
                     </video>
-                    <span class="absolute top-3 left-3 kpn-badge kpn-badge-blue text-[10px] font-bold uppercase tracking-wide">
+                    <span class="type-badge kpn-badge kpn-badge-blue text-[10px] font-bold uppercase tracking-wide">
                         <i class="fas fa-video mr-0.5"></i> Video
                     </span>
                 </div>
                 {% endif %}
 
-                <div class="p-4">
-                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1 line-clamp-1">{{ item.title }}</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">{{ item.description|truncatewords:15 }}</p>
+                <div class="body">
+                    <h3 class="line-clamp-1">{{ item.title }}</h3>
+                    <p class="desc line-clamp-2">{{ item.description|truncatewords:15 }}</p>
 
                     <!-- Creator Info -->
-                    <div class="border-t border-gray-100 dark:border-gray-700 pt-3">
-                        <p class="text-xs text-gray-400 dark:text-gray-500 mb-1">Media by</p>
-                        <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">{{ item.uploaded_by.get_full_name }}</p>
+                    <div class="credit">
+                        <p class="by">Media by</p>
+                        <p class="name">{{ item.uploaded_by.get_full_name }}</p>
 
                         <!-- Tier Badge -->
                         {% if item.uploaded_by.role == 'STATE' %}
@@ -97,19 +94,17 @@
                         {% endif %}
 
                         {% if item.uploaded_by.role_definition %}
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ item.uploaded_by.role_definition.title }}</p>
+                            <p class="post">{{ item.uploaded_by.role_definition.canonical_title }}</p>
                         {% endif %}
                     </div>
                 </div>
             </div>
             {% empty %}
             <div class="col-span-full">
-                <div class="kpn-empty text-center py-20 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-                    <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-images text-2xl text-gray-400"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">No Media Yet</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Check back soon for photos and videos!</p>
+                <div class="kpn-empty">
+                    <div class="kpn-empty-icon"><i class="fas fa-images"></i></div>
+                    <h3 class="kpn-empty-title">No Media Yet</h3>
+                    <p class="kpn-empty-desc">Check back soon for photos and videos!</p>
                 </div>
             </div>
             {% endfor %}
@@ -118,12 +113,12 @@
         <!-- Upload CTA -->
         {% if media_items %}
         <div class="mt-16">
-            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-10 text-center">
-                <div class="w-12 h-12 bg-kpn-green/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-cloud-upload-alt text-kpn-green text-xl"></i>
+            <div class="kpn-feature-card center">
+                <div class="icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
                 </div>
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Share Your Moments</h2>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                <h3>Share Your Moments</h3>
+                <p class="mb-6" style="max-width:28rem;margin-left:auto;margin-right:auto;">
                     Have photos or videos from KPN events? Share them with the community!
                 </p>
                 <a href="{% url 'staff:login' %}" class="kpn-btn kpn-btn-primary kpn-btn-lg">
@@ -133,7 +128,6 @@
         </div>
         {% endif %}
 
-    </div>
 </div>
 
 <!-- Lightbox -->

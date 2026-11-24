@@ -35,11 +35,11 @@
 {% endblock %}
 
 {% block content %}
-<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-8">
+<div>
     <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         
         <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 class="kpn-h1 text-gray-900 dark:text-white">
                 <i class="fas fa-edit text-kpn-green mr-2"></i> Newsroom Workspace
             </h1>
             <div class="flex items-center gap-3">
@@ -47,7 +47,7 @@
                 <a href="{% url 'campaigns:my_articles' %}" class="px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded hover:bg-gray-50 shadow-sm transition">
                     Cancel
                 </a>
-                <button type="button" onclick="previewArticle()" class="px-4 py-2 text-kpn-blue bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 shadow-sm transition font-medium">
+                <button type="button" onclick="previewArticle()" class="px-4 py-2 text-kpn-green bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 shadow-sm transition font-medium">
                     <i class="fas fa-eye mr-1"></i> Preview
                 </button>
                 <button type="button" onclick="submitArticle()" class="px-5 py-2 bg-kpn-green text-white font-bold rounded shadow hover:bg-green-700 transition">
@@ -75,7 +75,7 @@
             
             <!-- Left: Editor Canvas (75% width on desktop) -->
             <div class="w-full lg:w-3/4">
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6 md:p-10 min-h-[700px]">
+                <div class="kpn-card p-6 md:p-10 min-h-[700px]">
                     <!-- Headline & Subheadline -->
                     <div class="mb-8 border-b pb-6 dark:border-gray-700">
                         {{ form.title }}
@@ -97,8 +97,8 @@
             <div class="w-full lg:w-1/4 space-y-6">
                 
                 <!-- Classification Card -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 space-y-4">
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2 border-b pb-2">Classification</h3>
+                <div class="kpn-card p-5 space-y-4">
+                    <h3 class="kpn-h4 text-gray-900 dark:text-white mb-2 border-b pb-2">Classification</h3>
                     
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Category</label>
@@ -117,8 +117,8 @@
                 </div>
 
                 <!-- Location Card -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 space-y-4">
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2 border-b pb-2">Location</h3>
+                <div class="kpn-card p-5 space-y-4">
+                    <h3 class="kpn-h4 text-gray-900 dark:text-white mb-2 border-b pb-2">Location</h3>
                     
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">LGA</label>
@@ -137,8 +137,8 @@
                 </div>
 
                 <!-- Media & SEO Card -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 space-y-4">
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2 border-b pb-2">Media & SEO</h3>
+                <div class="kpn-card p-5 space-y-4">
+                    <h3 class="kpn-h4 text-gray-900 dark:text-white mb-2 border-b pb-2">Media & SEO</h3>
                     
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Cover Image</label>
@@ -161,7 +161,7 @@
                 </div>
                 
                 {% if article and article.pk and article.status == 'DRAFT' or article and article.status == 'REJECTED' %}
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 text-center">
+                <div class="kpn-card p-5 text-center">
                      <a href="{% url 'campaigns:submit_for_review' article.pk %}" class="block w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded transition">
                          Submit for Review <i class="fas fa-arrow-right ml-1"></i>
                      </a>
@@ -170,7 +170,7 @@
                 {% elif article and article.status == 'PUBLISHED' %}
                 <div class="bg-green-50 dark:bg-gray-800 rounded-xl shadow-sm border border-green-200 dark:border-gray-700 p-5 text-center">
                      <p class="text-sm font-semibold text-green-800 dark:text-green-300"><i class="fas fa-check-circle mr-1"></i> Published — edits save live, no review needed.</p>
-                     <a href="{% url 'campaigns:article_detail' article.slug %}" target="_blank" class="inline-block mt-2 text-sm text-kpn-blue font-medium hover:underline">View live article <i class="fas fa-external-link-alt ml-1"></i></a>
+                     <a href="{% url 'campaigns:article_detail' article.slug %}" target="_blank" class="inline-block mt-2 text-sm text-kpn-green font-medium hover:underline">View live article <i class="fas fa-external-link-alt ml-1"></i></a>
                 </div>
                 {% elif article and article.status == 'PENDING' %}
                 <div class="bg-yellow-50 dark:bg-gray-800 rounded-xl shadow-sm border border-yellow-200 dark:border-gray-700 p-5 text-center">

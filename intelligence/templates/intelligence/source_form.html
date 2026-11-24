@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}{% if source.pk %}Edit Source{% else %}Add Source{% endif %} · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace">
+<h1 class="kpn-h1">{% if source.pk %}Edit Source{% else %}Add Source{% endif %}</h1>
+<div class="kpn-card kpn-card-body">
+<form method="post" class="editorial-form">{% csrf_token %}{{ form.as_p }}<button class="kpn-btn kpn-btn-primary">Save source</button></form>
+</div>
+<p><a href="{% url 'intelligence:sources' %}">Back to source directory</a></p>
+</div>
+{% endblock %}

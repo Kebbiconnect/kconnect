@@ -3,8 +3,10 @@
 {% block title %}{{ profile_user.get_full_name }} - KPN{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
-    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="py-12">
+    <div class="kpn-home-container">
+        {% include 'includes/breadcrumbs.html' %}
+
         <!-- Back Button -->
         <a href="{% url 'core:leadership' %}" class="kpn-btn kpn-btn-ghost kpn-btn-sm text-kpn-green mb-6 inline-flex items-center">
             <i class="fas fa-arrow-left mr-2"></i>
@@ -13,8 +15,8 @@
 
         <!-- Profile Card -->
         <div class="kpn-card max-w-2xl mx-auto overflow-hidden">
-            <!-- Header gradient band -->
-            <div class="h-28 bg-gradient-to-r from-kpn-green to-kpn-blue"></div>
+            <!-- Header brand band -->
+            <div class="kpn-profile-band"></div>
 
             <!-- Profile Content -->
             <div class="kpn-card-body relative">
@@ -36,7 +38,7 @@
                     </h1>
                     {% if profile_user.role_definition %}
                     <p class="text-base text-kpn-green font-semibold mb-3">
-                        {{ profile_user.role_definition.title }}
+                        {{ profile_user.role_definition.canonical_title }}
                     </p>
                     {% endif %}
 

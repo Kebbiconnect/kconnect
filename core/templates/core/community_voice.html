@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Community Voice - Civic Engagement & Advocacy · KPN{% endblock %}
+
+{% block content %}
+<section class="kpn-page-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/civic-hero.jpg' %}')">
+    <div class="kpn-home-container">
+        <p class="kpn-eyebrow">Civic Engagement &amp; Advocacy</p>
+        <h1>Community Voice</h1>
+        <p>Gives documented community concerns a visible home. A concern can move from Community Voice to further reporting or, where appropriate, become an advocacy campaign.</p>
+    </div>
+</section>
+
+<div class="kpn-home-container">
+    {% include 'includes/breadcrumbs.html' %}
+    {% include 'core/_civic_subnav.html' with active='voice' %}
+</div>
+
+<section class="py-12 pt-6">
+    <div class="kpn-home-container">
+        <div class="kpn-notice" style="margin-bottom:28px">
+            <b>Community-raised, not KPN findings.</b>
+            <span>The concerns below were raised by community members and published by a KPN reviewer. Each carries the verification level KPN has reached. Reporter names are never published.</span>
+        </div>
+
+        {% if concerns %}
+        <div class="space-y-6">
+            {% for concern in concerns %}
+            <article class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-7">
+                <div class="kpn-opp-top" style="margin-bottom:12px">
+                    <span class="kpn-tag soft">{{ concern.get_category_display }}</span>
+                    {% if concern.info_status == 'VERIFIED' %}<span class="kpn-badge kpn-badge-green">{{ concern.get_info_status_display }}</span>
+                    {% elif concern.info_status == 'CONFIRMED' %}<span class="kpn-badge kpn-badge-blue">{{ concern.get_info_status_display }}</span>
+                    {% elif concern.info_status == 'ALERT' %}<span class="kpn-badge kpn-badge-red">{{ concern.get_info_status_display }}</span>
+                    {% elif concern.info_status %}<span class="kpn-badge kpn-badge-yellow">{{ concern.get_info_status_display }}</span>{% endif %}
+                    {% if concern.status == 'ESCALATED' %}<span class="kpn-badge kpn-badge-purple">Escalated to advocacy</span>{% endif %}
+                </div>
+                <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">
+                    <i class="fas fa-map-marker-alt mr-1" aria-hidden="true"></i>{% if concern.ward %}{{ concern.ward.name }} Ward, {% endif %}{{ concern.lga.name }} LGA{% if concern.location_details %} · {{ concern.location_details }}{% endif %}
+                    <span class="mx-1">·</span><i class="far fa-calendar-alt mr-1" aria-hidden="true"></i>{{ concern.incident_date|date:"j F Y" }}
+                </p>
+                <p class="text-gray-700 dark:text-gray-200">{{ concern.what_happened }}</p>
+                {% if concern.why_is_it_important %}
+                <p class="text-gray-600 dark:text-gray-300 mt-3"><b>Why it matters:</b> {{ concern.why_is_it_important }}</p>
+                {% endif %}
+                {% if concern.escalated_campaign %}
+                <p class="mt-4"><a href="{% url 'core:advocacy_detail' concern.escalated_campaign.pk %}" class="kpn-home-link">This concern became an advocacy campaign: {{ concern.escalated_campaign.title }} <i class="fas fa-arrow-right" aria-hidden="true"></i></a></p>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="kpn-home-empty">
+            <p class="kpn-empty-title">No documented concerns have been published yet</p>
+            <p class="kpn-empty-desc">Concerns appear here after a KPN reviewer checks and publishes them. Reports themselves are never published automatically.</p>
+            <a href="{% url 'core:community_report' %}" class="kpn-btn kpn-btn-primary">Report a community concern</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

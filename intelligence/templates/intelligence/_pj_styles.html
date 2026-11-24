@@ -1,0 +1,42 @@
+<style>
+/* Public Project Tracker (Phase 5) — page-scoped styles layered on
+   the Promise Tracker's _pt_styles.html tokens (same .pt scope, same
+   brand green #176b36 family and gold accent), adding only the
+   project status badges and the timeline/evidence elements the
+   project pages need. Global tokens untouched. */
+.pt-badge-announced { background: #eef1f4; color: #475467; }
+.pt-badge-awarded_documented { background: #fdf3e0; color: #92600a; }
+.pt-badge-not_started { background: #eef1f4; color: #475467; }
+.pt-badge-in_progress { background: #e3ecfd; color: #1d4ed8; }
+.pt-badge-delayed { background: #fdeaea; color: #b42318; }
+.pt-badge-suspended { background: #fdeaea; color: #b42318; }
+.pt-badge-reported_abandoned { background: #fdf3e0; color: #92600a; }
+.pt-badge-verified_abandoned { background: #fdeaea; color: #b42318; }
+.pt-badge-completed_awaiting { background: #fdf3e0; color: #92600a; }
+.pt-badge-completed_verified { background: #e2f4e5; color: #157347; }
+.pt-badge-disputed { background: #fdeaea; color: #b42318; }
+.pt-badge-unknown { background: #eef1f4; color: #475467; }
+.dark .pt-badge-announced, .dark .pt-badge-not_started, .dark .pt-badge-unknown { background: #26313d; color: #cbd5e1; }
+.dark .pt-badge-awarded_documented, .dark .pt-badge-reported_abandoned, .dark .pt-badge-completed_awaiting { background: #2a2110; color: #f5cf7d; }
+.dark .pt-badge-in_progress { background: #173325; color: #93c5fd; }
+.dark .pt-badge-delayed, .dark .pt-badge-suspended, .dark .pt-badge-verified_abandoned, .dark .pt-badge-disputed { background: #330d0d; color: #fca5a5; }
+.dark .pt-badge-completed_verified { background: #0d2b18; color: #86efac; }
+.pj-timeline { position: relative; border-left: 2px solid var(--kpn-line); margin-left: .5rem; padding: 0; list-style: none; }
+.pj-timeline li { position: relative; padding: 0 0 1.4rem 1.4rem; }
+.pj-timeline li:last-child { padding-bottom: 0; }
+.pj-timeline-dot {
+  position: absolute; left: -7px; top: 3px; width: 12px; height: 12px;
+  border-radius: 50%; background: var(--pt-green); border: 2px solid #fff;
+}
+.dark .pj-timeline-dot { border-color: #1f2937; }
+.pj-timeline-date { font-size: .78rem; color: var(--kpn-muted); margin: 0; }
+.pj-timeline h3 { font-size: .98rem; font-weight: 700; margin: .2rem 0 .25rem; color: var(--kpn-ink); }
+.pj-timeline-body { font-size: .9rem; line-height: 1.6; color: var(--kpn-muted); }
+.pj-evidence { border-top: 1px solid var(--kpn-line); padding: .8rem 0; }
+.pj-evidence:first-of-type { border-top: 0; }
+.pj-evidence strong { font-size: .95rem; }
+.pj-evidence small { display: block; color: var(--kpn-muted); margin-top: .2rem; font-size: .83rem; line-height: 1.5; }
+.pj-stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--kpn-line); }
+@media (min-width: 900px) { .pj-stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.pj-stat-cell { background: var(--kpn-surface); padding: 1.1rem 1.2rem; min-width: 0; }
+</style>

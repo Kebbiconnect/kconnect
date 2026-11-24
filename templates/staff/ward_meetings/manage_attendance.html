@@ -3,11 +3,11 @@
 {% block title %}Manage Meeting Attendance - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Manage Meeting Attendance</h1>
+<div class="kpn-page">
+    <h1 class="kpn-h1 text-gray-900 dark:text-white mb-2">Manage Meeting Attendance</h1>
     <h2 class="text-xl text-gray-600 dark:text-gray-400 mb-6">{{ meeting.title }}</h2>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+    <div class="kpn-card p-6 mb-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
                 <span class="text-gray-500 dark:text-gray-400">Date:</span>
@@ -28,8 +28,8 @@
         </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Mark Attendance</h3>
+    <div class="kpn-card p-6">
+        <h3 class="kpn-h4 text-gray-900 dark:text-white mb-4">Mark Attendance</h3>
         
         <form method="post">
             {% csrf_token %}
@@ -60,8 +60,8 @@
 
     <!-- Current Attendance List -->
     {% if existing_attendances %}
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mt-6">
-        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Marked as Present</h3>
+    <div class="kpn-card p-6 mt-6">
+        <h3 class="kpn-h4 text-gray-900 dark:text-white mb-4">Marked as Present</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             {% for attendance_id in existing_attendances %}
                 {% for field in form %}

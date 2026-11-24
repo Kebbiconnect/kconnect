@@ -1,65 +1,101 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}Future Signal | KPN — Kebbi Progressive Youth Network{% endblock %}
+
 {% block content %}
-<div class="bg-gray-50 dark:bg-gray-900 min-h-screen">
-
-  <!-- Header -->
-  <section class="bg-kpn-green text-white py-10">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <h1 class="text-4xl md:text-5xl font-bold">KPN Future Signal</h1>
+<section class="kpn-page-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/signals-hero.jpg' %}')">
+    <div class="kpn-home-container">
+        <p class="kpn-eyebrow">Looking ahead, grounded in evidence</p>
+        <h1>Future Signal</h1>
+        <p>To publish forward-looking analysis that identifies emerging developments, risks, opportunities and issues that may affect Kebbi State.</p>
     </div>
-  </section>
+</section>
 
-  <section class="py-10">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="max-w-5xl mx-auto space-y-5">
-        {% for story in stories %}
-        <article class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition">
-          <div class="flex flex-wrap items-start justify-between gap-3">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-              <a href="{% url 'campaigns:article_detail' story.slug %}" class="hover:text-kpn-green">{{ story.title }}</a>
-            </h2>
-            <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-amber-100 text-amber-800">Future Signal — analysis</span>
-          </div>
-          {% with profile=story.story_profile %}
-          {% if profile.signal_observation %}
-          <div class="mt-4">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">What we are seeing</h3>
-            <p class="text-gray-700 dark:text-gray-300">{{ profile.signal_observation|linebreaksbr }}</p>
-          </div>
-          {% endif %}
-          {% if profile.why_it_matters %}
-          <div class="mt-4">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">Why it matters</h3>
-            <p class="text-gray-700 dark:text-gray-300">{{ profile.why_it_matters|linebreaksbr }}</p>
-          </div>
-          {% endif %}
-          {% if profile.what_to_watch %}
-          <div class="mt-4">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">What to watch</h3>
-            <p class="text-gray-700 dark:text-gray-300">{{ profile.what_to_watch|linebreaksbr }}</p>
-          </div>
-          {% endif %}
-          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-4 text-sm text-gray-600 dark:text-gray-300">
-            {% if profile.signal_confidence %}<div><dt class="inline font-semibold">Strength of evidence:</dt> <dd class="inline">{{ profile.get_signal_confidence_display }}</dd></div>{% endif %}
-            {% if profile.signal_horizon %}<div><dt class="inline font-semibold">Looking at:</dt> <dd class="inline">{{ profile.signal_horizon }}</dd></div>{% endif %}
-            {% if story.story_id %}<div><dt class="inline font-semibold">Story ID:</dt> <dd class="inline font-mono text-xs">{{ story.story_id }}</dd></div>{% endif %}
-            {% if story.published_at %}<div><dt class="inline font-semibold">Published:</dt> <dd class="inline">{{ story.published_at|date:"F j, Y" }}</dd></div>{% endif %}
-          </dl>
-          {% endwith %}
-          <a href="{% url 'campaigns:article_detail' story.slug %}" class="inline-block mt-4 text-sm font-semibold text-kpn-green hover:underline">Read the analysis and its evidence &rarr;</a>
-        </article>
-        {% empty %}
-        <div class="text-center py-20 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-          <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-50 dark:bg-green-900/30 text-kpn-green mb-6">
-            <i class="fas fa-chart-line text-3xl"></i>
-          </div>
-          <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">No Future Signal published yet</h3>
-          <p class="text-gray-500 dark:text-gray-400">New analysis will appear here as it is published.</p>
+<div class="kpn-home-container">
+    {% include 'includes/breadcrumbs.html' %}
+
+    <div class="kpn-signal-note">
+        <span class="mark"><i class="fas fa-arrow-trend-up" aria-hidden="true"></i></span>
+        <div>
+            <b>What is a Future Signal?</b>
+            <p>Forward-looking analysis that identifies emerging developments, risks, opportunities and issues that may affect Kebbi State. Every report distinguishes confirmed facts, estimates, projections and analyst judgments — and never presents predictions as established facts.</p>
         </div>
-        {% endfor %}
-      </div>
     </div>
-  </section>
+
+    <div class="kpn-home-section-heading" style="margin-top:26px">
+        <div>
+            <h2>Signals to watch</h2>
+            <p class="text-gray-600 dark:text-gray-300">Explore analysis by theme. Each report separates evidence, uncertainty and interpretation.</p>
+        </div>
+        <span class="kpn-tag soft">{{ total_count }} published report{{ total_count|pluralize }}</span>
+    </div>
+
+    <div class="kpn-signal-layout">
+        <aside class="kpn-signal-rail" aria-label="Filter Future Signal reports">
+            <b>Explore by theme</b>
+            <a href="{% url 'signals:list' %}" {% if not active_theme %}class="active"{% endif %}>All signals <span class="n">{{ total_count }}</span></a>
+            {% for theme in themes %}
+            <a href="{% url 'signals:list' %}?theme={{ theme.key }}{% if active_confidence %}&amp;confidence={{ active_confidence }}{% endif %}" {% if active_theme == theme.key %}class="active"{% endif %}>{{ theme.label }} <span class="n">{{ theme.count }}</span></a>
+            {% endfor %}
+            <form method="get" action="{% url 'signals:list' %}" style="margin-top:16px">
+                {% if active_theme %}<input type="hidden" name="theme" value="{{ active_theme }}">{% endif %}
+                <b>Strength of evidence</b>
+                <select name="confidence" class="kpn-input kpn-select" aria-label="Filter by strength of evidence">
+                    <option value="">Any strength</option>
+                    {% for conf in confidences %}
+                    <option value="{{ conf.key }}" {% if active_confidence == conf.key %}selected{% endif %}>{{ conf.label }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="kpn-btn kpn-btn-primary" style="margin-top:10px;width:100%"><i class="fas fa-filter"></i> Filter</button>
+                {% if has_filters %}<a href="{% url 'signals:list' %}" class="kpn-btn kpn-btn-secondary" style="margin-top:8px;width:100%"><i class="fas fa-times"></i> Clear filters</a>{% endif %}
+            </form>
+        </aside>
+
+        <div>
+            {% for story in stories %}
+            {% with profile=story.story_profile %}
+            <article class="kpn-signal-card">
+                <div class="label">
+                    <span>{% if profile.signal_category %}{{ profile.get_signal_category_display }}{% else %}Future Signal{% endif %}</span>
+                    <span class="kpn-tag gold">Analysis</span>
+                </div>
+                <h3><a href="{% url 'campaigns:article_detail' story.slug %}">{{ story.title }}</a></h3>
+                {% if profile.signal_observation %}
+                <p><b style="color:var(--kpn-action)">What we are seeing.</b> {{ profile.signal_observation|truncatewords:42 }}</p>
+                {% endif %}
+                {% if profile.why_it_matters %}
+                <p><b style="color:var(--kpn-action)">Why it matters.</b> {{ profile.why_it_matters|truncatewords:32 }}</p>
+                {% endif %}
+                {% if profile.what_to_watch %}
+                <p><b style="color:var(--kpn-action)">What to watch.</b> {{ profile.what_to_watch|truncatewords:24 }}</p>
+                {% endif %}
+                <div class="kpn-signal-meta">
+                    {% if profile.signal_confidence %}<span><i class="fas fa-layer-group" aria-hidden="true"></i>Strength of evidence: <b>{{ profile.get_signal_confidence_display }}</b></span>{% endif %}
+                    {% if profile.signal_horizon %}<span><i class="far fa-clock" aria-hidden="true"></i>Looking at: <b>{{ profile.signal_horizon }}</b></span>{% endif %}
+                    {% if story.lga %}<span><i class="fas fa-map-marker-alt" aria-hidden="true"></i>{{ story.lga.name }} LGA</span>{% endif %}
+                    {% if story.published_at %}<span><i class="far fa-calendar-alt" aria-hidden="true"></i>{{ story.published_at|date:"M j, Y" }}</span>{% endif %}
+                </div>
+                <p style="margin:14px 0 0"><a href="{% url 'campaigns:article_detail' story.slug %}" class="kpn-home-link">Read analysis <i class="fas fa-arrow-right" aria-hidden="true"></i></a></p>
+            </article>
+            {% endwith %}
+            {% empty %}
+            <div class="kpn-home-empty">
+                <p class="kpn-empty-title">{% if has_filters %}No reports match those filters{% else %}No Future Signal published yet{% endif %}</p>
+                <p class="kpn-empty-desc">Future Signal publishes forward-looking analysis of emerging developments, risks and opportunities affecting Kebbi State — each report separating confirmed facts from estimates, projections and analyst judgment.</p>
+                {% if has_filters %}<p style="margin-top:14px"><a href="{% url 'signals:list' %}" class="kpn-btn kpn-btn-primary">See all signals</a></p>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="kpn-method-grid" aria-label="How KPN separates evidence from interpretation">
+        <div><b>01 · Evidence</b><span>What is known and where it comes from.</span></div>
+        <div><b>02 · Interpretation</b><span>What the evidence may indicate.</span></div>
+        <div><b>03 · Uncertainty</b><span>What is not yet known.</span></div>
+        <div><b>04 · Watchpoints</b><span>What to monitor next.</span></div>
+    </div>
+
 </div>
+<section class="py-6"></section>
 {% endblock %}

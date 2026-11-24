@@ -1,0 +1,73 @@
+name: KPN review-first editorial assistant
+on:
+  workflow_dispatch:
+    inputs:
+      max_jobs:
+        description: Maximum jobs (all output stays private until human review)
+        type: choice
+        default: '15'
+        options: ['5','10','15','20']
+  schedule:
+    # 07:17, 15:17, 23:17 Africa/Lagos. GitHub schedules can be delayed.
+    - cron: '17 6,14,22 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: kpn-editorial-production
+  cancel-in-progress: false
+jobs:
+  editorial:
+    if: github.event_name == 'workflow_dispatch' || vars.KPN_EDITORIAL_SCHEDULE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      KPN_ENV: production
+      DEBUG: 'False'
+      DATABASE_URL: ${{ secrets.KPN_EDITORIAL_DATABASE_URL }}
+      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+      KPN_EDITORIAL_ENABLED: 'True'
+      KPN_EDITORIAL_REPORT_DRAFTING_ENABLED: ${{ vars.KPN_EDITORIAL_REPORT_DRAFTING_ENABLED || 'False' }}
+      KPN_EDITORIAL_NOTIFICATIONS: ${{ vars.KPN_EDITORIAL_NOTIFICATIONS || 'False' }}
+      KPN_EDITORIAL_DAILY_DRAFTS: '5'
+      FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.KPN_EDITORIAL_FIREBASE_JSON }}
+      JOB_LIMIT: ${{ inputs.max_jobs || '15' }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Validate configuration and prepare ephemeral credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in DATABASE_URL CLOUDINARY_CLOUD_NAME CLOUDINARY_API_KEY CLOUDINARY_API_SECRET; do
+            if [ -z "${!name}" ]; then echo "Missing required GitHub Actions secret for $name"; exit 1; fi
+          done
+          python - <<'PY'
+          import os, secrets
+          from pathlib import Path
+          secret=secrets.token_urlsafe(48)
+          print('::add-mask::'+secret)
+          with open(os.environ['GITHUB_ENV'],'a') as env: env.write('SESSION_SECRET='+secret+'\n')
+          content=os.environ.get('FIREBASE_SERVICE_ACCOUNT_JSON','')
+          if content:
+              path=Path(os.environ['RUNNER_TEMP'])/'kpn-firebase.json'
+              path.write_text(content);path.chmod(0o600)
+              with open(os.environ['GITHUB_ENV'],'a') as env: env.write('FIREBASE_CREDENTIALS_FILE='+str(path)+'\n')
+          PY
+      - name: Install the existing backend dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Require deployed migrations and run bounded jobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python manage.py check
+          python manage.py migrate --check
+          python manage.py run_editorial --max-jobs "$JOB_LIMIT" --max-seconds 600
+      - name: Remove temporary Firebase file
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/kpn-firebase.json"

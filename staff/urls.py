@@ -162,6 +162,7 @@ urlpatterns = [
     path('manage-opportunities/create/', views.create_opportunity, name='create_opportunity'),
     path('manage-opportunities/<int:pk>/edit/', views.edit_opportunity, name='edit_opportunity'),
     path('manage-opportunities/<int:pk>/delete/', views.delete_opportunity, name='delete_opportunity'),
+    path('manage-opportunities/reports/<int:report_id>/action/', views.opportunity_report_action, name='opportunity_report_action'),
     
     path('manage-initiatives/', views.manage_community_initiatives, name='manage_community_initiatives'),
     path('manage-initiatives/create/', views.create_community_initiative, name='create_community_initiative'),
@@ -172,6 +173,8 @@ urlpatterns = [
     path('manage-advocacy/create/', views.create_advocacy_campaign, name='create_advocacy_campaign'),
     path('manage-advocacy/<int:pk>/edit/', views.edit_advocacy_campaign, name='edit_advocacy_campaign'),
     path('manage-advocacy/<int:pk>/delete/', views.delete_advocacy_campaign, name='delete_advocacy_campaign'),
+    path('manage-advocacy/<int:pk>/activities/', views.manage_advocacy_activities, name='manage_advocacy_activities'),
+    path('manage-advocacy/<int:pk>/activities/<int:activity_id>/delete/', views.delete_advocacy_activity, name='delete_advocacy_activity'),
     
     path('patrons/', views.manage_patrons, name='manage_patrons'),
     path('patrons/create/', views.create_patron, name='create_patron'),

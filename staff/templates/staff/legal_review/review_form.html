@@ -3,20 +3,20 @@
 {% block title %}Legal Review - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page" style="max-width:56rem">
     <div class="mb-8">
-        <h1 class="text-3xl font-bold">Legal Review of Disciplinary Action</h1>
+        <h1 class="kpn-h1">Legal Review of Disciplinary Action</h1>
         <p class="text-gray-600 dark:text-gray-400">Provide your legal opinion on this disciplinary action</p>
     </div>
 
     <!-- Action Details -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
-        <h2 class="text-xl font-semibold mb-4">Disciplinary Action Details</h2>
+    <div class="kpn-card p-6 mb-6">
+        <h2 class="kpn-h3 mb-4">Disciplinary Action Details</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
                 <p class="text-sm text-gray-600 dark:text-gray-400">Member</p>
-                <p class="text-lg font-semibold">{{ action.user.get_full_name }}</p>
+                <p class="kpn-h4">{{ action.user.get_full_name }}</p>
                 <p class="text-sm text-gray-600 dark:text-gray-400">
                     {{ action.user.get_role_display }}
                     {% if action.user.lga %} - {{ action.user.lga.name }}{% endif %}
@@ -25,7 +25,7 @@
             
             <div>
                 <p class="text-sm text-gray-600 dark:text-gray-400">Proposed Action</p>
-                <p class="text-lg font-semibold">
+                <p class="kpn-h4">
                     <span class="px-3 py-1 rounded-full text-sm
                         {% if action.action_type == 'SUSPENSION' %}bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200
                         {% else %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200{% endif %}">
@@ -46,7 +46,7 @@
             <div>
                 <p class="text-sm text-gray-600 dark:text-gray-400">Issued By</p>
                 <p class="font-medium">{{ action.issued_by.get_full_name }}</p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">{{ action.issued_by.role_definition.title }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ action.issued_by.role_definition.canonical_title }}</p>
             </div>
             
             <div>
@@ -57,8 +57,8 @@
     </div>
 
     <!-- Legal Review Form -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h2 class="text-xl font-semibold mb-4">Your Legal Review</h2>
+    <div class="kpn-card p-6">
+        <h2 class="kpn-h3 mb-4">Your Legal Review</h2>
         
         <form method="post">
             {% csrf_token %}
@@ -92,7 +92,7 @@
             </div>
 
             <div class="flex gap-4 mt-8">
-                <button type="submit" class="bg-kpn-blue hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition">
+                <button type="submit" class="bg-kpn-green hover:bg-green-700 text-white px-6 py-3 rounded-lg transition">
                     <i class="fas fa-gavel mr-2"></i>Submit Legal Review
                 </button>
                 <a href="{% url 'staff:legal_review_queue' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition">

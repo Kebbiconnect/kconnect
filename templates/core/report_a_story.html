@@ -13,7 +13,7 @@
             </p>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
+        <div class="kpn-card overflow-hidden border border-gray-100 dark:border-gray-700">
             <div class="p-6 md:p-8">
                 <form method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
@@ -22,7 +22,7 @@
                         
                         <!-- Contact Info -->
                         <div>
-                            <h3 class="text-xl font-bold text-gray-800 dark:text-white border-b pb-2 mb-4">1. Your Information</h3>
+                            <h3 class="kpn-h3 text-gray-800 dark:text-white border-b pb-2 mb-4">1. Your Information</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
@@ -37,7 +37,7 @@
 
                         <!-- Incident Details -->
                         <div>
-                            <h3 class="text-xl font-bold text-gray-800 dark:text-white border-b pb-2 mb-4 mt-8">2. Incident Details</h3>
+                            <h3 class="kpn-h3 text-gray-800 dark:text-white border-b pb-2 mb-4 mt-8">2. Incident Details</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div class="col-span-1 md:col-span-2">
                                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Category</label>
@@ -56,7 +56,7 @@
 
                         <!-- Location -->
                         <div>
-                            <h3 class="text-xl font-bold text-gray-800 dark:text-white border-b pb-2 mb-4 mt-8">3. Location</h3>
+                            <h3 class="kpn-h3 text-gray-800 dark:text-white border-b pb-2 mb-4 mt-8">3. Location</h3>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Zone (Optional)</label>
@@ -79,7 +79,7 @@
                         
                         <!-- The Story -->
                         <div>
-                            <h3 class="text-xl font-bold text-gray-800 dark:text-white border-b pb-2 mb-4 mt-8">4. The Story</h3>
+                            <h3 class="kpn-h3 text-gray-800 dark:text-white border-b pb-2 mb-4 mt-8">4. The Story</h3>
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">What Happened?</label>
@@ -98,7 +98,7 @@
 
                         <!-- Evidence -->
                         <div>
-                            <h3 class="text-xl font-bold text-gray-800 dark:text-white border-b pb-2 mb-4 mt-8">5. Evidence (Optional)</h3>
+                            <h3 class="kpn-h3 text-gray-800 dark:text-white border-b pb-2 mb-4 mt-8">5. Evidence (Optional)</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Upload Photo</label>
@@ -120,7 +120,7 @@
                         {% endif %}
 
                         <div class="pt-6">
-                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg transition duration-300 transform hover:-translate-y-1 text-lg">
+                            <button type="submit" class="w-full bg-kpn-green hover:bg-green-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg transition duration-300 transform hover:-translate-y-1 text-lg">
                                 <i class="fas fa-paper-plane mr-2"></i> Submit Story
                             </button>
                             <p class="text-center text-sm text-gray-500 mt-4">By submitting, you agree that this information is accurate to the best of your knowledge.</p>

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Security Desk · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Security Desk · Restricted</p>
+<h1 class="kpn-h1">Security Desk</h1>
+<div class="intel-chips">
+<span class="intel-chip"><i class="fas fa-lock"></i>{{ total_units }} restricted units</span>
+<span class="intel-chip"><i class="fas fa-file-shield"></i>{{ incidents|length }} incidents</span>
+</div>
+</header>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="kpn-h3">Restricted units</h2>
+{% for row in rows %}
+<div class="intel-promise">
+<a href="{% url 'intelligence:security_unit' row.kind row.obj.pk %}">{{ row.title }}</a>
+<div class="intel-badges">
+{% if row.state == 'RESTRICTED' %}<span class="intel-badge intel-badge-notrel">{{ row.state_label }}</span>{% elif row.state == 'VERIFIED' or row.state == 'APPROVED' %}<span class="intel-badge intel-badge-confirmed">{{ row.state_label }}</span>{% elif row.state == 'REJECTED' or row.state == 'DISPUTED' %}<span class="intel-badge intel-badge-notrel">{{ row.state_label }}</span>{% else %}<span class="intel-badge intel-badge-plain">{{ row.state_label }}</span>{% endif %}
+{% if row.category %}<span class="intel-badge intel-badge-cat">{{ row.category.label }}</span>{% endif %}
+</div>
+<small>{% if row.kind == 'cluster' %}Event cluster #{{ row.obj.pk }} · {{ row.member_count }} item{{ row.member_count|pluralize }}{% else %}Single report #{{ row.obj.pk }}{% endif %}{% if row.lga %} · {{ row.lga.name }} LGA{% endif %} · First reported {{ row.first_seen|date:'j M Y, H:i' }}{% if row.assigned_to %} · Assigned to {{ row.assigned_to.get_full_name|default:row.assigned_to.username }}{% endif %}</small>
+</div>
+{% empty %}
+<p>No restricted units at the moment.</p>
+{% endfor %}
+</div>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="kpn-h3">Incidents</h2>
+<p><a class="kpn-btn kpn-btn-primary" href="{% url 'intelligence:security_incident_new' %}">Record an incident</a></p>
+{% for incident in incidents %}
+<div class="intel-promise">
+<a href="{% url 'intelligence:security_incident' incident.pk %}">{{ incident.title }}</a>
+<div class="intel-badges">
+<span class="intel-badge intel-badge-plain">{{ incident.get_status_display }}</span>
+<span class="intel-badge intel-badge-notrel">Restricted</span>
+</div>
+<small>{% if incident.incident_type %}{{ incident.incident_type }} · {% endif %}{% if incident.lga %}{{ incident.lga.name }} LGA · {% endif %}Reported {{ incident.reported_at|date:'j M Y, H:i' }}{% for claim in incident.claims.all %} · {{ claim.attribution }}{% endfor %}</small>
+</div>
+{% empty %}
+<p>No incidents recorded.</p>
+{% endfor %}
+</div>
+
+<p><a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

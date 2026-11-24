@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Report a listing - {{ opp.title }} · KPN{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-10">
+    <div class="kpn-home-container" style="max-width:760px">
+        {% include 'includes/breadcrumbs.html' %}
+
+        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-7 md:p-10">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3">Report this listing</h1>
+            <p class="text-gray-600 dark:text-gray-300 mb-1"><b>{{ opp.title }}</b></p>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">Offered by {{ opp.provider }}. Tell us what looks wrong. Reports go to the KPN team for review — submitting a report does not remove the listing, and nothing is published from a report.</p>
+
+            <form method="post" class="space-y-5">
+                {% csrf_token %}
+                <div>
+                    <label for="{{ form.reason.id_for_label }}" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">What looks wrong about this listing? *</label>
+                    {{ form.reason }}
+                    {% if form.reason.errors %}<p class="text-sm text-red-600 mt-1">{{ form.reason.errors.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.reporter_name.id_for_label }}" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Your name (optional)</label>
+                    {{ form.reporter_name }}
+                </div>
+                <div>
+                    <label for="{{ form.reporter_contact.id_for_label }}" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Email or phone (optional)</label>
+                    {{ form.reporter_contact }}
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Only used if the team needs to reply to your report.</p>
+                </div>
+                <div class="flex flex-wrap gap-3 pt-2">
+                    <button type="submit" class="kpn-btn kpn-btn-primary kpn-btn-lg"><i class="fas fa-flag"></i> Submit report</button>
+                    <a href="{% url 'core:opportunity_detail' opp.slug %}" class="kpn-btn kpn-btn-secondary kpn-btn-lg">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

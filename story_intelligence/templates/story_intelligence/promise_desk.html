@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 {% block title %}Promise Desk — KPN{% endblock %}
 {% block content %}
-<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-10">
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+<div>
+  <div class="kpn-page" style="max-width:64rem">
 
-    <header class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+    <header class="kpn-card p-6">
       <p class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">KPN Promise Desk</p>
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Public Promise Tracker — editorial desk</h1>
+      <h1 class="kpn-h2 text-gray-900 dark:text-white">Public Promise Tracker — editorial desk</h1>
       <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
         Record promises exactly as announced. Never invent a deadline, a progress figure or a verification result.
         A promise can only be marked <strong>Completed — verified</strong> with verification evidence on record
@@ -19,8 +19,8 @@
       </div>
     </header>
 
-    <section class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
-      <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Tracked promises</h2>
+    <section class="kpn-card p-6">
+      <h2 class="kpn-h4 text-gray-900 dark:text-white mb-4">Tracked promises</h2>
       {% for promise in promises %}
       <div class="border-b border-gray-100 dark:border-gray-700 py-3 flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -48,8 +48,8 @@
       {% endfor %}
     </section>
 
-    <section class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
-      <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Institutions</h2>
+    <section class="kpn-card p-6">
+      <h2 class="kpn-h4 text-gray-900 dark:text-white mb-1">Institutions</h2>
       <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Contact notes and internal notes are never shown on the public tracker.</p>
       {% for institution in institutions %}
       <p class="text-sm text-gray-700 dark:text-gray-300 py-1">{{ institution.name }} <span class="text-xs text-gray-500">({{ institution.get_kind_display }})</span></p>

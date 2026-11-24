@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+
+{% block title %}ICT Admin Console · KPN{% endblock %}
+
+{% block content %}
+<div class="kpn-page">
+
+    <!-- ── Hero header (branded treatment, same as the dashboard header) ── -->
+    <header class="kpn-workspace-header">
+        <div>
+            <p class="kpn-eyebrow">ICT Administration</p>
+            <h1><i class="fas fa-server" aria-hidden="true"></i> ICT Admin Console</h1>
+            <p class="kpn-workspace-meta">System-wide view of the KPN platform — members, leadership, editorial, intelligence, content and Telegram.</p>
+            <p class="kpn-workspace-meta">ICT Admin: {% if holder %}{{ holder.get_full_name }}{% if holder_title %} · {{ holder_title }}{% endif %}{% else %}Unassigned{% endif %}</p>
+        </div>
+        <div class="kpn-workspace-identity"><span>Signed in as</span><strong>{{ user.get_full_name }}</strong></div>
+    </header>
+
+    <!-- ── System overview ─────────────────────────────────────────────── -->
+    <h2 class="kpn-section-label mt-6">
+        <i class="fas fa-gauge-high text-kpn-green"></i> System Overview
+    </h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon tone-brand"><i class="fas fa-users"></i></div>
+            <div>
+                <p class="kpn-stat-value">{{ stats.total_members }}</p>
+                <p class="kpn-stat-label">Total Members</p>
+            </div>
+        </div>
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon tone-brand"><i class="fas fa-user-check"></i></div>
+            <div>
+                <p class="kpn-stat-value">{{ stats.verified_members }}</p>
+                <p class="kpn-stat-label">Verified Members</p>
+            </div>
+        </div>
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon tone-gold"><i class="fas fa-clock"></i></div>
+            <div>
+                <p class="kpn-stat-value">{{ stats.pending_verification }}</p>
+                <p class="kpn-stat-label">Pending Verification</p>
+            </div>
+        </div>
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon tone-ink"><i class="fas fa-user-tie"></i></div>
+            <div>
+                <p class="kpn-stat-value">{{ stats.position_holders }}</p>
+                <p class="kpn-stat-label">Position Holders</p>
+            </div>
+        </div>
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon tone-brand"><i class="fas fa-newspaper"></i></div>
+            <div>
+                <p class="kpn-stat-value">{{ stats.published_articles }}</p>
+                <p class="kpn-stat-label">Published Articles</p>
+            </div>
+        </div>
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon tone-brand"><i class="fas fa-briefcase"></i></div>
+            <div>
+                <p class="kpn-stat-value">{{ stats.open_opportunities }}</p>
+                <p class="kpn-stat-label">Open Opportunities</p>
+            </div>
+        </div>
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon tone-gold"><i class="fas fa-bullhorn"></i></div>
+            <div>
+                <p class="kpn-stat-value">{{ stats.pending_community_reports }}</p>
+                <p class="kpn-stat-label">Pending Community Reports</p>
+            </div>
+        </div>
+        <div class="kpn-stat-card">
+            <div class="kpn-stat-icon tone-alert"><i class="fas fa-triangle-exclamation"></i></div>
+            <div>
+                <p class="kpn-stat-value">{{ stats.new_listing_reports }}</p>
+                <p class="kpn-stat-label">New Suspicious-Listing Reports</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Member system ───────────────────────────────────────────────── -->
+    <h2 class="kpn-section-label mt-6">
+        <i class="fas fa-users-gear text-kpn-green"></i> Member System
+    </h2>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <div class="kpn-card">
+            <div class="kpn-card-body">
+                {% include 'includes/_chart_bars.html' with chart_rows=member_status_bars chart_title='Members by status' %}
+            </div>
+        </div>
+        <div class="kpn-card">
+            <div class="kpn-card-body">
+                {% include 'includes/_chart_bars.html' with chart_rows=member_zone_bars chart_title='Verified members by zone' %}
+            </div>
+        </div>
+    </div>
+    <div class="kpn-card mb-6">
+        <div class="kpn-card-header"><h3 class="text-base font-semibold">Recent registrations</h3></div>
+        <div class="kpn-table-wrap">
+            <table class="kpn-table w-full text-left border-collapse">
+                <thead>
+                    <tr>
+                        <th class="p-4 font-semibold">Member</th>
+                        <th class="p-4 font-semibold">Position</th>
+                        <th class="p-4 font-semibold">LGA</th>
+                        <th class="p-4 font-semibold">Status</th>
+                        <th class="p-4 font-semibold">Registered</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in recent_members %}
+                    <tr>
+                        <td class="p-4 font-medium text-gray-900 dark:text-white">{{ member.get_full_name }}</td>
+                        <td class="p-4 text-gray-600 dark:text-gray-300">{{ member.role_definition.canonical_title|default:"General Member" }}</td>
+                        <td class="p-4 text-gray-600 dark:text-gray-300">{{ member.lga.name|default:"—" }}</td>
+                        <td class="p-4"><span class="kpn-badge {% if member.status == 'VERIFIED' %}kpn-badge-green{% elif member.status == 'PENDING' or member.status == 'UNDER_REVIEW' %}kpn-badge-yellow{% else %}kpn-badge-gray{% endif %}">{{ member.get_status_display }}</span></td>
+                        <td class="p-4 text-gray-600 dark:text-gray-400">{{ member.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td class="p-4 text-gray-500" colspan="5">No members registered yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── Leadership & roles ──────────────────────────────────────────── -->
+    <h2 class="kpn-section-label mt-6">
+        <i class="fas fa-sitemap text-kpn-green"></i> Leadership &amp; Roles
+    </h2>
+    <div class="kpn-card mb-6">
+        <div class="kpn-table-wrap">
+            <table class="kpn-table w-full text-left border-collapse">
+                <thead>
+                    <tr>
+                        <th class="p-4 font-semibold">Office</th>
+                        <th class="p-4 font-semibold">Tier</th>
+                        <th class="p-4 font-semibold">Current holder</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in leadership_rows %}
+                    <tr>
+                        <td class="p-4 font-medium text-gray-900 dark:text-white">{{ row.definition.canonical_title }}</td>
+                        <td class="p-4 text-gray-600 dark:text-gray-300">{{ row.definition.get_tier_display }}</td>
+                        <td class="p-4 text-gray-600 dark:text-gray-300">
+                            {% for holder in row.holders %}
+                                {{ holder.get_full_name }} <span class="text-xs text-gray-400">({{ holder.get_jurisdiction }})</span>{% if not forloop.last %}<br>{% endif %}
+                            {% empty %}
+                                <span class="kpn-badge kpn-badge-yellow">Vacant</span>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td class="p-4 text-gray-500" colspan="3">No offices defined yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── Editorial & intelligence ────────────────────────────────────── -->
+    <h2 class="kpn-section-label mt-6">
+        <i class="fas fa-satellite-dish text-kpn-green"></i> Editorial &amp; Intelligence
+    </h2>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <div class="kpn-card">
+            <div class="kpn-card-header"><h3 class="text-base font-semibold">Editorial items by state</h3></div>
+            <div class="kpn-card-body">
+                {% for label, value in editorial_item_states %}
+                <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">{{ label }}</span><strong>{{ value }}</strong></p>
+                {% empty %}
+                <p class="text-sm text-gray-500">No editorial items yet.</p>
+                {% endfor %}
+                <p class="mt-3"><a class="kpn-btn kpn-btn-primary kpn-btn-sm" href="{% url 'editorial:index' %}">Open the Editorial Assistant</a></p>
+            </div>
+        </div>
+        <div class="kpn-card">
+            <div class="kpn-card-header"><h3 class="text-base font-semibold">Collection sources</h3></div>
+            <div class="kpn-card-body">
+                <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">Sources in directory</span><strong>{{ sources_total }}</strong></p>
+                <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">Enabled</span><strong>{{ sources_enabled }}</strong></p>
+                <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">Failing (consecutive errors)</span><strong>{{ sources_failing }}</strong></p>
+                {% for row in source_health_summary %}
+                <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">Health: {{ row.state }}</span><strong>{{ row.count }}</strong></p>
+                {% endfor %}
+                <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">Alert deliveries failed</span><strong>{{ alert_failures }}</strong></p>
+                <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">Alert deliveries total</span><strong>{{ alerts_total }}</strong></p>
+                <p class="mt-3"><a class="kpn-btn kpn-btn-primary kpn-btn-sm" href="{% url 'intelligence:overview' %}">Open the Intelligence Dashboard</a></p>
+            </div>
+        </div>
+    </div>
+    <div class="kpn-card mb-6">
+        <div class="kpn-card-header"><h3 class="text-base font-semibold">Latest collection runs</h3></div>
+        <div class="kpn-table-wrap">
+            <table class="kpn-table w-full text-left border-collapse">
+                <thead>
+                    <tr>
+                        <th class="p-4 font-semibold">Run</th>
+                        <th class="p-4 font-semibold">Started</th>
+                        <th class="p-4 font-semibold">Trigger</th>
+                        <th class="p-4 font-semibold">Status</th>
+                        <th class="p-4 font-semibold">Sources OK / Failed</th>
+                        <th class="p-4 font-semibold">New items</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for run in collection_runs %}
+                    <tr>
+                        <td class="p-4 font-medium text-gray-900 dark:text-white">#{{ run.pk }}</td>
+                        <td class="p-4 text-gray-600 dark:text-gray-300">{{ run.started_at|date:"M d, Y H:i" }}</td>
+                        <td class="p-4 text-gray-600 dark:text-gray-300">{{ run.get_trigger_display }}</td>
+                        <td class="p-4"><span class="kpn-badge {% if run.status == 'COMPLETED' %}kpn-badge-green{% elif run.status == 'FAILED' %}kpn-badge-red{% else %}kpn-badge-gray{% endif %}">{{ run.get_status_display }}</span></td>
+                        <td class="p-4 text-gray-600 dark:text-gray-300">{{ run.sources_ok }} / {{ run.sources_failed }}</td>
+                        <td class="p-4 text-gray-600 dark:text-gray-300">{{ run.items_new }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td class="p-4 text-gray-500" colspan="6">No collection runs recorded yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── Content & Telegram ──────────────────────────────────────────── -->
+    <h2 class="kpn-section-label mt-6">
+        <i class="fas fa-layer-group text-kpn-green"></i> Content &amp; Telegram
+    </h2>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        <div class="kpn-card">
+            <div class="kpn-card-header"><h3 class="text-base font-semibold">Content</h3></div>
+            <div class="kpn-card-body">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Articles by status</p>
+                {% for label, value in campaign_status_counts %}
+                <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">{{ label }}</span><strong>{{ value }}</strong></p>
+                {% endfor %}
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mt-4 mb-2">Opportunities by status</p>
+                {% for label, value in opportunity_status_counts %}
+                <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">{{ label }}</span><strong>{{ value }}</strong></p>
+                {% endfor %}
+                <p class="flex justify-between text-sm py-1 mt-4"><span class="text-gray-600 dark:text-gray-300">Promises tracked</span><strong>{{ promises_total }}</strong></p>
+                <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">Projects tracked</span><strong>{{ projects_total }}</strong></p>
+            </div>
+        </div>
+        <div class="kpn-card">
+            <div class="kpn-card-header"><h3 class="text-base font-semibold">Telegram</h3></div>
+            <div class="kpn-card-body">
+                <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">Members connected</span><strong>{{ telegram_connected }}</strong></p>
+                <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">Channel-verified</span><strong>{{ telegram_verified }}</strong></p>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mt-4 mb-2">Bot outbox</p>
+                <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">Queued</span><strong>{{ outbox_queued }}</strong></p>
+                <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">Sent</span><strong>{{ outbox_sent }}</strong></p>
+                <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">Failed</span><strong>{{ outbox_failed }}</strong></p>
+                <p class="mt-3"><a class="kpn-btn kpn-btn-primary kpn-btn-sm" href="{% url 'telegram_integration:connect' %}">Telegram connection page</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── ICT Admin assignment ────────────────────────────────────────── -->
+    <h2 class="kpn-section-label mt-6">
+        <i class="fas fa-user-shield text-kpn-green"></i> ICT Admin Assignment
+    </h2>
+    <div class="kpn-card mb-6">
+        <div class="kpn-card-body">
+            <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">Current ICT Admin</span><strong>{% if holder %}{{ holder.get_full_name }}{% else %}Unassigned{% endif %}</strong></p>
+            {% if holder %}
+            <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">Position</span><strong>{{ holder_title|default:"General Member" }}</strong></p>
+            <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">Jurisdiction</span><strong>{{ holder.get_jurisdiction }}</strong></p>
+            {% endif %}
+            {% if assignment.updated_by %}
+            <p class="flex justify-between text-sm py-1"><span class="text-gray-600 dark:text-gray-300">Last changed by</span><strong>{{ assignment.updated_by.get_full_name }} · {{ assignment.updated_at|date:"M d, Y H:i" }}</strong></p>
+            {% endif %}
+
+            <p class="text-sm text-gray-500 mt-4">This assignment is managed by the Super Admin in the Django admin panel. It cannot be changed from this page — not by the President or any other role — and super admin accounts can never be assigned as the holder.</p>
+
+            {% if change_history %}
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mt-6 mb-2">Change history</p>
+            {% for change in change_history %}
+            <p class="text-sm py-1 text-gray-600 dark:text-gray-300">
+                {{ change.created_at|date:"M d, Y H:i" }} —
+                {% if change.previous_holder %}{{ change.previous_holder.get_full_name }}{% else %}Unassigned{% endif %}
+                → <strong>{{ change.new_holder.get_full_name }}</strong>
+                <span class="text-xs text-gray-400">by {{ change.changed_by.get_full_name }}</span>
+            </p>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ── Quick links ─────────────────────────────────────────────────── -->
+    <h2 class="kpn-section-label mt-6">
+        <i class="fas fa-compass text-kpn-green"></i> Management Surfaces
+    </h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <a href="{% url 'staff:manage_opportunities' %}" class="kpn-card kpn-card-body block">
+            <p class="font-semibold text-sm"><i class="fas fa-briefcase text-kpn-green"></i> Manage Opportunities</p>
+            <p class="text-xs text-gray-500 mt-1">Listings and suspicious-listing triage</p>
+        </a>
+        <a href="{% url 'staff:approve_members' %}" class="kpn-card kpn-card-body block">
+            <p class="font-semibold text-sm"><i class="fas fa-user-check text-kpn-green"></i> Member Approvals</p>
+            <p class="text-xs text-gray-500 mt-1">Pending membership applications</p>
+        </a>
+        <a href="{% url 'staff:manage_staff' %}" class="kpn-card kpn-card-body block">
+            <p class="font-semibold text-sm"><i class="fas fa-users text-kpn-green"></i> Manage Members</p>
+            <p class="text-xs text-gray-500 mt-1">The member register and positions</p>
+        </a>
+        <a href="{% url 'staff:view_reports' %}" class="kpn-card kpn-card-body block">
+            <p class="font-semibold text-sm"><i class="fas fa-flag text-kpn-green"></i> Report Review</p>
+            <p class="text-xs text-gray-500 mt-1">Leader and community reports</p>
+        </a>
+        <a href="{% url 'editorial:index' %}" class="kpn-card kpn-card-body block">
+            <p class="font-semibold text-sm"><i class="fas fa-pen-nib text-kpn-green"></i> Editorial Assistant</p>
+            <p class="text-xs text-gray-500 mt-1">The brain-run editorial workspace</p>
+        </a>
+        <a href="{% url 'intelligence:overview' %}" class="kpn-card kpn-card-body block">
+            <p class="font-semibold text-sm"><i class="fas fa-satellite-dish text-kpn-green"></i> Intelligence Dashboard</p>
+            <p class="text-xs text-gray-500 mt-1">Collection, review desk and trackers</p>
+        </a>
+        <a href="{% url 'intelligence:desk' %}" class="kpn-card kpn-card-body block">
+            <p class="font-semibold text-sm"><i class="fas fa-clipboard-check text-kpn-green"></i> Verification Desk</p>
+            <p class="text-xs text-gray-500 mt-1">Human-gated intelligence publishing</p>
+        </a>
+        <a href="{% url 'donations:financial_reports' %}" class="kpn-card kpn-card-body block">
+            <p class="font-semibold text-sm"><i class="fas fa-coins text-kpn-green"></i> Finance Overview</p>
+            <p class="text-xs text-gray-500 mt-1">Financial reports and records</p>
+        </a>
+    </div>
+
+</div>
+{% endblock %}

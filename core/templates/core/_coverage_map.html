@@ -1,0 +1,12 @@
+{% comment %}Public Kebbi State coverage map (Priority 5). Geometry:
+intelligence/map_data.py — boundaries from the HDX COD-AB Nigeria
+dataset (OCHA, CC BY-IGO), validated against the 21 LGAs. Fills are
+brand-green shades bucketed by how many of the five public coverage
+record types (members, stories, initiatives, promises, projects) are
+present in the LGA. Each LGA links to its coverage summary below.
+LGAs without verified geometry do not draw; they still appear in the
+list.{% endcomment %}
+<svg class="kpn-cov-svg" viewBox="{{ map_viewbox }}" role="img" aria-label="Map of KPN coverage across Kebbi State local government areas">
+{% for row in coverage_rows %}{% if row.geometry %}<a href="{% url 'core:impact' %}?lga={{ row.lga.pk }}#coverage"><path d="{{ row.geometry.d }}" fill="{{ row.fill }}"{% if row.lga.pk == selected_pk %} class="kpn-cov-selected"{% endif %}><title>{{ row.lga.name }} — {% if row.covered %}{{ row.strength }} of 5 record types present{% else %}not yet covered{% endif %}</title></path></a>{% endif %}{% endfor %}
+{% for row in coverage_rows %}{% if row.geometry %}<text x="{{ row.geometry.x }}" y="{{ row.geometry.y }}">{{ row.lga.name }}</text>{% endif %}{% endfor %}
+</svg>

@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Report a community concern - Community Hub · KPN{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-10">
+    <div class="kpn-home-container" style="max-width:820px">
+        {% include 'includes/breadcrumbs.html' %}
+
+        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-7 md:p-10">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3">Report a community concern</h1>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">Tell KPN about a need, problem or event in your community. Your report goes to the KPN team for review. <b>Submitting a report does not publish it</b> — a reviewer checks every report first, and documented concerns appear on Community Voice only when a reviewer publishes them. Your name and phone number are never shown publicly.</p>
+
+            <form method="post" enctype="multipart/form-data" class="space-y-5">
+                {% csrf_token %}
+                {% if form.non_field_errors %}<div class="kpn-notice">{{ form.non_field_errors.0 }}</div>{% endif %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label for="{{ form.reporter_name.id_for_label }}" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Your name *</label>
+                        {{ form.reporter_name }}
+                        {% if form.reporter_name.errors %}<p class="text-sm text-red-600 mt-1">{{ form.reporter_name.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.reporter_phone.id_for_label }}" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Phone (optional)</label>
+                        {{ form.reporter_phone }}
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Only KPN reviewers see this, in case they need to confirm details.</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div>
+                        <label for="{{ form.category.id_for_label }}" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Type of concern *</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}<p class="text-sm text-red-600 mt-1">{{ form.category.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.lga.id_for_label }}" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">LGA *</label>
+                        {{ form.lga }}
+                        {% if form.lga.errors %}<p class="text-sm text-red-600 mt-1">{{ form.lga.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.ward.id_for_label }}" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Ward *</label>
+                        {{ form.ward }}
+                        {% if form.ward.errors %}<p class="text-sm text-red-600 mt-1">{{ form.ward.errors.0 }}</p>{% endif %}
+                    </div>
+                </div>
+                <div>
+                    <label for="{{ form.location_details.id_for_label }}" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Where exactly? *</label>
+                    {{ form.location_details }}
+                    {% if form.location_details.errors %}<p class="text-sm text-red-600 mt-1">{{ form.location_details.errors.0 }}</p>{% endif %}
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label for="{{ form.incident_date.id_for_label }}" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Date *</label>
+                        {{ form.incident_date }}
+                        {% if form.incident_date.errors %}<p class="text-sm text-red-600 mt-1">{{ form.incident_date.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.incident_time.id_for_label }}" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Time (optional)</label>
+                        {{ form.incident_time }}
+                    </div>
+                </div>
+                <div>
+                    <label for="{{ form.what_happened.id_for_label }}" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">What happened? *</label>
+                    {{ form.what_happened }}
+                    {% if form.what_happened.errors %}<p class="text-sm text-red-600 mt-1">{{ form.what_happened.errors.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.who_was_involved.id_for_label }}" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Who was involved? (optional)</label>
+                    {{ form.who_was_involved }}
+                </div>
+                <div>
+                    <label for="{{ form.why_is_it_important.id_for_label }}" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Why does it matter? (optional)</label>
+                    {{ form.why_is_it_important }}
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label for="{{ form.evidence_image.id_for_label }}" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Photo evidence (optional)</label>
+                        {{ form.evidence_image }}
+                    </div>
+                    <div>
+                        <label for="{{ form.evidence_video.id_for_label }}" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Video evidence (optional)</label>
+                        {{ form.evidence_video }}
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-3 pt-2">
+                    <button type="submit" class="kpn-btn kpn-btn-primary kpn-btn-lg"><i class="fas fa-paper-plane"></i> Submit report</button>
+                    <a href="{% url 'core:community' %}" class="kpn-btn kpn-btn-secondary kpn-btn-lg">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

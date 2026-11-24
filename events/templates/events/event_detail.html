@@ -3,10 +3,10 @@
 {% block title %}{{ event.title }} - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page">
     <div class="mb-8 flex justify-between items-center">
         <div>
-            <h1 class="text-3xl font-bold">{{ event.title }}</h1>
+            <h1 class="kpn-h1">{{ event.title }}</h1>
             <p class="text-gray-600 dark:text-gray-400">Event Details</p>
         </div>
         {% if user.role == 'ORGANIZING_SECRETARY' %}
@@ -24,7 +24,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-6">
             <div class="kpn-card p-6">
-                <h2 class="text-xl font-semibold mb-4">Event Information</h2>
+                <h2 class="kpn-h3 mb-4">Event Information</h2>
                 <div class="space-y-4">
                     <div>
                         <p class="text-sm text-gray-600 dark:text-gray-400">Description</p>
@@ -33,7 +33,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">Location</p>
-                            <p class="mt-1"><i class="fas fa-map-marker-alt text-kpn-blue mr-2"></i>{{ event.location }}</p>
+                            <p class="mt-1"><i class="fas fa-map-marker-alt text-kpn-green mr-2"></i>{{ event.location }}</p>
                         </div>
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">Organized By</p>
@@ -43,11 +43,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">Start Date & Time</p>
-                            <p class="mt-1"><i class="fas fa-calendar text-kpn-blue mr-2"></i>{{ event.start_date|date:"M d, Y - g:i A" }}</p>
+                            <p class="mt-1"><i class="fas fa-calendar text-kpn-green mr-2"></i>{{ event.start_date|date:"M d, Y - g:i A" }}</p>
                         </div>
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">End Date & Time</p>
-                            <p class="mt-1"><i class="fas fa-calendar text-kpn-blue mr-2"></i>{{ event.end_date|date:"M d, Y - g:i A" }}</p>
+                            <p class="mt-1"><i class="fas fa-calendar text-kpn-green mr-2"></i>{{ event.end_date|date:"M d, Y - g:i A" }}</p>
                         </div>
                     </div>
                 </div>
@@ -55,9 +55,9 @@
             
             <div class="kpn-card p-6">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-semibold">Attendance ({{ attendances.count }})</h2>
+                    <h2 class="kpn-h3">Attendance ({{ attendances.count }})</h2>
                     {% if user.role == 'ORGANIZING_SECRETARY' %}
-                    <a href="{% url 'events:manage_attendance' event.pk %}" class="bg-kpn-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                    <a href="{% url 'events:manage_attendance' event.pk %}" class="bg-kpn-green text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
                         <i class="fas fa-clipboard-check mr-2"></i>Record Attendance
                     </a>
                     {% endif %}
@@ -89,7 +89,7 @@
         
         <div class="space-y-6">
             <div class="kpn-card p-6">
-                <h3 class="text-lg font-semibold mb-4">Meeting Minutes</h3>
+                <h3 class="kpn-h4 mb-4">Meeting Minutes</h3>
                 {% if minutes %}
                     <div class="space-y-3">
                         <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -107,7 +107,7 @@
                             <i class="fas fa-clock mr-1"></i>Draft
                         </span>
                         {% endif %}
-                        <a href="{% url 'events:view_meeting_minutes' event.pk %}" class="block mt-4 text-center bg-kpn-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        <a href="{% url 'events:view_meeting_minutes' event.pk %}" class="block mt-4 text-center bg-kpn-green text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
                             View Minutes
                         </a>
                         {% if user.role == 'GENERAL_SECRETARY' %}
@@ -119,7 +119,7 @@
                 {% else %}
                     <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">No minutes recorded for this event</p>
                     {% if user.role == 'GENERAL_SECRETARY' %}
-                    <a href="{% url 'events:create_meeting_minutes' event.pk %}" class="block text-center bg-kpn-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                    <a href="{% url 'events:create_meeting_minutes' event.pk %}" class="block text-center bg-kpn-green text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
                         Record Minutes
                     </a>
                     {% endif %}
@@ -127,7 +127,7 @@
             </div>
             
             <div class="kpn-card p-6">
-                <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+                <h3 class="kpn-h4 mb-4">Quick Actions</h3>
                 <div class="space-y-2">
                     <a href="{% url 'events:event_calendar' %}" class="block p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition">
                         <i class="fas fa-calendar-alt mr-2"></i> Back to Calendar

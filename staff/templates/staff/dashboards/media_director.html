@@ -10,13 +10,18 @@
 
     {% include 'staff/dashboards/includes/_profile_section.html' %}
 
+    <!-- Community Reports by Status (Rounds C+D) -->
+    <div class="kpn-card mt-6 mb-2"><div class="kpn-card-body">
+        {% include 'includes/_chart_bars.html' with chart_rows=report_status_bars chart_title='Community reports by status' %}
+    </div></div>
+
     <!-- ── SECTION 1: Newsroom Stats ──────────────────────────────────── -->
     <h2 class="kpn-section-label mt-6">
         <i class="fas fa-newspaper text-orange-500"></i> Newsroom Overview
     </h2>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div class="kpn-stat-card">
-            <div class="kpn-stat-icon bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600">
+            <div class="kpn-stat-icon tone-gold">
                 <i class="fas fa-clock"></i>
             </div>
             <div>
@@ -25,7 +30,7 @@
             </div>
         </div>
         <div class="kpn-stat-card">
-            <div class="kpn-stat-icon bg-orange-100 dark:bg-orange-900/30 text-orange-600">
+            <div class="kpn-stat-icon tone-gold">
                 <i class="fas fa-newspaper"></i>
             </div>
             <div>
@@ -34,7 +39,7 @@
             </div>
         </div>
         <div class="kpn-stat-card">
-            <div class="kpn-stat-icon bg-purple-100 dark:bg-purple-900/30 text-purple-600">
+            <div class="kpn-stat-icon tone-ink">
                 <i class="fas fa-images"></i>
             </div>
             <div>
@@ -43,7 +48,7 @@
             </div>
         </div>
         <div class="kpn-stat-card">
-            <div class="kpn-stat-icon bg-green-100 dark:bg-green-900/30 text-green-600">
+            <div class="kpn-stat-icon tone-brand">
                 <i class="fas fa-star"></i>
             </div>
             <div>

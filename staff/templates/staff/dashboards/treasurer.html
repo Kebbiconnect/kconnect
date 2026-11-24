@@ -1,28 +1,43 @@
 {% extends 'base.html' %}
 {% load dashboard_actions %}
-{% block title %}Treasurer Dashboard - KPN{% endblock %}
+{% block title %}Director of Finance Dashboard - KPN{% endblock %}
 {% block content %}
 <div class="kpn-page">
-    {% include 'staff/dashboards/includes/_role_header.html' with title="Treasurer Dashboard" icon_class="fas fa-coins" welcome_messages="Managing KPN finances with integrity.|Ensuring transparent fund management.|Building fiscal accountability." %}
+    {% include 'staff/dashboards/includes/_role_header.html' with title="Director of Finance Dashboard" icon_class="fas fa-coins" welcome_messages="Managing KPN finances with integrity.|Ensuring transparent fund management.|Building fiscal accountability." %}
     {% include 'staff/dashboards/includes/_profile_section.html' %}
 
     <div class="mb-8">
         <h2 class="kpn-section-label mt-6">
-    <i class="fas fa-chart-pie mr-2 text-kpn-blue"></i> My Statistics
+    <i class="fas fa-chart-pie mr-2 text-kpn-green"></i> My Statistics
 </h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="kpn-card">
-                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Total Income (₦)</div>
-                <div class="text-3xl font-bold text-kpn-green">{{ total_income|default:0 }}</div>
-            </div>
-            <div class="kpn-card">
-                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Total Expenses (₦)</div>
-                <div class="text-3xl font-bold text-red-600">{{ total_expenses|default:0 }}</div>
-            </div>
-            <div class="kpn-card">
-                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Balance (₦)</div>
-                <div class="text-3xl font-bold text-kpn-blue">{{ balance|default:0 }}</div>
-            </div>
+            <div class="kpn-stat-card">
+    <div class="kpn-stat-icon tone-brand">
+        <i class="fas fa-coins"></i>
+    </div>
+    <div>
+        <p class="kpn-stat-value">{{ total_income|default:0 }}</p>
+        <p class="kpn-stat-label">Total Income (₦)</p>
+    </div>
+</div>
+            <div class="kpn-stat-card">
+    <div class="kpn-stat-icon tone-alert">
+        <i class="fas fa-receipt"></i>
+    </div>
+    <div>
+        <p class="kpn-stat-value">{{ total_expenses|default:0 }}</p>
+        <p class="kpn-stat-label">Total Expenses (₦)</p>
+    </div>
+</div>
+            <div class="kpn-stat-card">
+    <div class="kpn-stat-icon tone-brand">
+        <i class="fas fa-balance-scale"></i>
+    </div>
+    <div>
+        <p class="kpn-stat-value">{{ balance|default:0 }}</p>
+        <p class="kpn-stat-label">Balance (₦)</p>
+    </div>
+</div>
         </div>
     </div>
 
@@ -33,13 +48,13 @@
         </div>
         <div class="kpn-card">
             <h2 class="kpn-section-label mt-6">
-    <i class="fas fa-clipboard-list mr-2 text-purple-500"></i> My Responsibilities
+    <i class="fas fa-clipboard-list mr-2 text-kpn-green"></i> My Responsibilities
 </h2>
             <ul class="space-y-4">
-                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">1</div><span class="text-gray-700 dark:text-gray-300"><strong>Fund Management:</strong> Receive, record, and safeguard all financial contributions made to KPN.</span></li>
-                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">2</div><span class="text-gray-700 dark:text-gray-300"><strong>Expenditure Control:</strong> Authorize and document all KPN expenses with proper approvals and receipts.</span></li>
-                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">3</div><span class="text-gray-700 dark:text-gray-300"><strong>Financial Reporting:</strong> Prepare and present monthly and quarterly financial statements to the executive.</span></li>
-                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">4</div><span class="text-gray-700 dark:text-gray-300"><strong>Dues Collection:</strong> Monitor and track member dues, levies, and special contribution collections.</span></li>
+                <li class="flex items-start"><div class="kpn-step-num flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3">1</div><span class="text-gray-700 dark:text-gray-300"><strong>Fund Management:</strong> Receive, record, and safeguard all financial contributions made to KPN.</span></li>
+                <li class="flex items-start"><div class="kpn-step-num flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3">2</div><span class="text-gray-700 dark:text-gray-300"><strong>Expenditure Control:</strong> Authorize and document all KPN expenses with proper approvals and receipts.</span></li>
+                <li class="flex items-start"><div class="kpn-step-num flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3">3</div><span class="text-gray-700 dark:text-gray-300"><strong>Financial Reporting:</strong> Prepare and present monthly and quarterly financial statements to the executive.</span></li>
+                <li class="flex items-start"><div class="kpn-step-num flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3">4</div><span class="text-gray-700 dark:text-gray-300"><strong>Dues Collection:</strong> Monitor and track member dues, levies, and special contribution collections.</span></li>
             </ul>
         </div>
     </div>

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}{{ project.project_code }} · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Project Intelligence · {{ project.project_code }}</p>
+<h1 class="kpn-h1">{{ project.title }}</h1>
+<div class="intel-chips">
+<span class="intel-chip"><i class="fas fa-clipboard-check"></i>{{ project.get_status_display }}</span>
+<span class="intel-chip"><i class="fas fa-tag"></i>{{ project.get_category_display }}{% if project.sector %} · {{ project.get_sector_display }}{% endif %}</span>
+{% if project.lga %}<span class="intel-chip"><i class="fas fa-location-dot"></i>{{ project.location_label }}</span>{% endif %}
+{% if project.institution %}<span class="intel-chip"><i class="fas fa-landmark"></i>{{ project.institution.name }}</span>{% endif %}
+</div>
+</header>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="intel-panel-title">Documented facts</h2>
+{% if project.description %}<p>{{ project.description }}</p>{% endif %}
+<p class="intel-panel-sub">
+{% if project.contractor_name %}Contractor (as documented): {{ project.contractor_name }}<br>{% endif %}
+{% if project.contract_amount is not None %}Contract amount (as documented): ₦{{ project.contract_amount_display }}<br>{% endif %}
+{% if project.award_date %}Award date (as documented): {{ project.award_date|date:'j M Y' }}<br>{% endif %}
+{% if project.commencement_date %}Commencement date (as documented): {{ project.commencement_date|date:'j M Y' }}<br>{% endif %}
+{% if project.expected_completion_date %}Expected completion (as announced): {{ project.expected_completion_date|date:'j M Y' }}<br>{% endif %}
+{% if project.source_url %}Original announcement: <a href="{{ project.source_url }}" target="_blank" rel="noopener">{{ project.source_url }}</a><br>{% endif %}
+{% if project.source_cluster %}Proposed from desk cluster: <a href="{% url 'intelligence:desk_cluster' project.source_cluster.pk %}">{{ project.source_cluster.title }}</a><br>{% endif %}
+{% if project.source_publication %}Proposed from desk report: <a href="{% url 'intelligence:desk_item' project.source_publication.pk %}">{{ project.source_publication.title }}</a><br>{% endif %}
+Registered by {{ project.created_by.get_full_name|default:project.created_by.username|default:'—' }} · {{ project.created_at|date:'j M Y, H:i' }}
+</p>
+<p><a class="kpn-btn" href="{% url 'intelligence:project_edit' project.pk %}">Edit project details</a>
+<a class="kpn-btn" href="{% url 'projects:detail' project.pk %}">View public page</a></p>
+</div>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="intel-panel-title">Change status</h2>
+<p class="intel-panel-sub">“Verified abandoned” and “Completed — verified” require a field inspection or official record on the evidence timeline{% if can_verify_projects %} and a verifier who did not report that evidence{% else %} and the VERIFY_PROJECTS capability, which you do not hold{% endif %}. Qualifying evidence on file: {{ qualifying_evidence|length }}.</p>
+<form method="post" class="editorial-form intel-action-form" action="{% url 'intelligence:project_status' project.pk %}">
+{% csrf_token %}
+{{ status_form.as_p }}
+<button class="kpn-btn kpn-btn-primary" type="submit">Record status change</button>
+</form>
+</div>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="intel-panel-title">Evidence timeline</h2>
+{% for milestone in milestones %}
+<div class="intel-decision">
+<strong>{{ milestone.title }}</strong>{% if milestone.status_after %} · Status: {{ milestone.get_status_after_display }}{% endif %}
+<small>{{ milestone.date|date:'j M Y' }}{% if milestone.recorded_by %} · Recorded by {{ milestone.recorded_by.get_full_name|default:milestone.recorded_by.username }}{% endif %}</small>
+{% if milestone.body %}<small>{{ milestone.body }}</small>{% endif %}
+</div>
+{% empty %}
+<p>No timeline entries yet.</p>
+{% endfor %}
+<form method="post" class="editorial-form intel-action-form" action="{% url 'intelligence:project_milestone' project.pk %}">
+{% csrf_token %}
+{{ milestone_form.as_p }}
+<button class="kpn-btn" type="submit">Add timeline entry</button>
+</form>
+</div>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="intel-panel-title">Evidence</h2>
+{% for record in evidence %}
+<div class="intel-promise">
+<strong>{{ record.title }}</strong>
+<small>{{ record.get_kind_display }} · {{ record.get_verification_state_display }} · {% if record.is_public %}Public{% else %}Private{% endif %}{% if record.captured_at %} · Captured {{ record.captured_at|date:'j M Y, H:i' }}{% endif %}{% if record.captured_by %} · Filed by {{ record.captured_by.get_full_name|default:record.captured_by.username }}{% endif %}{% if record.url %} · <a href="{{ record.url }}" target="_blank" rel="noopener">Link</a>{% endif %}{% if record.file %} · <a href="{{ record.file.url }}" target="_blank" rel="noopener">File</a>{% endif %}</small>
+</div>
+{% empty %}
+<p>No evidence filed yet.</p>
+{% endfor %}
+<form method="post" enctype="multipart/form-data" class="editorial-form intel-action-form" action="{% url 'intelligence:project_evidence' project.pk %}">
+{% csrf_token %}
+{{ evidence_form.as_p }}
+<button class="kpn-btn" type="submit">File evidence</button>
+</form>
+</div>
+
+<p><a href="{% url 'intelligence:projects' %}">Project register</a> · <a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

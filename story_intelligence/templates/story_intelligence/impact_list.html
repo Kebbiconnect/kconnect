@@ -1,63 +1,98 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}Human Impact Files | KPN — Kebbi Progressive Youth Network{% endblock %}
+
 {% block content %}
-<div class="bg-gray-50 dark:bg-gray-900 min-h-screen">
-
-  <!-- Header -->
-  <section class="bg-kpn-green text-white py-10">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <h1 class="text-4xl md:text-5xl font-bold">KPN Human Impact Files</h1>
+<section class="kpn-page-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/impact-hero.jpg' %}')">
+    <div class="kpn-home-container">
+        <p class="kpn-eyebrow">People behind the issues</p>
+        <h1>Human Impact Files</h1>
+        <p>To document the human experiences behind development, community challenges, public interventions and positive change.</p>
     </div>
-  </section>
+</section>
 
-  <section class="py-10">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="max-w-5xl mx-auto space-y-5">
-        {% for story in stories %}
-        <article class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition">
-          <div class="flex flex-wrap items-start justify-between gap-3">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-              <a href="{% url 'campaigns:article_detail' story.slug %}" class="hover:text-kpn-green">{{ story.title }}</a>
-            </h2>
-            <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-blue-100 text-blue-800">Human Impact File</span>
-          </div>
-          {% with profile=story.story_profile %}
-          {% if profile.who_is_affected %}
-          <div class="mt-4">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">Who is affected</h3>
-            <p class="text-gray-700 dark:text-gray-300">{{ profile.who_is_affected|linebreaksbr }}</p>
-          </div>
-          {% endif %}
-          {% if profile.why_it_matters %}
-          <div class="mt-4">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">Their situation</h3>
-            <p class="text-gray-700 dark:text-gray-300">{{ profile.why_it_matters|linebreaksbr }}</p>
-          </div>
-          {% endif %}
-          {% if profile.what_to_watch %}
-          <div class="mt-4">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-kpn-green mb-1">What they need — and what to watch</h3>
-            <p class="text-gray-700 dark:text-gray-300">{{ profile.what_to_watch|linebreaksbr }}</p>
-          </div>
-          {% endif %}
-          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-4 text-sm text-gray-600 dark:text-gray-300">
-            {% if story.story_id %}<div><dt class="inline font-semibold">Story ID:</dt> <dd class="inline font-mono text-xs">{{ story.story_id }}</dd></div>{% endif %}
-            {% if story.published_at %}<div><dt class="inline font-semibold">Published:</dt> <dd class="inline">{{ story.published_at|date:"F j, Y" }}</dd></div>{% endif %}
-          </dl>
-          {% endwith %}
-          <a href="{% url 'campaigns:article_detail' story.slug %}" class="inline-block mt-4 text-sm font-semibold text-kpn-green hover:underline">Read their story &rarr;</a>
-        </article>
-        {% empty %}
-        <div class="text-center py-20 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-          <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-50 dark:bg-blue-900/30 text-kpn-blue mb-6">
-            <i class="fas fa-heart text-3xl"></i>
-          </div>
-          <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">No Human Impact Files published yet</h3>
-          <p class="text-gray-500 dark:text-gray-400">New stories will appear here as they are published.</p>
-        </div>
-        {% endfor %}
-      </div>
+<div class="kpn-home-container">
+    {% include 'includes/breadcrumbs.html' %}
+    <div class="kpn-trust-strip">
+        <span><i class="fas fa-book-open" aria-hidden="true"></i>{{ total_count }} Human Impact File{{ total_count|pluralize }} published</span>
+        <span><i class="fas fa-clock-rotate-left" aria-hidden="true"></i>{{ followed_count }} followed with updates over time</span>
+        <span><i class="fas fa-shield-halved" aria-hidden="true"></i>Stories about identifiable people publish only with a consent record on file</span>
     </div>
-  </section>
 </div>
+
+<section class="py-10 pt-2">
+    <div class="kpn-home-container">
+
+        <div class="kpn-home-section-heading">
+            <div>
+                <h2>{% if active_category %}{{ active_category_label }}{% else %}Explore the collection{% endif %}</h2>
+                <p class="text-gray-600 dark:text-gray-300">Personal stories, community experiences and documented change.</p>
+            </div>
+        </div>
+
+        <nav class="kpn-cat-pills" aria-label="Browse Human Impact Files by theme">
+            <a href="{% url 'impact_files:list' %}" {% if not active_category %}class="active"{% endif %}>All stories <span class="n">{{ total_count }}</span></a>
+            {% for cat in categories %}
+            <a href="{% url 'impact_files:list' %}?category={{ cat.key }}" {% if active_category == cat.key %}class="active"{% endif %}>{{ cat.label }} <span class="n">{{ cat.count }}</span></a>
+            {% endfor %}
+        </nav>
+
+        {% if featured %}
+        {% with profile=featured.story_profile %}
+        <article class="kpn-impact-feature">
+            <div class="photo">
+                {% if featured.featured_image %}<img src="{{ featured.featured_image.url }}" alt="{{ featured.title }}">{% endif %}
+                <span class="caption">Human Impact File · Featured story</span>
+            </div>
+            <div class="copy">
+                {% if profile.impact_category_label %}<span class="kpn-tag soft">{{ profile.impact_category_label }}</span>{% endif %}
+                <h2><a href="{% url 'campaigns:article_detail' featured.slug %}">{{ featured.title }}</a></h2>
+                {% if profile.who_is_affected %}<p>{{ profile.who_is_affected|truncatewords:36 }}</p>{% elif featured.subheadline %}<p>{{ featured.subheadline }}</p>{% endif %}
+                <p class="byline"><b>KPN Editorial Team</b>{% if featured.published_at %} · {{ featured.published_at|date:"F j, Y" }}{% endif %}{% if featured.lga %} · {{ featured.lga.name }} LGA{% endif %}</p>
+                <a class="kpn-btn kpn-btn-primary" href="{% url 'campaigns:article_detail' featured.slug %}">Explore the story <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            </div>
+        </article>
+        {% endwith %}
+        {% endif %}
+
+        {% if grid_stories %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for story in grid_stories %}
+            {% with profile=story.story_profile %}
+            <article class="kpn-story-card">
+                <div class="photo">
+                    {% if story.featured_image %}<img src="{{ story.featured_image.url }}" alt="{{ story.title }}" loading="lazy">{% endif %}
+                </div>
+                <div class="body">
+                    {% if profile.impact_category_label %}<span class="kpn-tag soft">{{ profile.impact_category_label }}</span>{% endif %}
+                    <h3><a href="{% url 'campaigns:article_detail' story.slug %}">{{ story.title }}</a></h3>
+                    {% if profile.who_is_affected %}<p>{{ profile.who_is_affected|truncatewords:24 }}</p>{% elif story.subheadline %}<p>{{ story.subheadline|truncatewords:24 }}</p>{% endif %}
+                    <div class="meta">
+                        {% if story.published_at %}<span><i class="far fa-calendar-alt" aria-hidden="true"></i>{{ story.published_at|date:"M j, Y" }}</span>{% endif %}
+                        {% if story.lga %}<span><i class="fas fa-map-marker-alt" aria-hidden="true"></i>{{ story.lga.name }} LGA</span>{% endif %}
+                        {% if story.update_count %}<span><i class="fas fa-clock-rotate-left" aria-hidden="true"></i>{{ story.update_count }} update{{ story.update_count|pluralize }} over time</span>{% endif %}
+                    </div>
+                </div>
+            </article>
+            {% endwith %}
+            {% endfor %}
+        </div>
+        {% elif not featured %}
+        <div class="kpn-home-empty">
+            <p class="kpn-empty-title">{% if active_category %}No stories filed under {{ active_category_label }} yet{% else %}No Human Impact Files published yet{% endif %}</p>
+            <p class="kpn-empty-desc">This collection documents the human experiences behind development, community challenges, public interventions and positive change in Kebbi State. New files appear here as the documentary desk publishes them.</p>
+            {% if active_category %}<p style="margin-top:14px"><a href="{% url 'impact_files:list' %}" class="kpn-btn kpn-btn-primary">See all stories</a></p>{% endif %}
+        </div>
+        {% endif %}
+
+        <div class="kpn-ethics-note">
+            <b>Consent and safeguards</b>
+            <p>Consent procedures and appropriate safeguards are essential. Protect vulnerable people and do not publish sensitive personal information without proper justification and safeguards.</p>
+            <p>Every Human Impact File about identifiable people is published only when a consent record is on file for it, and the record is checked before publication.</p>
+            <a href="{% url 'core:about' %}">How our newsroom works &rarr;</a>
+        </div>
+
+    </div>
+</section>
 {% endblock %}

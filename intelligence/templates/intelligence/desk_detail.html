@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}Review · {{ unit.title }} · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Verification Desk · {% if kind == 'cluster' %}Event Cluster #{{ unit.pk }}{% else %}Single Report #{{ unit.pk }}{% endif %}</p>
+<h1 class="kpn-h1">{{ unit.title }}</h1>
+<div class="intel-chips">
+<span class="intel-chip"><i class="fas fa-clipboard-check"></i>{{ state_label }}</span>
+{% if category %}<span class="intel-chip"><i class="fas fa-tag"></i>{{ category.label }}{% if sensitive %} · Sensitive{% endif %}</span>{% endif %}
+{% if lga %}<span class="intel-chip"><i class="fas fa-location-dot"></i>{{ lga.name }} LGA</span>{% endif %}
+<span class="intel-chip"><i class="fas fa-inbox"></i>{{ members|length }} source item{{ members|length|pluralize }}</span>
+{% if unit.assigned_to %}<span class="intel-chip"><i class="fas fa-user-check"></i>{{ unit.assigned_to.get_full_name|default:unit.assigned_to.username }}</span>{% endif %}
+</div>
+</header>
+
+{% if unit.article %}
+<div class="kpn-card kpn-card-body">
+<h2 class="intel-panel-title">Newsroom article</h2>
+<p><a href="{% url 'campaigns:edit_article' unit.article.pk %}">{{ unit.article.title }}</a></p>
+<p class="intel-panel-sub">Status: {{ unit.article.get_status_display }}{% if unit.article.story_id %} · Story ID {{ unit.article.story_id }}{% endif %}{% if unit.article.published_at %} · Published {{ unit.article.published_at|date:'j M Y, H:i' }}{% endif %}</p>
+</div>
+{% endif %}
+
+<div class="kpn-card kpn-card-body">
+<h2 class="intel-panel-title">Evidence</h2>
+{% for item in members %}
+<div class="intel-promise">
+<a href="{{ item.original_url }}" target="_blank" rel="noopener">{{ item.title }}</a>
+<small>{{ item.source.name }} · {{ item.get_fetch_status_display }}{% if item.published_at %} · Published {{ item.published_at|date:'j M Y, H:i' }}{% else %} · No publication date declared{% endif %} · Collected {{ item.discovered_at|date:'j M Y, H:i' }}</small>
+<div class="intel-badges">
+{% if item.relevance == 'CONFIRMED' %}<span class="intel-badge intel-badge-confirmed">Confirmed relevance</span>{% elif item.relevance == 'STRONG_POSSIBLE' %}<span class="intel-badge intel-badge-strong">Strong possible</span>{% elif item.relevance == 'UNCERTAIN' %}<span class="intel-badge intel-badge-uncertain">Uncertain</span>{% elif item.relevance == 'NOT_RELEVANT' %}<span class="intel-badge intel-badge-notrel">Not relevant</span>{% else %}<span class="intel-badge intel-badge-plain">Unprocessed</span>{% endif %}
+{% if item.duplicate_of %}<span class="intel-badge intel-badge-dup intel-badge-wrap">Near-duplicate of report #{{ item.duplicate_of.pk }} ({{ item.duplicate_of.source.name }})</span>{% endif %}
+{% for dup in item.near_duplicates.all %}<span class="intel-badge intel-badge-dup intel-badge-wrap">Report #{{ dup.pk }} is a near-duplicate of this</span>{% endfor %}
+</div>
+{% for link in item.category_links.all %}<span class="intel-reasons">Category: {{ link.category.label }}{% if link.is_primary %} (primary){% endif %} — {{ link.reason }}</span>{% endfor %}
+{% if item.locations.all %}<small>Locations: {% for loc in item.locations.all %}{{ loc.target_name }} ({{ loc.get_match_kind_display|lower }}){% if not forloop.last %} · {% endif %}{% endfor %}</small>{% endif %}
+{% for reason in item.relevance_reasons %}<span class="intel-reasons">{{ reason.rule }}: {{ reason.detail }}{% if reason.matched %} — “{{ reason.matched }}”{% endif %}</span>{% endfor %}
+{% if item.text %}<small>{{ item.text|truncatechars:420 }}</small>{% elif item.summary %}<small>{{ item.summary|truncatechars:420 }}</small>{% endif %}
+</div>
+{% empty %}
+<p>No source items.</p>
+{% endfor %}
+</div>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="intel-panel-title">Source record</h2>
+{% for row in credibility %}
+<div class="intel-promise">
+<strong>{{ row.source.name }}</strong>
+<small>Health: {{ row.health_state }}{% if row.health %} · Last success {{ row.health.last_success_at|date:'j M Y, H:i'|default:'—' }} · Consecutive failures: {{ row.health.consecutive_failures }}{% if row.health.last_error %} · Last error: {{ row.health.last_error }}{% endif %}{% endif %} · Items collected from this source: {{ row.items_collected }} · Units with its reports verified or published: {{ row.units_verified }} · Units rejected or duplicate: {{ row.units_rejected }}</small>
+</div>
+{% endfor %}
+</div>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="intel-panel-title">Desk actions</h2>
+{% if action_choices %}
+<form method="post" class="editorial-form intel-action-form" action="{% url 'intelligence:desk_transition' kind unit.pk %}">
+{% csrf_token %}
+<p><label for="desk-note">Note / reason</label>
+<textarea id="desk-note" name="note" rows="3"></textarea>
+<span class="editorial-muted">Required when rejecting a unit or requesting more evidence.</span></p>
+<p>
+{% for action, label in action_choices %}<button class="kpn-btn kpn-btn-primary" type="submit" name="action" value="{{ action }}">{{ label }}</button> {% endfor %}
+</p>
+</form>
+{% endif %}
+{% if can_assign %}
+<form method="post" class="editorial-form intel-action-form" action="{% url 'intelligence:desk_assign' kind unit.pk %}">
+{% csrf_token %}
+<p><label for="desk-assignee">Assign to reviewer</label>
+<select id="desk-assignee" name="assignee">
+<option value="">Choose a reviewer</option>
+{% for reviewer in reviewers %}<option value="{{ reviewer.pk }}"{% if unit.assigned_to_id == reviewer.pk %} selected{% endif %}>{{ reviewer.get_full_name|default:reviewer.username }}</option>{% endfor %}
+</select></p>
+<button class="kpn-btn" type="submit">Assign</button>
+</form>
+{% endif %}
+{% if can_convert %}
+<p class="intel-action-form"><a class="kpn-btn kpn-btn-primary" href="{% url 'intelligence:desk_convert' kind unit.pk %}">Create newsroom draft</a></p>
+{% endif %}
+{% if unit_projects %}
+<div class="intel-action-form">
+<p><strong>Projects registered from this unit</strong></p>
+{% for project in unit_projects %}<p><a href="{% url 'intelligence:project_detail' project.pk %}">{{ project.project_code }} — {{ project.title }}</a> · {{ project.get_status_display }}</p>{% endfor %}
+</div>
+{% endif %}
+{% if can_create_project %}
+<p class="intel-action-form"><a class="kpn-btn" href="{% url 'intelligence:project_from_unit' kind unit.pk %}">Register a project from this unit</a></p>
+{% endif %}
+{% if can_merge_split %}
+<form method="post" class="editorial-form intel-action-form" action="{% url 'intelligence:desk_merge' unit.pk %}">
+{% csrf_token %}
+<p><label for="desk-merge">Merge another cluster into this one</label>
+<select id="desk-merge" name="other_cluster">
+<option value="">Choose a cluster</option>
+{% for other in other_clusters %}<option value="{{ other.pk }}">#{{ other.pk }} — {{ other.title }}</option>{% endfor %}
+</select></p>
+<p><label for="desk-merge-note">Reason</label>
+<input id="desk-merge-note" type="text" name="note"></p>
+<button class="kpn-btn" type="submit">Merge clusters</button>
+</form>
+<form method="post" class="editorial-form intel-action-form" action="{% url 'intelligence:desk_split' unit.pk %}">
+{% csrf_token %}
+<p><label>Split items out of this cluster</label>
+{% for item in members %}<label class="intel-split-item"><input type="checkbox" name="items" value="{{ item.pk }}"> {{ item.title }} ({{ item.source.name }})</label>{% endfor %}
+</p>
+<p><label for="desk-split-note">Reason</label>
+<input id="desk-split-note" type="text" name="note"></p>
+<button class="kpn-btn" type="submit">Split selected items out</button>
+</form>
+{% endif %}
+{% if not action_choices and not can_assign and not can_convert and not can_merge_split %}
+<p class="intel-panel-sub">No actions are available to you on this unit.</p>
+{% endif %}
+</div>
+
+<div class="kpn-card kpn-card-body">
+<h2 class="intel-panel-title">Decision history</h2>
+{% for decision in decisions %}
+<div class="intel-decision">
+<strong>{{ decision.get_action_display }}</strong> · {{ decision.from_label }} → {{ decision.to_label }}
+<small>{% if decision.actor %}{{ decision.actor.get_full_name|default:decision.actor.username }} · {% endif %}{{ decision.created_at|date:'j M Y, H:i' }}{% if decision.note %} · {{ decision.note }}{% endif %}</small>
+</div>
+{% empty %}
+<p>No decisions recorded yet.</p>
+{% endfor %}
+</div>
+
+<p><a href="{% url 'intelligence:desk' %}">Review desk</a> · <a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

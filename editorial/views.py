@@ -6,6 +6,7 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from django.db import transaction
+from django.db.models import Count
 from .access import active, editor, manager, items_for
 from .forms import DraftForm, SourceForm
 from .models import Audit, Control, Item, Job, LinkCheck, Source
@@ -22,11 +23,27 @@ def index(request):
     if kind in dict(Item.KIND):rows=rows.filter(kind=kind)
     if state in dict(Item.STATE):rows=rows.filter(state=state)
     if request.GET.get('report','').isdigit():rows=rows.filter(report_id=int(request.GET['report']))
+    # Consistency Rounds C+D — desk charts, aggregated over exactly the
+    # items this user may see (items_for scope is unchanged).
+    from datetime import timedelta
+    from django.utils import timezone as _tz
+    from core.dashboard_charts import bar_rows, count_by
+    _scoped = items_for(request.user)
+    _today = _tz.now().date()
+    _day_counts = {}
+    for _row in _scoped.filter(created_at__date__gte=_today - timedelta(days=13)).values('created_at__date').annotate(n=Count('id')):
+        _day_counts[_row['created_at__date']] = _row['n']
+    chart_state_bars = bar_rows(count_by(_scoped, 'state', Item.STATE))
+    chart_day_bars = bar_rows([
+        ((_today - timedelta(days=_i)).strftime('%d %b'),
+         _day_counts.get(_today - timedelta(days=_i), 0))
+        for _i in range(13, -1, -1)
+    ])
     page=Paginator(rows,25).get_page(request.GET.get('page'))
     control,_=Control.objects.get_or_create(pk=1)
     jobs=Job.objects.filter(item__in=items_for(request.user)).exclude(state='DONE').select_related('item')[:20]
     if manager(request.user):jobs=Job.objects.exclude(state='DONE').select_related('item','source')[:30]
-    return render(request,'editorial/index.html',{'page':page,'kinds':Item.KIND,'states':Item.STATE,'kind':kind,'state':state,'control':control,'feature_enabled':settings.KPN_EDITORIAL_ENABLED,'can_manage':manager(request.user),'can_edit':editor(request.user),'jobs':jobs,'brain_waiting':Item.objects.filter(state='WAITING').count(),'brain_queued':Job.objects.filter(kind='GENERATE',state='QUEUED').count(),'sources':Source.objects.all() if manager(request.user) else [],'links':LinkCheck.objects.select_related('opportunity').order_by('-day','pk')[:20] if editor(request.user) else []})
+    return render(request,'editorial/index.html',{'page':page,'kinds':Item.KIND,'states':Item.STATE,'kind':kind,'state':state,'control':control,'feature_enabled':settings.KPN_EDITORIAL_ENABLED,'can_manage':manager(request.user),'can_edit':editor(request.user),'jobs':jobs,'brain_waiting':Item.objects.filter(state='WAITING').count(),'brain_queued':Job.objects.filter(kind='GENERATE',state='QUEUED').count(),'sources':Source.objects.all() if manager(request.user) else [],'links':LinkCheck.objects.select_related('opportunity').order_by('-day','pk')[:20] if editor(request.user) else [],'chart_state_bars':chart_state_bars,'chart_day_bars':chart_day_bars})
 
 @login_required
 def detail(request,pk):

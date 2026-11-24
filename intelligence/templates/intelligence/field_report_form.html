@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}File a Field Report · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Field Reporting</p>
+<h1 class="kpn-h1">File a Field Report</h1>
+<p class="intel-hero-sub">Your report goes to the same verification desk as monitored news. Nothing is published from it until the desk verifies it.</p>
+<div class="intel-chips">
+<span class="intel-chip"><i class="fas fa-shield-halved"></i>Never travel somewhere unsafe to file a report</span>
+<span class="intel-chip"><i class="fas fa-lock"></i>Your name stays on the staff record only</span>
+</div>
+</header>
+
+<div class="kpn-card kpn-card-body">
+<form method="post" enctype="multipart/form-data" class="editorial-form">{% csrf_token %}
+{{ form.as_p }}
+<button class="kpn-btn kpn-btn-primary" type="submit">Submit field report</button>
+</form>
+</div>
+<p><a href="{% url 'intelligence:field_reports_mine' %}">My field reports</a> · <a href="{% url 'intelligence:overview' %}">Back to dashboard</a></p>
+</div>
+{% endblock %}

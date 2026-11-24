@@ -1,5 +1,6 @@
 """Public leadership seat projection; exposes no private member fields."""
 from leadership.models import Zone,LGA,Ward,RoleDefinition
+from leadership.roles import canonical_role_title
 from staff.models import User
 
 def _location(tier,obj=None):
@@ -22,7 +23,7 @@ def seat_record(role,obj=None,request=None):
  if holder and holder.photo:
   photo=holder.photo.url
   if request: photo=request.build_absolute_uri(photo)
- return {"seat_key":f"{role.tier}:{role.id}:{_location_id(role.tier,obj)}","role_definition":role.id,"role_title":role.title,"tier":role.tier,"seat_number":role.seat_number,"location":_location(role.tier,obj),"status":"FILLED" if holder else "VACANT","holder":({"id":holder.id,"name":holder.get_full_name(),"photo":photo} if holder else None)}
+ return {"seat_key":f"{role.tier}:{role.id}:{_location_id(role.tier,obj)}","role_definition":role.id,"role_title":canonical_role_title(role.title),"tier":role.tier,"seat_number":role.seat_number,"location":_location(role.tier,obj),"status":"FILLED" if holder else "VACANT","holder":({"id":holder.id,"name":holder.get_full_name(),"photo":photo} if holder else None)}
 
 def locations_for(tier,zone=None,lga=None,ward=None,require_vacancy_scope=False):
  if tier=="STATE": return [None]

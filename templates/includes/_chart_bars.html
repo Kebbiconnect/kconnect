@@ -1,0 +1,17 @@
+{% comment %}Horizontal bar chart (Consistency Rounds C+D). Expects
+``chart_rows``: [{label, value, pct}] from core.dashboard_charts.bar_rows
+and ``chart_title``. Pure HTML/CSS bars in brand colours — no JS.
+Values are printed beside every bar; nothing is encoded by colour
+alone.{% endcomment %}
+<div class="kpn-chart">
+  {% if chart_title %}<h3 class="kpn-chart-title">{{ chart_title }}</h3>{% endif %}
+  {% for row in chart_rows %}
+  <div class="kpn-chart-row">
+    <span class="kpn-chart-label">{{ row.label }}</span>
+    <span class="kpn-chart-track"><span class="kpn-chart-fill" style="width: {{ row.pct }}%"></span></span>
+    <span class="kpn-chart-value">{{ row.value }}</span>
+  </div>
+  {% empty %}
+  <p class="kpn-chart-empty">No records yet.</p>
+  {% endfor %}
+</div>

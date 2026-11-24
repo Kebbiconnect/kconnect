@@ -3,33 +3,33 @@
 {% block title %}Event Calendar - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="kpn-page">
     <div class="mb-8 flex justify-between items-center">
         <div>
-            <h1 class="text-3xl font-bold">Event Calendar</h1>
+            <h1 class="kpn-h1">Event Calendar</h1>
             <p class="text-gray-600 dark:text-gray-400">View all organizational events and meetings</p>
         </div>
         {% if user.role == 'ORGANIZING_SECRETARY' %}
-        <a href="{% url 'events:create_event' %}" class="bg-kpn-blue text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+        <a href="{% url 'events:create_event' %}" class="bg-kpn-green text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
             <i class="fas fa-plus mr-2"></i>Create New Event
         </a>
         {% endif %}
     </div>
     
     <div class="mb-8">
-        <h2 class="text-2xl font-bold mb-4">Upcoming Events</h2>
+        <h2 class="kpn-h2 mb-4">Upcoming Events</h2>
         {% if upcoming_events %}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for event in upcoming_events %}
             <div class="kpn-card p-6 hover:shadow-lg transition">
                 <div class="flex items-start justify-between mb-4">
-                    <h3 class="text-xl font-semibold">{{ event.title }}</h3>
+                    <h3 class="kpn-h3">{{ event.title }}</h3>
                     <span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded">Upcoming</span>
                 </div>
                 <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">{{ event.description|truncatewords:20 }}</p>
                 <div class="space-y-2 text-sm mb-4">
-                    <p><i class="fas fa-calendar mr-2 text-kpn-blue"></i>{{ event.start_date|date:"M d, Y - g:i A" }}</p>
-                    <p><i class="fas fa-map-marker-alt mr-2 text-kpn-blue"></i>{{ event.location }}</p>
+                    <p><i class="fas fa-calendar mr-2 text-kpn-green"></i>{{ event.start_date|date:"M d, Y - g:i A" }}</p>
+                    <p><i class="fas fa-map-marker-alt mr-2 text-kpn-green"></i>{{ event.location }}</p>
                 </div>
                 <a href="{% url 'events:event_detail' event.pk %}" class="block text-center bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition">
                     View Details
@@ -46,7 +46,7 @@
     </div>
     
     <div>
-        <h2 class="text-2xl font-bold mb-4">Past Events</h2>
+        <h2 class="kpn-h2 mb-4">Past Events</h2>
         {% if past_events %}
         <div class="kpn-card overflow-hidden">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -65,7 +65,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ event.start_date|date:"M d, Y" }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ event.location }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            <a href="{% url 'events:event_detail' event.pk %}" class="text-kpn-blue hover:underline">View</a>
+                            <a href="{% url 'events:event_detail' event.pk %}" class="text-kpn-green hover:underline">View</a>
                         </td>
                     </tr>
                     {% endfor %}

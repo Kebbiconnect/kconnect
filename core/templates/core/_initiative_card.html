@@ -1,0 +1,23 @@
+{% comment %}One community initiative card. Expects `initiative`.{% endcomment %}
+<article class="kpn-opp-card">
+    {% if initiative.image %}
+    <a href="{% url 'core:community_initiative_detail' initiative.pk %}">
+        <img src="{{ initiative.image.url }}" alt="{{ initiative.title }}" class="w-full h-44 object-cover rounded-lg mb-4">
+    </a>
+    {% endif %}
+    <div class="kpn-opp-top">
+        <span class="kpn-tag soft">{{ initiative.get_category_display }}</span>
+        <span class="px-2.5 py-1 rounded-full text-xs font-bold {{ initiative.get_status_colour }}">{{ initiative.public_status_label }}</span>
+    </div>
+    <h3><a href="{% url 'core:community_initiative_detail' initiative.pk %}">{{ initiative.title }}</a></h3>
+    <p><i class="fas fa-map-marker-alt mr-1"></i>{% if initiative.ward %}{{ initiative.ward.name }} Ward, {% endif %}{% if initiative.lga %}{{ initiative.lga.name }} LGA{% endif %}{% if initiative.lga and initiative.location_text %} · {% endif %}{{ initiative.location_text }}</p>
+    <p>{{ initiative.objective|default:initiative.description|truncatewords:24 }}</p>
+    <div class="mt-auto pt-3 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between gap-3">
+        <span class="text-sm text-gray-500 dark:text-gray-400">
+            {% if initiative.people_reached %}<i class="fas fa-users mr-1"></i> {{ initiative.people_reached }} people reached
+            {% elif initiative.start_date %}<i class="far fa-calendar-alt mr-1"></i> {{ initiative.start_date|date:"j M Y" }}
+            {% else %}&nbsp;{% endif %}
+        </span>
+        <a href="{% url 'core:community_initiative_detail' initiative.pk %}" class="kpn-home-link">View initiative <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+    </div>
+</article>

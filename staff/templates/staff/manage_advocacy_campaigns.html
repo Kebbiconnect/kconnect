@@ -5,7 +5,7 @@
 {% block content %}
 <div class="mb-6 flex justify-between items-center">
     <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Manage Advocacy Hub</h1>
+        <h1 class="kpn-h2 text-gray-900 dark:text-white">Manage Advocacy Hub</h1>
         <p class="text-gray-600 dark:text-gray-400">Add, edit, or remove advocacy campaigns.</p>
     </div>
     <a href="{% url 'staff:create_advocacy_campaign' %}" class="bg-kpn-green text-white px-4 py-2 rounded shadow hover:bg-green-700 transition">
@@ -13,7 +13,7 @@
     </a>
 </div>
 
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+<div class="kpn-card overflow-hidden">
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
             <thead>
@@ -35,9 +35,13 @@
                         {% else %}
                             <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">Inactive</span>
                         {% endif %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-800">{{ item.get_status_display }}</span>
                     </td>
                     <td class="p-4 text-right">
-                        <a href="{% url 'staff:edit_advocacy_campaign' item.id %}" class="text-blue-500 hover:text-blue-700 mr-3">
+                        <a href="{% url 'staff:manage_advocacy_activities' item.id %}" class="text-green-600 hover:text-green-800 mr-3">
+                            <i class="fas fa-list"></i> Activity log
+                        </a>
+                        <a href="{% url 'staff:edit_advocacy_campaign' item.id %}" class="text-kpn-green hover:text-blue-700 mr-3">
                             <i class="fas fa-edit"></i> Edit
                         </a>
                         <a href="{% url 'staff:delete_advocacy_campaign' item.id %}" class="text-red-500 hover:text-red-700">

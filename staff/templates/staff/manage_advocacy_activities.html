@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Campaign Activity Log - {{ campaign.title }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <a href="{% url 'staff:manage_advocacy_campaigns' %}" class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400">
+        <i class="fas fa-arrow-left mr-1"></i> Back to campaigns
+    </a>
+    <h1 class="kpn-h2 text-gray-900 dark:text-white mt-2">Activity log</h1>
+    <p class="text-gray-600 dark:text-gray-400">{{ campaign.title }} — dated entries appear on the public campaign page under “Progress and activities”.</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="kpn-card p-6">
+        <h2 class="font-semibold text-gray-900 dark:text-white mb-4">Add an entry</h2>
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
+                {{ form.date }}
+                {% if form.date.errors %}<p class="text-red-500 text-xs mt-1">{{ form.date.errors.0 }}</p>{% endif %}
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">What happened?</label>
+                {{ form.entry }}
+                {% if form.entry.errors %}<p class="text-red-500 text-xs mt-1">{{ form.entry.errors.0 }}</p>{% endif %}
+            </div>
+            <button type="submit" class="bg-kpn-green text-white px-4 py-2 rounded shadow hover:bg-green-700 transition w-full">
+                <i class="fas fa-plus mr-2"></i> Add entry
+            </button>
+        </form>
+    </div>
+
+    <div class="lg:col-span-2 kpn-card p-6">
+        <h2 class="font-semibold text-gray-900 dark:text-white mb-4">Entries ({{ activities|length }})</h2>
+        {% for activity in activities %}
+        <div class="flex items-start justify-between gap-4 py-3 border-b border-gray-100 dark:border-gray-700">
+            <div>
+                <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ activity.date|date:"d M Y" }}</div>
+                <p class="text-sm text-gray-600 dark:text-gray-300">{{ activity.entry }}</p>
+            </div>
+            <form method="post" action="{% url 'staff:delete_advocacy_activity' campaign.pk activity.pk %}" onsubmit="return confirm('Remove this entry?');">
+                {% csrf_token %}
+                <button type="submit" class="text-red-500 hover:text-red-700 text-sm"><i class="fas fa-trash"></i></button>
+            </form>
+        </div>
+        {% empty %}
+        <p class="text-gray-500 dark:text-gray-400">No entries yet. Add the first dated step of this campaign.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

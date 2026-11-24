@@ -18,7 +18,8 @@
     <!-- Article Header -->
     <header class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-8">
         <!-- Breadcrumb -->
-        <nav class="mb-6">
+        {% include 'includes/breadcrumbs.html' %}
+        <nav class="mb-6 -mt-2">
             <a href="{% url 'campaigns:newsroom' %}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-kpn-green transition">
                 <i class="fas fa-arrow-left mr-1"></i> Back to Newsroom
             </a>

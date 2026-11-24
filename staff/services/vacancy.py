@@ -6,7 +6,7 @@ def _vacant_for(tier, **scope):
  result=[]
  for role in RoleDefinition.objects.filter(tier=tier):
   if not User.objects.filter(role_definition=role,status="VERIFIED",**scope).exists():
-   result.append({"id":role.id,"title":role.title,"tier":role.tier})
+   result.append({"id":role.id,"title":role.canonical_title,"tier":role.tier})
  return result
 
 def vacant_roles(zone=None,lga=None,ward=None):

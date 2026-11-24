@@ -16,7 +16,7 @@
             <div>
                 <p class="kpn-stat-value text-base md:text-lg">{{ user.get_role_display }}</p>
                 <p class="kpn-stat-label">Your Role</p>
-                <p class="kpn-stat-meta">{{ user.role_definition.title|default:"General Member" }}</p>
+                <p class="kpn-stat-meta">{{ user.role_definition.canonical_title|default:"General Member" }}</p>
             </div>
         </div>
         <div class="kpn-stat-card">
@@ -72,6 +72,10 @@
         <div class="kpn-card-body p-3">
             {% dashboard_quick_actions %}
         </div>
+    </div>
+
+    <div class="mt-6">
+        {% include 'includes/_member_lga_map.html' %}
     </div>
 </div>
 {% endblock %}

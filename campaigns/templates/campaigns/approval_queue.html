@@ -3,15 +3,15 @@
 {% block title %}Approval Queue - KPN{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <h1 class="text-3xl font-bold mb-6">Campaign Approval Queue</h1>
+<div class="kpn-page">
+    <h1 class="kpn-h1 mb-6">Campaign Approval Queue</h1>
     
     <div class="grid grid-cols-1 gap-6">
         {% for campaign in pending_campaigns %}
         <div class="kpn-card p-6">
             <div class="flex justify-between items-start">
                 <div class="flex-1">
-                    <h3 class="text-xl font-semibold mb-2">{{ campaign.title }}</h3>
+                    <h3 class="kpn-h3 mb-2">{{ campaign.title }}</h3>
                     <p class="text-gray-600 dark:text-gray-400 mb-4">{{ campaign.content|truncatewords:40 }}</p>
                     <div class="flex items-center space-x-4 text-sm text-gray-500">
                         <span><i class="fas fa-user mr-1"></i> {{ campaign.author.get_full_name }}</span>
@@ -32,7 +32,7 @@
             </div>
         </div>
         {% empty %}
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
+        <div class="kpn-card p-12 text-center">
             <i class="fas fa-check-circle text-6xl text-green-400 mb-4"></i>
             <p class="text-gray-600 dark:text-gray-400">No campaigns pending approval</p>
         </div>

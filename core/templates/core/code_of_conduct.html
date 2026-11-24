@@ -1,94 +1,257 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Code of Conduct - KPN Constitution{% endblock %}
 
 {% block content %}
-<section class="bg-gradient-to-r from-kpn-green to-kpn-blue text-white py-16">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-4xl md:text-5xl font-bold mb-4">Code of Conduct</h1>
-        <p class="text-xl max-w-3xl mx-auto">Article XII of the Kebbi Progressive Youth Network Constitution</p>
+<section class="kpn-page-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/conduct-hero.jpg' %}')">
+    <div class="kpn-home-container">
+        <p class="kpn-eyebrow">Our standards. Our responsibility.</p>
+        <h1>Code of Conduct</h1>
+        <p>To explain the standards of conduct expected from every KPN member, volunteer and leader, and how disciplinary matters are handled.</p>
     </div>
 </section>
 
-<section class="py-12 bg-gray-50 dark:bg-gray-900 min-h-screen">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 md:p-12 prose prose-lg dark:prose-invert max-w-none prose-a:text-kpn-blue prose-headings:text-kpn-green">
-            
-            <p class="lead">
-                The Kebbi Progressive Youth Network (KPN) is built on the principles of unity, respect, and progressive development. 
-                To safeguard the integrity of the network and ensure a constructive environment for all members, 
-                <strong>Article XII of the KPN Constitution</strong> strictly defines our Code of Conduct and Disciplinary measures.
-            </p>
-            <hr>
+<div class="kpn-home-container">
+    {% include 'includes/breadcrumbs.html' %}
+</div>
 
-            <h2>Section 1: General Obligations</h2>
-            <p>Every registered member and appointed leader of the Kebbi Progressive Youth Network shall:</p>
-            <ul>
-                <li>Uphold the aims and objectives of the KPN at all times.</li>
-                <li>Conduct themselves in a manner that brings honor and respect to the organization.</li>
-                <li>Respect the constitutional hierarchy and authority of the State Executive Council and recognized Zonal, LGA, and Ward leadership.</li>
-                <li>Promote unity and peace among members and the wider Kebbi State community.</li>
-                <li>Attend statutory meetings and participate actively in KPN civic and community programs.</li>
-            </ul>
+<section class="py-12 pt-6">
+    <div class="kpn-home-container">
+        <div class="kpn-conduct-layout">
+            <aside class="kpn-conduct-toc" aria-label="In this document">
+                <b>In this document</b>
+                <a href="#purpose">01 · Purpose and scope</a>
+                <a href="#member-responsibilities">02 · Member responsibilities</a>
+                <a href="#leadership-responsibilities">03 · Leadership responsibilities</a>
+                <a href="#ethical-communication">04 · Ethical communication</a>
+                <a href="#financial-integrity">05 · Financial integrity</a>
+                <a href="#prohibited-conduct">06 · Prohibited conduct</a>
+                <a href="#safeguarding">07 · Safeguarding and respectful treatment</a>
+                <a href="#reporting">08 · Reporting a violation</a>
+                <a href="#investigation">09 · Investigation and fair hearing</a>
+                <a href="#disciplinary-measures">10 · Disciplinary measures</a>
+                <a href="#appeals">11 · Appeals</a>
+                <a href="#faq">12 · Frequently asked questions</a>
+            </aside>
 
-            <h2>Section 2: Offenses and Prohibited Conduct</h2>
-            <p>The following acts constitute offenses against the Network and shall attract strict disciplinary action:</p>
-            
-            <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 my-6 rounded-r-lg">
-                <h4 class="text-red-800 dark:text-red-400 mt-0 mb-2">Zero Tolerance Offenses</h4>
-                <ul class="text-red-800 dark:text-red-200 mb-0">
-                    <li><strong>Financial Misappropriation:</strong> Embezzlement, fraud, or mismanagement of KPN funds or resources.</li>
-                    <li><strong>Hate Speech:</strong> The use of ethnic, religious, or gender-based slurs, or incitement of violence against any group.</li>
-                    <li><strong>Sabotage:</strong> Engaging in anti-network activities or collaborating with entities to undermine KPN objectives.</li>
-                </ul>
+            <article class="kpn-conduct-doc">
+                <div class="kpn-doc-meta">
+                    <span>Official KPN policy</span>
+                    <span>Article XII of the Kebbi Progressive Youth Network Constitution</span>
+                </div>
+
+                <div class="kpn-legal-note">
+                    <b>Important</b>
+                    <p>This web presentation is a navigable guide. The approved official constitutional text remains authoritative.</p>
+                </div>
+
+                <section id="purpose">
+                    <h2>01. Purpose and scope</h2>
+                    <p>
+                        The Kebbi Progressive Youth Network (KPN) is built on the principles of unity, respect, and progressive development.
+                        To safeguard the integrity of the network and ensure a constructive environment for all members,
+                        <strong>Article XII of the KPN Constitution</strong> strictly defines our Code of Conduct and Disciplinary measures.
+                    </p>
+                </section>
+
+                <section id="member-responsibilities">
+                    <h2>02. Member responsibilities</h2>
+                    <p>Every registered member and appointed leader of the Kebbi Progressive Youth Network shall:</p>
+                    <ul>
+                        <li>Uphold the aims and objectives of the KPN at all times.</li>
+                        <li>Conduct themselves in a manner that brings honor and respect to the organization.</li>
+                        <li>Respect the constitutional hierarchy and authority of the State Executive Council and recognized Zonal, LGA, and Ward leadership.</li>
+                        <li>Promote unity and peace among members and the wider Kebbi State community.</li>
+                        <li>Attend statutory meetings and participate actively in KPN civic and community programs.</li>
+                    </ul>
+                </section>
+
+                <section id="leadership-responsibilities">
+                    <h2>03. Leadership responsibilities</h2>
+                    <p>Appointed leaders are bound by the member responsibilities in Part 2 above. The Code also places specific duties on appointed leaders and office holders:</p>
+                    <ul>
+                        <li><strong>Dereliction of Duty:</strong> Consistent failure by an appointed leader to perform their constitutional duties (e.g., failure to submit mandatory reports).</li>
+                        <li>The <strong>Director of Legal Affairs &amp; Ethics</strong> oversees the Disciplinary Committee, which handles all infractions.</li>
+                        <li><strong>Ratification:</strong> The State Executive Council (or the President, in emergency cases) ratifies and enforces the sanction.</li>
+                    </ul>
+                </section>
+
+                <section id="ethical-communication">
+                    <h2>04. Ethical communication</h2>
+                    <p>The following provisions of this Code govern how members communicate and represent the Network:</p>
+                    <ul>
+                        <li><strong>Hate Speech:</strong> The use of ethnic, religious, or gender-based slurs, or incitement of violence against any group.</li>
+                        <li><strong>Defamation:</strong> Publishing or broadcasting false and malicious information against the Network, its leadership, or its members.</li>
+                        <li><strong>Falsification:</strong> Forgery of KPN documents, ID tags, or misrepresentation of the Network to external bodies.</li>
+                    </ul>
+                </section>
+
+                <section id="financial-integrity">
+                    <h2>05. Financial integrity</h2>
+                    <p>The following provision of this Code governs the handling of KPN funds and resources:</p>
+                    <ul>
+                        <li><strong>Financial Misappropriation:</strong> Embezzlement, fraud, or mismanagement of KPN funds or resources.</li>
+                    </ul>
+                </section>
+
+                <section id="prohibited-conduct">
+                    <h2>06. Prohibited conduct</h2>
+                    <p>The following acts constitute offenses against the Network and shall attract strict disciplinary action:</p>
+
+                    <div class="kpn-zt-box">
+                        <h4>Zero Tolerance Offenses</h4>
+                        <ul>
+                            <li><strong>Financial Misappropriation:</strong> Embezzlement, fraud, or mismanagement of KPN funds or resources.</li>
+                            <li><strong>Hate Speech:</strong> The use of ethnic, religious, or gender-based slurs, or incitement of violence against any group.</li>
+                            <li><strong>Sabotage:</strong> Engaging in anti-network activities or collaborating with entities to undermine KPN objectives.</li>
+                        </ul>
+                    </div>
+
+                    <ul>
+                        <li><strong>Insubordination:</strong> Flagrant disrespect or refusal to carry out lawful directives from the State Executive Council or immediate superiors.</li>
+                        <li><strong>Defamation:</strong> Publishing or broadcasting false and malicious information against the Network, its leadership, or its members.</li>
+                        <li><strong>Dereliction of Duty:</strong> Consistent failure by an appointed leader to perform their constitutional duties (e.g., failure to submit mandatory reports).</li>
+                        <li><strong>Falsification:</strong> Forgery of KPN documents, ID tags, or misrepresentation of the Network to external bodies.</li>
+                        <li><strong>Disruption:</strong> Deliberate disruption of KPN meetings, events, or official digital platforms.</li>
+                    </ul>
+                </section>
+
+                <section id="safeguarding">
+                    <h2>07. Safeguarding and respectful treatment</h2>
+                    <p>Under this Code, every registered member and appointed leader shall:</p>
+                    <ul>
+                        <li>Conduct themselves in a manner that brings honor and respect to the organization.</li>
+                        <li>Promote unity and peace among members and the wider Kebbi State community.</li>
+                    </ul>
+                    <p>The prohibition on hate speech and incitement of violence is set out in full under <a href="#prohibited-conduct">Prohibited conduct</a>.</p>
+                </section>
+
+                <section id="reporting">
+                    <h2>08. Reporting a violation</h2>
+                    <ol>
+                        <li><strong>Reporting:</strong> Any member can report a violation via the hierarchical reporting structure (Ward → LGA → Zone → State).</li>
+                    </ol>
+                </section>
+
+                <section id="investigation">
+                    <h2>09. Investigation and fair hearing</h2>
+                    <p>
+                        Discipline within KPN is administered fairly, transparently, and without prejudice. The
+                        <strong>Director of Legal Affairs &amp; Ethics</strong> oversees the Disciplinary Committee, which handles all infractions.
+                    </p>
+                    <ol start="2">
+                        <li><strong>Investigation:</strong> The Disciplinary Committee shall investigate the allegations and grant the accused member a fair hearing.</li>
+                        <li><strong>Recommendation:</strong> The Committee submits its findings and recommended sanctions to the State Executive Council.</li>
+                        <li><strong>Ratification:</strong> The State Executive Council (or the President, in emergency cases) ratifies and enforces the sanction.</li>
+                    </ol>
+                </section>
+
+                <section id="disciplinary-measures">
+                    <h2>10. Disciplinary measures</h2>
+                    <p>Depending on the gravity of the offense, the following sanctions may be applied:</p>
+                    <ul>
+                        <li><strong>Reprimand:</strong> A formal written warning (First offense / Minor infractions).</li>
+                        <li><strong>Suspension:</strong> Temporary removal from the Network or leadership position for a specified period not exceeding 6 months.</li>
+                        <li><strong>Fines / Restitution:</strong> Mandatory repayment of misappropriated funds or replacement of damaged property.</li>
+                        <li><strong>Removal from Office:</strong> Permanent stripping of leadership titles and responsibilities (Requires 2/3 majority vote of the State Executive Council).</li>
+                        <li><strong>Expulsion:</strong> Complete revocation of KPN membership (Reserved for zero-tolerance offenses and severe sabotage).</li>
+                    </ul>
+                </section>
+
+                <section id="appeals">
+                    <h2>11. Appeals</h2>
+                    <p>
+                        Any member subjected to disciplinary action has the right to appeal the decision within <strong>14 days</strong>
+                        of receiving official notice. Appeals must be submitted in writing to the General Secretary, who shall convene
+                        an independent Appeals Panel appointed by the President. The decision of the Appeals Panel shall be final.
+                    </p>
+                </section>
+
+                <section id="faq">
+                    <h2>12. Frequently asked questions</h2>
+
+                    <div class="kpn-faq-item" id="faq-applies-to">
+                        <h3>Who does this Code of Conduct apply to?</h3>
+                        <p>Every registered member and appointed leader of the Kebbi Progressive Youth Network. By holding KPN membership or an ID tag, you expressly agree to abide by this Code of Conduct.</p>
+                    </div>
+
+                    <div class="kpn-faq-item" id="faq-prohibited">
+                        <h3>What conduct is prohibited?</h3>
+                        <p>The acts listed under <a href="#prohibited-conduct">Prohibited conduct</a>: the following acts constitute offenses against the Network and shall attract strict disciplinary action.</p>
+                    </div>
+
+                    <div class="kpn-faq-item" id="faq-zero-tolerance">
+                        <h3>Which offenses are zero tolerance?</h3>
+                        <ul>
+                            <li><strong>Financial Misappropriation:</strong> Embezzlement, fraud, or mismanagement of KPN funds or resources.</li>
+                            <li><strong>Hate Speech:</strong> The use of ethnic, religious, or gender-based slurs, or incitement of violence against any group.</li>
+                            <li><strong>Sabotage:</strong> Engaging in anti-network activities or collaborating with entities to undermine KPN objectives.</li>
+                        </ul>
+                    </div>
+
+                    <div class="kpn-faq-item" id="faq-reporting">
+                        <h3>How do I report a violation?</h3>
+                        <p>Any member can report a violation via the hierarchical reporting structure (Ward → LGA → Zone → State).</p>
+                    </div>
+
+                    <div class="kpn-faq-item" id="faq-after-report">
+                        <h3>What happens after a report is made?</h3>
+                        <ol>
+                            <li><strong>Investigation:</strong> The Disciplinary Committee shall investigate the allegations and grant the accused member a fair hearing.</li>
+                            <li><strong>Recommendation:</strong> The Committee submits its findings and recommended sanctions to the State Executive Council.</li>
+                            <li><strong>Ratification:</strong> The State Executive Council (or the President, in emergency cases) ratifies and enforces the sanction.</li>
+                        </ol>
+                    </div>
+
+                    <div class="kpn-faq-item" id="faq-fair-hearing">
+                        <h3>Will the accused member get a fair hearing?</h3>
+                        <p>Discipline within KPN is administered fairly, transparently, and without prejudice. The Disciplinary Committee shall investigate the allegations and grant the accused member a fair hearing.</p>
+                    </div>
+
+                    <div class="kpn-faq-item" id="faq-sanctions">
+                        <h3>What sanctions can be applied?</h3>
+                        <p>Depending on the gravity of the offense, the following sanctions may be applied:</p>
+                        <ul>
+                            <li><strong>Reprimand:</strong> A formal written warning (First offense / Minor infractions).</li>
+                            <li><strong>Suspension:</strong> Temporary removal from the Network or leadership position for a specified period not exceeding 6 months.</li>
+                            <li><strong>Fines / Restitution:</strong> Mandatory repayment of misappropriated funds or replacement of damaged property.</li>
+                            <li><strong>Removal from Office:</strong> Permanent stripping of leadership titles and responsibilities (Requires 2/3 majority vote of the State Executive Council).</li>
+                            <li><strong>Expulsion:</strong> Complete revocation of KPN membership (Reserved for zero-tolerance offenses and severe sabotage).</li>
+                        </ul>
+                    </div>
+
+                    <div class="kpn-faq-item" id="faq-appeals">
+                        <h3>How can I appeal a disciplinary decision?</h3>
+                        <p>
+                            Any member subjected to disciplinary action has the right to appeal the decision within <strong>14 days</strong>
+                            of receiving official notice. Appeals must be submitted in writing to the General Secretary, who shall convene
+                            an independent Appeals Panel appointed by the President. The decision of the Appeals Panel shall be final.
+                        </p>
+                    </div>
+                </section>
+
+                <div class="kpn-conduct-closing">
+                    <h3>One Voice, One Change.</h3>
+                    <p>
+                        By holding KPN membership or an ID tag, you expressly agree to abide by this Code of Conduct.
+                        Let us work together with integrity to build the Kebbi State of our dreams.
+                    </p>
+                </div>
+            </article>
+        </div>
+
+        <div class="kpn-conduct-related">
+            <h2>Related</h2>
+            <div class="kpn-conduct-related-links">
+                <a href="{% url 'core:about' %}">About KPN</a>
+                <a href="{% url 'core:leadership' %}">Leadership Directory</a>
+                <a href="{% url 'core:patrons' %}">Our Patrons</a>
+                <a href="{% url 'core:impact' %}">Impact &amp; Metrics</a>
+                <a href="{% url 'core:faq' %}">FAQ</a>
+                <a href="{% url 'core:contact' %}">Contact</a>
+                <a href="{% url 'staff:register' %}">Join KPN</a>
             </div>
-
-            <ul>
-                <li><strong>Insubordination:</strong> Flagrant disrespect or refusal to carry out lawful directives from the State Executive Council or immediate superiors.</li>
-                <li><strong>Defamation:</strong> Publishing or broadcasting false and malicious information against the Network, its leadership, or its members.</li>
-                <li><strong>Dereliction of Duty:</strong> Consistent failure by an appointed leader to perform their constitutional duties (e.g., failure to submit mandatory reports).</li>
-                <li><strong>Falsification:</strong> Forgery of KPN documents, ID tags, or misrepresentation of the Network to external bodies.</li>
-                <li><strong>Disruption:</strong> Deliberate disruption of KPN meetings, events, or official digital platforms.</li>
-            </ul>
-
-            <h2>Section 3: Disciplinary Procedures</h2>
-            <p>
-                Discipline within KPN is administered fairly, transparently, and without prejudice. The 
-                <strong>Director of Legal Affairs & Ethics</strong> oversees the Disciplinary Committee, which handles all infractions.
-            </p>
-            <ol>
-                <li><strong>Reporting:</strong> Any member can report a violation via the hierarchical reporting structure (Ward → LGA → Zone → State).</li>
-                <li><strong>Investigation:</strong> The Disciplinary Committee shall investigate the allegations and grant the accused member a fair hearing.</li>
-                <li><strong>Recommendation:</strong> The Committee submits its findings and recommended sanctions to the State Executive Council.</li>
-                <li><strong>Ratification:</strong> The State Executive Council (or the President, in emergency cases) ratifies and enforces the sanction.</li>
-            </ol>
-
-            <h2>Section 4: Disciplinary Sanctions</h2>
-            <p>Depending on the gravity of the offense, the following sanctions may be applied:</p>
-            <ul>
-                <li><strong>Reprimand:</strong> A formal written warning (First offense / Minor infractions).</li>
-                <li><strong>Suspension:</strong> Temporary removal from the Network or leadership position for a specified period not exceeding 6 months.</li>
-                <li><strong>Fines / Restitution:</strong> Mandatory repayment of misappropriated funds or replacement of damaged property.</li>
-                <li><strong>Removal from Office:</strong> Permanent stripping of leadership titles and responsibilities (Requires 2/3 majority vote of the State Executive Council).</li>
-                <li><strong>Expulsion:</strong> Complete revocation of KPN membership (Reserved for zero-tolerance offenses and severe sabotage).</li>
-            </ul>
-
-            <h2>Section 5: Appeals</h2>
-            <p>
-                Any member subjected to disciplinary action has the right to appeal the decision within <strong>14 days</strong> 
-                of receiving official notice. Appeals must be submitted in writing to the General Secretary, who shall convene 
-                an independent Appeals Panel appointed by the President. The decision of the Appeals Panel shall be final.
-            </p>
-            
-            <hr>
-            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 text-center">
-                <h3 class="text-kpn-blue dark:text-blue-400 mt-0">One Voice, One Change.</h3>
-                <p class="mb-0 text-gray-700 dark:text-gray-300">
-                    By holding KPN membership or an ID tag, you expressly agree to abide by this Code of Conduct. 
-                    Let us work together with integrity to build the Kebbi State of our dreams.
-                </p>
-            </div>
-            
         </div>
     </div>
 </section>

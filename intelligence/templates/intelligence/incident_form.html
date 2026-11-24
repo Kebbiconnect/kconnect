@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Record Incident · Security Desk · KPN Intelligence{% endblock %}
+{% block content %}
+<div class="kpn-page editorial-workspace intel">
+{% include 'intelligence/_intel_styles.html' %}
+
+<header class="intel-hero">
+<p class="intel-eyebrow">Security Desk · Restricted</p>
+<h1 class="kpn-h1">Record an Incident</h1>
+{% if unit %}<p class="intel-hero-sub">From unit: <strong>{{ unit.title }}</strong></p>{% endif %}
+</header>
+
+<div class="kpn-card kpn-card-body">
+<form method="post" class="editorial-form">
+{% csrf_token %}
+{{ form.as_p }}
+<p>Location is recorded at LGA level only. Do not enter precise locations of vulnerable people, troop positions, or rescue-operation details — communicate those offline and tick the marker instead.</p>
+<button class="kpn-btn kpn-btn-primary" type="submit">Record incident</button>
+</form>
+</div>
+
+<p><a href="{% url 'intelligence:security' %}">Security desk</a></p>
+</div>
+{% endblock %}

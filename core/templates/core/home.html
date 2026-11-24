@@ -2,24 +2,30 @@
 {% load static %}
 {% block title %}Home · Kebbi Progressive Youth Network{% endblock %}
 {% block content %}
-<section class="kpn-home-hero">
-    <div class="kpn-home-container kpn-home-hero-grid">
-        <div>
-            <p class="kpn-eyebrow">Kebbi State · Community · Youth</p>
-            <h1>Kebbi Progressive<br>Youth Network</h1>
-            <p class="kpn-home-motto">One Voice, One Change.</p>
-            <p class="kpn-home-introduction">Connecting communities, amplifying civic voices, sharing opportunities, and promoting positive development across Kebbi State.</p>
-            <div class="kpn-home-actions">
-                <a href="{% url 'staff:register' %}" class="kpn-btn kpn-btn-primary kpn-btn-lg">Join the Network <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
-                <a href="{% url 'campaigns:newsroom' %}" class="kpn-btn kpn-btn-outline kpn-btn-lg">Explore the Newsroom</a>
-            </div>
+<section class="kpn-home-hero" style="--hero:url('{% static 'img/home-hero.jpg' %}')">
+    <div class="kpn-home-container">
+        <p class="kpn-eyebrow">Kebbi State · Community · Youth</p>
+        <h1>Kebbi Progressive<br>Youth Network</h1>
+        <p class="kpn-home-motto">One Voice, One Change.</p>
+        <p class="kpn-home-introduction">Connecting communities, amplifying civic voices, sharing opportunities, and promoting positive development across Kebbi State.</p>
+        <div class="kpn-home-actions">
+            <a href="{% url 'staff:register' %}" class="kpn-btn kpn-btn-primary kpn-btn-lg">Join the Network <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            <a href="{% url 'campaigns:newsroom' %}" class="kpn-btn kpn-btn-outline kpn-btn-lg">Explore the Newsroom</a>
         </div>
-        <div class="kpn-home-emblem"><img src="{% static 'images/kpn-logo.png' %}" width="280" height="280" alt="KPN emblem: a torch supported by hands, with the One Voice, One Change motto"></div>
     </div>
 </section>
+
+<div class="kpn-home-container">
+    <div class="kpn-trust-strip">
+        <span><i class="fas fa-check-circle" aria-hidden="true"></i>Source-checked reporting</span>
+        <span><i class="fas fa-external-link-alt" aria-hidden="true"></i>Official opportunity links</span>
+        <span><i class="fas fa-balance-scale" aria-hidden="true"></i>Non-partisan civic work</span>
+    </div>
+</div>
+
 <section class="kpn-home-section">
     <div class="kpn-home-container">
-        <div class="kpn-home-section-heading"><div><p class="kpn-eyebrow">What we do</p><h2>Built around our communities</h2></div><a href="{% url 'core:about' %}" class="kpn-home-link">About KPN <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
+        <div class="kpn-home-section-heading"><div><p class="kpn-eyebrow">What we do</p><h2>Built around our communities</h2><p class="kpn-home-introduction" style="margin:8px 0 0">Five areas of work under one connected network.</p></div><a href="{% url 'core:about' %}" class="kpn-home-link">About KPN <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
         <div class="kpn-home-pillars">
             <div><i class="fas fa-newspaper" aria-hidden="true"></i><h3>Media &amp; information</h3><p>Responsible grassroots reporting and community voices.</p></div>
             <div><i class="fas fa-hands-helping" aria-hidden="true"></i><h3>Community development</h3><p>Welfare, local initiatives and practical support.</p></div>
@@ -29,34 +35,83 @@
         </div>
     </div>
 </section>
+
 <section class="kpn-home-section kpn-home-section-soft">
     <div class="kpn-home-container">
-        <div class="kpn-home-section-heading"><div><p class="kpn-eyebrow">From the newsroom</p><h2>Latest news</h2></div><a href="{% url 'campaigns:newsroom' %}" class="kpn-home-link">View all stories <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
-        <div class="kpn-home-story-grid">
-            {% for news in latest_news %}
-            <article class="kpn-home-story">
-                {% if news.featured_image %}<img src="{{ news.featured_image.url }}" alt="" class="kpn-home-story-image" loading="lazy">{% endif %}
-                <div class="kpn-home-story-body">
-                    <div class="kpn-home-story-meta"><span>{{ news.get_category_display }}</span>{% if news.published_at %}<time datetime="{{ news.published_at|date:'c' }}">{{ news.published_at|date:"j M Y" }}</time>{% endif %}</div>
-                    <h3><a href="{% url 'campaigns:article_detail' news.slug %}">{{ news.title }}</a></h3>
-                    <p>{% if news.subheadline %}{{ news.subheadline|truncatewords:22 }}{% else %}{{ news.content|striptags|truncatewords:22 }}{% endif %}</p>
-                    <a href="{% url 'campaigns:article_detail' news.slug %}" class="kpn-home-link">Read story <span class="sr-only">: {{ news.title }}</span><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+        <div class="kpn-home-section-heading"><div><p class="kpn-eyebrow">From the newsroom</p><h2>Latest news</h2><p class="kpn-home-introduction" style="margin:8px 0 0">Verified reports from across Kebbi State.</p></div><a href="{% url 'campaigns:newsroom' %}" class="kpn-home-link">View all stories <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
+        {% if latest_news %}
+        <div class="kpn-feature-grid">
+            {% with lead=latest_news.0 %}
+            <article class="kpn-lead-story">
+                {% if lead.featured_image %}<img src="{{ lead.featured_image.url }}" alt="">{% endif %}
+                <div class="overlay">
+                    <span class="kpn-tag gold">{{ lead.get_category_display }}</span>
+                    <h3><a href="{% url 'campaigns:article_detail' lead.slug %}">{{ lead.title }}</a></h3>
+                    <p>{% if lead.location %}{{ lead.location }} · {% endif %}{% if lead.published_at %}{{ lead.published_at|date:"j M Y" }}{% endif %}</p>
                 </div>
             </article>
-            {% empty %}<div class="kpn-home-empty"><h3>No stories published yet</h3><p>Published KPN updates will appear here.</p></div>{% endfor %}
+            {% endwith %}
+            <div class="kpn-side-stories">
+                {% for news in latest_news|slice:"1:3" %}
+                <article class="kpn-mini-story">
+                    {% if news.featured_image %}<img src="{{ news.featured_image.url }}" alt="">{% endif %}
+                    <div>
+                        <span class="kpn-tag soft">{{ news.get_category_display }}</span>
+                        <h3><a href="{% url 'campaigns:article_detail' news.slug %}">{{ news.title }}</a></h3>
+                        {% if news.published_at %}<small>{{ news.published_at|date:"j M Y" }}</small>{% endif %}
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="kpn-news-rows">
+            {% for news in latest_news|slice:"3:6" %}
+            <article class="kpn-news-row">
+                {% if news.featured_image %}<img src="{{ news.featured_image.url }}" alt="">{% endif %}
+                <div>
+                    <span class="kpn-tag soft">{{ news.get_category_display }}</span>
+                    <h3><a href="{% url 'campaigns:article_detail' news.slug %}">{{ news.title }}</a></h3>
+                    <small>{% if news.location %}{{ news.location }} · {% endif %}{% if news.published_at %}{{ news.published_at|date:"j M Y" }}{% endif %}</small>
+                </div>
+                <a class="read" href="{% url 'campaigns:article_detail' news.slug %}">Read <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="kpn-home-empty"><h3>No stories published yet</h3><p>Published KPN updates will appear here.</p></div>
+        {% endif %}
+    </div>
+</section>
+
+<section class="kpn-home-section">
+    <div class="kpn-home-container">
+        <div class="kpn-home-section-heading"><div><p class="kpn-eyebrow">Inside the newsroom</p><h2>More than headlines</h2><p class="kpn-home-introduction" style="margin:8px 0 0">Tools that keep public information accountable.</p></div></div>
+        <div class="kpn-tool-grid">
+            <a href="{% url 'promises:list' %}"><b>Promise Tracker</b><span>Follow public commitments and their progress.</span></a>
+            <a href="{% url 'archive:home' %}"><b>Story Archive</b><span>Search past reports and records.</span></a>
+            <a href="{% url 'signals:list' %}"><b>Future Signal</b><span>Early indicators and emerging issues.</span></a>
+            <a href="{% url 'impact_files:list' %}"><b>Human Impact Files</b><span>Stories of how decisions affect people.</span></a>
         </div>
     </div>
 </section>
+
 <section class="kpn-home-section">
     <div class="kpn-home-container">
-        <div class="kpn-home-section-heading"><div><p class="kpn-eyebrow">Take your next step</p><h2>Current opportunities</h2></div><a href="{% url 'core:opportunities' %}" class="kpn-home-link">Explore opportunities <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
+        <div class="kpn-home-section-heading"><div><p class="kpn-eyebrow">Take your next step</p><h2>Current opportunities</h2><p class="kpn-home-introduction" style="margin:8px 0 0">Verified listings with deadlines clearly shown.</p></div><a href="{% url 'core:opportunities' %}" class="kpn-home-link">Explore opportunities <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
         <div class="kpn-home-story-grid">
             {% for opportunity in latest_opportunities %}
-            <article class="kpn-home-story"><div class="kpn-home-story-body"><p class="kpn-eyebrow">{{ opportunity.get_category_display }}</p><h3>{{ opportunity.title }}</h3><p>{{ opportunity.provider }}</p><p class="kpn-home-story-meta">{% if opportunity.deadline %}Deadline: {{ opportunity.deadline|date:"j M Y" }}{% else %}No deadline listed{% endif %}</p><a href="{% url 'core:opportunities' %}" class="kpn-home-link">View in opportunities <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div></article>
+            <article class="kpn-opp-card">
+                <div class="kpn-opp-top"><span class="kpn-tag soft">{{ opportunity.get_category_display }}</span><span class="kpn-status {% if opportunity.status == 'CLOSING_SOON' %}soon{% else %}open{% endif %}">{{ opportunity.get_status_display }}</span></div>
+                <h3>{{ opportunity.title }}</h3>
+                <p>{{ opportunity.provider }}</p>
+                <p>{% if opportunity.deadline %}Deadline: {{ opportunity.deadline|date:"j M Y" }}{% else %}No deadline listed{% endif %}</p>
+                <a href="{% url 'core:opportunity_detail' opportunity.slug %}" class="kpn-home-link">View opportunity <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            </article>
             {% empty %}<div class="kpn-home-empty"><h3>No current opportunities listed</h3><p>Visit the opportunities hub for published listings and updates.</p></div>{% endfor %}
         </div>
     </div>
 </section>
+
 {% if featured_campaigns %}
 <section class="kpn-home-section kpn-home-section-soft">
     <div class="kpn-home-container">
@@ -69,4 +124,17 @@
     </div>
 </section>
 {% endif %}
+
+<section class="kpn-home-section">
+    <div class="kpn-home-container">
+        <div class="kpn-lead-story" style="min-height:220px">
+            <div class="overlay">
+                <p class="kpn-eyebrow" style="color:#ffe9ad">One Voice, One Change</p>
+                <h3>Be part of the movement.</h3>
+                <p style="margin-bottom:18px">KPN is a youth movement committed to promoting unity, civic participation, and development throughout Kebbi State.</p>
+                <a href="{% url 'staff:register' %}" class="kpn-btn kpn-btn-gold kpn-btn-lg">Join the Network <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}

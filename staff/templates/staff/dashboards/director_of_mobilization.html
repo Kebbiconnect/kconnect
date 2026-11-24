@@ -1,28 +1,43 @@
 {% extends 'base.html' %}
 {% load dashboard_actions %}
-{% block title %}Director of Mobilization Dashboard - KPN{% endblock %}
+{% block title %}Director of Community Engagement Dashboard - KPN{% endblock %}
 {% block content %}
 <div class="kpn-page">
-    {% include 'staff/dashboards/includes/_role_header.html' with title="Director of Mobilization Dashboard" icon_class="fas fa-users-cog" welcome_messages="Driving membership growth across Kebbi State.|Mobilizing communities for progressive change.|One mission: a stronger KPN network." %}
+    {% include 'staff/dashboards/includes/_role_header.html' with title="Director of Community Engagement Dashboard" icon_class="fas fa-users-cog" welcome_messages="Driving membership growth across Kebbi State.|Mobilizing communities for progressive change.|One mission: a stronger KPN network." %}
     {% include 'staff/dashboards/includes/_profile_section.html' %}
 
     <div class="mb-8">
         <h2 class="kpn-section-label mt-6">
-    <i class="fas fa-chart-pie mr-2 text-kpn-blue"></i> My Statistics
+    <i class="fas fa-chart-pie mr-2 text-kpn-green"></i> My Statistics
 </h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="kpn-card">
-                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Total Members</div>
-                <div class="text-3xl font-bold text-kpn-green">{{ total_members|default:0 }}</div>
-            </div>
-            <div class="kpn-card">
-                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">New This Month</div>
-                <div class="text-3xl font-bold text-kpn-blue">{{ new_members_this_month|default:0 }}</div>
-            </div>
-            <div class="kpn-card">
-                <div class="text-sm text-gray-500 font-semibold uppercase tracking-wider mb-1">Pending Approval</div>
-                <div class="text-3xl font-bold text-yellow-600">{{ pending_members|default:0 }}</div>
-            </div>
+            <div class="kpn-stat-card">
+    <div class="kpn-stat-icon tone-brand">
+        <i class="fas fa-users"></i>
+    </div>
+    <div>
+        <p class="kpn-stat-value">{{ total_members|default:0 }}</p>
+        <p class="kpn-stat-label">Total Members</p>
+    </div>
+</div>
+            <div class="kpn-stat-card">
+    <div class="kpn-stat-icon tone-brand">
+        <i class="fas fa-user-plus"></i>
+    </div>
+    <div>
+        <p class="kpn-stat-value">{{ new_members_this_month|default:0 }}</p>
+        <p class="kpn-stat-label">New This Month</p>
+    </div>
+</div>
+            <div class="kpn-stat-card">
+    <div class="kpn-stat-icon tone-gold">
+        <i class="fas fa-user-clock"></i>
+    </div>
+    <div>
+        <p class="kpn-stat-value">{{ pending_members|default:0 }}</p>
+        <p class="kpn-stat-label">Pending Approval</p>
+    </div>
+</div>
         </div>
     </div>
 
@@ -33,13 +48,13 @@
         </div>
         <div class="kpn-card">
             <h2 class="kpn-section-label mt-6">
-    <i class="fas fa-clipboard-list mr-2 text-purple-500"></i> My Responsibilities
+    <i class="fas fa-clipboard-list mr-2 text-kpn-green"></i> My Responsibilities
 </h2>
             <ul class="space-y-4">
-                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">1</div><span class="text-gray-700 dark:text-gray-300"><strong>Recruitment Strategy:</strong> Develop and execute membership recruitment strategies across all LGAs and wards.</span></li>
-                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">2</div><span class="text-gray-700 dark:text-gray-300"><strong>Network Expansion:</strong> Set and monitor monthly membership growth targets at zonal and LGA levels.</span></li>
-                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">3</div><span class="text-gray-700 dark:text-gray-300"><strong>Contact Management:</strong> Maintain and update mobilization contact lists for outreach coordination.</span></li>
-                <li class="flex items-start"><div class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mt-0.5 mr-3">4</div><span class="text-gray-700 dark:text-gray-300"><strong>Team Leadership:</strong> Supervise the Assistant Director of Mobilization and zone-level mobilization officers.</span></li>
+                <li class="flex items-start"><div class="kpn-step-num flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3">1</div><span class="text-gray-700 dark:text-gray-300"><strong>Recruitment Strategy:</strong> Develop and execute membership recruitment strategies across all LGAs and wards.</span></li>
+                <li class="flex items-start"><div class="kpn-step-num flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3">2</div><span class="text-gray-700 dark:text-gray-300"><strong>Network Expansion:</strong> Set and monitor monthly membership growth targets at zonal and LGA levels.</span></li>
+                <li class="flex items-start"><div class="kpn-step-num flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3">3</div><span class="text-gray-700 dark:text-gray-300"><strong>Contact Management:</strong> Maintain and update mobilization contact lists for outreach coordination.</span></li>
+                <li class="flex items-start"><div class="kpn-step-num flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3">4</div><span class="text-gray-700 dark:text-gray-300"><strong>Team Leadership:</strong> Supervise the Assistant Director of Community Engagement and zone-level mobilization officers.</span></li>
             </ul>
         </div>
     </div>

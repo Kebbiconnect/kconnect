@@ -6,6 +6,51 @@ from .models import Donation, Expense, FinancialReport
 from .forms import DonationForm, ExpenseForm, FinancialReportForm
 
 
+def _monthly_amount_bars(qs, months=6):
+    """Bar rows of summed amounts per month, oldest to newest.
+
+    Consistency Rounds C+D: computed only over the queryset the
+    calling view already exposes to the role.
+    """
+    import calendar
+
+    from django.db.models import Sum
+    from django.utils import timezone
+
+    from core.dashboard_charts import bar_rows
+
+    now = timezone.now()
+    pairs = []
+    for back in range(months - 1, -1, -1):
+        month = now.month - back
+        year = now.year
+        while month <= 0:
+            month += 12
+            year -= 1
+        total = qs.filter(
+            created_at__year=year, created_at__month=month,
+        ).aggregate(t=Sum('amount'))['t'] or 0
+        pairs.append((f'{calendar.month_abbr[month]} {year}', int(total)))
+    return bar_rows(pairs)
+
+
+def _donation_status_bars(statuses):
+    """Counts by status for exactly ``statuses`` — a status outside the
+    calling page's own listing never appears, not even at zero."""
+    from django.db.models import Count
+
+    from core.dashboard_charts import bar_rows
+
+    counts = dict(
+        Donation.objects.filter(status__in=statuses)
+        .values_list('status')
+        .annotate(n=Count('id'))
+    )
+    labels = dict(Donation.STATUS_CHOICES)
+    return bar_rows([(labels[value], counts.get(value, 0))
+                     for value in statuses])
+
+
 @specific_role_required('Treasurer')
 def treasurer_donations(request):
     """Treasurer views unverified donations and can verify them"""
@@ -15,8 +60,13 @@ def treasurer_donations(request):
     context = {
         'unverified_donations': unverified,
         'verified_donations': verified,
+        # Rounds C+D charts over the full donation register the
+        # Treasurer already works with on this page.
+        'donation_status_bars': _donation_status_bars(
+            ['UNVERIFIED', 'VERIFIED', 'RECORDED']),
+        'donation_month_bars': _monthly_amount_bars(Donation.objects.all()),
     }
-    
+
     return render(request, 'donations/treasurer_donations.html', context)
 
 
@@ -69,8 +119,14 @@ def financial_secretary_donations(request):
     context = {
         'verified_donations': verified,
         'recorded_donations': recorded,
+        # Rounds C+D charts restricted to the two statuses this page
+        # already lists for the Financial Secretary.
+        'donation_status_bars': _donation_status_bars(
+            ['VERIFIED', 'RECORDED']),
+        'donation_month_bars': _monthly_amount_bars(
+            Donation.objects.filter(status__in=['VERIFIED', 'RECORDED'])),
     }
-    
+
     return render(request, 'donations/financial_secretary_donations.html', context)
 
 
@@ -136,11 +192,17 @@ def add_expense(request):
 def financial_reports(request):
     """View all financial reports"""
     reports = FinancialReport.objects.all().order_by('-created_at')
-    
+
     context = {
         'reports': reports,
+        # Rounds C+D charts: recorded income and expenses by month —
+        # the same totals the create-report flow already sums for
+        # this role.
+        'income_month_bars': _monthly_amount_bars(
+            Donation.objects.filter(status='RECORDED')),
+        'expense_month_bars': _monthly_amount_bars(Expense.objects.all()),
     }
-    
+
     return render(request, 'donations/financial_reports.html', context)
 
 

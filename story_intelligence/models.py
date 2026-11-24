@@ -63,6 +63,50 @@ class StoryProfile(models.Model):
         ('ESTABLISHED', 'Established — supported by evidence from several sources'),
     ]
 
+    # Page-by-Page Upgrade Priority 3 (brief §F): the eight Future
+    # Signal themes. A signal carries at most one theme, set by an
+    # editor; blank means the analysis has not been themed yet — the
+    # public hub then lists it under "All signals" only. Themes are a
+    # browsing label, never an editorial claim.
+    SIGNAL_CATEGORY_CHOICES = [
+        ('EMERGING_ISSUES', 'Emerging Issues'),
+        ('ECONOMIC_OUTLOOK', 'Economic Outlook'),
+        ('AGRICULTURE_FOOD', 'Agriculture and Food Security'),
+        ('EDUCATION_YOUTH', 'Education and Youth Trends'),
+        ('INFRASTRUCTURE', 'Public Infrastructure'),
+        ('HEALTH_SOCIAL', 'Health and Social Development'),
+        ('SECURITY_RESILIENCE', 'Security and Community Resilience'),
+        ('POLICY_GOVERNANCE', 'Policy and Governance Outlook'),
+    ]
+
+    # Page-by-Page Upgrade Priority 3 (brief §C, decision D-10): the
+    # eight Human Impact themes. Editors may label a story's impact
+    # theme independently of its news category via `impact_category`;
+    # where they have not, the public hub falls back to the
+    # presentation mapping below from the article's news category.
+    # News categories with no honest impact reading are absent from
+    # the mapping — those stories browse under "All stories" only.
+    IMPACT_CATEGORY_CHOICES = [
+        ('PEOPLE', 'People and Personal Stories'),
+        ('COMMUNITY_TRANSFORMATION', 'Community Transformation'),
+        ('EDUCATION_OPPORTUNITY', 'Education and Opportunity'),
+        ('HEALTH_WELFARE', 'Health and Welfare'),
+        ('WOMEN_YOUTH', 'Women and Youth'),
+        ('RURAL', 'Rural Communities'),
+        ('RESILIENCE', 'Resilience and Recovery'),
+        ('UNSUNG', 'Unsung Community Contributors'),
+    ]
+    IMPACT_CATEGORY_BY_NEWS_CATEGORY = {
+        'HUMAN_INTEREST': 'PEOPLE',
+        'COMMUNITY': 'COMMUNITY_TRANSFORMATION',
+        'EDUCATION': 'EDUCATION_OPPORTUNITY',
+        'HEALTH': 'HEALTH_WELFARE',
+        'WOMEN': 'WOMEN_YOUTH',
+        'YOUTH': 'WOMEN_YOUTH',
+        'AGRICULTURE': 'RURAL',
+        'EMERGENCY': 'RESILIENCE',
+    }
+
     article = models.OneToOneField(
         'campaigns.Campaign', on_delete=models.PROTECT,
         related_name='story_profile')
@@ -87,6 +131,10 @@ class StoryProfile(models.Model):
     signal_change_condition = models.TextField(
         blank=True,
         help_text='Future Signal: what would change this assessment.')
+    signal_category = models.CharField(
+        max_length=25, choices=SIGNAL_CATEGORY_CHOICES, blank=True, default='',
+        help_text='Future Signal: the theme this analysis belongs to '
+                  '(brief §F). Leave blank until an editor themes it.')
     related_stories = models.ManyToManyField(
         'campaigns.Campaign', blank=True, related_name='analysed_by_signals',
         help_text='Published stories this Future Signal analysis is based on.')
@@ -96,6 +144,16 @@ class StoryProfile(models.Model):
         help_text='Human Impact: tick when real people in this story can '
                   'be identified. While ticked, the story cannot be '
                   'published until a consent record is on file.')
+    impact_category = models.CharField(
+        max_length=25, choices=IMPACT_CATEGORY_CHOICES, blank=True, default='',
+        help_text='Human Impact: the impact theme of this story (brief '
+                  '§C). Leave blank to let the public hub present it '
+                  'under the theme mapped from its news category.')
+    who_contributed = models.TextField(
+        blank=True,
+        help_text='Human Impact: who contributed to the change this '
+                  'story documents — the people, community groups or '
+                  'institutions whose action made the difference.')
     impact_story = models.ForeignKey(
         'core.ImpactStory', on_delete=models.SET_NULL,
         null=True, blank=True, related_name='story_profiles',
@@ -107,7 +165,24 @@ class StoryProfile(models.Model):
         return any([self.why_it_matters.strip(), self.who_is_affected.strip(),
                     self.what_is_unknown.strip(), self.what_to_watch.strip(),
                     self.signal_observation.strip(),
-                    self.signal_change_condition.strip()])
+                    self.signal_change_condition.strip(),
+                    self.who_contributed.strip()])
+
+    @property
+    def effective_impact_category(self):
+        """The Human Impact theme this story browses under (D-10):
+        the editor's explicit `impact_category` when set, otherwise
+        the presentation mapping from the article's news category,
+        otherwise '' (the story browses under "All stories" only)."""
+        if self.impact_category:
+            return self.impact_category
+        return self.IMPACT_CATEGORY_BY_NEWS_CATEGORY.get(
+            self.article.category, '')
+
+    @property
+    def impact_category_label(self):
+        return dict(self.IMPACT_CATEGORY_CHOICES).get(
+            self.effective_impact_category, '')
 
     def signal_has_evidence(self):
         """A Future Signal must rest on evidence: linked stories it
@@ -450,6 +525,39 @@ class Promise(models.Model):
         'DELAYED': 'Delayed — the promised date has passed or work is behind schedule',
         'DISPUTED': 'Disputed — sources disagree about this promise',
     }
+    # Sector vocabulary for the public tracker (Promise Tracker redesign,
+    # 2026-11-23). Deliberately aligned with campaigns.Campaign
+    # CATEGORY_CHOICES so the tracker and the newsroom speak the same
+    # language. Blank means "not classified yet" — existing records are
+    # never forced into a sector.
+    SECTOR_CHOICES = [
+        ('INFRASTRUCTURE', 'Infrastructure'),
+        ('EDUCATION', 'Education'),
+        ('HEALTH', 'Health'),
+        ('AGRICULTURE', 'Agriculture'),
+        ('WATER', 'Water & Sanitation'),
+        ('SECURITY', 'Security'),
+        ('ECONOMY', 'Economy & Markets'),
+        ('SOCIAL_WELFARE', 'Social Welfare'),
+        ('ENVIRONMENT', 'Environment'),
+        ('GOVERNANCE', 'Governance'),
+        ('YOUTH', 'Youth & Sports'),
+        ('OTHER', 'Other'),
+    ]
+    SECTOR_ICONS = {
+        'INFRASTRUCTURE': 'fa-road',
+        'EDUCATION': 'fa-graduation-cap',
+        'HEALTH': 'fa-heart-pulse',
+        'AGRICULTURE': 'fa-seedling',
+        'WATER': 'fa-droplet',
+        'SECURITY': 'fa-shield-halved',
+        'ECONOMY': 'fa-chart-line',
+        'SOCIAL_WELFARE': 'fa-hands-holding-heart',
+        'ENVIRONMENT': 'fa-leaf',
+        'GOVERNANCE': 'fa-landmark',
+        'YOUTH': 'fa-users',
+        'OTHER': 'fa-clipboard-list',
+    }
 
     institution = models.ForeignKey(
         Institution, on_delete=models.PROTECT, related_name='promises')
@@ -466,6 +574,16 @@ class Promise(models.Model):
         help_text='The date the institution promised completion by. '
                   'Leave blank if no date was announced.')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ANNOUNCED')
+    sector = models.CharField(
+        max_length=20, choices=SECTOR_CHOICES, blank=True, default='',
+        help_text='Thematic sector for the public tracker. Leave blank '
+                  'until the promise can be classified honestly.')
+    image = models.ImageField(
+        upload_to='promises/', blank=True, null=True,
+        help_text='Optional image shown for this promise on the public '
+                  'tracker. If left blank, the tracker falls back to '
+                  'the featured image of a linked published story, '
+                  'then to a sector icon.')
     zone = models.ForeignKey(
         'leadership.Zone', on_delete=models.SET_NULL,
         null=True, blank=True, related_name='promises')
@@ -497,6 +615,44 @@ class Promise(models.Model):
 
     def status_label(self):
         return self.STATUS_LABELS.get(self.status, self.status)
+
+    @property
+    def public_code(self):
+        """Display-only public reference, e.g. KPN-PT-0007.
+
+        Derived from the primary key; no separate ID scheme is stored.
+        """
+        return f'KPN-PT-{self.pk:04d}' if self.pk else 'KPN-PT-····'
+
+    @property
+    def sector_icon(self):
+        return self.SECTOR_ICONS.get(self.sector, 'fa-handshake')
+
+    @property
+    def display_image(self):
+        """The image the public tracker shows for this promise: the
+        promise's own uploaded image first; otherwise the featured
+        image of the first linked PUBLISHED story that carries one
+        (never a fabricated photo); otherwise None, and the templates
+        render the sector-icon tile instead."""
+        if self.image:
+            return self.image
+        for story in self.stories.all():
+            if story.status == 'PUBLISHED' and story.featured_image:
+                return story.featured_image
+        return None
+
+    def is_delayed(self, today=None):
+        """Honest delayed test for the public tracker: the promise is
+        explicitly marked DELAYED, or its institution-announced deadline
+        has passed and it has not been verified complete."""
+        from django.utils import timezone
+        today = today or timezone.localdate()
+        if self.status == 'COMPLETED_VERIFIED':
+            return False
+        if self.status == 'DELAYED':
+            return True
+        return bool(self.deadline and self.deadline < today)
 
     def location_label(self):
         parts = [obj.name for obj in (self.ward, self.lga, self.zone) if obj]

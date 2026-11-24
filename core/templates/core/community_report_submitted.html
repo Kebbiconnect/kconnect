@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Report received - Community Hub · KPN{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-10">
+    <div class="kpn-home-container" style="max-width:760px">
+        {% include 'includes/breadcrumbs.html' %}
+
+        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-7 md:p-10 text-center">
+            <span class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-700 mb-4"><i class="fas fa-check text-2xl" aria-hidden="true"></i></span>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3">Thank you — your report has been received</h1>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">Your report is now with the KPN team for review. It has <b>not</b> been published. Reviewers check reports before anything appears publicly; documented concerns that are published appear on Community Voice, without your name or phone number.</p>
+            <div class="flex flex-wrap justify-center gap-3">
+                <a href="{% url 'core:community_voice' %}" class="kpn-btn kpn-btn-primary">Read Community Voice</a>
+                <a href="{% url 'core:community' %}" class="kpn-btn kpn-btn-secondary">Back to the Community Hub</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

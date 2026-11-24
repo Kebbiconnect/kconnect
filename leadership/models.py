@@ -53,6 +53,14 @@ class RoleDefinition(models.Model):
     class Meta:
         ordering = ['tier', 'seat_number']
         unique_together = ['tier', 'title']
-    
+
+    @property
+    def canonical_title(self):
+        """Display title: legacy stored titles resolve to the canonical
+        constitutional name (see leadership.roles.ROLE_ALIASES). The
+        stored value itself is never rewritten."""
+        from .roles import canonical_role_title
+        return canonical_role_title(self.title)
+
     def __str__(self):
-        return f"{self.title} ({self.get_tier_display()})"
+        return f"{self.canonical_title} ({self.get_tier_display()})"

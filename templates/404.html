@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Page Not Found - KPN{% endblock %}
+
+{% block content %}
+<div class="kpn-error-wrap">
+    <div class="kpn-error-card">
+        <div class="mark">
+            <i class="fas fa-compass"></i>
+        </div>
+        <p class="code">404</p>
+        <h1>Page Not Found</h1>
+        <p>
+            The page you are looking for could not be found. It may have been
+            moved, or the address may be incorrect.
+        </p>
+        <div class="actions">
+            <a href="{% url 'core:home' %}" class="kpn-btn kpn-btn-primary">
+                <i class="fas fa-home mr-2"></i> Home
+            </a>
+            <a href="{% url 'core:contact' %}" class="kpn-btn kpn-btn-secondary">
+                <i class="fas fa-envelope mr-2"></i> Contact Us
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
