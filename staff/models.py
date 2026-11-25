@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 from leadership.models import Zone, LGA, Ward, RoleDefinition
 
 class User(AbstractUser):
@@ -540,3 +541,71 @@ class Announcement(models.Model):
         elif self.scope == 'WARD' and self.target_ward:
             return self.target_ward.name
         return 'Unknown'
+
+
+class AnnouncementRead(models.Model):
+    """Part B (app screen 81): one user's read receipt for one
+    announcement. Minimal, additive read tracking for announcements
+    only — the core Notification model is untouched. A row exists
+    only once the user has marked the announcement read."""
+    announcement = models.ForeignKey(
+        Announcement, on_delete=models.CASCADE, related_name='read_receipts')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='announcement_reads')
+    read_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-read_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['announcement', 'user'],
+                name='announcement_read_unique_user'),
+        ]
+
+    def __str__(self):
+        return f'{self.user} read {self.announcement}'
+
+
+class IdTagGeneration(models.Model):
+    """One row per successful ID tag generation. Used to enforce the
+    limit of one generated ID tag per account per calendar month
+    (Africa/Lagos). Rows are only created on the success path of the
+    generator, never for refused attempts."""
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='id_tag_generations')
+    generated_at = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        ordering = ['-generated_at']
+
+    def __str__(self):
+        return f'ID tag for {self.user} at {self.generated_at}'
+
+
+class LegalOpinionDraft(models.Model):
+    """Part B (app screen 118): a legal adviser's unfinished legal
+    opinion on one disciplinary case, saved server-side so it can be
+    resumed. One draft per (author, case). Submitting the final
+    opinion through the existing legal-opinion endpoint deletes the
+    author's draft for that case (it is superseded by the final
+    opinion recorded on the DisciplinaryAction itself)."""
+    action = models.ForeignKey(
+        DisciplinaryAction, on_delete=models.CASCADE,
+        related_name='legal_opinion_drafts')
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='legal_opinion_drafts')
+    legal_opinion = models.TextField(blank=True)
+    legal_approved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['action', 'author'],
+                name='legal_opinion_draft_unique_author_case'),
+        ]
+
+    def __str__(self):
+        return f'Draft legal opinion by {self.author} on {self.action}'

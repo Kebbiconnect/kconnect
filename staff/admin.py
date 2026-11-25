@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils import timezone
-from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram, Announcement
+from .models import User, DisciplinaryAction, WomensProgram, YouthProgram, WelfareProgram, Announcement, IdTagGeneration
 
 def approve_members(modeladmin, request, queryset):
     """Action to approve selected members"""
@@ -99,3 +99,20 @@ class AnnouncementAdmin(admin.ModelAdmin):
             obj.created_by = request.user
         obj.full_clean()
         super().save_model(request, obj, form, change)
+
+
+@admin.register(IdTagGeneration)
+class IdTagGenerationAdmin(admin.ModelAdmin):
+    list_display = ['user', 'generated_at']
+    list_filter = ['generated_at']
+    search_fields = ['user__username']
+    readonly_fields = ['user', 'generated_at']
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

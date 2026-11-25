@@ -3171,6 +3171,12 @@ def generate_id_tag(request):
         messages.error(request, 'General members are not authorized to generate ID cards.')
         return redirect('staff:dashboard')
 
+    # One ID tag per account per calendar month (Africa/Lagos)
+    from staff.id_tags import id_tag_limit_reached, limit_message
+    if id_tag_limit_reached(user):
+        messages.error(request, limit_message())
+        return redirect('staff:dashboard')
+
     # Load templates
     front_path = os.path.join(settings.STATIC_ROOT, 'images', 'id_card_front.png')
     back_path = os.path.join(settings.STATIC_ROOT, 'images', 'id_card_back.png')
@@ -3396,10 +3402,14 @@ def generate_id_tag(request):
     uid = str(uuid.uuid4())
     temp_front = os.path.join(settings.BASE_DIR, f'temp_id_front_{uid}.png')
     temp_back = os.path.join(settings.BASE_DIR, f'temp_id_back_{uid}.png')
-    
-    # Save with specific 300 DPI metadata
-    front_card.save(temp_front, format='PNG', dpi=(300, 300), quality=100)
-    back_card.save(temp_back, format='PNG', dpi=(300, 300), quality=100)
+
+    # Save as full-quality PNG with specific 300 DPI metadata. (Round
+    # 4 briefly embedded the cards as JPEG q85 to stay under a 400 KB
+    # size cap; the owner lifted that cap on 2026-11-25 — the app
+    # cache lives on the phone, not in any database — so the original
+    # PNG embedding is restored.)
+    front_card.save(temp_front, format='PNG', dpi=(300, 300))
+    back_card.save(temp_back, format='PNG', dpi=(300, 300))
     
     # Page 1 (Front)
     c.drawImage(temp_front, 0, 0, width=page_width, height=page_height, preserveAspectRatio=True)
@@ -3417,7 +3427,10 @@ def generate_id_tag(request):
     pdf_buffer.seek(0)
     response = HttpResponse(pdf_buffer, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{user.username}_id_card.pdf"'
-    
+
+    from staff.id_tags import record_generation
+    record_generation(user)
+
     return response
 
 # ──────────────────────────────────────────────────────────────────────────────

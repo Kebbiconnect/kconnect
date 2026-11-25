@@ -446,6 +446,14 @@ class MemberListView(generics.ListAPIView):
                 except (ValueError,TypeError):return queryset.none()
         tier=self.request.query_params.get('tier')
         if tier:queryset=queryset.filter(role=tier)
+        # Round 2 (screen 114): wing filter, server-side. The web's
+        # women's wing is its female members (gender='F', as the staff
+        # dashboards count them); 'men' is the symmetric filter.
+        wing=self.request.query_params.get('wing')
+        if wing:
+            wing_gender={'women':'F','men':'M'}.get(wing.lower())
+            if wing_gender is None:return queryset.none()
+            queryset=queryset.filter(gender=wing_gender)
         query=self.request.query_params.get('search','').strip()
         if query:
             from django.db.models import Q
@@ -470,7 +478,12 @@ class MemberDecisionView(APIView):
     permission_classes = [permissions.IsAuthenticated, IsVerifiedMember, capability_permission('REVIEW_APPLICANTS')]
     def post(self,request,pk):
         from staff.services.member_admin import decide_application,MemberDecisionError
-        try: member=decide_application(request.user,pk,serializers.ChoiceField(choices=['approve','reject']).run_validation(request.data.get('decision')),serializers.CharField(allow_blank=True,max_length=2000).run_validation(request.data.get('reason','')))
+        # Round 2 (screen 70): an optional decision note is accepted
+        # as `note` (the app's field name) as well as the long-standing
+        # `reason`; both go to the same decide_application service the
+        # web member decision flow uses, which stores it as the
+        # applicant's archive_reason on rejection.
+        try: member=decide_application(request.user,pk,serializers.ChoiceField(choices=['approve','reject']).run_validation(request.data.get('decision')),serializers.CharField(allow_blank=True,max_length=2000).run_validation(request.data.get('note',request.data.get('reason',''))))
         except User.DoesNotExist: raise NotFound('Applicant not found.')
         except MemberDecisionError as exc:
             from rest_framework.exceptions import PermissionDenied,ValidationError
@@ -493,7 +506,20 @@ class ReportListCreateView(generics.ListCreateAPIView):
         from rest_framework.exceptions import PermissionDenied,ValidationError
         if 'SUBMIT_REPORTS' not in capabilities_for(request.user): raise PermissionDenied('Your role cannot submit hierarchical reports.')
         serializer=ReportCreateSerializer(data=request.data); serializer.is_valid(raise_exception=True)
-        try: report=create_report(request.user,**serializer.validated_data)
+        data=dict(serializer.validated_data)
+        # Round 2 (screen 73): report_type / submitted_to are derived
+        # by the workflow from the submitter. When the client sends
+        # them they must match the derived values exactly.
+        sent_type=data.pop('report_type',None); sent_recipient=data.pop('submitted_to',None)
+        if sent_type is not None or sent_recipient is not None:
+            from core.services.reports import recipient_for,report_type_for
+            if sent_type is not None and sent_type!=report_type_for(request.user):
+                raise ValidationError({'report_type':['This report type does not match your reporting line.']})
+            if sent_recipient is not None:
+                derived=recipient_for(request.user)
+                if derived is None or sent_recipient!=derived.pk:
+                    raise ValidationError({'submitted_to':['This recipient does not match your reporting line.']})
+        try: report=create_report(request.user,**data)
         except ReportWorkflowError as exc:
             if exc.code=='permission_denied': raise PermissionDenied(exc.message,code=exc.code)
             raise ValidationError({exc.field or 'non_field_errors':[exc.message]})

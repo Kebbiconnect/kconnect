@@ -11,6 +11,7 @@ from . import workflow_views
 from . import mobile_views
 from . import member_mobile_views
 from . import mobilization_views
+from . import staff_views
 
 from . import schema_mobile  # Documentation-only API annotations.
 
@@ -113,12 +114,15 @@ urlpatterns = [
     path('announcements/', workflow_views.AnnouncementListCreateView.as_view(), name='announcement-list'),
     path('announcements/received/', workflow_views.ReceivedAnnouncementView.as_view(), name='announcement-received'),
     path('announcements/<int:pk>/', workflow_views.AnnouncementDetailView.as_view(), name='announcement-detail'),
+    path('announcements/<int:pk>/read/', workflow_views.AnnouncementReadView.as_view(), name='announcement-read'),
     path('finance/donations/<int:pk>/verify/', workflow_views.DonationVerifyView.as_view(), name='donation-verify'),
+    path('finance/donations/<int:pk>/reject/', workflow_views.DonationRejectView.as_view(), name='donation-reject'),
     path('finance/donations/<int:pk>/record/', workflow_views.DonationRecordView.as_view(), name='donation-record'),
     path('finance/reports/', workflow_views.FinancialReportListCreateView.as_view(), name='financial-report-list'),
     path('audit-reports/', workflow_views.AuditReportListCreateView.as_view(), name='audit-report-list'),
     path('audit-reports/<int:pk>/submit/', workflow_views.AuditReportSubmitView.as_view(), name='audit-report-submit'),
     path('discipline/<int:pk>/legal-opinion/', workflow_views.LegalOpinionView.as_view(), name='discipline-legal-opinion'),
+    path('discipline/<int:pk>/legal-opinion/draft/', workflow_views.LegalOpinionDraftView.as_view(), name='discipline-legal-opinion-draft'),
     path('outreach/', workflow_views.OutreachListCreateView.as_view(), name='outreach-list'),
     path('outreach/<int:pk>/', workflow_views.OutreachDetailView.as_view(), name='outreach-detail'),
 
@@ -157,6 +161,89 @@ urlpatterns = [
     path('dashboards/lga/', dashboard_views.LgaDashboardView.as_view(), name='dash-lga'),
     path('dashboards/ward/', dashboard_views.WardDashboardView.as_view(), name='dash-ward'),
     
+    # ─── Android 2.0.0 staff API (staff_views.py) ───────────────────────
+    # Rule-3 gaps for screens 1–159.
+    path('opportunities/<slug:slug>/report/', staff_views.OpportunityReportView.as_view(), name='opportunity-report'),
+    path('field-reports/', staff_views.FieldReportListCreateView.as_view(), name='field-reports'),
+    path('impact/rankings/', staff_views.NetworkRankingsView.as_view(), name='impact-rankings'),
+    path('events/calendar/', staff_views.EventCalendarView.as_view(), name='event-calendar'),
+    path('events/minutes/', staff_views.AllMinutesView.as_view(), name='event-minutes-all'),
+    # Part A: cross-event attendance logs + own printable ID tag.
+    path('events/attendance/logs/', staff_views.AttendanceLogsView.as_view(), name='event-attendance-logs'),
+    path('account/id-tag/', staff_views.IdTagView.as_view(), name='account-id-tag'),
+    path('advocacy/<int:pk>/decision/', staff_views.AdvocacyDecisionView.as_view(), name='advocacy-decision'),
+    # Intelligence desk (screens 160–188). Order matters: literal
+    # segments (generate/, incidents/) precede the <ref>/<id> routes.
+    path('intelligence/overview/', staff_views.IntelligenceOverviewView.as_view(), name='intel-overview'),
+    path('intelligence/items/', staff_views.IntelligenceItemsView.as_view(), name='intel-items'),
+    path('intelligence/desk/', staff_views.DeskListView.as_view(), name='intel-desk'),
+    path('intelligence/desk/<str:ref>/', staff_views.DeskDetailView.as_view(), name='intel-desk-detail'),
+    path('intelligence/desk/<str:ref>/transition/', staff_views.DeskTransitionView.as_view(), name='intel-desk-transition'),
+    path('intelligence/desk/<str:ref>/convert/', staff_views.DeskConvertView.as_view(), name='intel-desk-convert'),
+    path('intelligence/clusters/', staff_views.ClusterListView.as_view(), name='intel-clusters'),
+    path('intelligence/clusters/<int:pk>/', staff_views.ClusterDetailView.as_view(), name='intel-cluster-detail'),
+    path('intelligence/clusters/<int:pk>/merge/', staff_views.ClusterMergeView.as_view(), name='intel-cluster-merge'),
+    path('intelligence/clusters/<int:pk>/split/', staff_views.ClusterSplitView.as_view(), name='intel-cluster-split'),
+    path('intelligence/sources/', staff_views.IntelligenceSourceListCreateView.as_view(), name='intel-sources'),
+    path('intelligence/runs/', staff_views.CollectionRunListView.as_view(), name='intel-runs'),
+    path('intelligence/runs/trigger/', staff_views.CollectionRunTriggerView.as_view(), name='intel-runs-trigger'),
+    path('intelligence/aliases/', staff_views.AliasListView.as_view(), name='intel-aliases'),
+    path('intelligence/aliases/<int:pk>/review/', staff_views.AliasReviewView.as_view(), name='intel-alias-review'),
+    path('intelligence/lgas/', staff_views.IntelligenceLgaListView.as_view(), name='intel-lgas'),
+    path('intelligence/lgas/<slug:slug>/', staff_views.IntelligenceLgaDetailView.as_view(), name='intel-lga-detail'),
+    path('intelligence/lgas/<slug:slug>/districts/', staff_views.IntelligenceDistrictCreateView.as_view(), name='intel-lga-district-create'),
+    path('intelligence/lgas/<slug:slug>/communities/', staff_views.IntelligenceCommunityCreateView.as_view(), name='intel-lga-community-create'),
+    path('intelligence/article-locations/', staff_views.ArticleLocationListCreateView.as_view(), name='intel-article-locations'),
+    path('intelligence/briefings/', staff_views.BriefingListView.as_view(), name='intel-briefings'),
+    path('intelligence/briefings/generate/', staff_views.BriefingGenerateView.as_view(), name='intel-briefing-generate'),
+    path('intelligence/briefings/<int:pk>/', staff_views.BriefingDetailView.as_view(), name='intel-briefing-detail'),
+    path('intelligence/briefings/<int:pk>/telegram/', staff_views.BriefingTelegramView.as_view(), name='intel-briefing-telegram'),
+    path('intelligence/alert-rules/', staff_views.AlertRuleListView.as_view(), name='intel-alert-rules'),
+    path('intelligence/alert-rules/<int:pk>/', staff_views.AlertRuleDetailView.as_view(), name='intel-alert-rule-detail'),
+    path('intelligence/alerts/', staff_views.MyAlertsView.as_view(), name='intel-alerts'),
+    path('intelligence/alerts/<int:pk>/read/', staff_views.AlertReadView.as_view(), name='intel-alert-read'),
+    path('intelligence/promise-candidates/', staff_views.PromiseCandidateListView.as_view(), name='intel-promise-candidates'),
+    path('intelligence/promise-candidates/<int:pk>/', staff_views.PromiseCandidateDetailView.as_view(), name='intel-promise-candidate-detail'),
+    path('intelligence/promise-candidates/<int:pk>/confirm/', staff_views.PromiseCandidateConfirmView.as_view(), name='intel-promise-candidate-confirm'),
+    path('intelligence/promise-candidates/<int:pk>/dismiss/', staff_views.PromiseCandidateDismissView.as_view(), name='intel-promise-candidate-dismiss'),
+    path('intelligence/security/', staff_views.SecurityDeskView.as_view(), name='intel-security'),
+    path('intelligence/security/incidents/', staff_views.SecurityIncidentListCreateView.as_view(), name='intel-security-incidents'),
+    path('intelligence/security/incidents/<int:pk>/', staff_views.SecurityIncidentDetailView.as_view(), name='intel-security-incident-detail'),
+    path('intelligence/security/incidents/<int:pk>/claim/', staff_views.SecurityIncidentClaimView.as_view(), name='intel-security-incident-claim'),
+    path('intelligence/security/incidents/<int:pk>/status/', staff_views.SecurityIncidentStatusView.as_view(), name='intel-security-incident-status'),
+    path('intelligence/security/incidents/<int:pk>/redact/', staff_views.SecurityIncidentRedactView.as_view(), name='intel-security-incident-redact'),
+    path('intelligence/security/<str:kind>/<int:pk>/working-copy/', staff_views.SecurityWorkingCopyView.as_view(), name='intel-security-working-copy'),
+    path('intelligence/security/<str:ref>/', staff_views.SecurityUnitDetailView.as_view(), name='intel-security-unit'),
+    path('intelligence/security/<str:ref>/transition/', staff_views.SecurityTransitionView.as_view(), name='intel-security-transition'),
+    path('intelligence/projects/from-<str:kind>/<int:pk>/', staff_views.ProjectFromUnitView.as_view(), name='intel-project-from-unit'),
+    path('intelligence/projects/<int:pk>/', staff_views.ProjectManageDetailView.as_view(), name='intel-project-manage'),
+    path('intelligence/projects/<int:pk>/status/', staff_views.ProjectStatusView.as_view(), name='intel-project-status'),
+    path('intelligence/projects/<int:pk>/milestone/', staff_views.ProjectMilestoneView.as_view(), name='intel-project-milestone'),
+    path('intelligence/projects/<int:pk>/evidence/', staff_views.ProjectEvidenceListCreateView.as_view(), name='intel-project-evidence'),
+    path('intelligence/map/', staff_views.IntelligenceMapView.as_view(), name='intel-map'),
+    # Story-intelligence desks (screens 189–194).
+    path('story-intelligence/promises/institutions/', staff_views.InstitutionCreateView.as_view(), name='story-promise-institution-create'),
+    path('story-intelligence/promises/desk/', staff_views.PromiseDeskListView.as_view(), name='story-promise-desk'),
+    path('story-intelligence/promises/<int:pk>/desk/', staff_views.PromiseDeskDetailView.as_view(), name='story-promise-desk-detail'),
+    path('story-intelligence/promises/', staff_views.PromiseCreateView.as_view(), name='story-promise-create'),
+    path('story-intelligence/promises/<int:pk>/updates/', staff_views.PromiseUpdateCreateView.as_view(), name='story-promise-update'),
+    path('story-intelligence/promises/<int:pk>/status/', staff_views.PromiseStatusView.as_view(), name='story-promise-status'),
+    path('story-intelligence/stories/<int:pk>/desk/', staff_views.StoryDeskView.as_view(), name='story-desk'),
+    path('story-intelligence/radar/', staff_views.RadarView.as_view(), name='story-radar'),
+    path('story-intelligence/redact/', staff_views.StoryRedactView.as_view(), name='story-redact'),
+    # Editorial brain workspace (screens 195–197).
+    path('editorial/', staff_views.EditorialOverviewView.as_view(), name='api-editorial-overview'),
+    path('editorial/<int:pk>/', staff_views.EditorialItemDetailView.as_view(), name='api-editorial-item'),
+    path('editorial/sources/', staff_views.EditorialSourceListView.as_view(), name='api-editorial-sources'),
+    path('editorial/sources/<int:pk>/', staff_views.EditorialSourceEditView.as_view(), name='api-editorial-source-edit'),
+    path('editorial/sources/<int:pk>/approve/', staff_views.EditorialSourceApproveView.as_view(), name='api-editorial-source-approve'),
+    # ICT Admin console (screens 198–202) — read-only, holder/superuser.
+    path('ict/overview/', staff_views.IctOverviewView.as_view(), name='ict-overview'),
+    path('ict/members/', staff_views.IctMembersView.as_view(), name='ict-members'),
+    path('ict/leadership/', staff_views.IctLeadershipView.as_view(), name='ict-leadership'),
+    path('ict/intelligence/', staff_views.IctIntelligenceView.as_view(), name='ict-intelligence'),
+    path('ict/telegram/', staff_views.IctTelegramView.as_view(), name='ict-telegram'),
+
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
     path('docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]

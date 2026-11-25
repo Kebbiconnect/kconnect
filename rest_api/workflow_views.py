@@ -335,7 +335,27 @@ class AnnouncementDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):return Announcement.objects.filter(created_by=self.request.user)
 class ReceivedAnnouncementView(generics.ListAPIView):
     serializer_class=AnnouncementSerializer; permission_classes=[permissions.IsAuthenticated]
-    def get_queryset(self):return Announcement.for_user(self.request.user)
+    def get_queryset(self):
+        # Part B (screen 81): annotate each received announcement with
+        # the requesting user's read state for the `is_read` field.
+        from django.db.models import Exists, OuterRef
+        from staff.models import AnnouncementRead
+        return Announcement.for_user(self.request.user).annotate(_is_read=Exists(
+            AnnouncementRead.objects.filter(announcement=OuterRef('pk'),user=self.request.user)))
+class AnnouncementReadView(APIView):
+    """Part B (screen 81): POST announcements/<id>/read/ — mark one
+    announcement read for the requesting user. Idempotent. Only
+    announcements visible to the user (received by them, or created
+    by them) can be marked; anything else is a 404."""
+    permission_classes=[permissions.IsAuthenticated]
+    def post(self,request,pk):
+        from staff.models import AnnouncementRead
+        visible=Announcement.for_user(request.user) | Announcement.objects.filter(created_by=request.user)
+        try: announcement=visible.distinct().get(pk=pk)
+        except Announcement.DoesNotExist: raise NotFound('Announcement not found.')
+        _receipt,created=AnnouncementRead.objects.get_or_create(announcement=announcement,user=request.user)
+        data=AnnouncementSerializer(announcement,context={'request':request}).data
+        return Response(data,status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED)
 
 class DonationTransitionView(APIView):
     action=None; capability=None; from_status=None; to_status=None
@@ -345,10 +365,18 @@ class DonationTransitionView(APIView):
         except Donation.DoesNotExist:raise NotFound('Donation not found in the required state.')
         d.status=self.to_status
         if self.action=='verify':d.verified_by=request.user;d.verified_at=timezone.now(); fields=['status','verified_by','verified_at']
+        elif self.action=='reject':
+            # Round 2 (screen 93): rejection mirrors verify — same
+            # gate (VERIFY_DONATION), same source state (UNVERIFIED),
+            # actor + timestamp recorded — and a reason is required.
+            reason=serializers.CharField(max_length=2000).run_validation(request.data.get('reason') or request.data.get('rejection_reason')).strip()
+            if not reason:raise ValidationError({'reason':'A reason is required to reject a donation.'})
+            d.rejected_by=request.user;d.rejected_at=timezone.now();d.rejection_reason=reason;fields=['status','rejected_by','rejected_at','rejection_reason']
         else:d.recorded_by=request.user;d.recorded_at=timezone.now();fields=['status','recorded_by','recorded_at']
         d.save(update_fields=fields);return Response(DonationSerializer(d).data)
 class DonationVerifyView(DonationTransitionView):action='verify';capability='VERIFY_DONATION';from_status='UNVERIFIED';to_status='VERIFIED'
 class DonationRecordView(DonationTransitionView):action='record';capability='RECORD_EXPENSE';from_status='VERIFIED';to_status='RECORDED'
+class DonationRejectView(DonationTransitionView):action='reject';capability='VERIFY_DONATION';from_status='UNVERIFIED';to_status='REJECTED'
 class FinancialReportListCreateView(generics.ListCreateAPIView):
     serializer_class=FinancialReportSerializer
     def get_permissions(self):
@@ -376,7 +404,48 @@ class LegalOpinionView(APIView):
         except DisciplinaryAction.DoesNotExist:raise NotFound('Pending disciplinary action not found.')
         opinion=serializers.CharField(max_length=20000).run_validation(request.data.get('legal_opinion')).strip()
         if not opinion:raise ValidationError({'legal_opinion':'This field is required.'})
-        a.legal_opinion=opinion;a.legal_approved=serializers.BooleanField().run_validation(request.data.get('legal_approved',False));a.legal_reviewed_by=request.user;a.legal_reviewed_at=timezone.now();a.save();return Response(DisciplineSerializer(a).data)
+        a.legal_opinion=opinion;a.legal_approved=serializers.BooleanField().run_validation(request.data.get('legal_approved',False));a.legal_reviewed_by=request.user;a.legal_reviewed_at=timezone.now();a.save()
+        # Part B (screen 118): the final opinion supersedes the
+        # author's saved draft for this case — clear it.
+        from staff.models import LegalOpinionDraft
+        LegalOpinionDraft.objects.filter(action=a,author=request.user).delete()
+        return Response(DisciplineSerializer(a).data)
+
+def _legal_opinion_draft_payload(draft):
+    return {'id':draft.pk,'action':draft.action_id,'author':draft.author_id,
+            'legal_opinion':draft.legal_opinion,'legal_approved':draft.legal_approved,
+            'created_at':draft.created_at,'updated_at':draft.updated_at}
+
+class LegalOpinionDraftView(APIView):
+    """Part B (app screen 118): save/resume a draft legal opinion.
+
+    GET discipline/<id>/legal-opinion/draft/ returns the requesting
+    author's draft for the case (404 when none has been saved).
+    PUT discipline/<id>/legal-opinion/draft/ saves (creates or
+    replaces) that draft. Same LEGAL_REVIEW gate and same pending-case
+    lookup as the final LegalOpinionView; the final submission
+    endpoint/path is unchanged and clears the author's draft.
+    """
+    permission_classes=[permissions.IsAuthenticated,IsVerifiedMember,capability_permission('LEGAL_REVIEW')]
+    def get_action(self,pk):
+        try:return DisciplinaryAction.objects.get(pk=pk,is_approved=False)
+        except DisciplinaryAction.DoesNotExist:raise NotFound('Pending disciplinary action not found.')
+    def get(self,request,pk):
+        from staff.models import LegalOpinionDraft
+        action=self.get_action(pk)
+        try:draft=LegalOpinionDraft.objects.get(action=action,author=request.user)
+        except LegalOpinionDraft.DoesNotExist:raise NotFound('No draft legal opinion saved for this case.')
+        return Response(_legal_opinion_draft_payload(draft))
+    @transaction.atomic
+    def put(self,request,pk):
+        from staff.models import LegalOpinionDraft
+        action=self.get_action(pk)
+        opinion=serializers.CharField(max_length=20000,allow_blank=True).run_validation(request.data.get('legal_opinion',''))
+        approved=serializers.BooleanField().run_validation(request.data.get('legal_approved',False))
+        draft,_created=LegalOpinionDraft.objects.update_or_create(
+            action=action,author=request.user,
+            defaults={'legal_opinion':opinion,'legal_approved':approved})
+        return Response(_legal_opinion_draft_payload(draft))
 
 class OutreachListCreateView(generics.ListCreateAPIView):
     serializer_class=OutreachSerializer; permission_classes=[permissions.IsAuthenticated,IsVerifiedMember,capability_permission('MANAGE_OUTREACH')]

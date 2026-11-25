@@ -5,6 +5,13 @@ class Event(models.Model):
     title = models.CharField(max_length=300)
     description = models.TextField()
     location = models.CharField(max_length=300)
+    # Part B (app screen 123): the reference event form shows a free
+    # "Audience" field ("All members" in the reference is example
+    # text, not a fixed option set — the screen shows no fixed set of
+    # choices), so this is free text. Optional everywhere: blank for
+    # events recorded before it existed and for web-form events (the
+    # web form does not collect it).
+    audience = models.CharField(max_length=200, blank=True, default='')
     
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()

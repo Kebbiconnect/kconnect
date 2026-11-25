@@ -6,6 +6,11 @@ class Donation(models.Model):
         ('UNVERIFIED', 'Unverified'),
         ('VERIFIED', 'Verified'),
         ('RECORDED', 'Recorded'),
+        # Round 2 (screen 93): rejection of an unverified donation,
+        # mirroring the verify transition (UNVERIFIED -> terminal
+        # state, actor + timestamp recorded, reason required by the
+        # API/web service layer).
+        ('REJECTED', 'Rejected'),
     ]
     
     donor_name = models.CharField(max_length=200)
@@ -20,6 +25,10 @@ class Donation(models.Model):
     
     recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='recorded_donations')
     recorded_at = models.DateTimeField(null=True, blank=True)
+
+    rejected_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='rejected_donations')
+    rejected_at = models.DateTimeField(null=True, blank=True)
+    rejection_reason = models.TextField(blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     

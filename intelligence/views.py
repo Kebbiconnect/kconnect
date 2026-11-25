@@ -353,6 +353,22 @@ def source_edit(request, pk=None):
 
 @login_required
 @require_POST
+def run_now(request):
+    """Manual collection run (Round 2, screen 170): one cycle through
+    the shared cycle service with trigger MANUAL, under the existing
+    lease machinery — the same entry point the API trigger uses.
+    Gated on MANAGE_SOURCES, like collection control."""
+    _require(request.user, 'MANAGE_SOURCES')
+    from . import cycle as cycle_service
+    run = cycle_service.run_cycle(trigger='MANUAL')
+    messages.success(
+        request,
+        f'Collection run #{run.pk} finished: {run.get_status_display()}.')
+    return redirect('intelligence:overview')
+
+
+@login_required
+@require_POST
 def control(request):
     _require(request.user, 'MANAGE_SOURCES')
     with transaction.atomic():

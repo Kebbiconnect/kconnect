@@ -18,7 +18,7 @@
 <span class="intel-chip"><i class="fas fa-location-dot"></i>{{ relevant_items }} relevant items</span>
 <span class="intel-chip"><i class="fas fa-layer-group"></i>{{ cluster_total }} event clusters</span>
 </div>
-{% if can_manage_sources %}<form method="post" action="{% url 'intelligence:control' %}">{% csrf_token %}{% if control.enabled %}<button class="kpn-btn" style="background:#fff;color:#176b36" name="enabled" value="no">Pause collection</button>{% else %}<button class="kpn-btn" style="background:#fff;color:#176b36" name="enabled" value="yes">Resume collection</button>{% endif %}</form>{% endif %}
+{% if can_manage_sources %}<form method="post" action="{% url 'intelligence:control' %}">{% csrf_token %}{% if control.enabled %}<button class="kpn-btn" style="background:#fff;color:#176b36" name="enabled" value="no">Pause collection</button>{% else %}<button class="kpn-btn" style="background:#fff;color:#176b36" name="enabled" value="yes">Resume collection</button>{% endif %}</form><form method="post" action="{% url 'intelligence:run_now' %}">{% csrf_token %}<button class="kpn-btn" style="background:#fff;color:#176b36">Run now</button></form>{% endif %}
 </header>
 
 <div class="editorial-grid">

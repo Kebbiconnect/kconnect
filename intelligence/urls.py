@@ -70,6 +70,7 @@ urlpatterns = [
     path('sources/new/', views.source_edit, name='source_new'),
     path('sources/<int:pk>/', views.source_edit, name='source_edit'),
     path('control/', views.control, name='control'),
+    path('runs/run-now/', views.run_now, name='run_now'),
     path('lgas/', views.lgas, name='lgas'),
     path('lgas/<int:pk>/', views.lga_detail, name='lga_detail'),
     path('lgas/<int:pk>/districts/new/', views.district_add, name='district_add'),
