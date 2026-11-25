@@ -245,18 +245,29 @@
              x-transition:leave-start="opacity-100 translate-y-0"
              x-transition:leave-end="opacity-0 -translate-y-2"
              x-cloak
-             class="xl:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-            <div class="px-3 py-3 space-y-0.5">
+             class="kpn-mobile-menu-panel xl:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+            <div class="kpn-mobile-menu-scroll px-3 py-3 space-y-0.5" x-data="{ openSection: null }">
                 <!-- Primary links -->
                 <a href="{% url 'core:home' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                     <i class="fas fa-home text-kpn-green w-4 text-center text-xs"></i>Home
                 </a>
 
-                <!-- Newsroom Section -->
-                <div class="pt-2 pb-1">
-                    <p class="px-3 text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Newsroom</p>
-                </div>
-                <div class="pl-4 border-l border-gray-200 dark:border-gray-700 ml-3 space-y-0.5">
+                <!-- Newsroom Section (accordion) -->
+                <div>
+                    <button type="button" @click="openSection = openSection === 'newsroom' ? null : 'newsroom'"
+                            :aria-expanded="openSection === 'newsroom'" aria-controls="kpn-menu-newsroom"
+                            class="flex w-full items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fas fa-newspaper text-kpn-green w-4 text-center text-xs"></i>Newsroom
+                        <i class="fas fa-chevron-down text-[10px] opacity-60 ml-auto transition-transform duration-200" :class="openSection === 'newsroom' && 'rotate-180'"></i>
+                    </button>
+                    <div id="kpn-menu-newsroom" x-show="openSection === 'newsroom'" x-cloak
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0"
+                         x-transition:enter-end="opacity-100"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0"
+                         class="pl-4 border-l border-gray-200 dark:border-gray-700 ml-3 space-y-0.5 mt-0.5">
                     <a href="{% url 'campaigns:newsroom' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                         <i class="fas fa-newspaper text-kpn-green w-4 text-center text-xs"></i>News
                     </a>
@@ -278,17 +289,29 @@
                     <a href="{% url 'archive:home' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                         <i class="fas fa-archive text-kpn-green w-4 text-center text-xs"></i>Story Archive
                     </a>
+                    </div>
                 </div>
 
                 <a href="{% url 'core:opportunities' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                     <i class="fas fa-briefcase text-kpn-green w-4 text-center text-xs"></i>Opportunities
                 </a>
 
-                <!-- Community Section -->
-                <div class="pt-2 pb-1">
-                    <p class="px-3 text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Community</p>
-                </div>
-                <div class="pl-4 border-l border-gray-200 dark:border-gray-700 ml-3 space-y-0.5">
+                <!-- Community Section (accordion) -->
+                <div>
+                    <button type="button" @click="openSection = openSection === 'community' ? null : 'community'"
+                            :aria-expanded="openSection === 'community'" aria-controls="kpn-menu-community"
+                            class="flex w-full items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fas fa-users text-kpn-green w-4 text-center text-xs"></i>Community
+                        <i class="fas fa-chevron-down text-[10px] opacity-60 ml-auto transition-transform duration-200" :class="openSection === 'community' && 'rotate-180'"></i>
+                    </button>
+                    <div id="kpn-menu-community" x-show="openSection === 'community'" x-cloak
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0"
+                         x-transition:enter-end="opacity-100"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0"
+                         class="pl-4 border-l border-gray-200 dark:border-gray-700 ml-3 space-y-0.5 mt-0.5">
                     <a href="{% url 'core:community' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                         <i class="fas fa-users text-kpn-green w-4 text-center text-xs"></i>Community Initiatives
                     </a>
@@ -298,13 +321,25 @@
                     <a href="{% url 'core:community_report' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                         <i class="fas fa-bullhorn text-kpn-green w-4 text-center text-xs"></i>Community Reports
                     </a>
+                    </div>
                 </div>
 
-                <!-- Civic Engagement & Advocacy Section -->
-                <div class="pt-2 pb-1">
-                    <p class="px-3 text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Civic Engagement &amp; Advocacy</p>
-                </div>
-                <div class="pl-4 border-l border-gray-200 dark:border-gray-700 ml-3 space-y-0.5">
+                <!-- Civic Engagement & Advocacy Section (accordion) -->
+                <div>
+                    <button type="button" @click="openSection = openSection === 'civic' ? null : 'civic'"
+                            :aria-expanded="openSection === 'civic'" aria-controls="kpn-menu-civic"
+                            class="flex w-full items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fas fa-landmark text-kpn-green w-4 text-center text-xs"></i>Civic Engagement &amp; Advocacy
+                        <i class="fas fa-chevron-down text-[10px] opacity-60 ml-auto transition-transform duration-200" :class="openSection === 'civic' && 'rotate-180'"></i>
+                    </button>
+                    <div id="kpn-menu-civic" x-show="openSection === 'civic'" x-cloak
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0"
+                         x-transition:enter-end="opacity-100"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0"
+                         class="pl-4 border-l border-gray-200 dark:border-gray-700 ml-3 space-y-0.5 mt-0.5">
                     <a href="{% url 'core:civic' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                         <i class="fas fa-landmark text-kpn-green w-4 text-center text-xs"></i>Civic Engagement &amp; Advocacy
                     </a>
@@ -323,13 +358,25 @@
                     <a href="{% url 'core:election_observation' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                         <i class="fas fa-vote-yea text-kpn-green w-4 text-center text-xs"></i>Election Observation
                     </a>
+                    </div>
                 </div>
 
-                <!-- KPN Network Section -->
-                <div class="pt-2 pb-1">
-                    <p class="px-3 text-[10px] font-semibold text-gray-400 uppercase tracking-widest">KPN Network</p>
-                </div>
-                <div class="pl-4 border-l border-gray-200 dark:border-gray-700 ml-3 space-y-0.5">
+                <!-- KPN Network Section (accordion) -->
+                <div>
+                    <button type="button" @click="openSection = openSection === 'network' ? null : 'network'"
+                            :aria-expanded="openSection === 'network'" aria-controls="kpn-menu-network"
+                            class="flex w-full items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fas fa-sitemap text-kpn-green w-4 text-center text-xs"></i>KPN Network
+                        <i class="fas fa-chevron-down text-[10px] opacity-60 ml-auto transition-transform duration-200" :class="openSection === 'network' && 'rotate-180'"></i>
+                    </button>
+                    <div id="kpn-menu-network" x-show="openSection === 'network'" x-cloak
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0"
+                         x-transition:enter-end="opacity-100"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0"
+                         class="pl-4 border-l border-gray-200 dark:border-gray-700 ml-3 space-y-0.5 mt-0.5">
                     <a href="{% url 'core:leadership' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                         <i class="fas fa-sitemap text-kpn-green w-4 text-center text-xs"></i>Leadership Directory
                     </a>
@@ -342,6 +389,7 @@
                     <a href="{% url 'core:code_of_conduct' %}" class="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                         <i class="fas fa-file-contract text-kpn-green w-4 text-center text-xs"></i>Code of Conduct
                     </a>
+                    </div>
                 </div>
 
                 <a href="{% url 'core:about' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
@@ -353,18 +401,23 @@
                 <a href="{% url 'core:support_us' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                     <i class="fas fa-heart text-kpn-green w-4 text-center text-xs"></i>Support KPN
                 </a>
+            </div>
 
-                <!-- Auth actions -->
-                <div class="pt-2 border-t border-gray-100 dark:border-gray-800 mt-2 space-y-0.5">
-                    {% if user.is_authenticated %}
+            <!-- Member Access / account actions: pinned at the foot of the menu, always visible -->
+            <div class="flex-shrink-0 px-3 py-2.5 border-t border-gray-100 dark:border-gray-800 space-y-0.5">
+                {% if user.is_authenticated %}
                         <a href="{% url 'core:report_a_story' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium text-kpn-blue dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
                             <i class="fas fa-bullhorn w-4 text-center text-xs"></i>Report a Story
                         </a>
                         <a href="{% url 'staff:dashboard' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-semibold text-white bg-kpn-green hover:bg-green-600 transition-colors">
                             <i class="fas fa-th-large w-4 text-center text-xs"></i>Dashboard
                         </a>
-                        {% if editorial_available %}<a href="{% url 'editorial:index' %}" class="kpn-nav-link">Editorial Assistant</a>{% endif %}
-                        {% if ict_admin_available %}<a href="{% url 'core:ict_admin' %}" class="kpn-nav-link">ICT Admin</a>{% endif %}
+                        {% if editorial_available %}<a href="{% url 'editorial:index' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                            <i class="fas fa-edit text-kpn-green w-4 text-center text-xs"></i>Editorial Assistant
+                        </a>{% endif %}
+                        {% if ict_admin_available %}<a href="{% url 'core:ict_admin' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                            <i class="fas fa-cogs text-kpn-green w-4 text-center text-xs"></i>ICT Admin
+                        </a>{% endif %}
                         <a href="{% url 'staff:logout' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                             <i class="fas fa-sign-out-alt w-4 text-center text-xs"></i>Logout
                         </a>
@@ -375,8 +428,7 @@
                         <a href="{% url 'staff:register' %}" class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-semibold text-white bg-kpn-green hover:bg-green-600 transition-colors">
                             <i class="fas fa-user-plus w-4 text-center text-xs"></i>Join Us
                         </a>
-                    {% endif %}
-                </div>
+                {% endif %}
             </div>
         </div>
     </nav>

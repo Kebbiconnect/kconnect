@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
 from django.db.models import Q, F
+from django.core.paginator import Paginator
 from campaigns.models import Campaign
 from media.models import MediaItem
 from staff.models import User
@@ -374,15 +375,29 @@ def opportunities(request):
     has_filters = bool(category or status_filter or lga_id or search)
     if has_filters:
         featured_opps = []
-        regular_opps = list(filtered.order_by('-created_at'))
+        regular_qs = filtered.order_by('-created_at')
     else:
         featured_opps = list(base.filter(is_featured=True).order_by('-created_at')[:3])
-        regular_opps = list(base.exclude(
-            id__in=[f.id for f in featured_opps]).order_by('-created_at'))
+        regular_qs = base.exclude(
+            id__in=[f.id for f in featured_opps]).order_by('-created_at')
+
+    # Paginate the listing grid (12 per page). The hub previously
+    # rendered every live listing on a single page, so the page grew
+    # without bound as listings accumulated (58 live listings measured
+    # ~23,400px tall on a phone — the footer navigation sat ~28
+    # screens down and the page felt endless). Page links preserve the
+    # active filters, following the Story Archive pattern.
+    page_obj = Paginator(regular_qs, 12).get_page(request.GET.get('page'))
+    regular_opps = page_obj
+    query_params = request.GET.copy()
+    query_params.pop('page', None)
+    opp_base_qs = query_params.urlencode()
 
     context = {
         'featured_opps': featured_opps,
         'regular_opps': regular_opps,
+        'page_obj': page_obj,
+        'opp_base_qs': opp_base_qs,
         'categories': Opportunity.CATEGORY_CHOICES,
         'status_choices': [c for c in Opportunity.STATUS_CHOICES if c[0] != 'CLOSED'],
         'lgas': LGA.objects.all().order_by('name'),
@@ -431,9 +446,17 @@ def opportunities_archive(request):
     category = request.GET.get('category', '')
     if category:
         closed = closed.filter(category=category)
+    # Same pagination as the hub (12 per page): the expired archive
+    # previously rendered every closed listing on one page, which
+    # grows without bound as listings close.
+    page_obj = Paginator(closed, 12).get_page(request.GET.get('page'))
+    query_params = request.GET.copy()
+    query_params.pop('page', None)
     from django.urls import reverse
     context = {
-        'closed_opps': closed,
+        'closed_opps': page_obj,
+        'page_obj': page_obj,
+        'opp_base_qs': query_params.urlencode(),
         'categories': Opportunity.CATEGORY_CHOICES,
         'active_category': category,
         'crumbs': [

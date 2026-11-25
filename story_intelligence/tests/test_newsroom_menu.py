@@ -6,6 +6,10 @@ and in a matching "Newsroom" dropdown in the desktop header (which
 uses the KPN Network dropdown pattern). The scattered standalone
 Promise Tracker / Archive / Future Signal / Human Impact links added
 in Phases 2–4 are gone.
+
+Menu-length fix (§20): the mobile group headings are now accordion
+toggles and each group's links live in its collapsible container
+(id="kpn-menu-<group>"); the grouping intent pinned here is unchanged.
 """
 
 from django.test import TestCase
@@ -50,11 +54,12 @@ class NewsroomMenuTests(TestCase):
 
     def test_mobile_menu_has_one_grouped_newsroom_section(self):
         mobile = self.html.split('id="kpn-mobile-menu"', 1)[1]
-        # The grouped-section heading, same markup pattern as the
-        # KPN Network section heading.
-        self.assertIn('>Newsroom</p>', mobile)
-        before, _, rest = mobile.partition('>Newsroom</p>')
-        section, _, _ = rest.partition('>KPN Network</p>')
+        # The grouped section: an accordion toggle (same pattern as the
+        # KPN Network group) controlling the group's link container.
+        self.assertIn("openSection === 'newsroom'", mobile)
+        self.assertIn('id="kpn-menu-newsroom"', mobile)
+        before, _, rest = mobile.partition('id="kpn-menu-newsroom"')
+        section, _, _ = rest.partition('id="kpn-menu-network"')
         # All five destinations sit inside the one group, with the
         # group's reader-facing labels.
         for label, href in newsroom_hrefs().items():
@@ -67,7 +72,7 @@ class NewsroomMenuTests(TestCase):
 
     def test_kpn_network_group_is_unchanged(self):
         mobile = self.html.split('id="kpn-mobile-menu"', 1)[1]
-        self.assertIn('>KPN Network</p>', mobile)
-        network = mobile.split('>KPN Network</p>', 1)[1]
+        self.assertIn('id="kpn-menu-network"', mobile)
+        network = mobile.split('id="kpn-menu-network"', 1)[1]
         self.assertIn(f'href="{reverse("core:patrons")}"', network)
         self.assertIn(f'href="{reverse("core:leadership")}"', network)

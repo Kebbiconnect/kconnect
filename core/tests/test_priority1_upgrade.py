@@ -117,6 +117,45 @@ class OpportunityTrustTests(TestCase):
         # The dropdown keeps the chosen category selected.
         self.assertContains(response, 'value="JOB" selected')
 
+    def test_hub_paginates_at_twelve_per_page(self):
+        # Scroll-length fix: the hub previously rendered every live
+        # listing on one page, which grew without bound as listings
+        # accumulated and buried the footer navigation.
+        for i in range(1, 16):
+            make_opp(f'paged-{i:02d}', status='OPEN')
+        first = self.client.get(reverse('core:opportunities'))
+        page = first.context['page_obj']
+        self.assertEqual(len(page.object_list), 12)
+        self.assertEqual(page.paginator.num_pages, 2)
+        self.assertContains(first, 'page=2')
+        self.assertContains(first, 'Page 1 of 2')
+        second = self.client.get(reverse('core:opportunities'),
+                                  {'page': '2'})
+        second_slugs = [o.slug for o in second.context['regular_opps']]
+        self.assertEqual(len(second_slugs), 3)
+        first_slugs = {o.slug for o in first.context['regular_opps']}
+        self.assertTrue(first_slugs.isdisjoint(second_slugs))
+
+    def test_hub_pagination_preserves_filters(self):
+        for i in range(1, 15):
+            make_opp(f'paged-job-{i:02d}', status='OPEN', category='JOB')
+        make_opp('paged-grant', status='OPEN', category='GRANT')
+        response = self.client.get(reverse('core:opportunities'),
+                                   {'category': 'JOB'})
+        self.assertContains(response, 'category=JOB')
+        self.assertContains(response, 'page=2')
+
+    def test_expired_archive_paginates_at_twelve_per_page(self):
+        for i in range(1, 14):
+            make_opp(f'expired-{i:02d}', status='CLOSED')
+        first = self.client.get(reverse('core:opportunities_archive'))
+        page = first.context['page_obj']
+        self.assertEqual(len(page.object_list), 12)
+        self.assertEqual(page.paginator.num_pages, 2)
+        second = self.client.get(reverse('core:opportunities_archive'),
+                                  {'page': '2'})
+        self.assertEqual(len(second.context['closed_opps'].object_list), 1)
+
 
 class OpportunityReportTests(TestCase):
     def setUp(self):

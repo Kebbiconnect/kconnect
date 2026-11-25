@@ -1,6 +1,6 @@
 """Role-aware, database-backed Android dashboard endpoints."""
 from decimal import Decimal
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from django.utils import timezone
 from rest_framework import permissions, status
 from rest_framework.response import Response
@@ -38,6 +38,14 @@ def scoped_users(user): return users_in_jurisdiction(user,User.objects.filter(is
 def scoped_reports(user):
  from core.services.reports import reports_for
  return reports_for(user)
+
+def chart_rows(qs,field,label_map):
+ rows=[]
+ for entry in qs.values(field).annotate(c=Count("id")).order_by("-c",field):
+  value=entry[field]
+  label=label_map.get(value,(value or "").replace("_"," ").title())
+  rows.append({"label":label,"value":entry["c"]})
+ return rows
 
 def access_denied_response(user):
  access=check_dashboard_access(user)
@@ -137,7 +145,24 @@ class MyDashboardView(APIView):
     blocks.append(block("programs_"+kind,kind.title()+" programmes",[item("planned","Planned",programs.filter(status="PLANNED").count()),item("ongoing","Ongoing",programs.filter(status="ONGOING").count()),item("completed","Completed",programs.filter(status="COMPLETED").count())]))
   if "MANAGE_WARD_MEETINGS" in caps and user.ward_id:
    blocks.append(block("ward_meetings","Ward meeting logbook",[item("meetings","Recorded meetings",WardMeeting.objects.filter(ward=user.ward).count())]))
-  return Response({"title":title,"role_title":role,"dashboard_key":DASHBOARD_BY_ROLE.get(role,"member"),"jurisdiction":user.get_jurisdiction(),"blocks":blocks,"work_sections":work_sections(user,caps)})
+  charts=[]
+  status_labels={"VERIFIED":"Verified","PENDING":"Pending","UNDER_REVIEW":"Under review","SUSPENDED":"Suspended","REJECTED":"Rejected"}
+  status_rows=chart_rows(users,"status",status_labels)
+  if sum(r["value"] for r in status_rows)>0:
+   charts.append({"key":"members_by_status","title":"Members by status","type":"pie","rows":status_rows})
+  zone_rows=[]
+  for entry in users.values("zone__name").annotate(c=Count("id")).order_by("-c","zone__name"):
+   zone_rows.append({"label":entry["zone__name"] or "Unassigned","value":entry["c"]})
+  zone_rows=[r for r in zone_rows if r["label"]!="Unassigned" or r["value"]>0]
+  zone_rows.sort(key=lambda r:-r["value"])
+  if sum(r["value"] for r in zone_rows)>0:
+   charts.append({"key":"members_by_zone","title":"Members by zone","type":"pie","rows":zone_rows})
+  if "SUBMIT_REPORTS" in caps or "REVIEW_REPORTS" in caps or "OVERSIGHT_REPORTS" in caps:
+   report_labels={"SUBMITTED":"Submitted","FLAGGED":"Flagged","APPROVED":"Approved","DRAFT":"Draft"}
+   report_rows=chart_rows(reports,"status",report_labels)
+   if sum(r["value"] for r in report_rows)>0:
+    charts.append({"key":"reports_by_status","title":"Reports by status","type":"bars","rows":report_rows})
+  return Response({"title":title,"role_title":role,"dashboard_key":DASHBOARD_BY_ROLE.get(role,"member"),"jurisdiction":user.get_jurisdiction(),"blocks":blocks,"work_sections":work_sections(user,caps),"charts":charts})
 
 class SecretariatDashboardView(APIView):
  permission_classes=[permissions.IsAuthenticated,IsVerifiedMember,capability_permission("EDIT_MINUTES")]
@@ -149,7 +174,26 @@ class FinanceDashboardView(APIView):
  def get(self,request):
   income=Donation.objects.filter(status__in=("VERIFIED","RECORDED")).aggregate(v=Sum("amount"))["v"] or Decimal("0")
   expenses=Expense.objects.aggregate(v=Sum("amount"))["v"] or Decimal("0")
-  return Response({"title":"Finance","blocks":[block("finance","State finance",[item("total_income","Verified income",str(income),"NGN"),item("total_expenses","Expenses",str(expenses),"NGN"),item("balance","Balance",str(income-expenses),"NGN"),item("pending_receipts","Unverified donations",Donation.objects.filter(status="UNVERIFIED").count())])]})
+  charts=[]
+  donation_labels={"VERIFIED":"Verified","RECORDED":"Recorded","UNVERIFIED":"Unverified","REJECTED":"Rejected"}
+  donation_rows=chart_rows(Donation.objects.all(),"status",donation_labels)
+  if sum(r["value"] for r in donation_rows)>0:
+   charts.append({"key":"donations_by_status","title":"Donations by status","type":"pie","rows":donation_rows})
+  now=timezone.now()
+  month_rows=[]
+  year,month=now.year,now.month
+  months=[]
+  for offset in range(5,-1,-1):
+   m=month-offset; y=year
+   while m<=0:
+    m+=12; y-=1
+   months.append((y,m))
+  for y,m in months:
+   import datetime as _dt
+   label=_dt.date(y,m,1).strftime("%b %Y")
+   month_rows.append({"label":label,"value":Donation.objects.filter(created_at__year=y,created_at__month=m).count()})
+  charts.append({"key":"donations_by_month","title":"Donations by month","type":"bars","rows":month_rows})
+  return Response({"title":"Finance","blocks":[block("finance","State finance",[item("total_income","Verified income",str(income),"NGN"),item("total_expenses","Expenses",str(expenses),"NGN"),item("balance","Balance",str(income-expenses),"NGN"),item("pending_receipts","Unverified donations",Donation.objects.filter(status="UNVERIFIED").count())])],"charts":charts})
 
 class CommunityEngagementDashboardView(APIView):
  permission_classes=[permissions.IsAuthenticated,IsVerifiedMember,capability_permission("MOBILIZATION")]
