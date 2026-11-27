@@ -36,7 +36,7 @@ existence), their section badging, their Promise Tracker links and
 related published stories — all linked records, never copies.
 """
 import re
-from datetime import date
+from datetime import date, datetime, time, timedelta
 from html import unescape
 
 from django.core.paginator import Paginator
@@ -46,6 +46,7 @@ from django.db.models import (
 from django.db.models.functions import Cast
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils import timezone as dj_timezone
 from django.utils.html import strip_tags
 
 from campaigns.models import Campaign
@@ -54,6 +55,24 @@ from leadership.models import LGA, Ward, Zone
 from .models import Correction, Institution, Promise, StoryUpdate
 
 STORY_ID_RE = re.compile(r'^KPN-SI-\d{4}-\d{5}$')
+# Search variant (2.0.7): an ID typed or pasted with surrounding text —
+# "Story ID: KPN-SI-2026-00088", a trailing full stop, lowercase — must
+# still resolve. The anchored pattern above only fired when the whole
+# query was exactly the ID, so any decoration silently fell through to
+# a text search for the full decorated string and returned nothing.
+STORY_ID_SEARCH_RE = re.compile(r'KPN-SI-\d{4}-\d{5}', re.IGNORECASE)
+
+
+def extract_story_id(text):
+    """The well-formed Story ID contained in `text`, uppercased, or
+    None. Exact-match semantics are preserved: the returned value is
+    the canonical KPN-SI-YYYY-NNNNN form stored on the article."""
+    if not text:
+        return None
+    match = STORY_ID_SEARCH_RE.search(str(text))
+    return match.group(0).upper() if match else None
+
+
 PAGE_SIZE = 20
 TYPE_CHOICES = [
     ('story', 'Stories'),
@@ -87,11 +106,46 @@ def _clean_int(value):
         return None
 
 
+_DATE_FORMATS = ('%d/%m/%Y', '%d-%m-%Y', '%Y/%m/%d',
+                 '%d %B %Y', '%d %b %Y')
+
+
 def _clean_date(value):
-    try:
-        return date.fromisoformat(value)
-    except (TypeError, ValueError):
+    """Parse a filter date defensively. Accepts the ISO date the web
+    form sends, an ISO datetime (a mobile date-range picker commonly
+    emits one — previously rejected outright, which silently dropped
+    the filter), and the common day-first renderings. Anything else is
+    treated as "not set" and can never turn the archive into a 500."""
+    if value is None:
         return None
+    if isinstance(value, datetime):
+        parsed = value
+        if dj_timezone.is_aware(parsed):
+            parsed = dj_timezone.localtime(parsed)
+        return parsed.date()
+    if isinstance(value, date):
+        return value
+    text = str(value).strip()
+    if not text:
+        return None
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        pass
+    try:
+        parsed = datetime.fromisoformat(text.replace('Z', '+00:00'))
+    except ValueError:
+        parsed = None
+    if parsed is not None:
+        if dj_timezone.is_aware(parsed):
+            parsed = dj_timezone.localtime(parsed)
+        return parsed.date()
+    for fmt in _DATE_FORMATS:
+        try:
+            return datetime.strptime(text, fmt).date()
+        except ValueError:
+            continue
+    return None
 
 
 def parse_archive_params(request):
@@ -105,8 +159,26 @@ def parse_archive_params(request):
     topic = get.get('topic', '').strip()
     if topic not in dict(TOPIC_CHOICES):
         topic = ''
+    q = get.get('q', '').strip()
+    if not q:
+        # A dedicated story_id parameter (sent by API clients that keep
+        # the ID in its own field) is a Story ID lookup, not a browse.
+        q = get.get('story_id', '').strip()
+    # Additive aliases: clients that name the range from/to or
+    # from_date/to_date mean the same From–To filter.
+    date_from = _clean_date(
+        get.get('date_from') or get.get('from_date') or get.get('from'))
+    date_to = _clean_date(
+        get.get('date_to') or get.get('to_date') or get.get('to'))
+    if date_from and date_to and date_from > date_to:
+        # A reversed From–To pair (a picker returning its endpoints in
+        # the other order) previously filtered gte the later date AND
+        # lte the earlier one — a combination that can never match and
+        # silently returned zero results. The intended range is the
+        # same two dates, so order them.
+        date_from, date_to = date_to, date_from
     return {
-        'q': get.get('q', '').strip(),
+        'q': q,
         'type': result_type,
         'topic': topic,
         'category': category,
@@ -114,8 +186,8 @@ def parse_archive_params(request):
         'lga': _clean_int(get.get('lga')),
         'ward': _clean_int(get.get('ward')),
         'institution': _clean_int(get.get('institution')),
-        'date_from': _clean_date(get.get('date_from', '').strip()),
-        'date_to': _clean_date(get.get('date_to', '').strip()),
+        'date_from': date_from,
+        'date_to': date_to,
     }
 
 
@@ -165,6 +237,35 @@ def _rank(q):
                 default=Value(1), output_field=IntegerField())
 
 
+def _published_range(params):
+    """(gte, lt) aware datetimes bounding the From–To dates in the
+    site's timezone (Africa/Lagos): from the start of the From day to
+    the start of the day AFTER the To day, so a story published at any
+    time ON the To date matches. Explicit bounds are used instead of
+    the `__date` transform, whose result depends on the database
+    session timezone (Postgres vs SQLite) and could shift a story
+    published just after midnight Lagos time onto the previous day."""
+    tz = dj_timezone.get_default_timezone()
+    start = end = None
+    if params['date_from']:
+        start = dj_timezone.make_aware(
+            datetime.combine(params['date_from'], time.min), tz)
+    if params['date_to']:
+        end = dj_timezone.make_aware(
+            datetime.combine(params['date_to'] + timedelta(days=1),
+                             time.min), tz)
+    return start, end
+
+
+def _apply_published_range(qs, params, field='published_at'):
+    start, end = _published_range(params)
+    if start is not None:
+        qs = qs.filter(**{f'{field}__gte': start})
+    if end is not None:
+        qs = qs.filter(**{f'{field}__lt': end})
+    return qs
+
+
 def story_queryset(params):
     qs = Campaign.objects.filter(status='PUBLISHED').select_related(
         'lga', 'ward', 'story_profile')
@@ -191,10 +292,7 @@ def story_queryset(params):
         qs = qs.filter(category=params['category'])
     qs = qs.filter(_topic_condition(params))
     qs = qs.filter(_geo_condition(params))
-    if params['date_from']:
-        qs = qs.filter(published_at__date__gte=params['date_from'])
-    if params['date_to']:
-        qs = qs.filter(published_at__date__lte=params['date_to'])
+    qs = _apply_published_range(qs, params)
     return qs
 
 
@@ -219,10 +317,7 @@ def update_queryset(params):
         qs = qs.filter(article__category=params['category'])
     qs = qs.filter(_topic_condition(params, prefix='article__'))
     qs = qs.filter(_geo_condition(params, prefix='article__'))
-    if params['date_from']:
-        qs = qs.filter(published_at__date__gte=params['date_from'])
-    if params['date_to']:
-        qs = qs.filter(published_at__date__lte=params['date_to'])
+    qs = _apply_published_range(qs, params)
     return qs
 
 
@@ -424,11 +519,14 @@ def archive_home(request):
     q = params['q']
 
     # Exact Story ID lookup: a well-formed ID resolves directly to the
-    # story's article page. An unknown ID falls through to the normal
+    # story's article page. The ID may be the whole query or embedded
+    # in it (typed/pasted with a label or punctuation — see
+    # extract_story_id). An unknown ID falls through to the normal
     # search, which simply finds nothing for it.
-    if q and STORY_ID_RE.match(q.upper()):
+    story_id = extract_story_id(q)
+    if story_id:
         article = Campaign.objects.filter(
-            status='PUBLISHED', story_id=q.upper()).only('slug').first()
+            status='PUBLISHED', story_id=story_id).only('slug').first()
         if article is not None:
             return redirect('campaigns:article_detail', slug=article.slug)
 

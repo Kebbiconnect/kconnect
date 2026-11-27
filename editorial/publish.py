@@ -36,7 +36,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.html import escape
 
-from .brain import BrainError, validate_draft
+from .brain import BrainError, resolve_lga, validate_draft
 from .fetch import FetchError, canonical
 from .models import Audit, Job
 from .services import unique_slug
@@ -90,11 +90,16 @@ def duplicate_conflict(kind, title, application_link='', exclude_item_pk=None):
         if ratio > best[2]:
             best = ('exact' if ratio >= 0.92 else 'possible' if ratio >= 0.85 else '', match_title, ratio)
 
-    if kind == 'NEWS':
+    if kind in ('NEWS', 'SIGNAL'):
         for t in Campaign.objects.order_by('-created_at').values_list('title', flat=True)[:300]:
             consider(t)
             if best[0] == 'exact':
                 return best[0], best[1]
+    elif kind == 'VOICE':
+        # A quote post is identified by its source post URL (the item
+        # key already blocks the same URL twice); there is no public
+        # title list to scan — the tracked-items check below applies.
+        pass
     else:
         link = _norm_link(application_link)
         rows = Opportunity.objects.order_by('-created_at').values('title', 'application_link')[:300]
@@ -186,7 +191,7 @@ def publish_brain_item(item, overrides=None):
     {published: True, kind, slug, url_path, image_warning} on success.
     Raises BrainError with a stable code when it cannot publish; the item
     is then left untouched in REVIEW so it can be fixed and retried."""
-    if item.kind not in ('NEWS', 'OPPORTUNITY'):
+    if item.kind not in ('NEWS', 'OPPORTUNITY', 'SIGNAL', 'VOICE'):
         raise BrainError('kind_not_publishable')
     if item.state not in ('REVIEW', 'WAITING'):
         raise BrainError('item_not_publishable_state')
@@ -238,6 +243,10 @@ def publish_brain_item(item, overrides=None):
             content=str(escape(draft['body'])) + ('\n\n' + str(escape(source_line)) if source_url else ''),
             content_json={'blocks': blocks},
             category=draft.get('category', 'GENERAL'),
+            # LGA tagging (owner, 27 Nov 2026): the article's own lga
+            # field is mirrored to an ArticleLocation row by the save
+            # signal, so the story appears on that LGA's news page.
+            lga=resolve_lga(draft.get('lga', '')),
             status='PUBLISHED', published_at=timezone.now(),
             approved_by=author, verification_status='DEVELOPING',
             reporter_credit='KPN_EDITORIAL',
@@ -267,6 +276,113 @@ def publish_brain_item(item, overrides=None):
         result = {'published': True, 'kind': 'NEWS', 'slug': article.slug,
                   'url_path': f'/campaigns/article/{article.slug}/',
                   'image_warning': _attach_image(article, draft)}
+        # Owner (27 Nov 2026): all members get an app notification when
+        # a new story is posted.
+        from core.notifications import notify_all_members
+        transaction.on_commit(lambda aid=article.pk, title=article.title, slug=article.slug: notify_all_members(
+            'NEW_ARTICLE', 'New story on KPN', title,
+            link=f'/campaigns/article/{slug}/', target_type='article', target_id=aid))
+    elif item.kind == 'SIGNAL':
+        author = publishing_author()
+        if author is None:
+            raise BrainError('no_publishing_author')
+        from campaigns.models import Campaign
+        from campaigns.source_backfill import name_from_url, source_name_for
+        paragraphs = [p.strip() for p in draft['body'].split('\n') if p.strip()]
+        source_url = (item.source_url or item.original.get('source_url', '') or '')[:500]
+        source_line = f'Source: {source_url}'.strip()
+        blocks = [{'type': 'paragraph', 'data': {'text': str(escape(p))}} for p in paragraphs]
+        article = Campaign.objects.create(
+            author=author, title=draft['title'],
+            slug=unique_slug(Campaign, draft['title']),
+            content=str(escape(draft['body'])) + ('\n\n' + str(escape(source_line)) if source_url else ''),
+            content_json={'blocks': blocks},
+            category=draft.get('category', 'GENERAL'),
+            lga=resolve_lga(draft.get('lga', '')),
+            status='PUBLISHED', published_at=timezone.now(),
+            approved_by=author, verification_status='DEVELOPING',
+            reporter_credit='KPN_EDITORIAL',
+            source_url=source_url,
+            source_name=(source_name_for(item) or name_from_url(source_url)) if source_url else '',
+            meta_description=_excerpt(draft['body']))
+        from story_intelligence.services import (
+            ConsentRequiredError, allocate_story_id,
+            ensure_consent_for_publish)
+        try:
+            ensure_consent_for_publish(article)
+        except ConsentRequiredError:
+            raise BrainError('consent_required')
+        try:
+            allocate_story_id(article)
+            article.save(update_fields=['story_id'])
+        except Exception:
+            raise BrainError('story_id_allocation_failed')
+        # Future Signal framing: the story profile carries the analysis
+        # fields, kept separate from the article body so the public
+        # page never blends observation, evidence and judgment.
+        from story_intelligence.models import StoryProfile
+        profile, _created = StoryProfile.objects.get_or_create(article=article)
+        profile.kind = 'SIGNAL'
+        profile.signal_observation = draft.get('signal_observation', '')
+        profile.signal_category = draft.get('signal_category', '')
+        profile.signal_confidence = draft.get('signal_confidence', '')
+        profile.signal_horizon = draft.get('signal_horizon', '')
+        profile.signal_change_condition = draft.get('signal_change_condition', '')
+        profile.why_it_matters = draft.get('why_it_matters', '')
+        profile.who_is_affected = draft.get('who_is_affected', '')
+        profile.what_is_unknown = draft.get('what_is_unknown', '')
+        profile.what_to_watch = draft.get('what_to_watch', '')
+        profile.save()
+        item.article = article
+        # The web Future Signal surface is the hub at /signals/ (there
+        # is no per-signal web detail page; the app reads the API
+        # detail), so the reported path is the hub.
+        result = {'published': True, 'kind': 'SIGNAL', 'slug': article.slug,
+                  'url_path': '/signals/',
+                  'image_warning': _attach_image(article, draft)}
+        from core.notifications import notify_all_members
+        transaction.on_commit(lambda aid=article.pk, title=article.title: notify_all_members(
+            'NEW_SIGNAL', 'New Future Signal analysis', title,
+            link='/signals/', target_type='article', target_id=aid))
+    elif item.kind == 'VOICE':
+        # Community Voice quote (owner, 27 Nov 2026): a Kebbi resident's
+        # own public words, amplified with the screenshot of their post
+        # as the evidence image. The reviewer decision the page requires
+        # (published_to_voice) is the brain's validated submission
+        # itself, under the owner's standing auto-publish rule.
+        from core.models import CommunityReport
+        from django.core.files.base import ContentFile
+
+        author_name = draft.get('author', '').strip()[:100]
+        platform = draft.get('platform', '').strip().upper()
+        source_url = item.source_url or item.original.get('source_url', '')
+        lga = resolve_lga(draft.get('lga', ''))
+        report = CommunityReport.objects.create(
+            reporter_name=author_name or 'Community member',
+            reporter_phone='',
+            location_details=draft.get('location_details', '')[:200],
+            category=draft.get('category', 'COMMUNITY'),
+            what_happened=draft['body'],
+            who_was_involved=f'{author_name} on {platform.title()}' if author_name else '',
+            why_is_it_important=draft.get('why_it_matters', ''),
+            lga=lga,
+            zone=lga.zone if lga else None,
+            status='APPROVED',
+            info_status='CONFIRMED',
+            internal_notes=(
+                f'Community Voice quote amplified by KPN. Original post: {source_url}'
+                + (f"\n{draft.get('notes', '')}" if draft.get('notes') else '')),
+            published_to_voice=True,
+            voice_published_at=timezone.now())
+        image_warning = ''
+        found, image_warning = _image_bytes(draft)
+        if found is not None:
+            raw, fmt = found
+            report.evidence_image.save(
+                f'voice-{report.pk}.{IMAGE_EXTENSIONS[fmt]}', ContentFile(raw), save=True)
+        result = {'published': True, 'kind': 'VOICE', 'slug': f'voice-{report.pk}',
+                  'url_path': '/civic/community-voice/',
+                  'image_warning': image_warning}
     else:
         from core.models import Opportunity
         try:
@@ -290,6 +406,12 @@ def publish_brain_item(item, overrides=None):
         result = {'published': True, 'kind': 'OPPORTUNITY', 'slug': opportunity.slug,
                   'url_path': '/opportunities/',
                   'image_warning': ''}
+        # Owner (27 Nov 2026): all members get an app notification when
+        # a new opportunity is posted.
+        from core.notifications import notify_all_members
+        transaction.on_commit(lambda oid=opportunity.pk, title=opportunity.title, slug=opportunity.slug: notify_all_members(
+            'NEW_OPPORTUNITY', 'New opportunity on KPN', title,
+            link=f'/opportunities/{slug}/', target_type='opportunity', target_id=oid))
 
     item.draft = draft
     item.title = draft['title']
@@ -313,7 +435,7 @@ def maybe_auto_publish(item):
     auto-publish. Returns the publish result dict, or None when disabled.
     A publish failure never loses the draft: the item stays in REVIEW and
     the failure code is returned under 'publish_error'."""
-    if not auto_publish_enabled() or item.kind not in ('NEWS', 'OPPORTUNITY'):
+    if not auto_publish_enabled() or item.kind not in ('NEWS', 'OPPORTUNITY', 'SIGNAL', 'VOICE'):
         return None
     try:
         return publish_brain_item(item)

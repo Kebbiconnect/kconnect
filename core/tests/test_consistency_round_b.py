@@ -156,7 +156,7 @@ class ContactRoundBTests(TestCase):
         self.assertIn('kpn-page-hero', html)
         self.assertIn('Get In Touch', html)
         self.assertIn('Sani Abacha Bypass Road, Birnin Kebbi', html)
-        self.assertIn('+234 806 777 0283', html)
+        self.assertIn('+234 803 785 1112', html)
         self.assertIn('info@kpn.com.ng', html)
         # The form contract is unchanged.
         self.assertIn('name="name"', html)
@@ -188,7 +188,7 @@ class FaqRoundBTests(TestCase):
         html = response.content.decode('utf-8')
         self.assertIn('kpn-page-hero', html)
         self.assertIn('Frequently Asked Questions', html)
-        self.assertEqual(html.count('kpn-faq-card faq-item'), 9)
+        self.assertEqual(html.count('kpn-faq-card faq-item'), 30)
         self.assertIn('What is the Kebbi Progressive Youth Network (KPN)?', html)
         self.assertIn('id="faqSearch"', html)
         self.assertIn('category-btn', html)

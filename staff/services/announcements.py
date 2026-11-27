@@ -24,6 +24,10 @@ def deliver_announcement(announcement_id):
             users = users.filter(lga_id=announcement.target_lga_id)
         elif announcement.scope == 'WARD':
             users = users.filter(ward_id=announcement.target_ward_id)
+        elif announcement.scope == 'WARD_TIER':
+            users = users.filter(role='WARD')
+        elif announcement.scope == 'LGA_TIER':
+            users = users.filter(role='LGA')
         elif announcement.scope != 'GENERAL':
             return 0
         notifications = notify_many(users, 'INFO', announcement.title, announcement.content,

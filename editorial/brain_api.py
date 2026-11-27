@@ -195,7 +195,7 @@ def published(request):
                      .order_by('-created_at')[:100]]
     items = [{'item_id': i.pk, 'kind': i.kind, 'title': i.title,
               'source_url': i.source_url, 'state': i.state}
-             for i in Item.objects.filter(kind__in=('NEWS', 'OPPORTUNITY'),
+             for i in Item.objects.filter(kind__in=('NEWS', 'OPPORTUNITY', 'SIGNAL', 'VOICE'),
                                           state__in=('REVIEW', 'HANDED_OFF'))
              .order_by('-created_at')[:100]]
     return JsonResponse({'articles': articles, 'opportunities': opportunities,

@@ -438,6 +438,8 @@ class Announcement(models.Model):
         ('ZONAL', 'Zonal - Specific Zone'),
         ('LGA', 'LGA - Specific LGA'),
         ('WARD', 'Ward - Specific Ward'),
+        ('WARD_TIER', 'Ward - All Ward Role Holders'),
+        ('LGA_TIER', 'LGA - All LGA Role Holders'),
     ]
     
     PRIORITY_CHOICES = [
@@ -450,6 +452,8 @@ class Announcement(models.Model):
     title = models.CharField(max_length=200, help_text="Brief title for the announcement")
     content = models.TextField(help_text="Announcement message")
     scope = models.CharField(max_length=10, choices=SCOPE_CHOICES, help_text="Who should receive this announcement")
+    # WARD_TIER / LGA_TIER (app 2.0.5): tier audiences — every holder of
+    # any Ward role / any LGA role respectively, with no geographic target.
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='NORMAL')
     
     target_zone = models.ForeignKey(Zone, on_delete=models.CASCADE, null=True, blank=True, related_name='announcements', 
@@ -481,9 +485,9 @@ class Announcement(models.Model):
     def clean(self):
         from django.core.exceptions import ValidationError
         
-        if self.scope in {'GENERAL', 'STATE'}:
+        if self.scope in {'GENERAL', 'STATE', 'WARD_TIER', 'LGA_TIER'}:
             if self.target_zone or self.target_lga or self.target_ward:
-                raise ValidationError("General and State announcements should not have zone, LGA, or ward targets.")
+                raise ValidationError("General, State and tier-wide announcements should not have zone, LGA, or ward targets.")
         elif self.scope == 'ZONAL':
             if not self.target_zone:
                 raise ValidationError("Zonal announcements must have a target zone.")
@@ -513,6 +517,10 @@ class Announcement(models.Model):
         )
         
         query = Q(scope='GENERAL')
+        if user.role == 'WARD':
+            query |= Q(scope='WARD_TIER')
+        if user.role == 'LGA':
+            query |= Q(scope='LGA_TIER')
         if (user.role == 'STATE' and user.status == 'VERIFIED' and user.is_active
                 and not user.is_superuser and user.role_definition_id
                 and user.role_definition.tier == 'STATE'):
@@ -540,6 +548,10 @@ class Announcement(models.Model):
             return self.target_lga.name
         elif self.scope == 'WARD' and self.target_ward:
             return self.target_ward.name
+        elif self.scope == 'WARD_TIER':
+            return 'All Ward Roles'
+        elif self.scope == 'LGA_TIER':
+            return 'All LGA Roles'
         return 'Unknown'
 
 

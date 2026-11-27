@@ -78,7 +78,7 @@ def save_review(user,item_id,data,version):
     item=Item.objects.select_for_update().get(pk=item_id)
     if item.state not in {'WAITING','REVIEW'}:raise ValidationError('This item has already been handed off or closed.')
     if item.version!=version:raise ValidationError('This draft changed. Reload before saving.')
-    allowed={'title','body','category','provider','requirements','benefits','application_link','deadline','content','what_happened','who_was_involved','why_is_it_important','notes'}
+    allowed={'title','body','category','provider','requirements','benefits','application_link','deadline','content','what_happened','who_was_involved','why_is_it_important','notes','lga','signal_category','signal_confidence','signal_observation','signal_horizon','who_is_affected','why_it_matters','what_is_unknown','signal_change_condition','what_to_watch'}
     if any(k not in allowed or not isinstance(v,str) or len(v)>20000 for k,v in data.items()):raise ValidationError('Invalid draft fields.')
     if not data.get('title','').strip() or len(data['title'])>300:raise ValidationError('A title of at most 300 characters is required.')
     item.draft=data;item.title=data['title'];item.state='REVIEW';item.reviewed_by=user;item.version+=1;item.save()
@@ -114,7 +114,8 @@ def act(user,item_id,action,version,confirmed=False):
             # PENDING queue, where it could not be edited or submitted
             # again ("Only draft articles can be submitted for review").
             auto=settings.KPN_EDITORIAL_AUTO_PUBLISH
-            item.article=Campaign.objects.create(author=user,title=d['title'],slug=unique_slug(Campaign,d['title']),content=str(escape(d['body']))+'\n\n'+str(escape(source_line)),content_json={'blocks':blocks},category=category,status='PUBLISHED' if auto else 'PENDING',published_at=timezone.now() if auto else None,approved_by=user if auto else None,verification_status='DEVELOPING',reporter_credit='KPN_EDITORIAL',source_url=(item.source_url or '')[:500],source_name=_src_name)
+            from .brain import resolve_lga as _resolve_lga
+            item.article=Campaign.objects.create(author=user,title=d['title'],slug=unique_slug(Campaign,d['title']),content=str(escape(d['body']))+'\n\n'+str(escape(source_line)),content_json={'blocks':blocks},category=category,lga=_resolve_lga(d.get('lga','')),status='PUBLISHED' if auto else 'PENDING',published_at=timezone.now() if auto else None,approved_by=user if auto else None,verification_status='DEVELOPING',reporter_credit='KPN_EDITORIAL',source_url=(item.source_url or '')[:500],source_name=_src_name)
             if auto:
                 # KPN Media Phase 1: a handoff that publishes immediately
                 # must allocate the permanent Story ID inside this
@@ -131,6 +132,13 @@ def act(user,item_id,action,version,confirmed=False):
                     item.article.save(update_fields=['story_id'])
                 except Exception:
                     raise ValidationError('Story ID allocation failed; nothing was published. Please try again.')
+                # Owner (27 Nov 2026): all members get an app
+                # notification when a new story is posted.
+                from core.notifications import notify_all_members as _notify_all
+                _art=item.article
+                transaction.on_commit(lambda aid=_art.pk, title=_art.title, slug=_art.slug: _notify_all(
+                    'NEW_ARTICLE', 'New story on KPN', title,
+                    link=f'/campaigns/article/{slug}/', target_type='article', target_id=aid))
         else:
             from leadership.capabilities import capabilities_for
             if not user.is_superuser and 'MANAGE_HUBS' not in capabilities_for(user):raise PermissionDenied

@@ -22,6 +22,17 @@ through the staff FAQ manager, which has no category field) fall back
 to the template's own default handling: the "All" pill
 (``data-category="all"``), under which every item is shown. No
 category names are invented here.
+
+Owner-directed expansion, 2026-11-27: on the owner's direct
+instruction, the FAQ was expanded beyond the original nine template
+cards. Three new categories were added — ``opportunities``
+("Opportunities"), ``trackers`` ("Trackers") and ``support``
+("Support & Contact") — together with 21 new questions (cards 10–30
+in the template). The new material was added in three places at once:
+the template (``core/templates/core/faq.html``), this mapping, and
+the data migration ``core/migrations/0015_faq_expansion.py``, which
+seeds the matching ``core.FAQ`` rows. The original nine questions,
+answers, pills and mappings above are unchanged.
 """
 
 # Pill labels exactly as rendered in core/templates/core/faq.html.
@@ -31,6 +42,9 @@ FAQ_CATEGORY_LABELS = {
     'membership': 'Membership',
     'leadership': 'Leadership',
     'reporting': 'Reporting',
+    'opportunities': 'Opportunities',
+    'trackers': 'Trackers',
+    'support': 'Support & Contact',
 }
 
 # Question text (verbatim from the template cards) -> the card's
@@ -49,6 +63,34 @@ FAQ_CATEGORY_BY_QUESTION = {
     # Reporting & Activities Questions (data-category="reporting")
     'How does KPN gather community reports?': 'reporting',
     'How is information classified before publication?': 'reporting',
+    # About additions (2026-11-27 expansion, cards 10-12)
+    'When was KPN founded, and is it registered?': 'about',
+    'Which areas does KPN cover?': 'about',
+    "What does 'One Voice, One Change' mean?": 'about',
+    # Membership additions (2026-11-27 expansion, cards 13-15)
+    'How do I join KPN?': 'membership',
+    'What happens after I submit my membership application?': 'membership',
+    'How do I sign in to the KPN mobile app?': 'membership',
+    # Leadership additions (2026-11-27 expansion, cards 16-17)
+    'Who leads KPN in my ward or LGA?': 'leadership',
+    'What are the senatorial zones in KPN?': 'leadership',
+    # Reporting additions (2026-11-27 expansion, cards 18-19)
+    'How do I report a problem or a story from my community?': 'reporting',
+    'What kind of issues can I report?': 'reporting',
+    # Opportunities Questions (data-category="opportunities")
+    'What is the Opportunities Hub?': 'opportunities',
+    "What does 'Verification Pending' mean on an opportunity?": 'opportunities',
+    'How do I apply for an opportunity listed on KPN?': 'opportunities',
+    'How do I report a suspicious opportunity listing?': 'opportunities',
+    # Trackers Questions (data-category="trackers")
+    'What is the Promise Tracker?': 'trackers',
+    "What does 'Verified Completed' mean on the Promise Tracker?": 'trackers',
+    'What is the Project Tracker?': 'trackers',
+    # Support & Contact Questions (data-category="support")
+    'How can I support KPN?': 'support',
+    'How do I contact KPN?': 'support',
+    'What can I do with the KPN mobile app?': 'support',
+    'How do I follow KPN on Telegram?': 'support',
 }
 
 # The template's default: the "All" pill shows every item.

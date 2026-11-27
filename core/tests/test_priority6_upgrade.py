@@ -155,9 +155,14 @@ class CodeOfConductPriority6Tests(TestCase):
 
     def test_no_download_element_without_official_document(self):
         # D-15: no official Code of Conduct document exists in the repo,
-        # so the page ships with no download button/link at all.
-        self.assertNotIn('download', self.html.lower())
-        self.assertNotIn('.pdf', self.html.lower())
+        # so the page itself ships with no download button/link at all.
+        # Scoped to the page's <main> content: since §24 (2026-11-27)
+        # the global site footer carries the owner's "Download Android
+        # App" link on every page, which is site chrome, not a Code of
+        # Conduct document download.
+        main = self.html.split('<main', 1)[1].split('</main>', 1)[0]
+        self.assertNotIn('download', main.lower())
+        self.assertNotIn('.pdf', main.lower())
 
     def test_no_placeholder_or_guide_text(self):
         self.assertNotIn('verify current document', self.html.lower())

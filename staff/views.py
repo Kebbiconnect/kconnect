@@ -2086,7 +2086,7 @@ def member_mobilization(request):
         footer_text = Paragraph(
             '<b>info@kpn.com.ng</b><br/>'
             'Sani Abacha Bypass Road, Birnin Kebbi &nbsp;&nbsp;&nbsp; '
-            '+2348037851112, +2348067770283<br/>'
+            '+2348037851112<br/>'
             '<b>www.mykpn.onrender.com</b>',
             footer_style
         )

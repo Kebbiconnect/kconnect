@@ -29,3 +29,20 @@ def notify_many(users, notif_type='INFO', title='', message='', link='', event='
         for notification in notifications:
             transaction.on_commit(lambda item=notification: _push(item))
     return notifications
+
+def notify_all_members(event, title, message, link='', target_type='', target_id=None, exclude_user_id=None):
+    """Notify every verified member (in-app + push) — used when new
+    public content is published (owner request, 27 Nov 2026: the app
+    should notify all members when a news story or an opportunity is
+    posted). Mirrors the announcements fan-out pattern. A failure here
+    must never break the publish that triggered it."""
+    try:
+        from staff.models import User
+        users = list(User.objects.filter(status='VERIFIED', is_active=True, is_superuser=False).exclude(pk=exclude_user_id))
+        if users:
+            return notify_many(users, 'INFO', title, message, link=link, event=event,
+                               target_type=target_type, target_id=target_id)
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception('notify_all_members failed for event=%s', event)
+    return []

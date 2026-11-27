@@ -208,14 +208,33 @@ class ImpactMetricsSerializer(serializers.Serializer):
     wards_total = serializers.IntegerField()
 
 class RegisterSerializer(serializers.ModelSerializer):
+    # App 2.0.5: gender arrives as 'M'/'F' from some clients and as the
+    # full words 'Male'/'Female' (any case) from others. Accept both and
+    # normalise to the model's 'M'/'F' codes; anything else is rejected.
+    gender = serializers.CharField(required=False, allow_blank=True, max_length=10)
+
+    def validate_gender(self, value):
+        normalised = str(value or '').strip().upper()
+        if normalised in ('', 'M', 'MALE'):
+            return 'M' if normalised else ''
+        if normalised in ('F', 'FEMALE'):
+            return 'F'
+        raise serializers.ValidationError("Gender must be 'M', 'F', 'Male' or 'Female'.")
+
     password = serializers.CharField(write_only=True, required=True, trim_whitespace=False, max_length=4096)
     password_confirm = serializers.CharField(write_only=True, required=True, trim_whitespace=False, max_length=4096)
     photo = serializers.ImageField(required=True)
-    role_definition = serializers.PrimaryKeyRelatedField(queryset=RoleDefinition.objects.all(), required=True)
+    # role_definition is optional ONLY for an explicit General Member
+    # application (general_member=true, sent by the mobile app — owner,
+    # 27 Nov 2026). The website form always submits a leadership
+    # role_definition and never sets general_member, so website
+    # registration remains leadership-only.
+    role_definition = serializers.PrimaryKeyRelatedField(queryset=RoleDefinition.objects.all(), required=False, allow_null=True)
+    general_member = serializers.BooleanField(required=False, default=False)
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'password_confirm', 'first_name', 'last_name', 'phone', 'gender', 'photo', 'zone', 'lga', 'ward', 'role_definition', 'bio']
+        fields = ['username', 'email', 'password', 'password_confirm', 'first_name', 'last_name', 'phone', 'gender', 'photo', 'zone', 'lga', 'ward', 'role_definition', 'bio', 'general_member']
 
     def validate(self, attrs):
         # 1. Passwords match
@@ -237,8 +256,15 @@ class RegisterSerializer(serializers.ModelSerializer):
         # Authoritative leadership-only and parent/child location validation.
         from staff.services.assignments import validate_location
         role_def=attrs.get('role_definition')
+        general=bool(attrs.get('general_member'))
+        if role_def is None and not general:
+            raise serializers.ValidationError({'role_definition':'Choose a position, or apply as a General Member.'})
+        if role_def is None and general and not attrs.get('ward'):
+            # A General Member's ward/LGA/zone decide which leaders
+            # review the application, so the ward is required.
+            raise serializers.ValidationError({'ward':'Select your ward so the right leaders can review your application.'})
         try:
-            assigned=validate_location(role_def,attrs.get('zone'),attrs.get('lga'),attrs.get('ward'),registration=True)
+            assigned=validate_location(role_def,attrs.get('zone'),attrs.get('lga'),attrs.get('ward'),registration=True,allow_general=general)
         except DjangoValidationError as exc:
             raise serializers.ValidationError({'non_field_errors':exc.messages})
         attrs.update({k:v for k,v in assigned.items() if k != 'role'})
@@ -250,25 +276,28 @@ class RegisterSerializer(serializers.ModelSerializer):
             if User.objects.filter(**{key+'__iexact':attrs[key]}).exists():
                 raise serializers.ValidationError({key:'This value is already registered.'})
 
-        # 5. Position availability check
-        existing_holder = User.objects.filter(role_definition=role_def, status='VERIFIED')
-        if role == 'ZONAL':
-            existing_holder = existing_holder.filter(zone=zone)
-        elif role == 'LGA':
-            existing_holder = existing_holder.filter(lga=lga)
-        elif role == 'WARD':
-            existing_holder = existing_holder.filter(ward=ward)
+        # 5. Position availability check (leadership seats only — a
+        # General Member application holds no seat).
+        if role_def is not None:
+            existing_holder = User.objects.filter(role_definition=role_def, status='VERIFIED')
+            if role == 'ZONAL':
+                existing_holder = existing_holder.filter(zone=zone)
+            elif role == 'LGA':
+                existing_holder = existing_holder.filter(lga=lga)
+            elif role == 'WARD':
+                existing_holder = existing_holder.filter(ward=ward)
 
-        if existing_holder.exists():
-            raise serializers.ValidationError("This position is already filled.")
+            if existing_holder.exists():
+                raise serializers.ValidationError("This position is already filled.")
 
         return attrs
 
     def create(self, validated_data):
         validated_data.pop('password_confirm')
+        validated_data.pop('general_member', None)
         password = validated_data.pop('password')
-        role_def = validated_data['role_definition']
-        validated_data['role'] = role_def.tier
+        role_def = validated_data.get('role_definition')
+        validated_data['role'] = role_def.tier if role_def else 'GENERAL'
         validated_data['status'] = 'PENDING'
         validated_data['facebook_verified'] = False # For backward compatibility in DB
 
@@ -279,6 +308,12 @@ class RegisterSerializer(serializers.ModelSerializer):
             user=User.objects.create_user(password=password, **validated_data)
             user.photo=photo
             user.save(update_fields=['photo'])
+            # Notify the leaders who can decide this application
+            # (owner, 27 Nov 2026) once the registration commits. The
+            # service never raises, so a notification failure cannot
+            # break a registration.
+            from staff.services.application_notifications import notify_application_approvers
+            transaction.on_commit(lambda uid=user.pk: notify_application_approvers(uid))
             return user
 
 class LeadershipHolderSerializer(serializers.Serializer):
@@ -478,6 +513,22 @@ class CommunityReportSerializer(serializers.ModelSerializer):
         model=CommunityReport
         fields=['id','reporter_name','reporter_phone','submitted_by','ward','lga','lga_name','ward_name','zone','location_details','incident_date','incident_time','category','what_happened','who_was_involved','why_is_it_important','evidence_image','evidence_video','status','info_status','internal_notes','created_at']
         read_only_fields=['id','reporter_name','reporter_phone','submitted_by','zone','status','info_status','internal_notes','created_at']
+class PublicCommunityReportSerializer(serializers.ModelSerializer):
+    # Public Community Voice payload (GET civic/community-voice/):
+    # the same field names as CommunityReportSerializer so the app
+    # model parses it, minus everything private. The staff serializer
+    # above exposes reporter_name, reporter_phone, submitted_by and
+    # internal_notes, so it must never be reused on a public route —
+    # the web Community Voice page never renders reporter identity
+    # either (core.views.community_voice).
+    lga_name = serializers.CharField(source='lga.name', allow_null=True, read_only=True)
+    ward_name = serializers.CharField(source='ward.name', allow_null=True, read_only=True)
+    category_label = serializers.CharField(source='get_category_display', read_only=True)
+    info_status_label = serializers.CharField(source='get_info_status_display', read_only=True)
+    class Meta:
+        model=CommunityReport
+        fields=['id','ward','lga','lga_name','ward_name','zone','location_details','incident_date','incident_time','category','category_label','what_happened','who_was_involved','why_is_it_important','evidence_image','evidence_video','status','info_status','info_status_label','voice_published_at','created_at']
+        read_only_fields=fields
 class AnnouncementSerializer(serializers.ModelSerializer):
     # Part B (screen 81): per-user read state from staff.AnnouncementRead
     # receipts. Anonymous / context-less serialisation is always False.

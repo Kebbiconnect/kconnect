@@ -1124,6 +1124,52 @@ def network_rankings(request):
     return render(request, 'core/network_rankings.html', context)
 
 
+# ── App Download ─────────────────────────────────────────────────────
+
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.http import FileResponse, Http404
+from django.template.defaultfilters import filesizeformat
+
+APP_APK_PATH = 'app/kpn-app.apk'
+APP_VERSION_PATH = 'app/VERSION.txt'
+
+
+def _app_download_info():
+    """What the Download App page can truthfully offer right now.
+
+    Reads the APK slot (static/app/) through the staticfiles storage:
+    the download is only offered when the signed release APK is
+    actually there, and the size/version shown are the file's own,
+    never invented.
+    """
+    info = {'available': False, 'size': None, 'version': None}
+    if staticfiles_storage.exists(APP_APK_PATH):
+        info['available'] = True
+        info['size'] = filesizeformat(staticfiles_storage.size(APP_APK_PATH))
+        if staticfiles_storage.exists(APP_VERSION_PATH):
+            with staticfiles_storage.open(APP_VERSION_PATH, 'rb') as fh:
+                version = fh.read().decode('utf-8', 'ignore').strip()
+            info['version'] = version or None
+    return info
+
+
+def download_app(request):
+    context = _app_download_info()
+    context['crumbs'] = [('Download the App', None)]
+    return render(request, 'core/download_app.html', context)
+
+
+def download_app_apk(request):
+    if not staticfiles_storage.exists(APP_APK_PATH):
+        raise Http404('The KPN app file has not been added yet.')
+    return FileResponse(
+        staticfiles_storage.open(APP_APK_PATH, 'rb'),
+        as_attachment=True,
+        filename='kpn-app.apk',
+        content_type='application/vnd.android.package-archive',
+    )
+
+
 # ── Notification Views ────────────────────────────────────────────────
 
 @login_required

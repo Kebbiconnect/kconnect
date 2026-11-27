@@ -35,6 +35,9 @@
                 <button type="button" class="category-btn" data-category="membership">Membership</button>
                 <button type="button" class="category-btn" data-category="leadership">Leadership</button>
                 <button type="button" class="category-btn" data-category="reporting">Reporting</button>
+                <button type="button" class="category-btn" data-category="opportunities">Opportunities</button>
+                <button type="button" class="category-btn" data-category="trackers">Trackers</button>
+                <button type="button" class="category-btn" data-category="support">Support &amp; Contact</button>
             </div>
 
             <!-- FAQ Accordion -->
@@ -74,6 +77,44 @@
                     <div x-show="openFaq === 3" x-collapse x-cloak>
                         <div class="answer">
                             <p>KPN raises funds through voluntary donations from members, civic-minded citizens, crowdfunding campaigns, support from NGOs and development partners, and other lawful grants. Financial transparency is heavily prioritized, and all funds are strictly managed by our finance directors.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About additions (2026-11-27 expansion) -->
+
+                <div class="kpn-faq-card faq-item" data-category="about">
+                    <button @click="openFaq = openFaq === 10 ? null : 10">
+                        <span>When was KPN founded, and is it registered?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 10 }"></i>
+                    </button>
+                    <div x-show="openFaq === 10" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>KPN was founded on 30 May 2023. It is registered with the Corporate Affairs Commission (CAC) of Nigeria as Incorporated Trustees, so it operates as a recognised non-profit organisation.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpn-faq-card faq-item" data-category="about">
+                    <button @click="openFaq = openFaq === 11 ? null : 11">
+                        <span>Which areas does KPN cover?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 11 }"></i>
+                    </button>
+                    <div x-show="openFaq === 11" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>KPN operates across all 21 local government areas and 225 wards of Kebbi State, with leadership and member teams at state, senatorial zone, LGA and ward levels.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpn-faq-card faq-item" data-category="about">
+                    <button @click="openFaq = openFaq === 12 ? null : 12">
+                        <span>What does 'One Voice, One Change' mean?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 12 }"></i>
+                    </button>
+                    <div x-show="openFaq === 12" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>'One Voice, One Change' is the motto of KPN. It expresses the idea behind the network: young people across Kebbi State speaking together, with one voice, to bring positive change to their communities.</p>
                         </div>
                     </div>
                 </div>
@@ -128,6 +169,44 @@
                     </div>
                 </div>
 
+                <!-- Membership additions (2026-11-27 expansion) -->
+
+                <div class="kpn-faq-card faq-item" data-category="membership">
+                    <button @click="openFaq = openFaq === 13 ? null : 13">
+                        <span>How do I join KPN?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 13 }"></i>
+                    </button>
+                    <div x-show="openFaq === 13" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>You can join on the KPN website or in the KPN mobile app. Create an account, complete your profile, and choose your ward and LGA. Your application is reviewed by KPN leaders, and you will be notified when it is approved.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpn-faq-card faq-item" data-category="membership">
+                    <button @click="openFaq = openFaq === 14 ? null : 14">
+                        <span>What happens after I submit my membership application?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 14 }"></i>
+                    </button>
+                    <div x-show="openFaq === 14" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>Your application shows as pending while it is reviewed by the leaders responsible for your area. Once it is approved, your account becomes fully active and you can take part in KPN activities and use member features on the website and in the app.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpn-faq-card faq-item" data-category="membership">
+                    <button @click="openFaq = openFaq === 15 ? null : 15">
+                        <span>How do I sign in to the KPN mobile app?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 15 }"></i>
+                    </button>
+                    <div x-show="openFaq === 15" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>The app uses the same account as the KPN website. Sign in with the username or email address and password you registered with on kpn.com.ng. If you do not have an account yet, you can create one from the app.</p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Leadership Questions -->
                 <div class="kpn-faq-card faq-item" data-category="leadership">
                     <button @click="openFaq = openFaq === 7 ? null : 7">
@@ -143,6 +222,32 @@
                                 <li><strong>Senatorial Leadership Teams</strong> (Kebbi North, Central, and South)</li>
                                 <li><strong>State Executive Team</strong> (20 state leaders)</li>
                             </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leadership additions (2026-11-27 expansion) -->
+
+                <div class="kpn-faq-card faq-item" data-category="leadership">
+                    <button @click="openFaq = openFaq === 16 ? null : 16">
+                        <span>Who leads KPN in my ward or LGA?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 16 }"></i>
+                    </button>
+                    <div x-show="openFaq === 16" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>Every ward and LGA in Kebbi State has its own KPN leadership team. You can see the current office holders for your area in the Leadership Directory on the website and in the app.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpn-faq-card faq-item" data-category="leadership">
+                    <button @click="openFaq = openFaq === 17 ? null : 17">
+                        <span>What are the senatorial zones in KPN?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 17 }"></i>
+                    </button>
+                    <div x-show="openFaq === 17" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>For coordination, KPN groups the 21 LGAs into three senatorial zones: Kebbi North, Kebbi Central and Kebbi South. Each zone has its own leadership team supporting the LGA and ward teams.</p>
                         </div>
                     </div>
                 </div>
@@ -176,6 +281,170 @@
                                 <li><strong>KPN COMMUNITY ALERT:</strong> Urgent matters affecting public safety or welfare.</li>
                                 <li><strong>KPN OPPORTUNITY:</strong> Legitimate jobs, scholarships, or training programs.</li>
                             </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reporting additions (2026-11-27 expansion) -->
+
+                <div class="kpn-faq-card faq-item" data-category="reporting">
+                    <button @click="openFaq = openFaq === 18 ? null : 18">
+                        <span>How do I report a problem or a story from my community?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 18 }"></i>
+                    </button>
+                    <div x-show="openFaq === 18" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>Use the community report form on the website or in the app (Report a Concern). Describe what happened, where and when, and add photos or other evidence if you have them. Reports are reviewed and verified before anything is published, and a reporter's name and phone number are never published.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpn-faq-card faq-item" data-category="reporting">
+                    <button @click="openFaq = openFaq === 19 ? null : 19">
+                        <span>What kind of issues can I report?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 19 }"></i>
+                    </button>
+                    <div x-show="openFaq === 19" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>You can report community needs, abandoned or delayed public projects, positive developments, and anything else affecting your community's welfare or safety. Reports help KPN follow up issues and recognise progress.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Opportunities Questions -->
+
+                <div class="kpn-faq-card faq-item" data-category="opportunities">
+                    <button @click="openFaq = openFaq === 20 ? null : 20">
+                        <span>What is the Opportunities Hub?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 20 }"></i>
+                    </button>
+                    <div x-show="openFaq === 20" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>The Opportunities Hub on the KPN website and app collects scholarships, grants, jobs, internships, trainings and fellowships that are open to young people in Kebbi State and Nigeria. Each listing shows the provider, who is eligible, the deadline and the official application link.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpn-faq-card faq-item" data-category="opportunities">
+                    <button @click="openFaq = openFaq === 21 ? null : 21">
+                        <span>What does 'Verification Pending' mean on an opportunity?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 21 }"></i>
+                    </button>
+                    <div x-show="openFaq === 21" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>It means the listing is still being checked by the KPN media team. While a listing is under verification, its application link is hidden. Only apply through a listing once it is fully published with its official link.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpn-faq-card faq-item" data-category="opportunities">
+                    <button @click="openFaq = openFaq === 22 ? null : 22">
+                        <span>How do I apply for an opportunity listed on KPN?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 22 }"></i>
+                    </button>
+                    <div x-show="openFaq === 22" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>KPN does not receive applications. Open the listing and follow its official application link to apply directly to the provider, and complete your application before the deadline shown.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpn-faq-card faq-item" data-category="opportunities">
+                    <button @click="openFaq = openFaq === 23 ? null : 23">
+                        <span>How do I report a suspicious opportunity listing?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 23 }"></i>
+                    </button>
+                    <div x-show="openFaq === 23" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>Open the listing and use the option to report a suspicious listing, or contact the KPN media team through the Contact page. Reported listings are reviewed, and any listing found to be false or misleading is removed.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trackers Questions -->
+
+                <div class="kpn-faq-card faq-item" data-category="trackers">
+                    <button @click="openFaq = openFaq === 24 ? null : 24">
+                        <span>What is the Promise Tracker?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 24 }"></i>
+                    </button>
+                    <div x-show="openFaq === 24" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>The Promise Tracker records public promises made to communities in Kebbi State and follows each one with updates and evidence until it is fulfilled or its true position is known. It helps communities see what was promised and what has actually been delivered.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpn-faq-card faq-item" data-category="trackers">
+                    <button @click="openFaq = openFaq === 25 ? null : 25">
+                        <span>What does 'Verified Completed' mean on the Promise Tracker?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 25 }"></i>
+                    </button>
+                    <div x-show="openFaq === 25" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>It means KPN has checked evidence that the promise has actually been delivered. A promise is never marked verified completed based on an announcement alone.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpn-faq-card faq-item" data-category="trackers">
+                    <button @click="openFaq = openFaq === 26 ? null : 26">
+                        <span>What is the Project Tracker?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 26 }"></i>
+                    </button>
+                    <div x-show="openFaq === 26" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>The Project Tracker follows public projects across the LGAs of Kebbi State. It keeps reported information separate from verified information, and KPN only publishes project figures, such as contract details, where they are supported by documents.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Support & Contact Questions -->
+
+                <div class="kpn-faq-card faq-item" data-category="support">
+                    <button @click="openFaq = openFaq === 27 ? null : 27">
+                        <span>How can I support KPN?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 27 }"></i>
+                    </button>
+                    <div x-show="openFaq === 27" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>You can support KPN through the Support KPN page on the website or in the app, where you will find the approved ways to donate. Support from members and well-wishers helps KPN run its community, media and youth programmes.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpn-faq-card faq-item" data-category="support">
+                    <button @click="openFaq = openFaq === 28 ? null : 28">
+                        <span>How do I contact KPN?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 28 }"></i>
+                    </button>
+                    <div x-show="openFaq === 28" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>You can reach KPN by email at info@kpn.com.ng, or through the Contact page on the website and in the app.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpn-faq-card faq-item" data-category="support">
+                    <button @click="openFaq = openFaq === 29 ? null : 29">
+                        <span>What can I do with the KPN mobile app?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 29 }"></i>
+                    </button>
+                    <div x-show="openFaq === 29" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>With the KPN app you can read Kebbi news, follow the Promise and Project Trackers, find opportunities, and report community issues. Members who sign in can also open their role dashboard, manage their profile and ID tag, and use the tools for their position.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpn-faq-card faq-item" data-category="support">
+                    <button @click="openFaq = openFaq === 30 ? null : 30">
+                        <span>How do I follow KPN on Telegram?</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200 text-gray-400 flex-shrink-0 ml-3" :class="{ 'rotate-180': openFaq === 30 }"></i>
+                    </button>
+                    <div x-show="openFaq === 30" x-collapse x-cloak>
+                        <div class="answer">
+                            <p>KPN publishes its stories to its Telegram channel, and members can connect Telegram inside the app to receive updates and ask the KPN bot questions about the network.</p>
                         </div>
                     </div>
                 </div>

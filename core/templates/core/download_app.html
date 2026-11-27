@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Download the KPN App - Kebbi Progressive Youth Network{% endblock %}
+
+{% block content %}
+<section class="kpn-page-hero kpn-page-hero-photo" style="--hero:url('{% static 'img/home-hero.jpg' %}')">
+    <div class="kpn-home-container">
+        <p class="kpn-eyebrow"><i class="fas fa-mobile-alt" aria-hidden="true"></i> KPN Mobile App</p>
+        <h1>Download the KPN App</h1>
+        <p>KPN on your phone: verified news, opportunities and your membership, wherever you are in Kebbi State.</p>
+    </div>
+</section>
+
+<div class="kpn-home-container">
+    {% include 'includes/breadcrumbs.html' %}
+</div>
+
+<div class="kpn-home-container pb-12">
+    <!-- App card -->
+    <div class="kpn-card p-6 mb-10">
+        <div class="flex flex-col sm:flex-row items-start gap-5">
+            <img src="{% static 'img/kpn-app-icon.png' %}" alt="KPN app icon"
+                 class="w-20 h-20 rounded-2xl flex-shrink-0">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">KPN &mdash; Kebbi Progressive Youth Network</h2>
+                <p class="text-gray-700 dark:text-gray-300 mb-4">
+                    The official KPN app for members and the public: follow verified news from all
+                    21 LGAs, browse and apply for opportunities, follow the Promise Tracker and the
+                    Project Tracker, and manage your KPN membership. Members sign in with the same
+                    account they use on this website.
+                </p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                    <div class="bg-kpn-green/10 dark:bg-kpn-green/20 p-4 rounded-lg text-center">
+                        <i class="fas fa-newspaper text-3xl text-kpn-green mb-2"></i>
+                        <p class="font-semibold text-xs md:text-sm text-gray-900 dark:text-white">Newsroom</p>
+                    </div>
+                    <div class="bg-kpn-green/10 dark:bg-kpn-green/20 p-4 rounded-lg text-center">
+                        <i class="fas fa-briefcase text-3xl text-kpn-green mb-2"></i>
+                        <p class="font-semibold text-xs md:text-sm text-gray-900 dark:text-white">Opportunities</p>
+                    </div>
+                    <div class="bg-kpn-green/10 dark:bg-kpn-green/20 p-4 rounded-lg text-center">
+                        <i class="fas fa-tasks text-3xl text-kpn-green mb-2"></i>
+                        <p class="font-semibold text-xs md:text-sm text-gray-900 dark:text-white">Promise &amp; Project Trackers</p>
+                    </div>
+                    <div class="bg-kpn-green/10 dark:bg-kpn-green/20 p-4 rounded-lg text-center">
+                        <i class="fas fa-id-card text-3xl text-kpn-green mb-2"></i>
+                        <p class="font-semibold text-xs md:text-sm text-gray-900 dark:text-white">Membership</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Download area -->
+        <div class="border-t border-gray-200 dark:border-gray-700 mt-8 pt-8 text-center">
+            {% if available %}
+            <a href="{% url 'core:download_app_apk' %}" class="kpn-btn kpn-btn-primary kpn-btn-xl">
+                <i class="fab fa-android" aria-hidden="true"></i> Download for Android
+            </a>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-3">
+                Android app (APK){% if version %} &middot; Version {{ version }}{% endif %}{% if size %} &middot; {{ size }}{% endif %}
+            </p>
+            {% else %}
+            <div class="bg-kpn-green/10 dark:bg-kpn-green/20 rounded-lg p-5 max-w-xl mx-auto">
+                <p class="font-semibold text-gray-900 dark:text-white mb-1">Android download coming to this page shortly</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                    The download button will appear here as soon as the app file is added.
+                    Please check back soon.
+                </p>
+            </div>
+            {% endif %}
+
+            <!-- Stores -->
+            <div class="flex flex-col sm:flex-row justify-center gap-4 mt-8">
+                <div class="border border-gray-300 dark:border-gray-600 rounded-lg px-5 py-3 flex items-center gap-3 text-left">
+                    <i class="fab fa-google-play text-2xl text-gray-500 dark:text-gray-400" aria-hidden="true"></i>
+                    <div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 leading-tight">Get it on</p>
+                        <p class="font-semibold text-gray-900 dark:text-white leading-tight">Google Play</p>
+                        <p class="text-xs font-semibold text-kpn-green leading-tight">Coming Soon</p>
+                    </div>
+                </div>
+                <div class="border border-gray-300 dark:border-gray-600 rounded-lg px-5 py-3 flex items-center gap-3 text-left">
+                    <i class="fab fa-apple text-2xl text-gray-500 dark:text-gray-400" aria-hidden="true"></i>
+                    <div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 leading-tight">Download on the</p>
+                        <p class="font-semibold text-gray-900 dark:text-white leading-tight">App Store</p>
+                        <p class="text-xs font-semibold text-kpn-green leading-tight">Coming Soon</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if available %}
+    <!-- Install steps -->
+    <div class="kpn-card p-6">
+        <h2 class="text-2xl font-bold text-kpn-green mb-4">How to install on Android</h2>
+        <ol class="space-y-4 text-gray-700 dark:text-gray-300">
+            <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-kpn-green text-white flex items-center justify-center text-sm font-bold">1</span>
+                <p>Tap <strong>Download for Android</strong> above and wait for the file (kpn-app.apk) to finish downloading.</p>
+            </li>
+            <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-kpn-green text-white flex items-center justify-center text-sm font-bold">2</span>
+                <p>Open the downloaded file from your notifications or your Downloads folder.</p>
+            </li>
+            <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-kpn-green text-white flex items-center justify-center text-sm font-bold">3</span>
+                <p>If your phone asks, allow your browser to install apps from this source. This is normal for an app downloaded from our website.</p>
+            </li>
+            <li class="flex gap-3">
+                <span class="flex-shrink-0 w-7 h-7 rounded-full bg-kpn-green text-white flex items-center justify-center text-sm font-bold">4</span>
+                <p>Tap <strong>Install</strong>, then open KPN and sign in with your website account.</p>
+            </li>
+        </ol>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

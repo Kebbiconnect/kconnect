@@ -54,6 +54,7 @@ urlpatterns = [
     path('community/', views.CommunityInitiativeListView.as_view(), name='community-list'),
     path('community/<int:pk>/', views.CommunityInitiativeDetailView.as_view(), name='community-detail'),
     path('civic/', views.CivicListView.as_view(), name='civic-list'),
+    path('civic/community-voice/', public_content.CommunityVoiceListView.as_view(), name='civic-community-voice'),
     path('advocacy/', views.AdvocacyListView.as_view(), name='advocacy-list'),
     path('advocacy/<int:pk>/', views.AdvocacyDetailView.as_view(), name='advocacy-detail'),
     path('leadership/', views.LeadershipSeatListView.as_view(), name='leadership-seats'),
@@ -160,7 +161,10 @@ urlpatterns = [
     path('dashboards/zone/', dashboard_views.ZonalDashboardView.as_view(), name='dash-zone'),
     path('dashboards/lga/', dashboard_views.LgaDashboardView.as_view(), name='dash-lga'),
     path('dashboards/ward/', dashboard_views.WardDashboardView.as_view(), name='dash-ward'),
-    
+    # 2.0.7: the web President dashboard's org-wide figures as data
+    # (see PresidentDashboardView for the audit trail).
+    path('dashboards/president/', dashboard_views.PresidentDashboardView.as_view(), name='dash-president'),
+
     # ─── Android 2.0.0 staff API (staff_views.py) ───────────────────────
     # Rule-3 gaps for screens 1–159.
     path('opportunities/<slug:slug>/report/', staff_views.OpportunityReportView.as_view(), name='opportunity-report'),

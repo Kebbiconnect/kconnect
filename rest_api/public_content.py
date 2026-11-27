@@ -26,7 +26,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from campaigns.models import Campaign
-from core.models import Opportunity
+from core.models import CommunityReport, Opportunity
 from intelligence import article_locations
 from intelligence import tracking as tracking_service
 from intelligence.models import Project, ProjectEvidence, ProjectMilestone
@@ -39,7 +39,7 @@ from story_intelligence.models import (
 from story_intelligence.services import story_panel_context
 
 from .pagination import StandardPagination
-from .serializers import CampaignSerializer
+from .serializers import CampaignSerializer, PublicCommunityReportSerializer
 
 API_VERSION = '1.1.0'
 
@@ -761,6 +761,8 @@ class ArchiveView(APIView):
                          location=OpenApiParameter.QUERY, required=False),
         OpenApiParameter(name='date_to', type=OpenApiTypes.DATE,
                          location=OpenApiParameter.QUERY, required=False),
+        OpenApiParameter(name='story_id', type=OpenApiTypes.STR,
+                         location=OpenApiParameter.QUERY, required=False),
         OpenApiParameter(name='lga', type=OpenApiTypes.INT,
                          location=OpenApiParameter.QUERY, required=False),
         OpenApiParameter(name='zone', type=OpenApiTypes.INT,
@@ -774,9 +776,17 @@ class ArchiveView(APIView):
         params = archive_service.parse_archive_params(request)
         q = params['q']
 
-        if q and archive_service.STORY_ID_RE.match(q.upper()):
+        # Story ID lookup: the ID may be the whole query, be embedded
+        # in it ("Story ID: KPN-SI-…", trailing punctuation, lowercase)
+        # or arrive as the dedicated story_id parameter (folded into q
+        # by parse_archive_params). Previously only a query that was
+        # exactly the canonical ID triggered this path; anything else
+        # fell through to a text search for the decorated string and
+        # returned no results even though the story exists.
+        story_id = archive_service.extract_story_id(q)
+        if story_id:
             article = Campaign.objects.filter(
-                status='PUBLISHED', story_id=q.upper()).first()
+                status='PUBLISHED', story_id=story_id).first()
             if article is not None:
                 archive_service._enrich_stories([article])
                 return Response({
@@ -974,3 +984,34 @@ class OpportunityArchiveListView(generics.ListAPIView):
         if category:
             queryset = queryset.filter(category=category)
         return queryset.order_by('-deadline', '-created_at')
+
+
+# ─── Community Voice (public) ────────────────────────────────────────────────
+
+class CommunityVoiceListView(generics.ListAPIView):
+    """The public Community Voice page as data (core.views.community_voice).
+
+    Root fix: the app previously called GET community-reports/, which
+    is the staff review queue gated on REVIEW_COMMUNITY_REPORTS, so
+    ordinary users and guests always failed. This is the missing
+    public counterpart. The queryset mirrors the web view exactly:
+    Community Voice publication is an explicit reviewer decision
+    (``published_to_voice=True``, D-08), separate from newsroom
+    approval — the web view applies no status or info_status filter
+    beyond that flag, and orders by -voice_published_at, -created_at.
+    Reporter name/phone, submitted_by and internal notes are never
+    serialised (see PublicCommunityReportSerializer).
+    """
+    serializer_class = PublicCommunityReportSerializer
+    permission_classes = [permissions.AllowAny]
+    pagination_class = StandardPagination
+
+    @extend_schema(auth=[])
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return (CommunityReport.objects
+                .filter(published_to_voice=True)
+                .select_related('lga', 'ward', 'escalated_campaign')
+                .order_by('-voice_published_at', '-created_at'))

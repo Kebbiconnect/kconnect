@@ -60,7 +60,9 @@ class FaqCategoryTests(TestCase):
         from core.faq_categories import FAQ_CATEGORY_LABELS
         self.assertEqual(FAQ_CATEGORY_LABELS, {
             'all': 'All', 'about': 'About KPN', 'membership': 'Membership',
-            'leadership': 'Leadership', 'reporting': 'Reporting'})
+            'leadership': 'Leadership', 'reporting': 'Reporting',
+            'opportunities': 'Opportunities', 'trackers': 'Trackers',
+            'support': 'Support & Contact'})
 
 
 class AnnouncementReadTests(TestCase):

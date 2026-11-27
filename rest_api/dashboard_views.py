@@ -164,6 +164,86 @@ class MyDashboardView(APIView):
     charts.append({"key":"reports_by_status","title":"Reports by status","type":"bars","rows":report_rows})
   return Response({"title":title,"role_title":role,"dashboard_key":DASHBOARD_BY_ROLE.get(role,"member"),"jurisdiction":user.get_jurisdiction(),"blocks":blocks,"work_sections":work_sections(user,caps),"charts":charts})
 
+class PresidentDashboardView(APIView):
+ """The web President dashboard (staff.views.president_dashboard) as
+ data. Audit (2.0.7): that page shows org-wide figures no existing API
+ endpoint could serve to the President — verified leaders and the
+ gender split, member growth this month and the five rolling 7-day
+ growth windows, org-wide campaign totals (his dashboards/me editorial
+ block counts only his own articles), org-wide programme totals (the
+ programme endpoints are gated on MANAGE_PROGRAMS_* capabilities he
+ does not hold), the is_reviewed-based report totals, the VERIFIED-only
+ donation total and the total FAQ count. Every figure below mirrors
+ the web view's queryset exactly (org-wide, unscoped); nothing here
+ broadens access — the gate is the same role title the web uses."""
+ permission_classes=[permissions.IsAuthenticated,IsVerifiedMember]
+ @extend_schema(responses={200:OpenApiTypes.OBJECT})
+ def get(self,request):
+  if role_title(request.user)!="President":
+   return Response({"error":{"code":"permission_denied","message":"President role required.","details":None}},status=status.HTTP_403_FORBIDDEN)
+  denied=access_denied_response(request.user)
+  if denied: return denied
+  from staff.models import WomensProgram, YouthProgram, WelfareProgram
+  from leadership.models import Zone
+  now=timezone.now()
+  first_of_month=now.replace(day=1,hour=0,minute=0,second=0,microsecond=0)
+  verified=User.objects.filter(status="VERIFIED")
+  growth_windows=[]
+  for i in range(4,-1,-1):
+   start=now-timezone.timedelta(days=i*7+7); end=now-timezone.timedelta(days=i*7)
+   growth_windows.append({"label":"Past 7 days" if i==0 else f"{i*7+7}–{i*7} days ago","value":User.objects.filter(status="VERIFIED",created_at__gte=start,created_at__lt=end).count()})
+  blocks=[
+   block("membership","Membership",[
+    item("verified_members","Verified members",verified.count()),
+    item("total_leaders","Verified leaders",verified.exclude(role="GENERAL").count()),
+    item("male_members","Male members",verified.filter(gender="M").count()),
+    item("female_members","Female members",verified.filter(gender="F").count()),
+    item("pending_approvals","Pending approvals",User.objects.filter(status="PENDING").count()),
+    item("member_growth_this_month","New verified members this month",User.objects.filter(status="VERIFIED",created_at__gte=first_of_month).count()),
+    item("trusted_reporters","Trusted reporters",User.objects.filter(is_trusted_reporter=True).count()),
+   ]),
+   block("campaigns","Campaigns",[
+    item("total_campaigns","Total campaigns",Campaign.objects.count()),
+    item("active_campaigns","Published campaigns",Campaign.objects.filter(status="PUBLISHED").count()),
+    item("pending_campaigns","Pending campaigns",Campaign.objects.filter(status="PENDING").count()),
+   ]),
+   block("events","Events",[
+    item("upcoming_events","Upcoming events",Event.objects.filter(start_date__gte=now).count()),
+    item("total_events","Total events",Event.objects.count()),
+   ]),
+   block("finance","Finance",[
+    item("total_donations","Verified donations",str(Donation.objects.filter(status="VERIFIED").aggregate(v=Sum("amount"))["v"] or Decimal("0")),"NGN"),
+    item("pending_donations","Unverified donations",Donation.objects.filter(status="UNVERIFIED").count()),
+    item("total_expenses","Expenses",str(Expense.objects.aggregate(v=Sum("amount"))["v"] or Decimal("0")),"NGN"),
+   ]),
+   block("oversight","Oversight",[
+    item("pending_disciplinary","Pending disciplinary actions",DisciplinaryAction.objects.filter(is_approved=False).count()),
+    item("pending_reports","Unreviewed reports",Report.objects.filter(is_reviewed=False).count()),
+    item("total_reports","Total reports",Report.objects.count()),
+    item("community_reports_pending","Pending community reports",CommunityReport.objects.filter(status="PENDING").count()),
+   ]),
+   block("structure","Organisational structure",[
+    item("total_zones","Zones",Zone.objects.count()),
+    item("total_lgas","LGAs",LGA.objects.count()),
+    item("total_wards","Wards",Ward.objects.count()),
+   ]),
+   block("programs","Programmes",[
+    item("womens_programs","Women's programmes",WomensProgram.objects.count()),
+    item("youth_programs","Youth programmes",YouthProgram.objects.count()),
+    item("welfare_programs","Welfare programmes",WelfareProgram.objects.count()),
+   ]),
+   block("content","Content",[
+    item("total_faqs","FAQs",FAQ.objects.count()),
+   ]),
+  ]
+  charts=[
+   {"key":"members_by_status","title":"Members by status","type":"pie","rows":chart_rows(User.objects.all(),"status",{"VERIFIED":"Verified","PENDING":"Pending","UNDER_REVIEW":"Under review","SUSPENDED":"Suspended","REJECTED":"Rejected"})},
+   {"key":"members_by_zone","title":"Verified members by zone","type":"bars","rows":chart_rows(verified.filter(zone__isnull=False),"zone__name",{})},
+   {"key":"members_by_lga","title":"Verified members by LGA","type":"bars","rows":chart_rows(verified.filter(lga__isnull=False),"lga__name",{})},
+   {"key":"membership_growth","title":"Verified member growth (7-day windows)","type":"bars","rows":growth_windows},
+  ]
+  return Response({"title":"President overview","role_title":"President","dashboard_key":DASHBOARD_BY_ROLE.get("President","president"),"blocks":blocks,"charts":charts})
+
 class SecretariatDashboardView(APIView):
  permission_classes=[permissions.IsAuthenticated,IsVerifiedMember,capability_permission("EDIT_MINUTES")]
  def get(self,request):

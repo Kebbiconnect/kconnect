@@ -6,7 +6,7 @@ from staff.models import User
 
 FIELDS=("role", "role_definition", "zone", "lga", "ward")
 
-def validate_location(definition, zone=None, lga=None, ward=None, registration=False):
+def validate_location(definition, zone=None, lga=None, ward=None, registration=False, allow_general=False):
     if definition and definition.tier not in {"STATE","ZONAL","LGA","WARD"}:
         raise ValidationError("Choose a valid leadership tier.")
     if lga and zone and lga.zone_id != zone.pk:
@@ -16,7 +16,11 @@ def validate_location(definition, zone=None, lga=None, ward=None, registration=F
     if ward and zone and ward.lga.zone_id != zone.pk:
         raise ValidationError("The selected ward does not belong to the selected zone.")
     tier=definition.tier if definition else "GENERAL"
-    if registration and not definition:
+    if registration and not definition and not allow_general:
+        # Registration stays leadership-only UNLESS the caller explicitly
+        # files a General Member application (owner, 27 Nov 2026: General
+        # Member registration is open in the mobile app only — the app
+        # sends general_member=true; the website form never does).
         raise ValidationError("Registration is leadership-only; choose a position.")
     if tier=="STATE" and registration and (not zone or not lga):
         raise ValidationError("Zone and LGA are required for State Executive applications.")

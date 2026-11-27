@@ -38,6 +38,7 @@ def publish_campaign(article, actor):
     ensure_consent_for_publish(article)
     if not article.story_id:
         allocate_story_id(article, actor=actor)
+    was_published = article.status == 'PUBLISHED'
     article.status = 'PUBLISHED'
     article.approved_by = actor
     article.published_at = timezone.now()
@@ -45,6 +46,14 @@ def publish_campaign(article, actor):
     article.save(update_fields=[
         'story_id', 'status', 'approved_by', 'published_at',
         'rejection_note', 'updated_at'])
+    if not was_published:
+        # Owner (27 Nov 2026): all members get an app notification when
+        # a new story is posted. Fires once, on the transition into
+        # PUBLISHED, after the publish transaction commits.
+        from core.notifications import notify_all_members
+        transaction.on_commit(lambda aid=article.pk, title=article.title, slug=article.slug: notify_all_members(
+            'NEW_ARTICLE', 'New story on KPN', title,
+            link=f'/campaigns/article/{slug}/', target_type='article', target_id=aid))
     return article
 
 

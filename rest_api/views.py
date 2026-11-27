@@ -10,6 +10,7 @@ from core.models import Opportunity, CommunityInitiative, AdvocacyCampaign, Patr
 from leadership.models import Zone, LGA, Ward, RoleDefinition
 from staff.models import User
 from .permissions import IsVerifiedMember, capability_permission, any_capability_permission
+from .pagination import LargeListPagination
 from .serializers import (
     CampaignSerializer, OpportunitySerializer, CommunityInitiativeSerializer,
     AdvocacyCampaignSerializer, PatronSerializer, ZoneSerializer, LGASerializer,
@@ -213,6 +214,7 @@ class ZoneListView(generics.ListAPIView):
     queryset = Zone.objects.all()
     serializer_class = ZoneSerializer
     permission_classes = [permissions.AllowAny]
+    pagination_class = LargeListPagination
     @extend_schema(auth=[])
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
@@ -220,6 +222,7 @@ class ZoneListView(generics.ListAPIView):
 class LGAListView(generics.ListAPIView):
     serializer_class = LGASerializer
     permission_classes = [permissions.AllowAny]
+    pagination_class = LargeListPagination
 
     @extend_schema(
         auth=[],
@@ -240,6 +243,7 @@ class LGAListView(generics.ListAPIView):
 class WardListView(generics.ListAPIView):
     serializer_class = WardSerializer
     permission_classes = [permissions.AllowAny]
+    pagination_class = LargeListPagination
 
     @extend_schema(
         auth=[],
@@ -457,7 +461,7 @@ class MemberListView(generics.ListAPIView):
         query=self.request.query_params.get('search','').strip()
         if query:
             from django.db.models import Q
-            queryset=queryset.filter(Q(first_name__icontains=query)|Q(last_name__icontains=query)|Q(username__icontains=query))
+            queryset=queryset.filter(Q(first_name__icontains=query)|Q(last_name__icontains=query)|Q(username__icontains=query)|Q(phone__icontains=query)|Q(email__icontains=query))
         return queryset
 
 class PendingMemberListView(generics.ListAPIView):
@@ -465,7 +469,18 @@ class PendingMemberListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, IsVerifiedMember, capability_permission('REVIEW_APPLICANTS')]
     def get_queryset(self):
         from staff.services.member_admin import pending_applicants_qs
-        return pending_applicants_qs(self.request.user)
+        queryset=pending_applicants_qs(self.request.user)
+        # App 2.0.5: ?tier=STATE|ZONAL|LGA|WARD filters by the tier of
+        # the role the applicant APPLIED for — the applicant's
+        # role_definition tier, falling back to their role code when no
+        # role definition is attached (the same precedence
+        # member_admin.assert_can_decide uses). Unknown tier values are
+        # ignored (the unfiltered pending list is returned) rather than
+        # erroring, so a client typo never hides the review queue.
+        tier=self.request.query_params.get('tier')
+        if tier in {'STATE','ZONAL','LGA','WARD'}:
+            queryset=queryset.filter(Q(role_definition__tier=tier)|Q(role_definition__isnull=True,role=tier))
+        return queryset
 
 class MemberDetailView(generics.RetrieveAPIView):
     serializer_class = MemberSerializer

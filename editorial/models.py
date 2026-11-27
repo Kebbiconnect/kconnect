@@ -32,7 +32,7 @@ class Source(models.Model):
     def __str__(self): return self.name
 
 class Item(models.Model):
-    KIND = [(x,x.replace('_',' ').title()) for x in ('NEWS','OPPORTUNITY','REPORT_EDIT','COMMUNITY_EDIT','CAPTION','BRIEFING','WEEKLY','DUPLICATE','DEADLINE','LINK_ALERT')]
+    KIND = [(x,x.replace('_',' ').title()) for x in ('NEWS','OPPORTUNITY','SIGNAL','VOICE','REPORT_EDIT','COMMUNITY_EDIT','CAPTION','BRIEFING','WEEKLY','DUPLICATE','DEADLINE','LINK_ALERT')]
     STATE = [('WAITING','Waiting for processing'),('REVIEW','Needs human review'),('HANDED_OFF','Handed to existing workflow'),('APPLIED','Wording applied by reviewer'),('DISMISSED','Dismissed')]
     key = models.CharField(max_length=100, unique=True)
     kind = models.CharField(max_length=24, choices=KIND)

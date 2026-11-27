@@ -255,7 +255,7 @@ class PublicSupportView(APIView):
     def get(self,request): return Response({'title':'Support KPN','bank_details':None,'bank_details_status':'UNVERIFIED','message':'Bank details are being verified. Please contact KPN before making a transfer.'})
 class PublicContactView(APIView):
     permission_classes=[permissions.AllowAny]
-    def get(self,request): return Response({'address':'Sani Abacha Bypass Road, Birnin Kebbi','phone':'+234 806 777 0283','email':'info@kpn.com.ng'})
+    def get(self,request): return Response({'address':'Sani Abacha Bypass Road, Birnin Kebbi','phone':'+234 803 785 1112','email':'info@kpn.com.ng'})
     def post(self,request):
         class ContactInput(serializers.Serializer):
             name=serializers.CharField(max_length=200)
